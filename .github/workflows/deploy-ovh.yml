@@ -1,6 +1,10 @@
 name: Deployer l'accueil sur OVH
 
 on:
+  push:
+    branches:
+      - main
+
   workflow_dispatch:
     inputs:
       site_directory:
@@ -36,7 +40,7 @@ jobs:
 
       - name: Verifier et preparer les fichiers publics
         env:
-          SITE_DIR: ${{ inputs.site_directory }}
+          SITE_DIR: ${{ inputs.site_directory || 'public' }}
         run: |
           set -euo pipefail
           case "$SITE_DIR" in
