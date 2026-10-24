@@ -383,3 +383,8 @@ dialog{color:var(--text);background:#19191a;border:1px solid #59513e;border-radi
 .universe-grid .art-jdr {
   background-image: url('pavillon-noir.png');
 }
+.universe-grid .art-phasmo {
+  background-image: url('phasmophobia.png');
+  background-size: cover;
+  background-position: center;
+}
