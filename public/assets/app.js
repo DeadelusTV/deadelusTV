@@ -55,3 +55,44 @@ booster.addEventListener('click',()=>{
   $('#demo-result').textContent='';
   if(revealed)boosterTimer=setTimeout(()=>{$('#demo-result').textContent='Le capitaine · Rare — Dans l’ombre · Épique — Le fidèle du Crew · Commune';},1100);
 });
+
+// Réseaux flottants, repris depuis le pied de page
+(() => {
+  const footerSocials = document.querySelector('.site-footer .socials');
+  if (!footerSocials) return;
+
+  const floatingSocials = footerSocials.cloneNode(true);
+  floatingSocials.classList.add('floating-socials');
+  floatingSocials.setAttribute('aria-label', 'Accès rapide aux réseaux');
+
+  floatingSocials.querySelectorAll('a').forEach(link => {
+    const name = link.textContent.trim();
+    const icon = link.querySelector('svg');
+
+    link.setAttribute('aria-label', name + ' (nouvel onglet)');
+    link.title = name;
+
+    if (icon) link.replaceChildren(icon);
+  });
+
+  floatingSocials.hidden = true;
+  document.body.append(floatingSocials);
+  document.body.classList.add('has-floating-socials');
+
+  const mobile = window.matchMedia('(max-width: 900px)');
+  let footerVisible = false;
+
+  function updateSocials() {
+    floatingSocials.hidden = !mobile.matches && footerVisible;
+  }
+
+  const observer = new IntersectionObserver(entries => {
+    const entry = entries[entries.length - 1];
+    footerVisible = entry.isIntersecting && entry.intersectionRatio >= 1;
+    updateSocials();
+  }, { threshold: [0, 1] });
+
+  observer.observe(footerSocials);
+  mobile.addEventListener('change', updateSocials);
+  updateSocials();
+})();
