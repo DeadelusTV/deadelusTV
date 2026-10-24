@@ -33,3 +33,10 @@ dialog{color:var(--text);background:#19191a;border:1px solid #59513e;border-radi
 @media(max-width:900px){.quick-links{display:flex;gap:9px;align-items:center;flex-wrap:wrap;padding:0 0 25px}.quick-label{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-right:3px}.quick-links a{display:flex;align-items:center;min-height:40px;padding:7px 12px;border:1px solid #4b4437;border-radius:4px;font-size:12px;background:#1c1b18;color:#e5d2ad}.quick-links a:hover{border-color:var(--gold);background:#2b251b}.universe-body h3{font-size:25px}}
 @media(max-width:600px){.welcome .eyebrow{font-size:10px;letter-spacing:1.4px}.quick-label{flex-basis:100%;margin-bottom:2px}.quick-links{gap:8px;padding-bottom:26px}.quick-links a{min-height:42px;padding-inline:10px;font-size:12px}.section-heading .all-link{font-size:12px}.embed-note{font-size:12px}.player-caption{font-size:10px}.universe-grid{grid-template-columns:1fr 1fr;gap:13px}.universe-category{font-size:9px;letter-spacing:.4px}.universe-body{padding:15px 12px}.universe-body h3{font-size:21px}.universe-body p{font-size:13px;line-height:1.65}.universe-body .arrow-link{font-size:12px;line-height:1.5}.footer-bottom{font-size:11px}.footer-bottom button{font-size:11px}.socials a{font-size:12px;min-height:44px}}
 @media(max-width:370px){.brand-name{font-size:21px}.header-inner{gap:9px}.universe-grid{grid-template-columns:1fr}.universe-card .art{aspect-ratio:1.8}.universe-body h3{font-size:25px}.socials{flex-wrap:wrap;justify-content:flex-start;gap:8px 20px}.quick-links a{font-size:11px}.footer-bottom{flex-wrap:wrap}}
+
+.brand-avatar {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
