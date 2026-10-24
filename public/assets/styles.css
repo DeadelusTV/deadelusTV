@@ -338,32 +338,7 @@ dialog{color:var(--text);background:#19191a;border:1px solid #59513e;border-radi
   background-position: 93% 42.90569%;
 }
 
-/* TEST TEMPORAIRE — dimensions avant élargissement.
-   À comparer après la fin du live, à fenêtre et zoom identiques.
-   Retirer tout ce bloc pour retrouver la mise en page élargie. */
-@media (min-width: 1101px) {
-  .container {
-    max-width: 1200px;
-  }
 
-  .broadcast-grid {
-    grid-template-columns: minmax(0, 1.95fr) minmax(0, 1fr);
-    gap: 34px;
-  }
-}
-
-@media (min-width: 1101px) and (max-width: 1120px) {
-  .broadcast-grid {
-    grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr);
-    gap: 25px;
-  }
-}
-
-@media (min-width: 1450px) {
-  .broadcast-grid {
-    gap: 38px;
-  }
-}
 /* Images des encarts de l’accueil */
 .universe-grid .art-tcg,
 .universe-grid .art-crew,
