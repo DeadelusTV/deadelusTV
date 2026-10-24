@@ -178,21 +178,226 @@ dialog{color:var(--text);background:#19191a;border:1px solid #59513e;border-radi
   grid-template-columns: minmax(0, 1fr);
 }
 .tiktok-only .short-card {
-  display: grid;
-  grid-template-columns: 88px minmax(0, 1fr);
-  align-items: stretch;
+  display: flex;
+  align-items: center;
+  min-height: 0;
+  background: linear-gradient(120deg, #191a1c, #111214);
 }
 .tiktok-only .short-card .art {
-  min-height: 88px;
-  height: 100%;
-  aspect-ratio: auto;
+  flex: none;
+  width: 112px;
+  height: auto;
+  min-height: 0;
+  aspect-ratio: 9 / 16;
+  align-self: center;
 }
 .tiktok-only .short-body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 12px;
+  min-width: 0;
+  padding: 16px;
+  background: none;
 }
 .tiktok-only .short-body h3 {
-  font-size: 18px;
+  font-size: clamp(18px, 1.35vw, 22px);
+  overflow-wrap: anywhere;
+}
+
+/* Accueil élargi : Twitch dominant, YouTube puis TikTok à droite. */
+@media (min-width: 901px) {
+  .container {
+    width: calc(100% - 160px);
+    max-width: 1500px;
+  }
+}
+
+.broadcast-grid > section {
+  min-width: 0;
+}
+
+@media (min-width: 1101px) {
+  .broadcast-grid {
+    grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr);
+    gap: clamp(24px, 2.4vw, 40px);
+    align-items: stretch;
+  }
+
+  .broadcast-grid .section-heading {
+    height: 44px;
+    min-height: 44px;
+    margin-bottom: 15px;
+  }
+
+  .broadcast-grid .section-heading h2 {
+    font-size: clamp(23px, 1.7vw, 29px);
+  }
+
+  .latest {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .latest > .section-heading {
+    flex: none;
+    gap: 10px;
+  }
+
+  .latest-content {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .latest .video-main h3 {
+    font-size: 18px;
+    line-height: 1.35;
+    margin: 9px 0 0;
+  }
+
+  .latest .video-main h3 a {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+
+  .latest .tiktok-only {
+    min-height: 0;
+    margin: 0;
+    /* Le contenu ne doit pas agrandir la rangée définie par Twitch. */
+    contain: size;
+  }
+
+  .latest .tiktok-only .short-card {
+    height: 100%;
+    padding: 0;
+  }
+
+  .latest .tiktok-only .short-card .art {
+    height: 100%;
+    width: auto;
+  }
+
+  .latest .tiktok-only .short-card:hover {
+    transform: none;
+  }
+}
+
+/* Tablette et petit ordinateur : les colonnes retrouvent leur hauteur naturelle. */
+@media (min-width: 601px) and (max-width: 1100px) {
+  .broadcast-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+
+  .latest-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+  }
+
+  .latest .tiktok-only {
+    margin: 0;
+  }
+
+  .latest .tiktok-only .short-card .art {
+    width: clamp(80px, 11vw, 112px);
+  }
+
+  .latest .tiktok-only .short-body {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .latest-content {
+    display: block;
+  }
+
+  .latest .tiktok-only {
+    margin-top: 18px;
+  }
+
+  .latest .video-main h3 {
+    font-size: 20px;
+    overflow-wrap: anywhere;
+  }
+
+  .latest .tiktok-only .short-card .art {
+    width: clamp(92px, 28vw, 120px);
+  }
+}
+/* Illustration TikTok : conserver ses proportions */
+.tiktok-only .short-card .art {
+  background-size: auto 761.23596%;
+  background-position: 93% 42.90569%;
+}
+
+
+/* Images des encarts de l’accueil */
+.universe-grid .art-tcg,
+.universe-grid .art-crew,
+.universe-grid .art-jdr {
+  background-size: cover;
+  background-position: center;
+}
+
+.universe-grid .art-tcg {
+  background-image: url('tcg.png');
+}
+
+.universe-grid .art-crew {
+  background-image: url('crewmong-us.png');
+}
+
+.universe-grid .art-jdr {
+  background-image: url('pavillon-noir.png');
+}
+.universe-grid .art-phasmo {
+  background-image: url('phasmophobia.png');
+  background-size: cover;
+  background-position: center;
+}
+
+/* Nouveau setup dans le bandeau de bienvenue */
+.welcome-art {
+  background-image: url('setup-deadelustv.png');
+  background-size: contain;
+  background-position: left center;
+  background-color: transparent;
+  opacity: 1;
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
+.welcome-art::after {
+  background: linear-gradient(
+    90deg,
+    var(--bg) 0%,
+    transparent 45%
+  );
+}
+
+/* Sur mobile, placer l’image sous le texte de bienvenue */
+@media (max-width: 600px) {
+  .welcome-art {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    aspect-ratio: 3 / 1;
+    order: 1;
+    z-index: 0;
+  }
+}
+
+/* Test d’une largeur intermédiaire */
+@media (min-width: 1101px) {
+  .container {
+    max-width: 1100px;
+  }
 }
