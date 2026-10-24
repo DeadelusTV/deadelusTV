@@ -332,3 +332,8 @@ dialog{color:var(--text);background:#19191a;border:1px solid #59513e;border-radi
     width: clamp(92px, 28vw, 120px);
   }
 }
+/* Illustration TikTok : conserver ses proportions */
+.tiktok-only .short-card .art {
+  background-size: auto 761.23596%;
+  background-position: 93% 42.90569%;
+}
