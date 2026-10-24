@@ -388,3 +388,30 @@ dialog{color:var(--text);background:#19191a;border:1px solid #59513e;border-radi
   background-size: cover;
   background-position: center;
 }
+
+/* Nouveau setup dans le bandeau de bienvenue */
+.welcome-art {
+  background-image: url('setup-deadelustv.png');
+  background-size: contain;
+  background-position: right center;
+  background-color: transparent;
+  opacity: 1;
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
+.welcome-art::after {
+  background: none;
+}
+
+/* Sur mobile, placer l’image sous le texte de bienvenue */
+@media (max-width: 600px) {
+  .welcome-art {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    aspect-ratio: 3 / 1;
+    order: 1;
+    z-index: 0;
+  }
+}
