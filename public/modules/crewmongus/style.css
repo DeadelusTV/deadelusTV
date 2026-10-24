@@ -1,4 +1,9 @@
 /* Styles de campagne limités au module ; aucun style global DeadelusTV. */
+/* Le tableau Crew retrouve sa largeur, uniquement lorsque cet onglet est ouvert. */
+@media (min-width:1101px) {
+  #main-content.container:has(> #page-crewmongus:not([hidden])) { max-width:1600px; }
+}
+.crew-module { container-type:inline-size; }
 .crew-module { position:relative; isolation:isolate; min-width:0; line-height:normal; border-radius:12px; }
 .crew-module h1,.crew-module h2,.crew-module h3 { font-family:inherit; font-weight:700; letter-spacing:normal; line-height:normal; }
 .crew-module h1 { font-size:2em; margin:.67em 0; }
@@ -725,4 +730,10 @@
   .crew-module .mention-label { font-size:12px; line-height:1.3; white-space:normal; }
   .crew-module .mention-detail { font-size:11px; line-height:1.4; white-space:normal; margin-top:4px; }
   .crew-module .mention-value { display:block; font-size:16px; line-height:1.3; text-align:left; margin-top:6px; }
+}
+
+/* Deux colonnes seulement si le module peut accueillir les cadres et leurs textes. */
+@container (max-width:1279px) {
+  .crew-module .visual-grid { grid-template-columns:minmax(0,1fr); }
+  .crew-module .visual-mentions { grid-column:auto; }
 }
