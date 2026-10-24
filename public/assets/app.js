@@ -7,7 +7,7 @@ function closeMenu(){nav.classList.remove('is-open');menu.setAttribute('aria-exp
 menu.addEventListener('click',()=>{const open=menu.getAttribute('aria-expanded')!=='true';nav.classList.toggle('is-open',open);menu.setAttribute('aria-expanded',String(open));menu.setAttribute('aria-label',open?'Fermer le menu':'Ouvrir le menu');});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&menu.getAttribute('aria-expanded')==='true'){closeMenu();menu.focus();}});
 document.addEventListener('click',e=>{if(!e.target.closest('.site-header'))closeMenu();});
-const routeTitles={'accueil':'Le repaire de la communauté','jeux-de-role':'Jeux de rôle','crewmongus':'Crewmongus','tcg':'Trading Card Game','phasmophobia':'Phasmophobia','pavillon-noir':'Pavillon Noir'};
+const routeTitles={'accueil':'Le repaire de la communauté','jeux-de-role':'Pavillon Noir','crewmongus':'Crewmongus','tcg':'Trading Card Game','phasmophobia':'Phasmophobia','pavillon-noir':'Pavillon Noir'};
 const player=$('#player-shell');
 let activeRoute='accueil';
 function route(focus=false){
