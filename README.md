@@ -1,78 +1,59 @@
-# DeadelusTV — Le repaire de la communauté
+# DeadelusTV — accueil public
 
-Première version statique de l’accueil, issue de l’ébauche HTML fournie par Yekelle. Identité anthracite et dorée, illustrations d’origine, emplacement Twitch, accès YouTube/Shorts/TikTok, quatre univers et invitation Discord.
+Site : https://www.deadelustv.com/#accueil
 
-## Ce qui fonctionne
+Sources : https://github.com/DeadelusTV/deadelusTV
 
-- Navigation entre l’accueil et les présentations Jeux de rôle, Crewmong Us, TCG et Phasmophobia ; retour navigateur et liens directs par fragment.
-- Accès directs aux sites existants Pavillon Noir et Crewmong Us.
-- Menu mobile, raccourcis vers les univers, liens sociaux et navigation au clavier.
-- Lecteur Twitch chargé au clic en HTTPS lorsque l’espace disponible est suffisant (400 × 300 px minimum). Le bouton vers Twitch reste accessible. L’intégration réelle devra être vérifiée sur le domaine final.
-- Animation de trois cartes fictives dans la présentation TCG. Elle ne représente ni les règles ni les boosters du véritable TCG.
+Le site est statique : seuls les fichiers de `public/` sont servis. HTML, CSS et JavaScript sont séparés ; aucune dépendance ni compilation n’est nécessaire pour l’affichage. Les services Supabase existants ne sont pas utilisés par cet accueil.
 
-Les illustrations YouTube, Shorts et TikTok sont provisoires. Les liens ouvrent les chaînes ; aucune liste de publications ni aucun statut de live n’est récupéré automatiquement. Les services Supabase existants ne sont ni appelés ni modifiés.
+## Accueil
 
-## Organisation
+- Photo de profil dans l’entête et en favicon ; le logo permet de revenir à l’accueil.
+- Menu et raccourcis : Phasmophobia, TCG, Crewmong Us, Jeux de rôle.
+- Lecteur Twitch chargé directement, en mode muet au départ. Si la largeur disponible est inférieure aux 400 px requis par Twitch, un lien vers la chaîne est proposé. Le badge violet ouvre également Twitch. Le lecteur est déchargé lorsqu’on quitte l’accueil.
+- Réseaux flottants sur le côté sur ordinateur et en barre basse sur mobile ; ils disparaissent lorsque les liens du pied de page sont entièrement visibles.
+- Grande vignette YouTube : dernière vidéo publiée dans l’onglet Vidéos, hors Shorts. La miniature mène à la vidéo, le titre à la chaîne. Le titre de rubrique « À retrouver en vidéo » reste à renommer.
+- Un seul bloc de vidéos courtes : TikTok. Son contenu reste illustratif et son lien ouvre le profil ; aucune récupération automatique TikTok n’est ajoutée.
+- Les présentations des univers restent distinctes des sites existants. Le booster TCG est une démonstration fictive.
 
-```text
-public/
-  index.html                  Accueil et présentations des univers
-  assets/
-    config.js                 Liens publics et paramètres du lecteur Twitch
-    app.js                    Navigation, menu, lecteur et démo
-    styles.css                Identité visuelle et adaptations d’écran
-    illustrations.png         Atlas d’illustrations extrait du fichier fourni
-    favicon.svg
-scripts/
-  verify-static.py            Vérification des fichiers à publier
-  deploy-ovh.sh               Transfert SSH et activation d’une version sur le VPS
-.github/workflows/
-  deploy-ovh.yml              Contrôle à chaque envoi sur main, puis OVH si configuré
-```
+## Actualisation YouTube
 
-Pas de dépendance à installer ni de compilation. Les fichiers à servir sont exclusivement ceux de `public/`. Les illustrations conservent leur résolution d’origine ; des visuels dédiés pourront remplacer l’atlas plus tard.
+`scripts/update-youtube.py` lit uniquement la page publique `https://www.youtube.com/@deadelustv/videos?hl=fr&gl=FR`. Il vérifie l’identifiant de chaîne, l’onglet sélectionné et le tri récent avant de retenir la première vidéo publiée. Les Shorts sont exclus par le choix de l’onglet, pas par un seuil de durée. Une vidéo classique courte reste donc éligible. Les directs en cours et les publications à venir ne sont pas retenus.
 
-Pour un aperçu local, depuis la racine du dépôt :
+Le script extrait seulement l’identifiant, le titre et l’adresse de la miniature. Il ne télécharge aucune vidéo. Python 3 et sa bibliothèque standard suffisent ; aucune clé API, aucun cookie ni compte YouTube n’est nécessaire. Cette lecture de page publique n’est pas l’API officielle : un changement de structure YouTube peut demander une adaptation. Une erreur ne remplace pas les données précédentes par un résultat vide.
 
-```sh
-python3 -m http.server 8000 --directory public
-```
+Les métadonnées sont écrites atomiquement dans `public/data/latest-youtube.json`. Le fichier du dépôt est un premier instantané ; les actualisations suivantes sont publiées directement sur le site, sans créer de commits automatiques. Le navigateur relit ce fichier au chargement et environ toutes les cinq minutes quand l’accueil est visible. Les liens et le dernier affichage restent utilisables en cas d’erreur de récupération.
 
-Puis ouvrir `http://localhost:8000`. Le fichier `public/index.html` fonctionne aussi en ouverture locale avec ses fichiers voisins ; le lecteur intégré demande un contexte compatible et propose sinon un accès à Twitch.
+## GitHub → OVH
 
-## GitHub → VPS OVH
+`.github/workflows/deploy-ovh.yml` conserve le déploiement sur chaque push vers `main`, ainsi que son lancement manuel. Il actualise les métadonnées YouTube avant de préparer `public/`, transfère la nouvelle version puis bascule le lien `current`. Si YouTube est indisponible, les métadonnées de la version déjà en ligne sont reprises avant activation.
 
-Le workflow est préparé. Il vérifie la page à chaque envoi sur `main`. Tant que les cinq paramètres obligatoires sont absents, il signale l’attente de configuration et ne lance pas le transfert. Un contrôle réussi ne signifie donc pas que le site est déjà en ligne.
+`.github/workflows/refresh-youtube.yml` vérifie YouTube aux minutes 7, 22, 37 et 52 de chaque heure, soit un intervalle prévu de quinze minutes. Il peut aussi être lancé manuellement dans Actions. Il ne transfère que le JSON de métadonnées et ne crée pas de nouvelle version complète du site. Le groupe de concurrence est partagé avec le déploiement pour éviter une écriture pendant la bascule de version.
 
-Cette procédure cible le **VPS OVH** évoqué pour DeadelusTV, accessible en SSH. Elle ne cible pas une offre d’hébergement mutualisé par FTP. Le serveur HTTP, le domaine et HTTPS restent à configurer sur le VPS.
+Les deux workflows utilisent les paramètres déjà présents dans le dépôt : variables `VPS_HOST`, `VPS_USER`, `VPS_KNOWN_HOSTS` et secret `VPS_SSH_KEY`. La vérification de la clé du serveur SSH reste activée et les permissions GitHub restent en lecture seule. La racine de publication est `/var/www/deadelustv/accueil/current` ; aucune nouvelle configuration Caddy, tâche cron du VPS ou intervention Supabase n’est nécessaire.
 
-Avant le premier déploiement :
+La planification GitHub n’est pas une garantie à la minute : GitHub peut retarder ou omettre une exécution en période de charge. Sur un dépôt public, les exécutions planifiées sont désactivées après soixante jours sans activité du dépôt ; il faut alors réactiver le workflow dans Actions. Source : https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
 
-1. Préparer un dossier dédié, par exemple `/var/www/deadelustv`, accessible en écriture à un compte de déploiement. Utiliser de préférence un compte distinct de l’administration du serveur.
-2. Configurer le serveur HTTP pour servir `/var/www/deadelustv/current`. Le workflow créera ce lien lors de la première publication ; il ne remplace pas une configuration Nginx existante.
-3. Ajouter les paramètres ci-dessous dans **Settings → Secrets and variables → Actions → Repository secrets**. Ne pas publier de clé privée dans le dépôt ou dans une conversation.
-4. Lancer **Actions → Vérifier le site et déployer sur OVH → Run workflow**, ou envoyer une nouvelle modification sur `main`.
+## Installation de cette évolution
 
-| Secret | Contenu |
+Récupérer d’abord les derniers changements de `main`. Appliquer les huit fichiers de cette mise à jour dans le dépôt en conservant exactement leurs chemins, puis faire un commit et un push. Aucun fichier existant supplémentaire n’est à supprimer.
+
+| Fichiers à remplacer | Fichiers à ajouter |
 | --- | --- |
-| `OVH_HOST` | Adresse IPv4 ou nom DNS du VPS, sans `https://`. |
-| `OVH_USER` | Compte SSH ayant accès au dossier dédié. |
-| `OVH_SSH_KEY` | Clé privée de déploiement correspondant à une clé publique autorisée pour ce compte. |
-| `OVH_KNOWN_HOSTS` | Entrée OpenSSH du serveur, obtenue et vérifiée depuis une source de confiance, par exemple la console du VPS. |
-| `OVH_PATH` | Dossier dédié, par exemple `/var/www/deadelustv`, sans `/current` ni barre finale. |
-| `OVH_PORT` | Facultatif : port SSH, `22` par défaut. |
+| `public/index.html` | `public/data/latest-youtube.json` |
+| `public/assets/styles.css` | `scripts/update-youtube.py` |
+| `public/assets/app.js` | `.github/workflows/refresh-youtube.yml` |
+| `.github/workflows/deploy-ovh.yml` | |
+| `README.md` | |
 
-`OVH_KNOWN_HOSTS` est une ligne au format `nom-du-vps ssh-ed25519 CLE_PUBLIQUE_DU_SERVEUR`. Pour un port différent de 22, le nom devient `[nom-du-vps]:port`. Cette clé est celle du serveur SSH, différente de la clé publique du compte de déploiement. La vérification de l’identité du serveur reste activée.
+Avec GitHub Desktop : récupérer les changements avec Fetch/Pull, copier les fichiers fournis dans le dossier du dépôt local, vérifier les huit chemins dans la liste des changements, puis Commit et Push. Depuis GitHub web : remplacer ou ajouter ces mêmes fichiers ; appliquer les workflows après les fichiers publics et le script Python.
 
-Chaque publication crée `releases/<SHA-du-commit>`, transfère uniquement les fichiers publics puis bascule le lien `current`. Les anciennes versions sont conservées pour permettre un retour arrière. Aucune commande ne modifie Supabase ni les autres sites. Une version déjà présente est refusée sans écrasement ; après un transfert interrompu, inspecter le dossier correspondant avant de le retirer manuellement ou publier un nouveau commit.
+Après publication, attendre la réussite de « Deployer l’accueil sur OVH », puis vérifier l’accueil en rechargeant la page. Dans Actions, lancer une fois « Actualiser la derniere video YouTube » sur `main` pour vérifier le transfert du JSON avec les droits SSH réels. Une exécution réussie confirme ce branchement ; les tests locaux ne le prouvent pas.
 
-L’activation du lien ne vérifie pas à elle seule le domaine public : contrôler ensuite la page en HTTPS et la lecture Twitch sur l’adresse finale.
+L’archive contient des fichiers complets à appliquer, pas un nouveau site à placer dans un sous-dossier. `scripts/deploy-ovh.sh` reste un ancien utilitaire distinct ; les workflows actuels utilisent leur propre procédure.
 
-## À définir ensuite
+## Vérifications et limites avant publication
 
-- Adresse finale du portail et branchement réel au VPS.
-- Visuels définitifs et sélection des vidéos.
-- Contenu hors live, éventuelle actualisation des vidéos et statut Twitch.
-- Évolution des présentations d’univers et futur lien vers le TCG.
+La récupération réelle sur la chaîne a été exécutée. Les cas onglet incorrect, mauvais tri, Shorts, vidéo classique courte et panne ont été contrôlés. Les syntaxes JavaScript, Python, YAML et Bash ainsi que la publication et le repli ont été vérifiés localement ; le transfert SSH a été simulé sans toucher au serveur. La logique JavaScript des liens et du rafraîchissement a été contrôlée.
 
-Les choix de migration des autres sites et de leurs données restent séparés de cette première page.
+Le rendu visuel de cette évolution et l’exécution réelle des nouveaux workflows restent à vérifier après publication par Yekelle. L’aperçu local n’était pas accessible depuis le navigateur de contrôle. Ne pas confondre ces fichiers préparés avec un déploiement déjà effectué.

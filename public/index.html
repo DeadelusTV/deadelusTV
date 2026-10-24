@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#101112">
 <meta name="description" content="Les lives, les vidéos et les univers de la communauté DeadelusTV : jeux de rôle, Crewmongus, cartes à collectionner et Phasmophobia.">
 <title>DeadelusTV — Le repaire de la communauté</title>
-<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="assets/logo-chaine.png" type="image/png">
 <link rel="stylesheet" href="assets/styles.css">
 <script src="assets/config.js" defer></script>
 <script src="assets/app.js" defer></script>
@@ -29,9 +29,12 @@
 </defs></svg>
 <noscript><p class="noscript">Active JavaScript pour parcourir les univers et tester les interactions. Les liens vers les plateformes restent accessibles.</p></noscript>
 <header class="site-header" id="top"><div class="container header-inner">
- <a href="#accueil" class="brand" aria-label="DeadelusTV, accueil"><span class="brand-mark" aria-hidden="true">D</span><span class="brand-name">Deadelus<span>TV</span></span></a>
+ <a href="#accueil" class="brand" aria-label="DeadelusTV, accueil"><img class="brand-avatar" src="assets/logo-chaine.png" alt="" width="42" height="42"><span class="brand-name">Deadelus<span>TV</span></span></a>
  <nav class="main-nav" id="main-nav" aria-label="Navigation principale">
-  <a href="#accueil" data-nav="accueil" aria-current="page">Accueil</a><a href="#jeux-de-role" data-nav="jeux-de-role">Jeux de rôle</a><a href="#crewmongus" data-nav="crewmongus">Crewmong Us</a><a href="#tcg" data-nav="tcg">TCG</a><a href="#phasmophobia" data-nav="phasmophobia">Phasmophobia</a>
+  <a href="#phasmophobia" data-nav="phasmophobia">Phasmophobia</a>
+<a href="#tcg" data-nav="tcg">TCG</a>
+<a href="#crewmongus" data-nav="crewmongus">Crewmong Us</a>
+<a href="#jeux-de-role" data-nav="jeux-de-role">Jeux de rôle</a>
  </nav>
  <a href="https://discord.gg/eMhE3uSHQS" data-link="discord" target="_blank" rel="noopener noreferrer" class="btn discord-header" aria-label="Rejoindre Discord (nouvel onglet)"><svg class="icon" aria-hidden="true"><use href="#i-discord"/></svg><span>Discord</span></a>
  <button class="menu-toggle" aria-expanded="false" aria-controls="main-nav" aria-label="Ouvrir le menu"><svg class="icon stroke" aria-hidden="true"><use href="#i-menu"/></svg></button>
@@ -42,22 +45,48 @@
 
  <nav class="quick-links" aria-label="Accès rapides aux univers">
   <span class="quick-label">Les univers</span>
-  <a href="#jeux-de-role">Jeux de rôle</a>
-  <a data-link="crewmongus" href="https://deadelustv.github.io/Crew-mong-Us/" target="_blank" rel="noopener noreferrer">Crewmong Us ↗</a>
-  <a href="#tcg">TCG</a>
   <a href="#phasmophobia">Phasmophobia</a>
- </nav>
+  <a href="#tcg">TCG</a>
+  <a data-link="crewmongus" href="https://deadelustv.github.io/Crew-mong-Us/" target="_blank" rel="noopener noreferrer">Crewmong Us ↗</a>
+  <a href="#jeux-de-role">Jeux de rôle</a>
+</nav>
  <div class="broadcast-grid">
   <section class="live-block" aria-labelledby="live-title">
-   <div class="section-heading"><h2 id="live-title">Le live</h2><span class="pill"><svg class="icon" aria-hidden="true"><use href="#i-twitch"/></svg>SUR TWITCH</span></div>
-   <div class="player-shell" id="player-shell"><div class="art art-live" aria-hidden="true"></div><div class="player-shade"></div><button class="play-button" id="play-live" aria-label="Regarder DeadelusTV sur Twitch"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg></button><div class="player-caption"><span>Le live, le chat… et toi.</span><span class="twitch-word"><svg class="icon" aria-hidden="true"><use href="#i-twitch"/></svg>twitch</span></div></div>
-   <div class="live-meta"><div><h3>Installe-toi, on est bien.</h3><p>Du jeu, des histoires et des bons moments ensemble.</p></div><a class="btn btn-gold" data-link="twitch" href="https://www.twitch.tv/deadelustv" target="_blank" rel="noopener noreferrer">Ouvrir sur Twitch <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
-   <p class="embed-note" id="embed-note"><svg class="icon stroke" aria-hidden="true"><use href="#i-info"/></svg><span>Le live et les replays sont disponibles sur la chaîne.</span></p>
-  </section>
+  <div class="section-heading">
+    <h2 id="live-title">Le live</h2>
+
+    <a class="pill twitch-link"
+       data-link="twitch"
+       href="https://www.twitch.tv/deadelustv"
+       target="_blank"
+       rel="noopener noreferrer"
+       aria-label="Ouvrir la chaîne Twitch de DeadelusTV (nouvel onglet)">
+      <svg class="icon" aria-hidden="true">
+        <use href="#i-twitch"/>
+      </svg>
+      SUR TWITCH ↗
+    </a>
+  </div>
+
+  <div class="player-shell twitch-player" id="player-shell"></div>
+</section>
   <section class="latest" aria-labelledby="videos-title">
    <div class="section-heading"><h2 id="videos-title">À retrouver en vidéo</h2><a class="all-link" data-link="youtubeVideos" href="https://www.youtube.com/@deadelustv/videos" target="_blank" rel="noopener noreferrer">Tout voir ↗</a></div>
-   <div class="latest-content"><a class="video-main" data-link="youtubeVideos" href="https://www.youtube.com/@deadelustv/videos" target="_blank" rel="noopener noreferrer" aria-label="Voir les vidéos de DeadelusTV sur YouTube"><div class="art art-youtube" aria-hidden="true"><span class="video-badge"><svg class="icon" aria-hidden="true"><use href="#i-youtube"/></svg></span></div><h3>Best of, découvertes & aventures</h3><p>Retrouver les vidéos sur YouTube ↗</p></a>
-   <div class="shorts-grid"><a class="short-card" data-link="youtubeShorts" href="https://www.youtube.com/@deadelustv/shorts" target="_blank" rel="noopener noreferrer"><div class="art art-short" aria-hidden="true"></div><div class="short-body"><span class="platform"><svg class="icon youtube" aria-hidden="true"><use href="#i-youtube"/></svg>YouTube Shorts</span><h3>Le live en quelques secondes</h3></div></a><a class="short-card" data-link="tiktok" href="https://www.tiktok.com/@deadelustv" target="_blank" rel="noopener noreferrer"><div class="art art-tiktok" aria-hidden="true"></div><div class="short-body"><span class="platform"><svg class="icon tiktok" aria-hidden="true"><use href="#i-tiktok"/></svg>TikTok</span><h3>Les petits moments de chaos</h3></div></a></div></div>
+   <div class="latest-content">
+    <article class="video-main">
+     <a class="video-thumbnail" id="latest-youtube-video" href="https://www.youtube.com/watch?v=rdxo3Rcuyzk" target="_blank" rel="noopener noreferrer" aria-label="Voir la dernière vidéo de DeadelusTV sur YouTube (nouvel onglet)">
+      <img id="latest-youtube-thumbnail" src="https://i.ytimg.com/vi/rdxo3Rcuyzk/hq720.jpg?sqp=-oaymwEXCNAFEJQDSFryq4qpAwkIARUAAIhCGAE=&amp;rs=AOn4CLBCRG_-A3mWWkioQBHTBrvxaRCIMw" alt="" width="720" height="404" loading="lazy" decoding="async">
+      <span class="video-badge"><svg class="icon" aria-hidden="true"><use href="#i-youtube"/></svg></span>
+     </a>
+     <h3><a id="latest-youtube-title" data-link="youtube" href="https://www.youtube.com/@deadelustv" target="_blank" rel="noopener noreferrer" aria-label="Ouvrir la chaîne YouTube de DeadelusTV (nouvel onglet)">Ep 01 - DES MAINS QUI S&#x27;ACCOUPLENT AVEC MA TETE - Découverte END OF ABYSS</a></h3>
+    </article>
+    <div class="shorts-grid tiktok-only">
+     <a class="short-card" data-link="tiktok" href="https://www.tiktok.com/@deadelustv" target="_blank" rel="noopener noreferrer">
+      <div class="art art-tiktok" aria-hidden="true"></div>
+      <div class="short-body"><span class="platform"><svg class="icon tiktok" aria-hidden="true"><use href="#i-tiktok"/></svg>TikTok</span><h3>Les petits moments de chaos</h3></div>
+     </a>
+    </div>
+   </div>
   </section>
  </div>
  <section class="universes" aria-labelledby="universes-title"><div class="section-heading"><h2 id="universes-title">Explore les univers de la chaîne</h2></div>
@@ -120,3 +149,4 @@
 
 </body>
 </html>
+

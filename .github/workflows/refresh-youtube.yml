@@ -1,0 +1,102 @@
+name: Actualiser la derniere video YouTube
+
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Meme groupe que le deploiement : ne pas modifier une version en cours d'activation.
+concurrency:
+  group: ovh-deadelustv-accueil
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Recuperer les sources
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Lire la derniere video principale publiee
+        run: |
+          set -euo pipefail
+          python3 scripts/update-youtube.py --output "$RUNNER_TEMP/latest-youtube.json"
+
+      - name: Preparer la connexion SSH avec verification du serveur
+        env:
+          VPS_HOST: ${{ vars.VPS_HOST }}
+          VPS_USER: ${{ vars.VPS_USER }}
+          VPS_KNOWN_HOSTS: ${{ vars.VPS_KNOWN_HOSTS }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          : "${VPS_HOST:?La variable VPS_HOST manque.}"
+          : "${VPS_USER:?La variable VPS_USER manque.}"
+          : "${VPS_KNOWN_HOSTS:?La variable VPS_KNOWN_HOSTS manque.}"
+          : "${VPS_SSH_KEY:?Le secret VPS_SSH_KEY manque.}"
+          [[ "$VPS_HOST" == '57.129.185.182' ]] || { echo 'VPS_HOST inattendu.' >&2; exit 1; }
+          [[ "$VPS_USER" == 'deploy-web' ]] || { echo 'VPS_USER inattendu.' >&2; exit 1; }
+          ssh_dir="$RUNNER_TEMP/deadelustv-ssh"
+          install -d -m 700 "$ssh_dir"
+          umask 077
+          printf '%s\n' "$VPS_SSH_KEY" | tr -d '\r' > "$ssh_dir/key"
+          printf '%s\n' "$VPS_KNOWN_HOSTS" | tr -d '\r' > "$ssh_dir/known_hosts"
+          ssh-keygen -y -P '' -f "$ssh_dir/key" > /dev/null
+          ssh-keygen -F "$VPS_HOST" -f "$ssh_dir/known_hosts" > /dev/null
+          cat > "$ssh_dir/config" <<EOF
+          Host ovh-deadelustv
+              HostName $VPS_HOST
+              User $VPS_USER
+              Port 22
+              IdentityFile "$ssh_dir/key"
+              IdentitiesOnly yes
+              BatchMode yes
+              StrictHostKeyChecking yes
+              UserKnownHostsFile "$ssh_dir/known_hosts"
+              ConnectTimeout 15
+              ServerAliveInterval 15
+              ServerAliveCountMax 3
+          EOF
+          ssh -F "$ssh_dir/config" ovh-deadelustv 'test -L /var/www/deadelustv/accueil/current && test -w /var/www/deadelustv/accueil/current'
+
+      - name: Mettre a jour uniquement les metadonnees YouTube
+        run: |
+          set -euo pipefail
+          refresh_id="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          [[ "$refresh_id" =~ ^[0-9]+-[0-9]+$ ]]
+          ssh_config="$RUNNER_TEMP/deadelustv-ssh/config"
+          rsync -rtp --chmod=F644 \
+            -e "ssh -F $ssh_config" \
+            "$RUNNER_TEMP/latest-youtube.json" \
+            "ovh-deadelustv:/var/www/deadelustv/accueil/.youtube-$refresh_id.json"
+
+          ssh -F "$ssh_config" ovh-deadelustv bash -se -- "$refresh_id" <<'REMOTE'
+          set -euo pipefail
+          base=/var/www/deadelustv/accueil
+          incoming="$base/.youtube-$1.json"
+          trap 'rm -f "$incoming"' EXIT
+          test -L "$base/current"
+          test -s "$incoming"
+          install -d -m 755 "$base/current/data"
+          if ! cmp -s "$incoming" "$base/current/data/latest-youtube.json"; then
+            chmod 644 "$incoming"
+            mv -f "$incoming" "$base/current/data/latest-youtube.json"
+          fi
+          REMOTE
+          echo 'Metadonnees YouTube verifiees ; aucun redeploiement complet.' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Effacer la cle de publication du runner
+        if: always()
+        run: |
+          rm -f "$RUNNER_TEMP/deadelustv-ssh/key"
+

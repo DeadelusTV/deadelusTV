@@ -33,3 +33,166 @@ dialog{color:var(--text);background:#19191a;border:1px solid #59513e;border-radi
 @media(max-width:900px){.quick-links{display:flex;gap:9px;align-items:center;flex-wrap:wrap;padding:0 0 25px}.quick-label{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-right:3px}.quick-links a{display:flex;align-items:center;min-height:40px;padding:7px 12px;border:1px solid #4b4437;border-radius:4px;font-size:12px;background:#1c1b18;color:#e5d2ad}.quick-links a:hover{border-color:var(--gold);background:#2b251b}.universe-body h3{font-size:25px}}
 @media(max-width:600px){.welcome .eyebrow{font-size:10px;letter-spacing:1.4px}.quick-label{flex-basis:100%;margin-bottom:2px}.quick-links{gap:8px;padding-bottom:26px}.quick-links a{min-height:42px;padding-inline:10px;font-size:12px}.section-heading .all-link{font-size:12px}.embed-note{font-size:12px}.player-caption{font-size:10px}.universe-grid{grid-template-columns:1fr 1fr;gap:13px}.universe-category{font-size:9px;letter-spacing:.4px}.universe-body{padding:15px 12px}.universe-body h3{font-size:21px}.universe-body p{font-size:13px;line-height:1.65}.universe-body .arrow-link{font-size:12px;line-height:1.5}.footer-bottom{font-size:11px}.footer-bottom button{font-size:11px}.socials a{font-size:12px;min-height:44px}}
 @media(max-width:370px){.brand-name{font-size:21px}.header-inner{gap:9px}.universe-grid{grid-template-columns:1fr}.universe-card .art{aspect-ratio:1.8}.universe-body h3{font-size:25px}.socials{flex-wrap:wrap;justify-content:flex-start;gap:8px 20px}.quick-links a{font-size:11px}.footer-bottom{flex-wrap:wrap}}
+
+.brand-avatar {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+/* Réseaux flottants */
+.socials.floating-socials {
+  position: fixed;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 56px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 8px 24px #0005;
+}
+
+.floating-socials a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 7px;
+}
+
+.floating-socials a:hover {
+  background: #dcb77218;
+}
+
+.floating-socials .icon {
+  width: 22px;
+  height: 22px;
+}
+
+/* Réserver une place aux icônes à côté du contenu */
+@media (min-width: 901px) {
+  body.has-floating-socials main.container {
+    width: calc(100% - 160px);
+  }
+}
+
+/* Barre fixe sur mobile et tablette */
+@media (max-width: 900px) {
+  body.has-floating-socials {
+    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .socials.floating-socials {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    transform: none;
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-around;
+    gap: 0;
+    padding: 8px 12px;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    border-radius: 12px 12px 0 0;
+  }
+
+  .floating-socials a {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+/* Lecteur Twitch directement intégré */
+.player-shell.twitch-player {
+  min-height: 300px;
+}
+
+.twitch-player iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.twitch-link {
+  min-height: 36px;
+}
+
+.twitch-link:hover,
+.twitch-link:focus-visible {
+  background: #38284d;
+  border-color: #aa8bfa;
+}
+
+.twitch-fallback-link {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  color: #d0bcff;
+  background: #241d30;
+  font-weight: 700;
+}
+
+.twitch-fallback-link:hover {
+  background: #38284d;
+}
+
+/* Dernière vidéo principale YouTube et TikTok seul. */
+.video-thumbnail {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid #505053;
+  border-radius: 7px;
+  background: var(--surface);
+}
+.video-thumbnail img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.video-thumbnail:hover,
+.video-thumbnail:focus-visible {
+  border-color: var(--gold);
+}
+.video-main h3 a:hover,
+.video-main h3 a:focus-visible {
+  color: var(--gold-bright);
+}
+.shorts-grid.tiktok-only {
+  grid-template-columns: minmax(0, 1fr);
+}
+.tiktok-only .short-card {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  align-items: stretch;
+}
+.tiktok-only .short-card .art {
+  min-height: 88px;
+  height: 100%;
+  aspect-ratio: auto;
+}
+.tiktok-only .short-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 12px;
+}
+.tiktok-only .short-body h3 {
+  font-size: 18px;
+}

@@ -1,72 +1,177 @@
-name: Vérifier le site et déployer sur OVH
+name: Deployer l'accueil sur OVH
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+
   workflow_dispatch:
+    inputs:
+      site_directory:
+        description: "Dossier de l'accueil : public ou . pour la racine du depot"
+        required: true
+        default: public
+        type: choice
+        options:
+          - public
+          - .
 
 permissions:
   contents: read
 
 concurrency:
-  group: deadelustv-ovh-production
+  group: ovh-deadelustv-accueil
   cancel-in-progress: false
 
 jobs:
-  verify:
-    name: Vérifier l’accueil
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      deploy_ready: ${{ steps.target.outputs.ready }}
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: bash
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Recuperer la version choisie de main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-      - name: Contrôler les fichiers et le JavaScript
-        run: |
-          python3 scripts/verify-static.py
-          node --check public/assets/config.js
-          node --check public/assets/app.js
-          bash -n scripts/deploy-ovh.sh
-      - name: Vérifier la configuration OVH
-        id: target
+          lfs: true
+
+      - name: Actualiser la derniere video principale YouTube
+        id: youtube
         env:
-          OVH_HOST: ${{ secrets.OVH_HOST }}
-          OVH_USER: ${{ secrets.OVH_USER }}
-          OVH_SSH_KEY: ${{ secrets.OVH_SSH_KEY }}
-          OVH_KNOWN_HOSTS: ${{ secrets.OVH_KNOWN_HOSTS }}
-          OVH_PATH: ${{ secrets.OVH_PATH }}
-        shell: bash
+          SITE_DIR: ${{ inputs.site_directory || 'public' }}
         run: |
-          ready=true
-          for name in OVH_HOST OVH_USER OVH_SSH_KEY OVH_KNOWN_HOSTS OVH_PATH; do
-            if [[ -z "${!name}" ]]; then
-              ready=false
-              printf -- '- Configuration manquante : `%s`\n' "$name" >> "$GITHUB_STEP_SUMMARY"
-            fi
-          done
-          echo "ready=$ready" >> "$GITHUB_OUTPUT"
-          if [[ "$ready" == false ]]; then
-            echo '::notice::Accueil vérifié. Déploiement OVH en attente de configuration ; aucun transfert effectué.'
+          set -euo pipefail
+          case "$SITE_DIR" in
+            public|.) ;;
+            *) echo 'Dossier non autorise.' >&2; exit 1 ;;
+          esac
+          if python3 scripts/update-youtube.py --output "$SITE_DIR/data/latest-youtube.json"; then
+            echo 'fresh=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'fresh=false' >> "$GITHUB_OUTPUT"
+            echo '::warning::YouTube indisponible : conservation des dernieres donnees publiees.'
           fi
 
-  deploy:
-    name: Publier sur le VPS OVH
-    needs: verify
-    if: needs.verify.outputs.deploy_ready == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          persist-credentials: false
-      - name: Transférer et activer la version
+      - name: Verifier et preparer les fichiers publics
         env:
-          OVH_HOST: ${{ secrets.OVH_HOST }}
-          OVH_USER: ${{ secrets.OVH_USER }}
-          OVH_SSH_KEY: ${{ secrets.OVH_SSH_KEY }}
-          OVH_KNOWN_HOSTS: ${{ secrets.OVH_KNOWN_HOSTS }}
-          OVH_PATH: ${{ secrets.OVH_PATH }}
-          OVH_PORT: ${{ secrets.OVH_PORT }}
-        run: bash scripts/deploy-ovh.sh
+          SITE_DIR: ${{ inputs.site_directory || 'public' }}
+        run: |
+          set -euo pipefail
+          case "$SITE_DIR" in
+            public|.) ;;
+            *) echo 'Dossier non autorise.' >&2; exit 1 ;;
+          esac
+          if [[ ! -s "$SITE_DIR/index.html" ]]; then
+            echo "index.html absent ou vide dans $SITE_DIR : verifier le dossier choisi." >&2
+            exit 1
+          fi
+          if [[ -n "$(find "$SITE_DIR" -type l -print -quit)" ]]; then
+            echo 'Le dossier contient un lien symbolique : utiliser des fichiers ordinaires pour cette publication.' >&2
+            exit 1
+          fi
+          stage="$RUNNER_TEMP/deadelustv-public"
+          mkdir -m 755 "$stage"
+          rsync -rtp --chmod=D755,F644 \
+            --exclude='.*' \
+            --exclude='node_modules/' \
+            --exclude='supabase/' \
+            --exclude='*.sql' --exclude='*.sql.gz' \
+            --exclude='*.sqlite*' --exclude='*.db' \
+            --exclude='*.pem' --exclude='*.key' \
+            --exclude='*.p12' --exclude='*.pfx' \
+            --exclude='package.json' --exclude='package-lock.json' \
+            --exclude='pnpm-lock.yaml' --exclude='yarn.lock' \
+            --exclude='README*' --exclude='AGENTS.md' \
+            "$SITE_DIR/" "$stage/"
+          test -s "$stage/index.html"
+          printf 'Dossier selectionne : `%s`\n\nCommit : `%s`\n' "$SITE_DIR" "$GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Preparer la connexion SSH avec verification du serveur
+        env:
+          VPS_HOST: ${{ vars.VPS_HOST }}
+          VPS_USER: ${{ vars.VPS_USER }}
+          VPS_KNOWN_HOSTS: ${{ vars.VPS_KNOWN_HOSTS }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          : "${VPS_HOST:?La variable VPS_HOST manque.}"
+          : "${VPS_USER:?La variable VPS_USER manque.}"
+          : "${VPS_KNOWN_HOSTS:?La variable VPS_KNOWN_HOSTS manque.}"
+          : "${VPS_SSH_KEY:?Le secret VPS_SSH_KEY manque.}"
+          [[ "$VPS_HOST" == '57.129.185.182' ]] || { echo 'VPS_HOST inattendu.' >&2; exit 1; }
+          [[ "$VPS_USER" == 'deploy-web' ]] || { echo 'VPS_USER inattendu.' >&2; exit 1; }
+          ssh_dir="$RUNNER_TEMP/deadelustv-ssh"
+          install -d -m 700 "$ssh_dir"
+          umask 077
+          printf '%s\n' "$VPS_SSH_KEY" | tr -d '\r' > "$ssh_dir/key"
+          printf '%s\n' "$VPS_KNOWN_HOSTS" | tr -d '\r' > "$ssh_dir/known_hosts"
+          ssh-keygen -y -P '' -f "$ssh_dir/key" > /dev/null
+          ssh-keygen -F "$VPS_HOST" -f "$ssh_dir/known_hosts" > /dev/null
+          cat > "$ssh_dir/config" <<EOF
+          Host ovh-deadelustv
+              HostName $VPS_HOST
+              User $VPS_USER
+              Port 22
+              IdentityFile "$ssh_dir/key"
+              IdentitiesOnly yes
+              BatchMode yes
+              StrictHostKeyChecking yes
+              UserKnownHostsFile "$ssh_dir/known_hosts"
+              ConnectTimeout 15
+              ServerAliveInterval 15
+              ServerAliveCountMax 3
+          EOF
+          ssh -F "$ssh_dir/config" ovh-deadelustv 'test -w /var/www/deadelustv/accueil'
+
+      - name: Transferer puis activer la nouvelle version
+        env:
+          YOUTUBE_FRESH: ${{ steps.youtube.outputs.fresh }}
+        run: |
+          set -euo pipefail
+          release_id="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          [[ "$release_id" =~ ^[0-9]+-[0-9]+$ ]]
+          ssh_config="$RUNNER_TEMP/deadelustv-ssh/config"
+          ssh -F "$ssh_config" ovh-deadelustv bash -se -- "$release_id" <<'REMOTE'
+          set -euo pipefail
+          umask 022
+          base=/var/www/deadelustv/accueil
+          mkdir -p "$base/releases"
+          mkdir -m 755 "$base/releases/$1"
+          REMOTE
+
+          rsync -rtpz --chmod=D755,F644 \
+            -e "ssh -F $ssh_config" \
+            "$RUNNER_TEMP/deadelustv-public/" \
+            "ovh-deadelustv:/var/www/deadelustv/accueil/releases/$release_id/"
+
+          ssh -F "$ssh_config" ovh-deadelustv bash -se -- "$release_id" "$YOUTUBE_FRESH" <<'REMOTE'
+          set -euo pipefail
+          base=/var/www/deadelustv/accueil
+          release="$base/releases/$1"
+          test -s "$release/index.html"
+          if [[ "$2" != 'true' && -s "$base/current/data/latest-youtube.json" ]]; then
+            install -d -m 755 "$release/data"
+            install -m 644 "$base/current/data/latest-youtube.json" "$release/data/latest-youtube.json"
+          fi
+          if [[ -e "$base/current" && ! -L "$base/current" ]]; then
+            echo 'current existe mais ne correspond pas a un lien symbolique.' >&2
+            exit 1
+          fi
+          if [[ -L "$base/current" ]]; then
+            old_release=$(readlink "$base/current")
+            ln -s "$old_release" "$base/.previous-$1"
+            mv -Tf "$base/.previous-$1" "$base/previous"
+          fi
+          ln -s "$release" "$base/.current-$1"
+          mv -Tf "$base/.current-$1" "$base/current"
+          REMOTE
+          printf '\nVersion transferee et activee : `%s`\n\nRacine attendue dans Caddy : `/var/www/deadelustv/accueil/current`\n' "$release_id" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Effacer la cle de publication du runner
+        if: always()
+        run: |
+          rm -f "$RUNNER_TEMP/deadelustv-ssh/key"
+
