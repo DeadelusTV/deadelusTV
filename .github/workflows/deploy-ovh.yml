@@ -1,0 +1,72 @@
+name: Vérifier le site et déployer sur OVH
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deadelustv-ovh-production
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Vérifier l’accueil
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      deploy_ready: ${{ steps.target.outputs.ready }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Contrôler les fichiers et le JavaScript
+        run: |
+          python3 scripts/verify-static.py
+          node --check public/assets/config.js
+          node --check public/assets/app.js
+          bash -n scripts/deploy-ovh.sh
+      - name: Vérifier la configuration OVH
+        id: target
+        env:
+          OVH_HOST: ${{ secrets.OVH_HOST }}
+          OVH_USER: ${{ secrets.OVH_USER }}
+          OVH_SSH_KEY: ${{ secrets.OVH_SSH_KEY }}
+          OVH_KNOWN_HOSTS: ${{ secrets.OVH_KNOWN_HOSTS }}
+          OVH_PATH: ${{ secrets.OVH_PATH }}
+        shell: bash
+        run: |
+          ready=true
+          for name in OVH_HOST OVH_USER OVH_SSH_KEY OVH_KNOWN_HOSTS OVH_PATH; do
+            if [[ -z "${!name}" ]]; then
+              ready=false
+              printf -- '- Configuration manquante : `%s`\n' "$name" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done
+          echo "ready=$ready" >> "$GITHUB_OUTPUT"
+          if [[ "$ready" == false ]]; then
+            echo '::notice::Accueil vérifié. Déploiement OVH en attente de configuration ; aucun transfert effectué.'
+          fi
+
+  deploy:
+    name: Publier sur le VPS OVH
+    needs: verify
+    if: needs.verify.outputs.deploy_ready == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Transférer et activer la version
+        env:
+          OVH_HOST: ${{ secrets.OVH_HOST }}
+          OVH_USER: ${{ secrets.OVH_USER }}
+          OVH_SSH_KEY: ${{ secrets.OVH_SSH_KEY }}
+          OVH_KNOWN_HOSTS: ${{ secrets.OVH_KNOWN_HOSTS }}
+          OVH_PATH: ${{ secrets.OVH_PATH }}
+          OVH_PORT: ${{ secrets.OVH_PORT }}
+        run: bash scripts/deploy-ovh.sh
