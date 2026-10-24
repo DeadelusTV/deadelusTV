@@ -398,6 +398,6 @@ dialog{color:var(--text);background:#19191a;border:1px solid #59513e;border-radi
 /* Test d’une largeur intermédiaire */
 @media (min-width: 1101px) {
   .container {
-    max-width: 1170px;
+    max-width: 1100px;
   }
 }
