@@ -13,7 +13,7 @@ let activeRoute='accueil';
 function route(focus=false){
   const requested=location.hash.slice(1)||'accueil';
   if(requested==='main-content'){ $('#main-content').focus();return; }
-  const isCampaign=requested==='pavillon-noir'||requested.startsWith('pavillon-noir/');
+  const isCampaign=requested==='jeux-de-role'||requested==='pavillon-noir'||requested.startsWith('pavillon-noir/');
   const name=isCampaign?'pavillon-noir':Object.hasOwn(routeTitles,requested)?requested:'accueil';
   const navName=isCampaign?'jeux-de-role':name;
   $$('[data-page]').forEach(section=>section.hidden=section.dataset.page!==name);
