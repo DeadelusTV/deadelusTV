@@ -52,11 +52,24 @@
 </nav>
  <div class="broadcast-grid">
   <section class="live-block" aria-labelledby="live-title">
-   <div class="section-heading"><h2 id="live-title">Le live</h2><span class="pill"><svg class="icon" aria-hidden="true"><use href="#i-twitch"/></svg>SUR TWITCH</span></div>
-   <div class="player-shell" id="player-shell"><div class="art art-live" aria-hidden="true"></div><div class="player-shade"></div><button class="play-button" id="play-live" aria-label="Regarder DeadelusTV sur Twitch"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg></button><div class="player-caption"><span>Le live, le chat… et toi.</span><span class="twitch-word"><svg class="icon" aria-hidden="true"><use href="#i-twitch"/></svg>twitch</span></div></div>
-   <div class="live-meta"><div><h3>Installe-toi, on est bien.</h3><p>Du jeu, des histoires et des bons moments ensemble.</p></div><a class="btn btn-gold" data-link="twitch" href="https://www.twitch.tv/deadelustv" target="_blank" rel="noopener noreferrer">Ouvrir sur Twitch <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
-   <p class="embed-note" id="embed-note"><svg class="icon stroke" aria-hidden="true"><use href="#i-info"/></svg><span>Le live et les replays sont disponibles sur la chaîne.</span></p>
-  </section>
+  <div class="section-heading">
+    <h2 id="live-title">Le live</h2>
+
+    <a class="pill twitch-link"
+       data-link="twitch"
+       href="https://www.twitch.tv/deadelustv"
+       target="_blank"
+       rel="noopener noreferrer"
+       aria-label="Ouvrir la chaîne Twitch de DeadelusTV (nouvel onglet)">
+      <svg class="icon" aria-hidden="true">
+        <use href="#i-twitch"/>
+      </svg>
+      SUR TWITCH ↗
+    </a>
+  </div>
+
+  <div class="player-shell twitch-player" id="player-shell"></div>
+</section>
   <section class="latest" aria-labelledby="videos-title">
    <div class="section-heading"><h2 id="videos-title">À retrouver en vidéo</h2><a class="all-link" data-link="youtubeVideos" href="https://www.youtube.com/@deadelustv/videos" target="_blank" rel="noopener noreferrer">Tout voir ↗</a></div>
    <div class="latest-content"><a class="video-main" data-link="youtubeVideos" href="https://www.youtube.com/@deadelustv/videos" target="_blank" rel="noopener noreferrer" aria-label="Voir les vidéos de DeadelusTV sur YouTube"><div class="art art-youtube" aria-hidden="true"><span class="video-badge"><svg class="icon" aria-hidden="true"><use href="#i-youtube"/></svg></span></div><h3>Best of, découvertes & aventures</h3><p>Retrouver les vidéos sur YouTube ↗</p></a>
