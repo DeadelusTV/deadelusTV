@@ -1,0 +1,30 @@
+{
+  "source_repository": "DeadelusTV/Crew-mong-Us",
+  "source_commit": "33addb066a22f7f886502b24b650a50aeb9481ee",
+  "host_base_commit": "d91c2acc17ed1dcf337e17132c6c9a3e50342149",
+  "supabase_js_version": "2.118.0",
+  "files": {
+    "assets/banner_crewmongus.png": "d4809d7a10bdef57a5962664033e744955d3511c7da82497b74842245f441504",
+    "assets/favicon.svg": "df1a60f3f41ed224d5568e5e7ed69e1cabfb0ba98b0c0ac71a6cc3e560206c45",
+    "assets/github.md": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "assets/panel_hall.png": "d59e49c9c50dab5638967e1d98230c8f83c26d416007bf65ff884bd3c2071364",
+    "assets/panel_mentions.png": "8335ae11041b0cd324a5307b5082a3f1a407ad40b876fe4a01c88ca278d22af5",
+    "assets/panel_shame.png": "957e09b4b2633a8b7eb3ffd474bc6981e41c1def45def81bc7e8eb01a031c53a",
+    "assets/panel_t1.png": "0c0b3e322b63d90999661fe912624996eba232b8a30fdce9c72e71df172b2492",
+    "assets/panel_win.png": "bb1885b0c1e3a7ca4ab382b866ab60e6d7aaa2f0b8956479508f9abdd1443bd2",
+    "assets/player-blue-peek-v3.webp": "51342c473436af9fa122431bf4fdb44ea82d77afec1b8af55624a3bb46b8b55b",
+    "assets/player-green-sit-v4.webp": "f7f20a25d7399a2563ced7a8cc16b96d900e24d0993b638dfe67bc8519bb22a3",
+    "assets/player-purple-impostor-v3.webp": "5a84f5cb4d6957297b2ccfbd1aca7bbe9048a2d9758da5c821941c1a1acef8b3",
+    "assets/session-purple.webp": "fe194479f576327ea146eff94301ecc09b793159a6a42c773869b3e2856c2107",
+    "assets/session-red-v3.webp": "01a8db29db333a61689c84f0a47926187dd5b5f8bc2660b1ce137b40e2dfad79",
+    "assets/session-yellow.webp": "a8a0934683bb651ff452b995c345a4ad8a8df4a3172044bf56109cd607418553",
+    "assets/site-space-bg.webp": "d957931d2d9d4f41f23c413096efe81dbb0d78d982af6bf706ecf43b74f63f8d",
+    "content.html": "1c2596c091fe8decbf8f40b25bd4a004743f3fdd7e8cfdd6d9d5a2e17f9e9aab",
+    "crew-app.js": "d4b36f58dbe6a4ffd05ceb53d391857948caf306084bc75eaf9f00a3c1057176",
+    "module.js": "2d358eab44c40a546e8dedd1a036cfb4ba383ad591a578d6eb60a56454c9f79e",
+    "style.css": "c1f887fbf9b192098ee33fd06c23848da08b547b57d9dc6888094089f7fb9a13",
+    "vendor/SUPABASE-LICENSE": "334dd6820e2eaeab2064e7c59001b810566728a28a41a7c1dbf69bbee17d0936",
+    "vendor/supabase.js": "ee3be8de192b97cb1d73d1e95d6b82bb1f6b658c0f97c4ef757fc331996ed3d3",
+    "vendor/version.json": "8bc7247a5c10b28f2d88422cbbde6dbf2ac66cac02ef068ca4ecc476c36b7e61"
+  }
+}

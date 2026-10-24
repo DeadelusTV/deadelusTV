@@ -14,17 +14,24 @@ function route(focus=false){
   const requested=location.hash.slice(1)||'accueil';
   if(requested==='main-content'){ $('#main-content').focus();return; }
   const isCampaign=requested==='jeux-de-role'||requested==='pavillon-noir'||requested.startsWith('pavillon-noir/');
-  const name=isCampaign?'pavillon-noir':Object.hasOwn(routeTitles,requested)?requested:'accueil';
-  const navName=isCampaign?'jeux-de-role':name;
+  const authHash=new URLSearchParams(location.hash.slice(1));
+  const authQuery=new URLSearchParams(location.search);
+  const crewAuth=window.DEADELUSTV_CREW_AUTH===true||authQuery.get('crew_auth')==='1'||authHash.has('access_token')||['invite','recovery'].includes(authHash.get('type'));
+  if(crewAuth)window.DEADELUSTV_CREW_AUTH=true;
+  const isCrew=crewAuth||requested==='crewmongus'||requested.startsWith('crewmongus/');
+  const name=isCrew?'crewmongus':isCampaign?'pavillon-noir':Object.hasOwn(routeTitles,requested)?requested:'accueil';
+  const navName=isCampaign&&!isCrew?'jeux-de-role':name;
   $$('[data-page]').forEach(section=>section.hidden=section.dataset.page!==name);
   $$('[data-nav]').forEach(a=>{const current=a.dataset.nav===navName;if(current)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
   document.title='DeadelusTV — '+routeTitles[name];
 activeRoute=name;
 closeMenu();
 syncTwitchPlayer();
-  if(isCampaign)window.DEADELUSTV_PAVILLON.render(requested.split('/').slice(1).join('/')||'accueil',focus);
+  if(isCrew)window.DEADELUSTV_CREW.render(crewAuth?'admin':requested.split('/')[1]||'stats',focus);
+  else window.DEADELUSTV_CREW.cancel();
+  if(isCampaign&&!isCrew)window.DEADELUSTV_PAVILLON.render(requested.split('/').slice(1).join('/')||'accueil',focus);
   else window.DEADELUSTV_PAVILLON.cancel();
-  if(focus&&!isCampaign){window.scrollTo({top:0,behavior:'instant'});const h=$('[data-page="'+name+'"] h1');if(h)h.focus({preventScroll:true});}
+  if(focus&&!isCampaign&&!isCrew){window.scrollTo({top:0,behavior:'instant'});const h=$('[data-page="'+name+'"] h1');if(h)h.focus({preventScroll:true});}
 }
 window.addEventListener('hashchange',()=>route(true));route();
 $$('a[href="#accueil"]').forEach(a=>a.addEventListener('click',()=>{if(activeRoute==='accueil')window.scrollTo({top:0,behavior:'smooth'});}));

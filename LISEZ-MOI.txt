@@ -1,3 +1,10 @@
-Extraire les DEUX archives pavillon-noir-partie-1.zip et pavillon-noir-partie-2.zip dans le même dossier. Fusionner leurs dossiers public.
-Puis copier le contenu de public dans le dossier public du dépôt DeadelusTV sans supprimer les fichiers déjà présents. Remplacer les 3 fichiers proposés.
-Instructions détaillées dans docs/pavillon-noir-integration.md (partie 1). Commit, Push, puis Ctrl + F5 après déploiement.
+Crewmong Us dans DeadelusTV — lot à installer
+
+1. GitHub Desktop : sélectionner DeadelusTV, Fetch origin puis Pull avant de copier les fichiers.
+2. Sauvegarder public/index.html, public/assets/app.js et public/assets/config.js.
+3. Copier public et docs à la racine du dépôt local ; fusionner les dossiers et remplacer les trois fichiers. Ne pas supprimer public.
+4. Commit puis Push origin. Après déploiement : Ctrl + F5 et ouvrir Crewmong Us.
+
+Statistiques et comptes : même Supabase, aucune migration de base. Se reconnecter avec les identifiants existants si nécessaire.
+Pour invitation/récupération, vérifier dans Supabase les Redirect URLs : https://www.deadelustv.com/?crew_auth=1 doit être autorisée. Cette configuration n’est pas modifiée par le lot.
+Détails et tests : docs/crewmongus-integration.md.

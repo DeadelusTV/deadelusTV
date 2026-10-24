@@ -12,6 +12,8 @@
 <script src="assets/config.js" defer></script>
 <link rel="stylesheet" href="modules/pavillon-noir/style.css">
 <script src="modules/pavillon-noir/module.js" defer></script>
+<link rel="stylesheet" href="modules/crewmongus/style.css">
+<script src="modules/crewmongus/module.js" defer></script>
 <script src="assets/app.js" defer></script>
 </head>
 <body>
@@ -50,7 +52,7 @@
   <span class="quick-label">Les univers</span>
   <a href="#phasmophobia">Phasmophobia</a>
   <a href="#tcg">TCG</a>
-  <a data-link="crewmongus" href="https://deadelustv.github.io/Crew-mong-Us/" target="_blank" rel="noopener noreferrer">Crewmong Us ↗</a>
+  <a data-link="crewmongus" href="#crewmongus">Crewmong Us ↗</a>
   <a href="#jeux-de-role">Pavillon Noir</a>
 </nav>
  <div class="broadcast-grid">
@@ -103,8 +105,8 @@
    <div class="universe-body"><span class="universe-category">Le projet se prépare</span><h3><a href="#tcg">Trading Card Game</a></h3><p>Des cartes, des boosters et les moments de la communauté à collectionner.</p><a class="arrow-link" href="#tcg">Découvrir le projet <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
   </article>
   <article class="universe-card">
-   <a class="universe-art-link" data-link="crewmongus" href="https://deadelustv.github.io/Crew-mong-Us/" target="_blank" rel="noopener noreferrer" aria-label="Ouvrir les statistiques Crewmong Us"><div class="art art-crew" aria-hidden="true"></div></a>
-   <div class="universe-body"><span class="universe-category">Among Us · Statistiques</span><h3><a href="#crewmongus">Crewmong Us</a></h3><p>Les parties du Crew, les soupçons et les trahisons. Cette fois, on a les chiffres.</p><a class="arrow-link" data-link="crewmongus" href="https://deadelustv.github.io/Crew-mong-Us/" target="_blank" rel="noopener noreferrer">Voir les statistiques <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
+   <a class="universe-art-link" data-link="crewmongus" href="#crewmongus" aria-label="Ouvrir les statistiques Crewmong Us"><div class="art art-crew" aria-hidden="true"></div></a>
+   <div class="universe-body"><span class="universe-category">Among Us · Statistiques</span><h3><a href="#crewmongus">Crewmong Us</a></h3><p>Les parties du Crew, les soupçons et les trahisons. Cette fois, on a les chiffres.</p><a class="arrow-link" data-link="crewmongus" href="#crewmongus">Voir les statistiques <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
   </article>
   <article class="universe-card">
    <a class="universe-art-link" href="#jeux-de-role" aria-label="Découvrir Pavillon noir"><div class="art art-jdr" aria-hidden="true"></div></a>
@@ -136,10 +138,9 @@
  </div>
 </section>
 
-<section class="page" id="page-crewmongus" data-page="crewmongus" hidden aria-labelledby="crew-title">
- <div class="breadcrumb"><a href="#accueil">Accueil</a><span>/</span><span>Crewmong Us</span></div><div class="page-header"><div class="eyebrow">Les archives du Crew</div><h1 id="crew-title" tabindex="-1">On a les chiffres.<br>Vous avez des explications ?</h1><p>Les trahisons, les votes discutables et les grandes victoires. Toute la mémoire de nos parties Among Us, réunie au même endroit.</p></div>
- <div class="feature"><div class="crew-visual"><div class="art art-crew" aria-hidden="true"></div><div class="crew-caption">Le Crew.<br><span>Les preuves.</span></div></div><div class="feature-copy"><span class="pill pill-gold">AMONG US · STATISTIQUES</span><h2>Crewmong Us</h2><p>Qui a tué qui ? Qui s’est fait éjecter pour rien ? Retrouve les statistiques et les petites histoires qui se cachent derrière les parties.</p><a class="btn btn-gold" data-link="crewmongus" href="https://deadelustv.github.io/Crew-mong-Us/" target="_blank" rel="noopener noreferrer">Ouvrir Crewmongus <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></div></div>
- <div class="section-label"><h2>Chaque partie laisse des traces</h2></div><div class="info-grid"><article class="info-card"><span class="info-no">01 / LES DUELS</span><h3>Qui vise qui ?</h3><p>Les éliminations et les rencontres qui tournent toujours de la même façon.</p></article><article class="info-card"><span class="info-no">02 / LES VOTES</span><h3>Innocent, vraiment.</h3><p>Les votes décisifs, les mauvais soupçons et les innocents envoyés dans l’espace.</p></article><article class="info-card"><span class="info-no">03 / LE CREW</span><h3>Les stats qui racontent</h3><p>Un autre regard sur les parties, les habitudes des joueurs et nos soirées ensemble.</p></article></div>
+<section class="page" id="page-crewmongus" data-page="crewmongus" hidden aria-label="Crewmong Us — Statistiques du Crew">
+ <div class="breadcrumb"><a href="#accueil">Accueil</a><span>/</span><span>Crewmong Us</span></div>
+ <div class="crew-module" id="crew-root"><div class="crew-loading" role="status">Chargement de Crewmong Us…</div></div>
 </section>
 
 <section class="page" id="page-tcg" data-page="tcg" hidden aria-labelledby="tcg-title">
