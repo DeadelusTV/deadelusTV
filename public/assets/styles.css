@@ -364,3 +364,22 @@ dialog{color:var(--text);background:#19191a;border:1px solid #59513e;border-radi
     gap: 38px;
   }
 }
+/* Images des encarts de l’accueil */
+.universe-grid .art-tcg,
+.universe-grid .art-crew,
+.universe-grid .art-jdr {
+  background-size: cover;
+  background-position: center;
+}
+
+.universe-grid .art-tcg {
+  background-image: url('tcg.png');
+}
+
+.universe-grid .art-crew {
+  background-image: url('crewmong-us.png');
+}
+
+.universe-grid .art-jdr {
+  background-image: url('pavillon-noir.png');
+}
