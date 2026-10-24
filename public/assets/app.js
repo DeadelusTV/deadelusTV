@@ -83,7 +83,7 @@ booster.addEventListener('click',()=>{
   let footerVisible = false;
 
   function updateSocials() {
-    floatingSocials.hidden = !mobile.matches && footerVisible;
+    floatingSocials.hidden = footerVisible;;
   }
 
   const observer = new IntersectionObserver(entries => {
