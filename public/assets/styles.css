@@ -401,7 +401,21 @@ dialog{color:var(--text);background:#19191a;border:1px solid #59513e;border-radi
 }
 
 .welcome-art::after {
-  background: none;
+  background:
+    linear-gradient(
+      90deg,
+      var(--bg) 0%,
+      transparent 25%,
+      transparent 94%,
+      var(--bg) 100%
+    ),
+    linear-gradient(
+      180deg,
+      var(--bg) 0%,
+      transparent 8%,
+      transparent 78%,
+      var(--bg) 100%
+    );
 }
 
 /* Sur mobile, placer l’image sous le texte de bienvenue */
