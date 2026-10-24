@@ -1,0 +1,3 @@
+Extraire les DEUX archives pavillon-noir-partie-1.zip et pavillon-noir-partie-2.zip dans le même dossier. Fusionner leurs dossiers public.
+Puis copier le contenu de public dans le dossier public du dépôt DeadelusTV sans supprimer les fichiers déjà présents. Remplacer les 3 fichiers proposés.
+Instructions détaillées dans docs/pavillon-noir-integration.md (partie 1). Commit, Push, puis Ctrl + F5 après déploiement.

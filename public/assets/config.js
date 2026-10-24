@@ -10,7 +10,7 @@ window.DEADELUSTV_CONFIG = Object.freeze({
   tiktok:'https://www.tiktok.com/@deadelustv',
   discord:'https://discord.gg/eMhE3uSHQS',
   crewmongus:'https://deadelustv.github.io/Crew-mong-Us/',
-  pavillonNoir:'https://deadelustv.github.io/pavillon-noir/',
+  pavillonNoir:'#pavillon-noir',
   phasmoVideos:'https://www.youtube.com/@deadelustv/search?query=phasmophobia',
   twitchExtraParents:[] // Si le portail est lui-même dans une iframe.
 });

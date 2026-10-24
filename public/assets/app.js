@@ -7,20 +7,24 @@ function closeMenu(){nav.classList.remove('is-open');menu.setAttribute('aria-exp
 menu.addEventListener('click',()=>{const open=menu.getAttribute('aria-expanded')!=='true';nav.classList.toggle('is-open',open);menu.setAttribute('aria-expanded',String(open));menu.setAttribute('aria-label',open?'Fermer le menu':'Ouvrir le menu');});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&menu.getAttribute('aria-expanded')==='true'){closeMenu();menu.focus();}});
 document.addEventListener('click',e=>{if(!e.target.closest('.site-header'))closeMenu();});
-const routeTitles={'accueil':'Le repaire de la communauté','jeux-de-role':'Jeux de rôle','crewmongus':'Crewmongus','tcg':'Trading Card Game','phasmophobia':'Phasmophobia'};
+const routeTitles={'accueil':'Le repaire de la communauté','jeux-de-role':'Jeux de rôle','crewmongus':'Crewmongus','tcg':'Trading Card Game','phasmophobia':'Phasmophobia','pavillon-noir':'Pavillon Noir'};
 const player=$('#player-shell');
 let activeRoute='accueil';
 function route(focus=false){
   const requested=location.hash.slice(1)||'accueil';
   if(requested==='main-content'){ $('#main-content').focus();return; }
-  const name=Object.hasOwn(routeTitles,requested)?requested:'accueil';
+  const isCampaign=requested==='pavillon-noir'||requested.startsWith('pavillon-noir/');
+  const name=isCampaign?'pavillon-noir':Object.hasOwn(routeTitles,requested)?requested:'accueil';
+  const navName=isCampaign?'jeux-de-role':name;
   $$('[data-page]').forEach(section=>section.hidden=section.dataset.page!==name);
-  $$('[data-nav]').forEach(a=>{const current=a.dataset.nav===name;if(current)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
+  $$('[data-nav]').forEach(a=>{const current=a.dataset.nav===navName;if(current)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
   document.title='DeadelusTV — '+routeTitles[name];
 activeRoute=name;
 closeMenu();
 syncTwitchPlayer();
-  if(focus){window.scrollTo({top:0,behavior:'instant'});const h=$('[data-page="'+name+'"] h1');if(h)h.focus({preventScroll:true});}
+  if(isCampaign)window.DEADELUSTV_PAVILLON.render(requested.split('/').slice(1).join('/')||'accueil',focus);
+  else window.DEADELUSTV_PAVILLON.cancel();
+  if(focus&&!isCampaign){window.scrollTo({top:0,behavior:'instant'});const h=$('[data-page="'+name+'"] h1');if(h)h.focus({preventScroll:true});}
 }
 window.addEventListener('hashchange',()=>route(true));route();
 $$('a[href="#accueil"]').forEach(a=>a.addEventListener('click',()=>{if(activeRoute==='accueil')window.scrollTo({top:0,behavior:'smooth'});}));

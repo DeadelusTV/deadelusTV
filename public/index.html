@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="fr">
+<script src="assets/stars.js" defer></script>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,6 +10,8 @@
 <link rel="icon" href="assets/logo-chaine.png" type="image/png">
 <link rel="stylesheet" href="assets/styles.css">
 <script src="assets/config.js" defer></script>
+<link rel="stylesheet" href="modules/pavillon-noir/style.css">
+<script src="modules/pavillon-noir/module.js" defer></script>
 <script src="assets/app.js" defer></script>
 </head>
 <body>
@@ -36,12 +39,12 @@
 <a href="#crewmongus" data-nav="crewmongus">Crewmong Us</a>
 <a href="#jeux-de-role" data-nav="jeux-de-role">Jeux de rôle</a>
  </nav>
- <a href="https://discord.gg/eMhE3uSHQS" data-link="discord" target="_blank" rel="noopener noreferrer" class="btn discord-header" aria-label="Rejoindre Discord (nouvel onglet)"><svg class="icon" aria-hidden="true"><use href="#i-discord"/></svg><span>Discord</span></a>
- <button class="menu-toggle" aria-expanded="false" aria-controls="main-nav" aria-label="Ouvrir le menu"><svg class="icon stroke" aria-hidden="true"><use href="#i-menu"/></svg></button>
+  <button class="menu-toggle" aria-expanded="false" aria-controls="main-nav" aria-label="Ouvrir le menu"><svg class="icon stroke" aria-hidden="true"><use href="#i-menu"/></svg></button>
 </div></header>
 <main class="container" id="main-content" tabindex="-1">
 <section id="page-accueil" data-page="accueil" aria-labelledby="home-title">
- <div class="welcome"><div class="art art-library welcome-art" aria-hidden="true"></div><span class="eyebrow">Le repaire de la communauté</span><h1 id="home-title" tabindex="-1">Bienvenue chez DeadelusTV</h1><p>Les lives, les vidéos et les aventures qu’on partage.</p></div>
+ <div class="welcome"><div class="art welcome-art" role="img"
+     aria-label="Tous les jours à 21h sur Twitch"></div><span class="eyebrow">Le repaire de la communauté</span><h1 id="home-title" tabindex="-1">Bienvenue chez DeadelusTV</h1></div>
 
  <nav class="quick-links" aria-label="Accès rapides aux univers">
   <span class="quick-label">Les univers</span>
@@ -83,7 +86,7 @@
     <div class="shorts-grid tiktok-only">
      <a class="short-card" data-link="tiktok" href="https://www.tiktok.com/@deadelustv" target="_blank" rel="noopener noreferrer">
       <div class="art art-tiktok" aria-hidden="true"></div>
-      <div class="short-body"><span class="platform"><svg class="icon tiktok" aria-hidden="true"><use href="#i-tiktok"/></svg>TikTok</span><h3>Les petits moments de chaos</h3></div>
+      <div class="short-body"><span class="platform"><svg class="icon tiktok" aria-hidden="true"><use href="#i-tiktok"/></svg>TikTok</span><h3>Dernière vidéo Tiktok</h3></div>
      </a>
     </div>
    </div>
@@ -92,20 +95,20 @@
  <section class="universes" aria-labelledby="universes-title"><div class="section-heading"><h2 id="universes-title">Explore les univers de la chaîne</h2></div>
  <div class="universe-grid">
   <article class="universe-card">
-   <a class="universe-art-link" href="#jeux-de-role" aria-label="Découvrir les jeux de rôle"><div class="art art-jdr" aria-hidden="true"></div></a>
-   <div class="universe-body"><span class="universe-category">Les carnets de campagne</span><h3><a href="#jeux-de-role">Jeux de rôle</a></h3><p>Des équipages, des personnages et des histoires qui continuent entre deux lives.</p><a class="arrow-link" data-link="pavillonNoir" href="https://deadelustv.github.io/pavillon-noir/" target="_blank" rel="noopener noreferrer">Ouvrir Pavillon Noir <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
-  </article>
-  <article class="universe-card">
-   <a class="universe-art-link" data-link="crewmongus" href="https://deadelustv.github.io/Crew-mong-Us/" target="_blank" rel="noopener noreferrer" aria-label="Ouvrir les statistiques Crewmong Us"><div class="art art-crew" aria-hidden="true"></div></a>
-   <div class="universe-body"><span class="universe-category">Among Us · Statistiques</span><h3><a href="#crewmongus">Crewmong Us</a></h3><p>Les parties du Crew, les soupçons et les trahisons. Cette fois, on a les chiffres.</p><a class="arrow-link" data-link="crewmongus" href="https://deadelustv.github.io/Crew-mong-Us/" target="_blank" rel="noopener noreferrer">Voir les statistiques <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
+   <a class="universe-art-link" href="#phasmophobia" aria-label="Découvrir l’espace Phasmophobia"><div class="art art-phasmo" aria-hidden="true"></div></a>
+   <div class="universe-body"><span class="universe-category">Les enquêtes & les tutos</span><h3><a href="#phasmophobia">Phasmophobia</a></h3><p>Un peu de méthode pour les enquêtes. Pour le courage, on vous laisse gérer.</p><a class="arrow-link" data-link="phasmoVideos" href="https://www.youtube.com/@deadelustv/search?query=phasmophobia" target="_blank" rel="noopener noreferrer">Voir les vidéos <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
   </article>
   <article class="universe-card">
    <a class="universe-art-link" href="#tcg" aria-label="Découvrir le projet de cartes à collectionner"><div class="art art-tcg" aria-hidden="true"></div></a>
    <div class="universe-body"><span class="universe-category">Le projet se prépare</span><h3><a href="#tcg">Trading Card Game</a></h3><p>Des cartes, des boosters et les moments de la communauté à collectionner.</p><a class="arrow-link" href="#tcg">Découvrir le projet <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
   </article>
   <article class="universe-card">
-   <a class="universe-art-link" href="#phasmophobia" aria-label="Découvrir l’espace Phasmophobia"><div class="art art-phasmo" aria-hidden="true"></div></a>
-   <div class="universe-body"><span class="universe-category">Les enquêtes & les tutos</span><h3><a href="#phasmophobia">Phasmophobia</a></h3><p>Un peu de méthode pour les enquêtes. Pour le courage, on vous laisse gérer.</p><a class="arrow-link" data-link="phasmoVideos" href="https://www.youtube.com/@deadelustv/search?query=phasmophobia" target="_blank" rel="noopener noreferrer">Voir les vidéos <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
+   <a class="universe-art-link" data-link="crewmongus" href="https://deadelustv.github.io/Crew-mong-Us/" target="_blank" rel="noopener noreferrer" aria-label="Ouvrir les statistiques Crewmong Us"><div class="art art-crew" aria-hidden="true"></div></a>
+   <div class="universe-body"><span class="universe-category">Among Us · Statistiques</span><h3><a href="#crewmongus">Crewmong Us</a></h3><p>Les parties du Crew, les soupçons et les trahisons. Cette fois, on a les chiffres.</p><a class="arrow-link" data-link="crewmongus" href="https://deadelustv.github.io/Crew-mong-Us/" target="_blank" rel="noopener noreferrer">Voir les statistiques <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
+  </article>
+  <article class="universe-card">
+   <a class="universe-art-link" href="#jeux-de-role" aria-label="Découvrir les jeux de rôle"><div class="art art-jdr" aria-hidden="true"></div></a>
+   <div class="universe-body"><span class="universe-category">Les carnets de campagne</span><h3><a href="#jeux-de-role">Jeux de rôle</a></h3><p>Des équipages, des personnages et des histoires qui continuent entre deux lives.</p><a class="arrow-link" data-link="pavillonNoir" href="#pavillon-noir">Ouvrir Pavillon Noir <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
   </article>
  </div></section>
 </section>
@@ -113,8 +116,24 @@
 <section class="page" id="page-jeux-de-role" data-page="jeux-de-role" hidden aria-labelledby="jdr-title">
  <div class="breadcrumb"><a href="#accueil">Accueil</a><span>/</span><span>Jeux de rôle</span></div>
  <div class="page-header"><div class="eyebrow">Les aventures de la communauté</div><h1 id="jdr-title" tabindex="-1">Une table. Des dés.<br>Des histoires à vivre.</h1><p>Retrouve nos campagnes, rencontre les personnages et replonge dans les séances. L’aventure continue aussi entre deux lives.</p></div>
- <article class="feature"><div class="art art-jdr feature-art" aria-hidden="true"></div><div class="feature-copy"><span class="pill pill-gold">CARNET DE CAMPAGNE</span><h2>Pavillon Noir</h2><p>Retrouve les récits des séances, les personnages et les cartes de notre campagne. Le carnet de l’équipage t’attend sur le site Pavillon Noir.</p><a class="btn btn-gold" data-link="pavillonNoir" href="https://deadelustv.github.io/pavillon-noir/" target="_blank" rel="noopener noreferrer">Ouvrir le carnet <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></div></article>
+ <article class="feature"><div class="art art-jdr feature-art" aria-hidden="true"></div><div class="feature-copy"><span class="pill pill-gold">CARNET DE CAMPAGNE</span><h2>Pavillon Noir</h2><p>Retrouve les récits des séances, les personnages et les cartes de notre campagne. Le carnet de l’équipage t’attend sur le site Pavillon Noir.</p><a class="btn btn-gold" data-link="pavillonNoir" href="#pavillon-noir">Ouvrir le carnet <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></div></article>
  <div class="section-label"><h2>Tout pour suivre l’histoire</h2></div><div class="info-grid"><article class="info-card"><span class="info-no">01 / LES SÉANCES</span><h3>Le récit de nos aventures</h3><p>Un résumé par séance et les liens vers les replays pour retrouver les moments clés.</p></article><article class="info-card"><span class="info-no">02 / LES PERSONNAGES</span><h3>Ceux qui font l’histoire</h3><p>Les membres de l’équipage, leurs fiches et les rencontres qui jalonnent leur voyage.</p></article><article class="info-card"><span class="info-no">03 / LES CAMPAGNES</span><h3>D’autres horizons</h3><p>Un espace qui pourra accueillir nos prochains jeux de rôle, chacun avec son propre carnet.</p></article></div>
+</section>
+
+<section class="page" id="page-pavillon-noir" data-page="pavillon-noir" hidden aria-label="Pavillon Noir — Carnet de campagne">
+ <div class="breadcrumb"><a href="#accueil">Accueil</a><span>/</span><a href="#jeux-de-role">Jeux de rôle</a><span>/</span><span>Pavillon Noir</span></div>
+ <div class="pn-module">
+  <header class="pn-heading"><h2>Pavillon Noir</h2><p>Le carnet de campagne de DeadelusTV</p></header>
+  <nav class="pn-nav" id="pn-nav" aria-label="Rubriques de Pavillon Noir"><a href="#pavillon-noir/accueil" data-campaign-nav="accueil">Le carnet</a>
+<a href="#pavillon-noir/sessions" data-campaign-nav="sessions">Sessions</a>
+<a href="#pavillon-noir/equipage" data-campaign-nav="equipage">Équipage</a>
+<a href="#pavillon-noir/pnj" data-campaign-nav="pnj">PNJ</a>
+<a href="#pavillon-noir/lore" data-campaign-nav="lore">Lore</a>
+<a href="#pavillon-noir/systeme" data-campaign-nav="systeme">Système</a>
+<a href="#pavillon-noir/chronologie" data-campaign-nav="chronologie">Chronologie</a>
+<a href="#pavillon-noir/coulisses" data-campaign-nav="coulisses">Coulisses</a></nav>
+  <div id="pn-content" tabindex="-1" aria-live="polite"></div>
+ </div>
 </section>
 
 <section class="page" id="page-crewmongus" data-page="crewmongus" hidden aria-labelledby="crew-title">
@@ -142,7 +161,7 @@
 
 <aside class="community" aria-labelledby="community-title"><div class="art art-library community-art" aria-hidden="true"></div><svg class="icon" aria-hidden="true"><use href="#i-discord"/></svg><div class="community-text"><h2 id="community-title">On continue sur Discord ?</h2><p><span>Rejoins la communauté</span> pour échanger, partager et suivre les prochains projets.</p></div><a class="btn btn-gold" data-link="discord" href="https://discord.gg/eMhE3uSHQS" target="_blank" rel="noopener noreferrer">Rejoindre la communauté <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></aside>
 </main>
-<footer class="container site-footer"><div class="footer-top"><a href="#accueil" class="brand" aria-label="Retour à l’accueil"><span class="brand-mark" aria-hidden="true">D</span><span class="brand-name">Deadelus<span>TV</span></span></a><nav class="socials" aria-label="Réseaux sociaux"><a data-link="twitch" href="https://www.twitch.tv/deadelustv" target="_blank" rel="noopener noreferrer"><svg class="icon tw" aria-hidden="true"><use href="#i-twitch"/></svg>Twitch</a><a data-link="youtube" href="https://www.youtube.com/@deadelustv" target="_blank" rel="noopener noreferrer"><svg class="icon youtube" aria-hidden="true"><use href="#i-youtube"/></svg>YouTube</a><a data-link="tiktok" href="https://www.tiktok.com/@deadelustv" target="_blank" rel="noopener noreferrer"><svg class="icon tiktok" aria-hidden="true"><use href="#i-tiktok"/></svg>TikTok</a><a data-link="discord" href="https://discord.gg/eMhE3uSHQS" target="_blank" rel="noopener noreferrer"><svg class="icon dc" aria-hidden="true"><use href="#i-discord"/></svg>Discord</a></nav></div><div class="footer-bottom"><p>DeadelusTV · Le repaire de la communauté</p><button class="btn-quiet back-top" id="back-top" type="button">Retour en haut <svg class="icon stroke" aria-hidden="true"><use href="#i-up"/></svg></button></div></footer>
+<footer class="container site-footer"><div class="footer-top"><a href="#accueil" class="brand" aria-label="Retour à l’accueil"><img class="brand-avatar" src="assets/logo-chaine.png" alt="" width="42" height="42"><span class="brand-name">Deadelus<span>TV</span></span></a><nav class="socials" aria-label="Réseaux sociaux"><a data-link="twitch" href="https://www.twitch.tv/deadelustv" target="_blank" rel="noopener noreferrer"><svg class="icon tw" aria-hidden="true"><use href="#i-twitch"/></svg>Twitch</a><a data-link="youtube" href="https://www.youtube.com/@deadelustv" target="_blank" rel="noopener noreferrer"><svg class="icon youtube" aria-hidden="true"><use href="#i-youtube"/></svg>YouTube</a><a data-link="tiktok" href="https://www.tiktok.com/@deadelustv" target="_blank" rel="noopener noreferrer"><svg class="icon tiktok" aria-hidden="true"><use href="#i-tiktok"/></svg>TikTok</a><a data-link="discord" href="https://discord.gg/eMhE3uSHQS" target="_blank" rel="noopener noreferrer"><svg class="icon dc" aria-hidden="true"><use href="#i-discord"/></svg>Discord</a></nav></div><div class="footer-bottom"><p>DeadelusTV · Le repaire de la communauté</p><button class="btn-quiet back-top" id="back-top" type="button">Retour en haut <svg class="icon stroke" aria-hidden="true"><use href="#i-up"/></svg></button></div></footer>
 
 <dialog id="live-dialog" aria-labelledby="live-dialog-title"><button class="close-dialog" aria-label="Fermer" data-close><svg class="icon stroke" aria-hidden="true"><use href="#i-close"/></svg></button><span class="pill"><svg class="icon" aria-hidden="true"><use href="#i-twitch"/></svg>DEADELUSTV</span><h2 id="live-dialog-title">La suite se passe sur Twitch.</h2><p id="live-dialog-copy">Retrouve le live, le chat et les replays sur la chaîne DeadelusTV.</p><div class="dialog-actions"><a class="btn btn-gold" data-link="twitch" href="https://www.twitch.tv/deadelustv" target="_blank" rel="noopener noreferrer">Rejoindre la chaîne <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a><button class="btn btn-outline" data-close>Continuer la visite</button></div></dialog>
 
