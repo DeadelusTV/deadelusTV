@@ -118,7 +118,8 @@
       this.mount.hidden = !live;
       this.panel.hidden = live;
       this.neon.hidden = state !== 'offline';
-      this.copy.hidden = state === 'offline';
+      // Pendant le chargement, seul le bandeau reste visible (sans texte ni bouton).
+      this.copy.hidden = state === 'offline' || state === 'loading';
       this.updateFlicker();
       if (!live) this.controls.hidden = true;
       const messages = {
