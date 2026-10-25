@@ -92,7 +92,7 @@
     saveTimer = null;
     try {
       localStorage.setItem(KEY, JSON.stringify({drafts, selectedId}));
-      status.textContent = 'Brouillon sauvegardé dans ce navigateur uniquement';
+      status.textContent = 'Texte sauvegardé ici · les images chargées depuis cet ordinateur restent temporaires';
     } catch {
       status.textContent = 'Sauvegarde locale impossible. Exportez votre brouillon pour le conserver.';
     }
@@ -381,7 +381,7 @@
     };
     const url = URL.createObjectURL(new Blob([JSON.stringify(exportData, null, 2)], {type:'application/json'}));
     const a = node('a');
-    a.href = url; a.download = (d.slug || 'brouillon-phasmo') + '.json';
+    a.href = url; a.download = (slugify(d.slug) || 'brouillon-phasmo') + '.json';
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     status.textContent = 'Brouillon exporté en JSON. Il ne s’agit pas d’une publication.';
