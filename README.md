@@ -175,22 +175,33 @@ Décision utilisateur à appliquer sur le journal interactif. Cette section déc
 - **Technique :** séparer l'état de navigation (accueil général / catégorie / fiche, identifiant de catégorie, identifiant de fiche), afin que contenu, onglets et flèches reflètent tous la même sélection.
 
 
-### Phasmophobia — idées de structure et événements communautaires (25/10/2026)
+### Phasmophobia — clarification de la navigation et idées futures (25/10/2026)
 
-**Statut : idées et propositions à étudier, non implémentées, non toutes validées.** Transcription fidèle de la demande utilisateur. Ne pas transformer les points encore ambigus en décisions implicites.
+**Statuts distincts :** les menus déroulants existants relèvent du **développement de la page en cours**. Le blog/news, la rédaction en ligne, le carrousel d'actualités, les tutos à structurer et les tournois communautaires sont des **pistes à développer après finalisation de la page**, sauf décision ultérieure explicite.
 
-#### Structure proposée de la section Phasmophobia
-- **Navigation par déroulement** : préférence exprimée pour une navigation par défilement ; préciser ultérieurement comment elle cohabite avec les trois onglets.
-- **Premier onglet : News / blog** inspiré de Kinetic (référence au studio / actualités Phasmophobia). Prévoir un espace de publication, ainsi qu'un **accès spécial réservé pour rédiger** les news.
-- **Rédaction des news simplifiée** : formulaire prérempli, notamment pour l'ajout d'images et autres champs de l'article ; éviter le besoin d'éditer le code.
-- **Présentation des news** : carrousel et système d'archives. Mention exacte à clarifier : « 9 + 10 = lien vers kinetic » (ne pas décider sans confirmation s'il s'agit de neuf cartes + une dixième menant à Kinetic).
-- **Deuxième onglet : Livre** : accès au carnet Phasmophobia interactif en cours de prototypage dans la conversation Tips. Préserver la navigation interne Sommaire → Rubrique → Fiche.
-- **Troisième onglet : Tutos** : espace dédié aux tutoriels ; format et alimentation à définir.
+#### Navigation déroulante : chantier actuel
+- La capture utilisateur montre la section « Où trouver les ressources ? » et des **accordéons** : « Les tutoriels en vidéo », « Le carnet des entités », « Les enquêtes ensemble » ; un clic sur la flèche ouvre/referme le contenu du panneau. Cette interaction de déroulement fait partie des travaux de page **actuels**.
+- Il ne s'agit **pas** d'un défilement automatique de la page, ni des cinq onglets physiques du journal, ni nécessairement de trois pages Web distinctes.
+- La structure envisagée à terme est **News / Livre / Tutos**, en conservant le principe d'accès par rubriques déroulantes à discuter lors du développement final. Ne pas remplacer les panneaux actuels sans validation.
 
-#### Idée future d'événement participatif (non validée)
-- Mettre en place une sorte de **duel de badges Phasmophobia** : confrontations successives et **arbre de tournoi** représentant les gagnants et les perdants jusqu'à un vainqueur.
-- Permettre aux utilisateurs de **voter** pour les badges lors des affrontements.
-- Exemple de durée événementielle : **deux semaines**.
-- Récompense envisageable : **voter donne droit à un booster TCG**. Règles à décider avant développement : qui peut participer, fréquence et nombre de boosters accordés, prévention des votes répétés/abus, intégration entre le module Phasmo et le système TCG, et règles de participation.
+#### Blog / actualités Phasmophobia : fonctionnalité future
+- Source : actualités du **blog des développeurs Kinetic Games**, liées à Phasmophobia. Une autre personne de la communauté effectue déjà les **traductions françaises** des actualités du blog développeur ; l'objectif est de les publier sur le site sous forme d'articles, avec crédit/source et lien vers l'original.
+- **Carrousel** : **9 vignettes d'actualités traduites**, plus **une 10e vignette fixe** qui renvoie directement à **https://www.kineticgames.co.uk/news**. Cette 10e vignette ne doit pas être remplacée par une actualité. Prévoir un **système d'archives** pour les anciennes publications.
+- Prévoir un **accès de rédaction spécifique** à la personne chargée des traductions, qui **n'est ni Deadelus ni l'utilisatrice** ; permissions limitées à l'espace news Phasmophobia, sans droits d'administrateur général, sans accès aux autres univers ni aux réglages sensibles. Identité, authentification et workflow de publication à déterminer avant implémentation.
+- L'éditeur de news sera **simple et en ligne** : formulaire guidé avec titre, source originale, texte riche, mise en page et insertion d'images **en blocs dans le flux du texte**, à l'emplacement choisi (pas en arrière-plan du texte, pas besoin d'écrire du HTML). Aperçu avant publication, gestion de stockage d'images et contenus à concevoir. Prévoir sécurité des fichiers et du contenu saisi.
+- Ne pas supposer que la reproduction intégrale des articles ou images Kinetic est automatiquement autorisée : clarifier droits d'usage/crédits avant publication.
 
-**Important** : aucun changement du site public ni des règles TCG n'est autorisé par cette seule note ; conception visuelle et fonctionnelle à travailler en prototype d'abord.
+#### Livre et tutos
+- **Rubrique « Livre »** : accès au journal Phasmophobia interactif actuellement prototypé en dehors du déploiement public. Navigation interne du livre conservée : Sommaire général → liste par catégorie → fiche ; onglet de catégorie = retour à sa liste ; flèches dans une fiche = fiche précédente/suivante de la même catégorie.
+- **Rubrique « Tutos »** : accès aux ressources pédagogiques et tutoriels ; forme et alimentation à décider ultérieurement.
+
+#### Événements participatifs / tournois : idée future, pas de développement immédiat
+- Idée : **duels de badges Phasmophobia**, ou de **fantômes/entités**, d'**équipements/matériel**, ou de toute autre catégorie choisie pour l'événement. Chaque confrontation est soumise au **vote de la communauté** ; un arbre affiche gagnants/perdants et progressions jusqu'au vainqueur.
+- **Durée variable en fonction de l'événement et de son sujet** : l'exemple « deux semaines » évoqué précédemment n'est **pas** une durée fixe. Le format, les dates, le nombre de manches et les règles sont à paramétrer pour chaque événement.
+- **Récompense envisageable, acceptée comme piste :** un booster TCG lié à la participation au vote. Plafonds, timing de l'attribution, conditions d'éligibilité et intégration TCG restent à décider ; ne pas créer de boosters automatiquement sans ces validations.
+- **Connexion et anti-abus à étudier :** authentification Twitch **ou** Discord (choix non arrêté), contrôle d'ancienneté du compte ou autre signal approprié, prévention des comptes multiples/votes répétés, cohérence avec les règles existantes du TCG, protection des données.
+- Le vote ne devrait pas exiger des permissions disproportionnées et la solution de vérification d'ancienneté dépendra des données effectivement accessibles à la plateforme choisie.
+
+**Priorités enregistrées :** 1) finir les menus accordéon et la page Phasmophobia en cours, avec prototypes du journal hors ligne ; 2) développer ensuite news, édition déléguée, archives et tutos selon validation ; 3) étudier les tournois, le vote sécurisé et les boosters comme évolution ultérieure.
+
+**Limite :** notes seulement dans la branche developpement/phasmo-v2. Aucune modification de main, du site public, des permissions ni des règles du TCG.
