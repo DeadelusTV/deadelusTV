@@ -41,7 +41,7 @@
 
   // La playlist peut contenir des centaines de Shorts : limiter la galerie.
   // L'ordre affiché reste celui choisi dans la playlist YouTube.
-  const MAX_VISIBLE_SHORTS = 12;
+  const MAX_VISIBLE_SHORTS = 10;
 
   function render(videos) {
     const fragment = document.createDocumentFragment();
@@ -92,6 +92,13 @@
   prev.addEventListener('click', () => step(-1));
   next.addEventListener('click', () => step(1));
   track.addEventListener('scroll', syncButtons, { passive: true });
+  // En ouvrant les tutos, recalculer les flèches du carrousel.
+  const tutorialsPanel = track.closest('details');
+  if (tutorialsPanel) {
+    tutorialsPanel.addEventListener('toggle', () => {
+      if (tutorialsPanel.open) requestAnimationFrame(syncButtons);
+    });
+  }
   window.addEventListener('resize', syncButtons);
   syncButtons();
 
