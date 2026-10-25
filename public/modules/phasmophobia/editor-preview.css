@@ -1,0 +1,139 @@
+
+/* Prototype isolé : pas de styles globaux ajoutés au site public. */
+html { scroll-behavior: smooth; }
+body.phasma-editor-demo {
+  margin: 0;
+  min-width: 320px;
+  background: #101112;
+  color: #ece7dc;
+  font: 14px/1.6 system-ui, -apple-system, Segoe UI, sans-serif;
+}
+.phasma-editor-demo * { box-sizing: border-box; }
+.phasma-editor-demo button,
+.phasma-editor-demo input,
+.phasma-editor-demo textarea { font: inherit; }
+.phasma-editor-demo button { cursor: pointer; }
+.phasma-editor-demo :where(button,input,textarea,a):focus-visible {
+  outline: 2px solid #e0bd7d;
+  outline-offset: 3px;
+}
+.phasma-editor-demo [hidden] { display: none !important; }
+.phasma-editor-skip { position: absolute; top: -100px; left: 10px; z-index: 20; }
+.phasma-editor-skip:focus { top: 10px; background: #171717; padding: 10px; }
+.phasma-editor-topbar {
+  display: flex; align-items: center; justify-content: space-between; gap: 18px;
+  padding: 15px clamp(16px,3vw,44px);
+  border-bottom: 1px solid #35332e;
+  background: #161718;
+}
+.phasma-editor-home { display: inline-flex; align-items: center; gap: 13px; text-decoration: none; color: #f2eadd; font-weight: 800; letter-spacing: .5px; }
+.phasma-editor-home img { width: 40px; height: 40px; border-radius: 50%; }
+.phasma-editor-home small { font-weight: 500; color: #aba69c; font-size: 12px; letter-spacing: .3px; }
+.phasma-editor-home .gold { color: #e3bf82; }
+.phasma-editor-mode { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: #e5c38b; }
+.phasma-editor-warning {
+  margin: 14px clamp(15px,2vw,32px) 0; padding: 13px 19px;
+  border: 1px solid #6b5331; border-radius: 7px;
+  background: #30281d; color: #e9d6b5; font-size: 12px; line-height: 1.65;
+}
+.phasma-editor-shell {
+  display: grid; grid-template-columns: 275px minmax(0,1fr);
+  align-items: start; gap: clamp(16px,2vw,28px);
+  max-width: 1540px; margin: 0 auto; padding: 25px clamp(15px,2vw,32px) 80px;
+}
+.phasma-editor-sidebar {
+  position: sticky; top: 16px; min-width: 0;
+  padding: 19px; border: 1px solid #34332f; border-radius: 11px;
+  background: #18191a;
+}
+.phasma-editor-sidebar-head { display: flex; flex-direction: column; gap: 13px; }
+.phasma-editor-demo h1, .phasma-editor-demo h2, .phasma-editor-demo h3 { color: #f1e7d8; }
+.phasma-editor-sidebar h2 { margin: 0; font: 600 25px/1.3 Georgia, serif; }
+.phasma-editor-draft-list { display: grid; gap: 8px; margin-top: 20px; }
+.phasma-editor-draft {
+  display: block; width: 100%; border: 1px solid #36352f; border-radius: 7px;
+  text-align: left; padding: 13px; background: #202121; color: #ddd4c5;
+}
+.phasma-editor-draft[aria-current="true"] { border-color: #b7945a; background: #29251e; }
+.phasma-editor-draft-title { display:block; font-weight: 650; line-height: 1.35; overflow-wrap: anywhere; }
+.phasma-editor-draft-meta { display:block; margin-top: 6px; font-size: 11px; color: #aaa497; }
+.phasma-editor-sidebar-note { color: #aaa397; font-size: 11px; margin: 20px 0 0; }
+.phasma-editor-main { min-width: 0; }
+.phasma-editor-toolbar {
+  display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap;
+  gap: 23px; margin: 0 0 24px;
+}
+.phasma-editor-kicker { margin: 0 0 7px; color: #d3af76; font-size: 10px; letter-spacing: 2px; }
+.phasma-editor-toolbar h1 { margin: 0 0 5px; font: 600 clamp(28px,3vw,37px)/1.2 Georgia, serif; }
+#editor-save-status { margin: 0; color: #bdb1a0; font-size: 11px; }
+.phasma-editor-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.phasma-editor-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 10px 13px; min-height: 39px;
+  border: 1px solid #5c523f; border-radius: 5px;
+  background: #242421; color: #e9dec9; font-weight: 600; font-size: 12px;
+}
+.phasma-editor-btn:hover:not(:disabled) { border-color: #dfbd83; background: #332e26; }
+.phasma-editor-btn--gold,
+.phasma-editor-btn--selected { background: #6e542b; border-color: #ba955e; color: #fff4d8; }
+.phasma-editor-btn--danger { color: #df9e94; border-color: #79423d; }
+.phasma-editor-btn--disabled,
+.phasma-editor-btn:disabled { opacity: .45; cursor: not-allowed; }
+.phasma-editor-panel { padding: clamp(18px,2.5vw,30px); margin-bottom: 18px; border: 1px solid #383631; border-radius: 10px; background: #1a1b1b; }
+.phasma-editor-panel h2 { font: 600 25px/1.25 Georgia, serif; margin: 0 0 23px; }
+.phasma-editor-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px; }
+.phasma-editor-field { display:flex; flex-direction:column; gap: 8px; min-width: 0; color: #e0d0b7; font-weight: 600; font-size: 12px; }
+.phasma-editor-field--wide { grid-column: 1/-1; }
+.phasma-editor-field input,
+.phasma-editor-field textarea,
+.phasma-editor-block :is(input,textarea) {
+  display: block; width: 100%; min-width: 0; border: 1px solid #50483b;
+  border-radius: 5px; background: #111314; color: #eae4dc;
+  padding: 11px 13px; resize: vertical;
+}
+.phasma-editor-field input[type="file"] { padding: 9px 12px; font-size: 12px; }
+.phasma-editor-demo ::placeholder { color: #898781; opacity: 1; }
+.phasma-editor-hint { color: #aaa49a; font-size: 11px; font-weight: 400; }
+.phasma-editor-section-heading { display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:10px; }
+.phasma-editor-section-heading h2 { margin-bottom: 5px; }
+.phasma-editor-section-heading p { color: #bdb8ae; margin: 0 0 16px; font-size: 12px; }
+.phasma-editor-blocks { display:grid; gap: 13px; }
+.phasma-editor-block { padding: 15px; border: 1px solid #414038; border-radius: 8px; background: #222321; }
+.phasma-editor-block-bar { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 11px; }
+.phasma-editor-block-label { color: #d5b57c; font-size: 12px; font-weight: 700; }
+.phasma-editor-block-controls { display:flex; gap: 6px; flex-wrap: wrap; }
+.phasma-editor-block-controls button { min-height: 31px; padding: 5px 9px; font-size: 11px; }
+.phasma-editor-block textarea { min-height: 86px; }
+.phasma-editor-block-fields { display: grid; gap: 10px; }
+.phasma-editor-block-fields label { color: #cfc2ad; font-size: 11px; font-weight: 600; }
+.phasma-editor-block-fields label :is(input,textarea) { margin-top: 6px; }
+.phasma-editor-img-preview { max-height: 250px; max-width: 100%; border-radius: 6px; margin-top: 10px; object-fit: contain; }
+.phasma-editor-add { display:flex; flex-wrap:wrap; gap:9px; margin-top: 18px; }
+.phasma-editor-bottom { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+.phasma-editor-bottom p { color: #a69d90; font-size: 11px; margin: 0; }
+.phasma-editor-preview-hint { margin: 0 0 18px; color: #dcc18c; font-size: 12px; }
+#editor-preview-article { padding: clamp(18px,3vw,36px); border: 1px solid #484034; border-radius: 10px; background: #191a1a; }
+#editor-preview-article.phasma-news-reader { max-width: 1040px; }
+@media (max-width: 1050px) {
+  .phasma-editor-shell { grid-template-columns: 210px minmax(0,1fr); }
+  .phasma-editor-home small { display:none; }
+}
+@media (max-width: 750px) {
+  .phasma-editor-shell { display: flex; flex-direction: column; padding-top: 16px; }
+  .phasma-editor-sidebar { position: static; width: 100%; }
+  .phasma-editor-draft-list { display: flex; flex-wrap: wrap; }
+  .phasma-editor-draft { width: auto; min-width: 155px; flex: 1 1 175px; }
+  .phasma-editor-main { width: 100%; }
+  .phasma-editor-topbar { align-items: flex-start; }
+  .phasma-editor-mode { font-size: 9px; }
+}
+@media (max-width: 540px) {
+  .phasma-editor-fields { grid-template-columns: 1fr; }
+  .phasma-editor-field--wide { grid-column: auto; }
+  .phasma-editor-toolbar { align-items: flex-start; }
+  .phasma-editor-toolbar h1 { font-size: 28px; }
+  .phasma-editor-actions { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
