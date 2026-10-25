@@ -737,3 +737,9 @@
   .crew-module .visual-grid { grid-template-columns:minmax(0,1fr); }
   .crew-module .visual-mentions { grid-column:auto; }
 }
+
+/* Sur DeadelusTV, les personnages du Crew passent devant le bandeau Discord commun. */
+#page-crewmongus:not([hidden]) {
+  position: relative;
+  z-index: 2;
+}
