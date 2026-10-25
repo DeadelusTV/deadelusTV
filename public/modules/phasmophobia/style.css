@@ -95,3 +95,171 @@
     font-size: 14px;
   }
 }
+
+
+/* Section Shorts Phasmophobia : galerie native, sans médias fictifs. */
+#page-phasmophobia .phasma-shorts-section {
+  margin: 12px 0 48px;
+  padding: 14px 0 0;
+  border-top: 1px solid #2c2d2f;
+}
+#page-phasmophobia .phasma-shorts-heading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 26px;
+  margin-bottom: 24px;
+}
+#page-phasmophobia .phasma-shorts-heading-main {
+  flex: 0 1 auto;
+}
+#page-phasmophobia .phasma-shorts-heading .eyebrow {
+  display: block;
+  margin-bottom: 9px;
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+#page-phasmophobia .phasma-shorts-heading h2 {
+  font-size: clamp(27px, 2.8vw, 34px);
+  line-height: 1.25;
+}
+#page-phasmophobia .phasma-shorts-heading > p {
+  flex: 1 1 230px;
+  min-width: 0;
+  color: #b7b5b2;
+  font-size: 13px;
+  line-height: 1.7;
+}
+#page-phasmophobia .phasma-shorts-link {
+  flex: 0 0 auto;
+  font-size: 12px;
+  white-space: nowrap;
+}
+#page-phasmophobia .phasma-shorts-link .icon {
+  width: 17px;
+  height: 17px;
+}
+#page-phasmophobia .phasma-shorts-gallery {
+  position: relative;
+}
+#page-phasmophobia .phasma-shorts-track {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 0 2px 10px;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-color: #574c38 #171819;
+  scrollbar-width: thin;
+}
+#page-phasmophobia .phasma-short-card {
+  flex: 0 0 clamp(155px, 17vw, 205px);
+  min-width: 0;
+  scroll-snap-align: start;
+}
+#page-phasmophobia .phasma-short-placeholder {
+  aspect-ratio: 9 / 16;
+  position: relative;
+  display: grid;
+  place-items: center;
+  border: 1px solid #303132;
+  border-radius: 7px;
+  background: radial-gradient(ellipse at 60% 28%, #252628 0%, #1a1b1d 36%, #111213 80%);
+  overflow: hidden;
+}
+#page-phasmophobia .phasma-short-card:nth-child(even) .phasma-short-placeholder {
+  background: radial-gradient(ellipse at 30% 68%, #29251f 0%, #1a1919 40%, #111213 80%);
+}
+#page-phasmophobia .phasma-short-placeholder::after {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  border: 1px solid #ffffff0a;
+  border-radius: 3px;
+  pointer-events: none;
+}
+#page-phasmophobia .phasma-short-number {
+  position: absolute;
+  top: 13px;
+  left: 14px;
+  color: #8f877b;
+  font: 12px Georgia, serif;
+}
+#page-phasmophobia .phasma-short-mark {
+  display: grid;
+  place-items: center;
+  width: 49px;
+  height: 49px;
+  border: 1px solid #bba88675;
+  border-radius: 50%;
+  background: #1617189c;
+  color: #d7c098;
+}
+#page-phasmophobia .phasma-short-mark .icon {
+  width: 20px;
+  height: 20px;
+}
+#page-phasmophobia .phasma-short-caption {
+  display: block;
+  margin-top: 10px;
+  color: #9c9b97;
+  font-size: 12px;
+}
+#page-phasmophobia .phasma-shorts-controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 7px;
+  margin-top: 12px;
+}
+#page-phasmophobia .phasma-shorts-arrow {
+  display: grid;
+  place-items: center;
+  width: 35px;
+  height: 35px;
+  border: 1px solid #4c483f;
+  border-radius: 50%;
+  color: #e6d1a7;
+  background: #161719;
+}
+#page-phasmophobia .phasma-shorts-arrow:hover:not(:disabled) {
+  border-color: #dcb772;
+}
+#page-phasmophobia .phasma-shorts-arrow:disabled {
+  opacity: .3;
+  cursor: default;
+}
+#page-phasmophobia [data-phasma-shorts-prev] .icon {
+  transform: rotate(180deg);
+}
+#page-phasmophobia .phasma-shorts-note {
+  margin: 9px 0 0;
+  max-width: 800px;
+  color: #999a98;
+  font-size: 11px;
+  line-height: 1.6;
+}
+@media (max-width: 760px) {
+  #page-phasmophobia .phasma-shorts-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+  #page-phasmophobia .phasma-shorts-heading > p {
+    flex: auto;
+  }
+  #page-phasmophobia .phasma-shorts-link {
+    margin-top: 5px;
+  }
+  #page-phasmophobia .phasma-short-card {
+    flex-basis: clamp(145px, 47vw, 190px);
+  }
+  #page-phasmophobia .phasma-shorts-section {
+    margin-bottom: 37px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #page-phasmophobia .phasma-shorts-track {
+    scroll-behavior: auto;
+  }
+}
