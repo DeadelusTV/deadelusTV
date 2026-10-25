@@ -55,6 +55,24 @@ jobs:
             echo '::warning::YouTube indisponible : conservation des dernieres donnees publiees.'
           fi
 
+      - name: Actualiser les Shorts Phasmophobia
+        id: phasmo
+        env:
+          SITE_DIR: ${{ inputs.site_directory || 'public' }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: |
+          set -euo pipefail
+          case "$SITE_DIR" in public|.) ;; *) echo 'Dossier non autorisé.' >&2; exit 1 ;; esac
+          if [[ -z "$YOUTUBE_API_KEY" ]]; then
+            echo 'fresh=false' >> "$GITHUB_OUTPUT"
+            echo '::warning::YOUTUBE_API_KEY absent : réutilisation des données déjà publiées.'
+          elif python3 scripts/update-phasmo-shorts.py --output "$SITE_DIR/data/phasmo-shorts.json"; then
+            echo 'fresh=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'fresh=false' >> "$GITHUB_OUTPUT"
+            echo '::warning::Playlist YouTube indisponible : anciennes métadonnées conservées.'
+          fi
+
       - name: Verifier et preparer les fichiers publics
         env:
           SITE_DIR: ${{ inputs.site_directory || 'public' }}
@@ -129,6 +147,7 @@ jobs:
       - name: Transferer puis activer la nouvelle version
         env:
           YOUTUBE_FRESH: ${{ steps.youtube.outputs.fresh }}
+          PHASMO_FRESH: ${{ steps.phasmo.outputs.fresh }}
         run: |
           set -euo pipefail
           release_id="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
@@ -147,7 +166,7 @@ jobs:
             "$RUNNER_TEMP/deadelustv-public/" \
             "ovh-deadelustv:/var/www/deadelustv/accueil/releases/$release_id/"
 
-          ssh -F "$ssh_config" ovh-deadelustv bash -se -- "$release_id" "$YOUTUBE_FRESH" <<'REMOTE'
+          ssh -F "$ssh_config" ovh-deadelustv bash -se -- "$release_id" "$YOUTUBE_FRESH" "$PHASMO_FRESH" <<'REMOTE'
           set -euo pipefail
           base=/var/www/deadelustv/accueil
           release="$base/releases/$1"
@@ -155,6 +174,10 @@ jobs:
           if [[ "$2" != 'true' && -s "$base/current/data/latest-youtube.json" ]]; then
             install -d -m 755 "$release/data"
             install -m 644 "$base/current/data/latest-youtube.json" "$release/data/latest-youtube.json"
+          fi
+          if [[ "$3" != 'true' && -s "$base/current/data/phasmo-shorts.json" ]]; then
+            install -d -m 755 "$release/data"
+            install -m 644 "$base/current/data/phasmo-shorts.json" "$release/data/phasmo-shorts.json"
           fi
           if [[ -e "$base/current" && ! -L "$base/current" ]]; then
             echo 'current existe mais ne correspond pas a un lien symbolique.' >&2

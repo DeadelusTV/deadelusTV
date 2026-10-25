@@ -1,59 +1,55 @@
-# DeadelusTV — accueil public
+# DeadelusTV — site principal
 
-Site : https://www.deadelustv.com/#accueil
+Site public : https://www.deadelustv.com/
+Dépôt : https://github.com/DeadelusTV/deadelusTV
+Roadmap : [docs/ROADMAP.md](docs/ROADMAP.md)
 
-Sources : https://github.com/DeadelusTV/deadelusTV
+## Architecture et publication
 
-Le site est statique : seuls les fichiers de `public/` sont servis. HTML, CSS et JavaScript sont séparés ; aucune dépendance ni compilation n’est nécessaire pour l’affichage. Les services Supabase existants ne sont pas utilisés par cet accueil.
+Le portail est un site statique (HTML, CSS, JavaScript), servi depuis `public/` sur OVH. Aucun service Supabase supplémentaire n'est nécessaire pour les pages de présentation Phasmophobia et TCG. Les modules Crewmong Us et Pavillon Noir suivent leurs intégrations propres ; ne pas considérer leurs données ou leur administration comme celles du TCG.
 
-## Accueil
+`main` est la branche qui déclenche `.github/workflows/deploy-ovh.yml` : construction des fichiers statiques dans une nouvelle release OVH, transfert SSH vérifié puis activation de `/var/www/deadelustv/accueil/current`. Le workflow ne publie que `public/`, et les clés d'accès OVH sont des secrets/variables GitHub Actions. Ne jamais ajouter de secret dans `public/`.
 
-- Photo de profil dans l’entête et en favicon ; le logo permet de revenir à l’accueil.
-- Menu et raccourcis : Phasmophobia, TCG, Crewmong Us, Jeux de rôle.
-- Lecteur Twitch chargé directement, en mode muet au départ. Si la largeur disponible est inférieure aux 400 px requis par Twitch, un lien vers la chaîne est proposé. Le badge violet ouvre également Twitch. Le lecteur est déchargé lorsqu’on quitte l’accueil.
-- Réseaux flottants sur le côté sur ordinateur et en barre basse sur mobile ; ils disparaissent lorsque les liens du pied de page sont entièrement visibles.
-- Grande vignette YouTube : dernière vidéo publiée dans l’onglet Vidéos, hors Shorts. La miniature mène à la vidéo, le titre à la chaîne. Le titre de rubrique « À retrouver en vidéo » reste à renommer.
-- Un seul bloc de vidéos courtes : TikTok. Son contenu reste illustratif et son lien ouvre le profil ; aucune récupération automatique TikTok n’est ajoutée.
-- Les présentations des univers restent distinctes des sites existants. Le booster TCG est une démonstration fictive.
+Les branches de développement sont indépendantes. La démo `preview/presentation-deadelus`, publiée séparément sur Cloudflare Pages, n'est pas une source de vérité pour le reste de l'accueil : **ne jamais fusionner l'intégralité de cette branche sur `main`** sans revue des fichiers.
 
-## Actualisation YouTube
+## Pages actuellement publiées
 
-`scripts/update-youtube.py` lit uniquement la page publique `https://www.youtube.com/@deadelustv/videos?hl=fr&gl=FR`. Il vérifie l’identifiant de chaîne, l’onglet sélectionné et le tri récent avant de retenir la première vidéo publiée. Les Shorts sont exclus par le choix de l’onglet, pas par un seuil de durée. Une vidéo classique courte reste donc éligible. Les directs en cours et les publications à venir ne sont pas retenus.
+- **Accueil** : lecteur Twitch avec écran hors ligne personnalisé et texte néon ; dernière vidéo principale YouTube, rubrique TikTok, liens sociaux et accès aux univers. Conserver le fonctionnement et les ajustements du site officiel en faisant évoluer d'autres pages.
+- **Phasmophobia V2** (`#phasmophobia`) : bandeau visuel, galerie des tutoriels Shorts issus de la playlist officielle et présentation visuelle du carnet des enquêteurs. Galerie : `public/modules/phasmophobia/module.js`, styles : `public/modules/phasmophobia/style.css`, données : `public/data/phasmo-shorts.json`. Le carnet représenté sur la page n'est **pas** encore le livre interactif terminé.
+- **TCG** (`#tcg`) : page d'attente immersive « Un nouvel univers se prépare » avec cartes symboliques, sans révélation des mécaniques du futur jeu. Style isolé dans `public/assets/tcg-attente.css`. L'ancien booster fictif n'est plus proposé sur cette page.
+- **Crewmong Us / Pavillon Noir** : intégrations existantes, conservées lors de la publication ciblée des deux rubriques ci-dessus. Se référer aussi à `docs/crewmongus-integration.md` et `docs/pavillon-noir-integration.md` pour leur historique d'intégration.
 
-Le script extrait seulement l’identifiant, le titre et l’adresse de la miniature. Il ne télécharge aucune vidéo. Python 3 et sa bibliothèque standard suffisent ; aucune clé API, aucun cookie ni compte YouTube n’est nécessaire. Cette lecture de page publique n’est pas l’API officielle : un changement de structure YouTube peut demander une adaptation. Une erreur ne remplace pas les données précédentes par un résultat vide.
+Les pages Phasmo V2 et TCG d'attente ont été publiées sur `main` le **25 octobre 2026** (commit `8db665fbf9d4b966e815a7d580fbbb4991ca3e1a`). La correction de libellé « Pavillon Noir » déjà présente sur `main` a été conservée. Ne pas confondre cette publication avec le **prototype de livre interactif Phasmo** en cours sur `developpement/phasmo-v2`, non retenu pour cette publication.
 
-Les métadonnées sont écrites atomiquement dans `public/data/latest-youtube.json`. Le fichier du dépôt est un premier instantané ; les actualisations suivantes sont publiées directement sur le site, sans créer de commits automatiques. Le navigateur relit ce fichier au chargement et environ toutes les cinq minutes quand l’accueil est visible. Les liens et le dernier affichage restent utilisables en cas d’erreur de récupération.
+## Deux actualisations YouTube distinctes
 
-## GitHub → OVH
+### 1. Dernière vidéo principale de l'accueil
 
-`.github/workflows/deploy-ovh.yml` conserve le déploiement sur chaque push vers `main`, ainsi que son lancement manuel. Il actualise les métadonnées YouTube avant de préparer `public/`, transfère la nouvelle version puis bascule le lien `current`. Si YouTube est indisponible, les métadonnées de la version déjà en ligne sont reprises avant activation.
+- `scripts/update-youtube.py` consulte la page publique des vidéos YouTube (pas la playlist Phasmo), sans clé API.
+- `public/data/latest-youtube.json` fournit la vignette et le titre.
+- `.github/workflows/refresh-youtube.yml` vérifie aux minutes 7, 22, 37 et 52 de chaque heure (UTC), et publie le seul JSON via OVH. Le navigateur vérifie périodiquement ce fichier lorsque l'accueil est visible.
 
-`.github/workflows/refresh-youtube.yml` vérifie YouTube aux minutes 7, 22, 37 et 52 de chaque heure, soit un intervalle prévu de quinze minutes. Il peut aussi être lancé manuellement dans Actions. Il ne transfère que le JSON de métadonnées et ne crée pas de nouvelle version complète du site. Le groupe de concurrence est partagé avec le déploiement pour éviter une écriture pendant la bascule de version.
+### 2. Galerie de tutoriels Phasmophobia
 
-Les deux workflows utilisent les paramètres déjà présents dans le dépôt : variables `VPS_HOST`, `VPS_USER`, `VPS_KNOWN_HOSTS` et secret `VPS_SSH_KEY`. La vérification de la clé du serveur SSH reste activée et les permissions GitHub restent en lecture seule. La racine de publication est `/var/www/deadelustv/accueil/current` ; aucune nouvelle configuration Caddy, tâche cron du VPS ou intervention Supabase n’est nécessaire.
+- Source : https://www.youtube.com/playlist?list=PL-fyrrZ6KfGkn4a2bt07-HqyjIncP_X7g.
+- `scripts/update-phasmo-shorts.py` utilise YouTube Data API v3 pour récupérer les métadonnées publiques de la playlist, avec pagination. Il vérifie les identifiants, déduplique, conserve l'ordre de la playlist et écrit atomiquement le JSON. Il ne télécharge **aucune vidéo**.
+- Le secret GitHub Actions `YOUTUBE_API_KEY` est lu **uniquement par GitHub Actions**. La clé doit être limitée à l'API YouTube Data API v3 et jamais ajoutée au dépôt ni exposée dans le navigateur. Le test sur la branche de développement a réussi le 25/10/2026, mais le bon fonctionnement continu sur `main` doit être suivi via Actions.
+- `.github/workflows/refresh-phasmo-shorts.yml` vérifie **quatre fois par jour**, à **01:13, 07:13, 13:13 et 19:13 UTC**, avec lancement manuel possible sur `main`. La publication modifie uniquement `data/phasmo-shorts.json` sur le VPS, sans commit automatique.
+- La galerie affiche jusqu'à **12 cartes** et propose le lien vers la playlist. Son affichage dépend de la disponibilité des miniatures YouTube.
 
-La planification GitHub n’est pas une garantie à la minute : GitHub peut retarder ou omettre une exécution en période de charge. Sur un dépôt public, les exécutions planifiées sont désactivées après soixante jours sans activité du dépôt ; il faut alors réactiver le workflow dans Actions. Source : https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
+En cas d'échec ou de réponse vide de YouTube, ne pas écraser le dernier JSON valide. Le déploiement général OVH tente lui aussi l'actualisation et conserve les données du site précédent si la collecte échoue ou si la clé manque. Les deux workflows YouTube et le workflow de déploiement partagent un même groupe de concurrence pour éviter des écritures simultanées sur `current`.
 
-## Installation de cette évolution
+**Limites :** les horaires GitHub Actions sont indicatifs, pas des garanties de déclenchement à la minute ; sur les dépôts publics inactifs, les workflows planifiés peuvent être désactivés. La clé et les quotas de YouTube Data API v3 restent à surveiller. Les données et leur actualisation sont indépendantes de Supabase.
 
-Récupérer d’abord les derniers changements de `main`. Appliquer les huit fichiers de cette mise à jour dans le dépôt en conservant exactement leurs chemins, puis faire un commit et un push. Aucun fichier existant supplémentaire n’est à supprimer.
+## Contrôles et tests
 
-| Fichiers à remplacer | Fichiers à ajouter |
-| --- | --- |
-| `public/index.html` | `public/data/latest-youtube.json` |
-| `public/assets/styles.css` | `scripts/update-youtube.py` |
-| `public/assets/app.js` | `.github/workflows/refresh-youtube.yml` |
-| `.github/workflows/deploy-ovh.yml` | |
-| `README.md` | |
+- Tests de récupération sans réseau : `python3 -m unittest discover -s scripts -p 'test_phasmo_shorts.py'`.
+- Lancer manuellement **Actualiser les Shorts Phasmophobia** dans GitHub → Actions après la mise en place sur `main`. Vérifier que l'étape de transfert OVH réussit ; un simple test sur une branche de développement ne prouve pas la publication.
+- Vérifier dans le navigateur : `/#accueil`, `/#phasmophobia`, `/#tcg`, mobile, lecture Twitch et contenu de la galerie Phasmo.
+- Après tout changement de `main`, vérifier le workflow **Deployer l'accueil sur OVH**, puis le rendu du site officiel.
 
-Avec GitHub Desktop : récupérer les changements avec Fetch/Pull, copier les fichiers fournis dans le dossier du dépôt local, vérifier les huit chemins dans la liste des changements, puis Commit et Push. Depuis GitHub web : remplacer ou ajouter ces mêmes fichiers ; appliquer les workflows après les fichiers publics et le script Python.
+## Ce qui n'est PAS publié
 
-Après publication, attendre la réussite de « Deployer l’accueil sur OVH », puis vérifier l’accueil en rechargeant la page. Dans Actions, lancer une fois « Actualiser la derniere video YouTube » sur `main` pour vérifier le transfert du JSON avec les droits SSH réels. Une exécution réussie confirme ce branchement ; les tests locaux ne le prouvent pas.
+Le livre interactif Phasmo, sa direction artistique avancée, son feuilletage et ses éventuelles fiches issues du bot Discord restent **en développement / à valider** sur `developpement/phasmo-v2`. Ils ne doivent pas être assimilés au carnet décoratif actuellement publié ni intégrés automatiquement sur `main`.
 
-L’archive contient des fichiers complets à appliquer, pas un nouveau site à placer dans un sous-dossier. `scripts/deploy-ovh.sh` reste un ancien utilitaire distinct ; les workflows actuels utilisent leur propre procédure.
-
-## Vérifications et limites avant publication
-
-La récupération réelle sur la chaîne a été exécutée. Les cas onglet incorrect, mauvais tri, Shorts, vidéo classique courte et panne ont été contrôlés. Les syntaxes JavaScript, Python, YAML et Bash ainsi que la publication et le repli ont été vérifiés localement ; le transfert SSH a été simulé sans toucher au serveur. La logique JavaScript des liens et du rafraîchissement a été contrôlée.
-
-Le rendu visuel de cette évolution et l’exécution réelle des nouveaux workflows restent à vérifier après publication par Yekelle. L’aperçu local n’était pas accessible depuis le navigateur de contrôle. Ne pas confondre ces fichiers préparés avec un déploiement déjà effectué.
+Voir [la roadmap](docs/ROADMAP.md) pour le statut, les limites et les prochaines décisions.
