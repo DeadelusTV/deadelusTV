@@ -263,3 +263,57 @@
     scroll-behavior: auto;
   }
 }
+
+
+/* Cartes réelles synchronisées depuis la playlist YouTube. */
+#page-phasmophobia .phasma-short-link {
+  display: block;
+  color: inherit;
+}
+#page-phasmophobia .phasma-short-link:hover .phasma-short-placeholder,
+#page-phasmophobia .phasma-short-link:focus-visible .phasma-short-placeholder {
+  border-color: #dcb772;
+}
+#page-phasmophobia .phasma-short-thumb {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  background: #1a1b1c;
+}
+#page-phasmophobia .phasma-short-link .phasma-short-mark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 16px;
+  padding-left: 3px;
+  box-shadow: 0 3px 20px #0009;
+}
+#page-phasmophobia .phasma-short-link .phasma-short-caption {
+  color: #e0ded7;
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+#page-phasmophobia .phasma-shorts-status {
+  width: 100%;
+  min-height: 112px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed #393a3a;
+  border-radius: 7px;
+  background: #161719;
+  padding: 22px;
+  text-align: center;
+  color: #c9c4ba;
+  font-size: 13px;
+}
+#page-phasmophobia .phasma-shorts-status[hidden] {
+  display: none;
+}
