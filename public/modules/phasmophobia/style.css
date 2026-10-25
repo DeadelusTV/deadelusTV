@@ -1,0 +1,97 @@
+/* Bandeau Phasmophobia : styles isolés du reste de DeadelusTV */
+#page-phasmophobia .phasma-hero {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  box-sizing: border-box;
+  max-width: none;
+  min-height: 340px;
+  padding: 48px 34px 58px 0;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+/* Illustration à droite, marges de fondu prévues dès la création. */
+#page-phasmophobia .phasma-hero::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  bottom: 0;
+  left: 29%;
+  right: -4%;
+  background: url('../../assets/phasmo-bandeau.webp') 52% center / cover no-repeat;
+  opacity: .93;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 19%, #000 86%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 19%, #000 86%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Fondus adaptables en CSS, sans rogner ni modifier l'image d'origine. */
+#page-phasmophobia .phasma-hero::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  inset: 0 -4% 0 25%;
+  background:
+    linear-gradient(to bottom, #101112 0%, transparent 22%, transparent 69%, #101112 100%),
+    linear-gradient(to right, #101112 0%, #101112c7 9%, transparent 58%);
+  pointer-events: none;
+}
+
+#page-phasmophobia .phasma-hero > * {
+  position: relative;
+  z-index: 1;
+}
+#page-phasmophobia .phasma-hero .eyebrow {
+  color: #dcb772;
+  margin-bottom: 17px;
+}
+#page-phasmophobia .phasma-hero h1 {
+  max-width: 550px;
+  margin: 0 0 20px;
+  font-size: clamp(38px, 4.2vw, 54px);
+  letter-spacing: -.9px;
+  line-height: 1.1;
+  color: #f2eee7;
+  text-shadow: 0 2px 20px #101112b5;
+}
+#page-phasmophobia .phasma-hero > p {
+  max-width: 440px;
+  margin: 0;
+  color: #c6c5c2;
+  font-size: 15px;
+  line-height: 1.8;
+  text-shadow: 0 2px 16px #101112;
+}
+
+@media (max-width: 760px) {
+  #page-phasmophobia .phasma-hero {
+    min-height: 330px;
+    padding: 56px 0 54px;
+  }
+  #page-phasmophobia .phasma-hero::before {
+    left: 6%;
+    right: -42%;
+    background-position: 55% center;
+    opacity: .65;
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 34%, #000 89%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, #000 34%, #000 89%, transparent 100%);
+  }
+  #page-phasmophobia .phasma-hero::after {
+    inset: 0 -10%;
+    background:
+      linear-gradient(to bottom, #101112 0%, #10111222 23%, #10111222 55%, #101112 100%),
+      linear-gradient(to right, #101112 0%, #101112f0 20%, #101112a3 60%, #10111244 100%);
+  }
+  #page-phasmophobia .phasma-hero h1 {
+    font-size: clamp(34px, 9vw, 46px);
+  }
+  #page-phasmophobia .phasma-hero > p {
+    max-width: 345px;
+    font-size: 14px;
+  }
+}
