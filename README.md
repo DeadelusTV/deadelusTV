@@ -159,3 +159,17 @@ Aucune synchronisation réelle avec l'API n'a encore été confirmée.
 - L'ancienne animation de demi-pages qui s'écartent a été SUPPRIMÉE ; elle est remplacée par un bref fondu sans faux tournage. Une véritable feuille qui pivote reste explicitement À FAIRE après validation visuelle.
 - Police manuscrite Caveat / Kalam récupérée via Google Fonts avec polices de repli si indisponible.
 - Aucune modification de main ni déploiement OVH ; demander une capture Live Server pour valider dimensions, disposition et lisibilité.
+
+
+### Journal V2 — navigation hiérarchique validée (25/10/2026)
+
+Décision utilisateur à appliquer sur le journal interactif. Cette section décrit la navigation souhaitée ; elle ne signifie pas que le code actuel l'implémente déjà entièrement.
+
+- **Première ouverture du journal / accueil :** afficher un sommaire général présentant les différents accès cliquables : Entités, Maps, Équipements, Objets maudits, Divers et les sous-sections comme Médias selon l'organisation finale. Un bouton discret permet de revenir au sommaire général depuis chaque vue.
+- **Clic sur une catégorie depuis le sommaire ou sur son onglet physique :** ouvrir systématiquement la **page d'accueil de cette catégorie**, avec sa liste de fiches cliquables. Exemple : cliquer « Entités » affiche la liste des entités, même si on se trouvait précédemment sur la fiche Obambo.
+- **Clic sur un élément de la liste :** ouvrir sa fiche détaillée dans la catégorie correspondante, sans quitter le livre. Exemple : « Obambo » → catégorie Entités → fiche Obambo.
+- **Flèches latérales depuis une fiche :** parcourir la fiche précédente/suivante **dans la même catégorie**, dans un ordre déterminé par la liste de cette catégorie ; ne pas passer automatiquement à une catégorie différente.
+- **Retour à la liste :** un clic sur l'onglet de la catégorie courante ramène immédiatement à la liste de ses fiches. Cette règle vaut pour Entités, Maps, Équipements, Objets maudits, Divers et leurs éventuelles subdivisions.
+- **Navigation directe entre catégories :** depuis n'importe quelle fiche, sélectionner un autre onglet ouvre l'accueil de l'autre catégorie ; aucun passage obligé par le sommaire général.
+- **À préciser pendant l'implémentation :** comportement en début/fin de liste (flèche désactivée ou boucle) ; classement des entrées ; placement exact de Médias parmi les cinq onglets physiques existants ; éventuel découpage des longues listes en plusieurs pages. Ne pas présumer ces arbitrages.
+- **Technique :** séparer l'état de navigation (accueil général / catégorie / fiche, identifiant de catégorie, identifiant de fiche), afin que contenu, onglets et flèches reflètent tous la même sélection.
