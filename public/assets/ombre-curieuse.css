@@ -5,7 +5,8 @@
 .page-header,
 .breadcrumb,
 .tcg-demo,
-.pn-heading {
+.pn-heading,
+.faq-list {
   position: relative;
 }
 
