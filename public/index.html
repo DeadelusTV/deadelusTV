@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="assets/styles.css">
 <link rel="stylesheet" href="modules/phasmophobia/style.css">
 <link rel="stylesheet" href="modules/phasmophobia/journal.css">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&amp;family=Kalam:wght@400;700&amp;display=swap" rel="stylesheet">
 <script src="modules/phasmophobia/module.js" defer></script>
 <script src="modules/phasmophobia/journal.js" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -190,12 +191,13 @@
    <p>Feuillette les rubriques du carnet. Les fiches et astuces du bot Discord seront ajoutées au fur et à mesure de leur validation.</p>
    <div class="phasma-journal-topics" aria-label="Ouvrir une rubrique du carnet">
     <button type="button" data-phasma-open-category="entites">Entités</button>
-    <button type="button" data-phasma-open-category="cartes">Cartes</button>
+    <button type="button" data-phasma-open-category="cartes">Maps</button>
+    <button type="button" data-phasma-open-category="objets">Objets maudits</button>
     <button type="button" data-phasma-open-category="equipements">Équipements</button>
-    <button type="button" data-phasma-open-category="conseils">Conseils</button>
+    <button type="button" data-phasma-open-category="divers">Divers</button>
    </div>
    <button class="btn btn-gold phasma-journal-open" type="button" data-phasma-open>Ouvrir le carnet</button>
-   <p class="phasma-journal-note">Version de démonstration : le carnet se feuillette, les fiches restent à importer.</p>
+   <p class="phasma-journal-note">Sommaire interactif : les fiches détaillées seront ajoutées après vérification.</p>
   </div>
   <button type="button" class="phasma-journal-art" data-phasma-open aria-label="Ouvrir le carnet des enquêteurs"></button>
  </section>
@@ -205,40 +207,30 @@
 </main>
 <footer class="container site-footer"><div class="footer-top"><a href="#accueil" class="brand" aria-label="Retour à l’accueil"><img class="brand-avatar" src="assets/logo-chaine.png" alt="" width="42" height="42"><span class="brand-name">Deadelus<span>TV</span></span></a><nav class="socials" aria-label="Réseaux sociaux"><a data-link="twitch" href="https://www.twitch.tv/deadelustv" target="_blank" rel="noopener noreferrer"><svg class="icon tw" aria-hidden="true"><use href="#i-twitch"/></svg>Twitch</a><a data-link="youtube" href="https://www.youtube.com/@deadelustv" target="_blank" rel="noopener noreferrer"><svg class="icon youtube" aria-hidden="true"><use href="#i-youtube"/></svg>YouTube</a><a data-link="tiktok" href="https://www.tiktok.com/@deadelustv" target="_blank" rel="noopener noreferrer"><svg class="icon tiktok" aria-hidden="true"><use href="#i-tiktok"/></svg>TikTok</a><a data-link="discord" href="https://discord.gg/eMhE3uSHQS" target="_blank" rel="noopener noreferrer"><svg class="icon dc" aria-hidden="true"><use href="#i-discord"/></svg>Discord</a></nav></div><div class="footer-bottom"><p>DeadelusTV · Le repaire de la communauté</p><button class="btn-quiet back-top" id="back-top" type="button">Retour en haut <svg class="icon stroke" aria-hidden="true"><use href="#i-up"/></svg></button></div></footer>
 
-<dialog id="phasma-book-dialog" aria-labelledby="phasma-book-title" aria-describedby="phasma-book-intro">
- <div class="phasma-book-header">
-  <span>DeadelusTV · Journal Phasmophobia</span>
-  <button class="phasma-book-close" type="button" data-phasma-close aria-label="Fermer le carnet">×</button>
- </div>
- <div class="phasma-book-shell">
-  <div class="phasma-book-spread">
-   <article class="phasma-book-page phasma-book-page--left" aria-label="Page de gauche">
-    <span class="phasma-book-overline" id="phasma-book-overline">Bienvenue à bord</span>
-    <h2 id="phasma-book-title">Journal des enquêteurs</h2>
-    <div class="phasma-book-ornament" aria-hidden="true"></div>
-    <p id="phasma-book-intro">Choisis une rubrique pour parcourir le carnet.</p>
-    <p class="phasma-book-note">Carnet en préparation · Version de démonstration</p>
+<dialog id="phasma-book-dialog" aria-labelledby="phasma-book-title" aria-describedby="phasma-book-description">
+ <h2 class="sr-only" id="phasma-book-title">Journal des enquêteurs</h2>
+ <p class="sr-only" id="phasma-book-description">Feuillette les pages et sélectionne un nom pour consulter sa fiche. Les fiches sont en préparation.</p>
+ <div class="phasma-book-stage">
+  <button type="button" class="phasma-book-close" data-phasma-close aria-label="Fermer le carnet">×</button>
+  <button type="button" class="phasma-book-edge phasma-book-edge--left" data-phasma-page-prev aria-label="Page précédente">‹</button>
+  <div class="phasma-book-book" data-mobile-side="left">
+   <section class="phasma-book-page phasma-book-page--left" aria-label="Page de gauche">
+    <div class="phasma-book-watermark" aria-hidden="true"></div>
+    <div class="phasma-page-inner" id="phasma-book-left"></div>
     <span class="phasma-book-folio" id="phasma-book-folio-left">01</span>
-   </article>
-   <article class="phasma-book-page phasma-book-page--right" aria-label="Page de droite">
-    <span class="phasma-book-overline">Notes de terrain</span>
-    <h3 id="phasma-book-right-title">Table des matières</h3>
-    <div class="phasma-book-content" id="phasma-book-content"></div>
+   </section>
+   <section class="phasma-book-page phasma-book-page--right" aria-label="Page de droite">
+    <div class="phasma-book-watermark" aria-hidden="true"></div>
+    <div class="phasma-page-inner" id="phasma-book-right"></div>
     <span class="phasma-book-folio" id="phasma-book-folio-right">02</span>
-   </article>
+   </section>
   </div>
-  <nav class="phasma-book-tabs" aria-label="Rubriques du carnet">
-   <button type="button" class="phasma-book-tab" data-phasma-chapter="sommaire">Sommaire</button>
-   <button type="button" class="phasma-book-tab" data-phasma-chapter="entites">Entités</button>
-   <button type="button" class="phasma-book-tab" data-phasma-chapter="cartes">Cartes</button>
-   <button type="button" class="phasma-book-tab" data-phasma-chapter="equipements">Équipements</button>
-   <button type="button" class="phasma-book-tab" data-phasma-chapter="conseils">Conseils</button>
-  </nav>
+  <button type="button" class="phasma-book-edge phasma-book-edge--right" data-phasma-page-next aria-label="Page suivante">›</button>
  </div>
- <div class="phasma-book-controls">
-  <button type="button" data-phasma-page-prev>← Page précédente</button>
-  <span id="phasma-book-counter" aria-live="polite">Double page 1 / 5</span>
-  <button type="button" data-phasma-page-next>Page suivante →</button>
+ <div class="phasma-book-footer">
+  <button type="button" data-phasma-home>Retour au sommaire</button>
+  <span id="phasma-book-status" role="status" aria-live="polite">Sommaire</span>
+  <span>Échap pour fermer</span>
  </div>
 </dialog>
 
