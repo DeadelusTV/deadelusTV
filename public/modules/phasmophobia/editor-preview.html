@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Prototype rédaction Phasmophobia · DeadelusTV</title>
+<link rel="icon" href="../../assets/logo-chaine.png" type="image/png">
+<link rel="stylesheet" href="../../assets/styles.css">
+<link rel="stylesheet" href="news.css">
+<link rel="stylesheet" href="editor-preview.css">
+<script src="editor-preview.js" defer></script>
+</head>
+<body class="phasma-editor-demo" id="page-phasmophobia">
+<a class="phasma-editor-skip" href="#editor-main">Aller à la rédaction</a>
+<header class="phasma-editor-topbar">
+  <a href="../../index.html#phasmophobia" class="phasma-editor-home">
+    <img src="../../assets/logo-chaine.png" alt="" width="40" height="40">
+    <span>DEADELUS<span class="gold">TV</span> <small>· NEWS PHASMOPHOBIA</small></span>
+  </a>
+  <span class="phasma-editor-mode">PROTOTYPE · NON CONNECTÉ</span>
+</header>
+<div class="phasma-editor-warning" role="note">
+  <strong>Éditeur de démonstration.</strong>
+  Les brouillons restent uniquement dans ce navigateur. Rien n'est envoyé sur le site ou sur Supabase.
+  Les images chargées depuis votre ordinateur sont temporaires et devront être ajoutées à nouveau après fermeture.
+</div>
+<div class="phasma-editor-shell">
+  <aside class="phasma-editor-sidebar" aria-label="Mes brouillons de démonstration">
+    <div class="phasma-editor-sidebar-head">
+      <h2>Mes brouillons</h2>
+      <button id="editor-new" class="phasma-editor-btn phasma-editor-btn--gold" type="button">+ Nouvel article</button>
+    </div>
+    <div id="editor-draft-list" class="phasma-editor-draft-list"></div>
+    <p class="phasma-editor-sidebar-note">Sauvegarde locale automatique. Aucune publication n'est possible depuis ce prototype.</p>
+  </aside>
+  <main id="editor-main" class="phasma-editor-main" tabindex="-1">
+    <div class="phasma-editor-toolbar">
+      <div>
+        <p class="phasma-editor-kicker">LE BUREAU DE RÉDACTION</p>
+        <h1>Écrire une actualité</h1>
+        <p id="editor-save-status" role="status" aria-live="polite">Brouillon local</p>
+      </div>
+      <div class="phasma-editor-actions">
+        <button type="button" id="editor-mode-edit" class="phasma-editor-btn phasma-editor-btn--selected" aria-pressed="true">Rédaction</button>
+        <button type="button" id="editor-mode-preview" class="phasma-editor-btn" aria-pressed="false">Aperçu</button>
+        <button type="button" id="editor-export" class="phasma-editor-btn">Exporter le brouillon</button>
+        <button type="button" class="phasma-editor-btn phasma-editor-btn--disabled" disabled title="Connexion et autorisations non configurées">Publier · bientôt</button>
+      </div>
+    </div>
+
+    <section id="editor-form" aria-label="Rédiger l'article">
+      <div class="phasma-editor-panel">
+        <h2>Informations de l'article</h2>
+        <div class="phasma-editor-fields">
+          <label class="phasma-editor-field phasma-editor-field--wide">Titre français *
+            <input name="title" data-field="title" maxlength="160" placeholder="Titre de l'actualité">
+          </label>
+          <label class="phasma-editor-field phasma-editor-field--wide">Résumé pour la vignette *
+            <textarea name="excerpt" data-field="excerpt" maxlength="350" rows="3" placeholder="Deux ou trois phrases pour présenter la publication"></textarea>
+          </label>
+          <label class="phasma-editor-field">Date de publication
+            <input type="date" name="publishedAt" data-field="publishedAt">
+          </label>
+          <label class="phasma-editor-field">Crédit de traduction
+            <input name="translator" data-field="translator" maxlength="120" placeholder="Nom du traducteur">
+          </label>
+          <label class="phasma-editor-field phasma-editor-field--wide">Lien vers l'article original Kinetic Games *
+            <input type="url" name="sourceUrl" data-field="sourceUrl" placeholder="https://www.kineticgames.co.uk/news/...">
+          </label>
+          <label class="phasma-editor-field phasma-editor-field--wide">Identifiant pour l'adresse de l'article
+            <input name="slug" data-field="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" placeholder="nom-de-l-article">
+            <span class="phasma-editor-hint">L'identifiant est proposé automatiquement à partir du titre. Modifiable avant publication.</span>
+          </label>
+          <label class="phasma-editor-field phasma-editor-field--wide">Chemin de l'image de couverture (facultatif)
+            <input name="cover" data-field="cover" placeholder="assets/phasmo-news/couverture.webp">
+            <span class="phasma-editor-hint">Pour le futur système de publication. Le chemin doit correspondre à une image autorisée sur le site.</span>
+          </label>
+          <label class="phasma-editor-field phasma-editor-field--wide">Essayer une couverture depuis votre ordinateur
+            <input id="editor-cover-upload" type="file" accept="image/png,image/jpeg,image/webp">
+            <span class="phasma-editor-hint">Aperçu temporaire seulement. Maximum 2 Mo, formats PNG/JPEG/WebP.</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="phasma-editor-panel">
+        <div class="phasma-editor-section-heading">
+          <div><h2>Contenu de l'article</h2><p>Ajoutez du texte et des images dans l'ordre de votre choix.</p></div>
+        </div>
+        <div id="editor-blocks" class="phasma-editor-blocks"></div>
+        <div class="phasma-editor-add" aria-label="Insérer un bloc">
+          <button type="button" data-add="paragraph" class="phasma-editor-btn">+ Paragraphe</button>
+          <button type="button" data-add="heading" class="phasma-editor-btn">+ Intertitre</button>
+          <button type="button" data-add="list" class="phasma-editor-btn">+ Liste</button>
+          <button type="button" data-add="image" class="phasma-editor-btn">+ Image</button>
+        </div>
+      </div>
+      <div class="phasma-editor-bottom">
+        <button type="button" id="editor-delete" class="phasma-editor-btn phasma-editor-btn--danger">Supprimer ce brouillon</button>
+        <p>Pour l'instant, aucun contenu de cet écran n'est accessible aux visiteurs.</p>
+      </div>
+    </section>
+
+    <section id="editor-preview" aria-label="Aperçu de l'article" hidden>
+      <p class="phasma-editor-preview-hint">Aperçu local, non publié. Les images temporaires disparaîtront après fermeture de la page.</p>
+      <div id="editor-preview-article" class="phasma-news-reader"></div>
+    </section>
+  </main>
+</div>
+</body>
+</html>
