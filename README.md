@@ -148,3 +148,14 @@ Aucune synchronisation réelle avec l'API n'a encore été confirmée.
 - Étape 3 : gabarits et première fiche réelle vérifiée par type.
 - Étape 4 : récupération et import contrôlé des vraies fiches Discord.
 - Travailler exclusivement sur la branche developpement/phasmo-v2 et ne rien publier sur main sans validation.
+
+
+### Mise en oeuvre expérimentale du 25/10/2026 — NON VALIDÉE VISUELLEMENT
+- V2 coque et sommaire codée sur developpement/phasmo-v2, via public/index.html et public/modules/phasmophobia/journal.{css,js}.
+- Décor de livre entièrement CSS : parchemin texturé, tranche/reliure, légers filigranes provisoires. Aucune capture Discord incorporée dans la page ou utilisée comme arrière-plan.
+- Sommaire à deux pages reprenant les cinq rubriques visibles dans les captures : Entités, Équipements, Maps, Objets maudits, Divers.
+- Libellés visibles transcrits manuellement depuis la capture Discord uniquement pour tester la navigation ; orthographe, listes exhaustives et contenus des fiches encore à vérifier avant publication.
+- Les noms du sommaire ouvrent des fiches vides dédiées. Retour au sommaire et languettes latérales opérationnels ; sur téléphone, lecture page gauche / page droite séparément.
+- L'ancienne animation de demi-pages qui s'écartent a été SUPPRIMÉE ; elle est remplacée par un bref fondu sans faux tournage. Une véritable feuille qui pivote reste explicitement À FAIRE après validation visuelle.
+- Police manuscrite Caveat / Kalam récupérée via Google Fonts avec polices de repli si indisponible.
+- Aucune modification de main ni déploiement OVH ; demander une capture Live Server pour valider dimensions, disposition et lisibilité.
