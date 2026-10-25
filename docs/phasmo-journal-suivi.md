@@ -146,3 +146,13 @@ Décision : la rubrique **News devient un chantier prioritaire**, après validat
 - Les droits restent strictement réservés à **News Phasmophobia** ; pas d'accès administrateur général, au TCG ni aux autres modules. L'authentification et les permissions doivent être effectivement vérifiées côté serveur.
 - À choisir ultérieurement : mode de connexion, modalités de dépublication/suppression, historique. Les autorisations ne seront pas automatiquement déduites de son statut de modérateur Discord.
 - Les comptes, services de publication et droits réels **ne sont pas encore configurés**. La décision est documentée dans `docs/phasmo-blog-spec.md` ; aucun changement à la branche `main` ni à la base Supabase.
+
+
+### Prototype de rédaction News (26/10/2026)
+
+- Éditeur accessible dans la branche `developpement/phasmo-v2` via `public/modules/phasmophobia/editor-preview.html` ; il n'est pas ajouté au menu public.
+- Plusieurs brouillons locaux, champs de l'article, création/déplacement/suppression de blocs paragraphes, titres, listes et images, aperçu et export JSON.
+- Les images locales sont temporaires, sans persistance ni transfert serveur ; **aucune publication active**, aucun compte ni droit éditorial attribué.
+- Les identités Twitch/Discord sont prévues au niveau d'un profil DeadelusTV commun, avec le rôle éditorial `phasmo_news_editor` strictement limité au blog.
+- Attention : Supabase héberge actuellement deux projets distincts, Crewmong Us et TCG ; les connexions ne sont pas automatiquement communes. L'architecture de compte unifié reste à mettre en œuvre avant d'activer le blog.
+- Ne touche pas à `main` ni aux bases Supabase.
