@@ -6,7 +6,7 @@
 
 ## 1. Objectif
 
-Réunir sur DeadelusTV les traductions françaises d'actualités Phasmophobia publiées à l'origine par Kinetic Games. Il s'agit de publications éditoriales validées par l'équipe, pas d'une copie ni d'un import automatique du site Kinetic.
+Réunir sur DeadelusTV les traductions françaises d'actualités Phasmophobia publiées à l'origine par Kinetic Games. Les traductions sont rédigées et publiées directement par le rédacteur autorisé. Il ne s'agit ni d'une copie ni d'un import automatique du site Kinetic.
 
 La liste officielle https://www.kineticgames.co.uk/news couvre aussi d'autres catégories (par exemple Kinetic Publishing). Seules les actualités pertinentes pour Phasmophobia sont prévues ici.
 
@@ -34,29 +34,32 @@ Schéma de lecture envisagé pour chaque publication : `slug`, `title`, `excerpt
 
 ## 4. Espace de rédaction : prochaine étape prioritaire (NON développé)
 
-La traductrice, distincte de Deadelus et de la personne qui maintient le site, doit rédiger en ligne sans manipuler GitHub, HTML ou JSON.
+Le rédacteur, membre de longue date de la modération DeadelusTV et déjà responsable des actualités Discord en autonomie, doit rédiger et publier en ligne sans manipuler GitHub, HTML ou JSON. Sa confiance éditoriale est actée, tout en conservant des autorisations techniques limitées.
 
 Écran envisagé :
-- Liste de ses articles et brouillons.
+- Liste de ses articles publiés et de ses brouillons.
 - Formulaire guidé : titre français, résumé, date, URL de l'original, traduction, crédit, image de couverture et texte alternatif.
 - Éditeur de blocs, dans l'ordre librement choisi : paragraphe, intertitre, liste, illustration avec légende ; insertion des images **entre les paragraphes**, jamais en arrière-plan.
-- Sauvegarde de brouillon, aperçu fidèle au lecteur public et bouton de soumission pour publication.
+- Sauvegarde de brouillon, aperçu fidèle au lecteur public et bouton **Publier** qui met en ligne directement, sans validation par un autre membre de l'équipe.
+- Possibilité de corriger et mettre à jour ses articles déjà publiés. La dépublication et les suppressions définitives restent à préciser.
 
-**Décisions encore nécessaires :** mécanisme de connexion, possibilité de publier directement ou validation préalable, personnes habilitées à valider, règles de modification / dépublication, révisions et journal d'audit.
+**Décision validée le 26/10/2026 : publication directe et autonome.** Aucun système de demande d'approbation préalable à Deadelus ou à la responsable du site. Parcours retenu : **brouillon → aperçu facultatif → publier → article visible sur le site** ; édition et correction possibles après publication.
+
+**Points encore à arbitrer :** mode de connexion du rédacteur (par exemple Discord OAuth ou compte spécifique), droit de dépublier et de supprimer, gestion des révisions et du journal d'audit. L'ancienneté dans la modération n'octroie pas automatiquement de permission technique : le rôle éditorial doit être attribué explicitement à un compte authentifié.
 
 **Conditions techniques incontournables :**
 - Authentification vérifiée côté serveur et droits d'accès réellement limités à Phasmophobia News. Cacher simplement un bouton dans le navigateur ne protège rien.
-- Autorisations séparées pour publier, modifier, supprimer, gérer les utilisateurs et les autres modules. Une identité de rédaction ne reçoit pas les privilèges du site entier.
+- Rôle limité **`phasmo_news_editor`** : créer des brouillons Phasmo, les consulter, les modifier, publier sans validation et corriger ses publications. Aucun droit général de configuration, de gestion des comptes, d'administration du TCG ou des autres univers. Dépublication/suppression à décider explicitement avant activation.
 - Validation du contenu riche (pas de HTML/script arbitraire), limitation de taille et de type MIME, nettoyage et contrôle des images ; ne pas supposer que toutes les images de l'article d'origine sont réutilisables.
-- États brouillon / relecture / publié, horodatage, crédit et historique des changements. Les écrans de saisie et les API ne devront pas permettre à une personne non autorisée de lire les brouillons d'autrui.
+- États **brouillon / publié** (pas d'étape de relecture obligatoire), horodatage, crédit et historique des changements. Les écrans de saisie et les API ne devront pas permettre à une personne non autorisée de lire les brouillons du rédacteur.
 - Si Supabase est retenu : schéma dédié et règles RLS testées, politiques Storage restrictives, jamais de clé service-role dans le navigateur. **Aucune base n'a été modifiée à ce stade.**
 
 ## 5. À vérifier avant la mise en ligne
 
 - Autorisation ou base juridique suffisante pour republier les traductions intégrales et éventuelles images de Kinetic ; sinon, privilégier des résumés originaux avec lien.
 - Accessibilité clavier, téléphone, images et contrastes ; contrôle de l'URL directe d'article, du retour navigateur et des archives.
-- Premier article réel validé par l'équipe pour tester la mise en page, sans texte fictif.
-- Revue de sécurité du circuit de rédaction avant l'ouverture à la traductrice.
+- Premier article réel utilisé pour tester la mise en page et les liens avant le lancement, sans texte fictif ni obligation d'approbation éditoriale systématique.
+- Revue de sécurité du circuit de rédaction avant l'ouverture au rédacteur.
 - Publication ciblée sur `main` **seulement après validation visuelle et fonctionnelle**.
 
 ## 6. Pas dans le périmètre immédiat
