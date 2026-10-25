@@ -26,6 +26,9 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Vérifier le récupérateur sans réseau
+        run: python3 -m unittest discover -s scripts -p 'test_phasmo_shorts.py'
+
       - name: Récupérer les métadonnées publiques de la playlist
         env:
           YOUTUBE_API_KEY: '${{ secrets.YOUTUBE_API_KEY }}'
