@@ -1,0 +1,72 @@
+/* Prototype : signature clandestine de Yekelle.
+   L'ombre ne bloque jamais un bouton ou une sélection de texte. */
+.welcome,
+.universes,
+.page-header,
+.breadcrumb,
+.tcg-demo,
+.pn-heading {
+  position: relative;
+}
+
+.ombre-visiteuse {
+  --ombre-taille: 58px;
+  position: absolute;
+  display: block;
+  width: var(--ombre-taille);
+  height: var(--ombre-taille);
+  right: 5%;
+  top: -17px;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  z-index: 2;
+  opacity: .86;
+  contain: layout paint;
+}
+
+.ombre-visiteuse img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: none;
+  filter: drop-shadow(0 2px 5px #0009);
+  transform-origin: 50% 80%;
+  animation: ombre-respire 6.5s ease-in-out infinite;
+}
+
+.ombre-visiteuse--bas {
+  top: auto;
+  bottom: -24px;
+  right: 7%;
+}
+.ombre-visiteuse--gauche {
+  right: auto;
+  left: 4%;
+}
+.ombre-visiteuse--partielle {
+  height: calc(var(--ombre-taille) * .68);
+}
+.ombre-visiteuse--partielle img {
+  margin-top: calc(var(--ombre-taille) * -.13);
+}
+.ombre-visiteuse--yeux {
+  height: calc(var(--ombre-taille) * .24);
+}
+.ombre-visiteuse--yeux img {
+  margin-top: calc(var(--ombre-taille) * -.47);
+}
+
+@keyframes ombre-respire {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-2px) rotate(1deg); }
+}
+
+@media (max-width: 600px) {
+  .ombre-visiteuse { --ombre-taille: 45px; }
+  .ombre-visiteuse--bas { bottom: -17px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ombre-visiteuse img { animation: none; }
+}
