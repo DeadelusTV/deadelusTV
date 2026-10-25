@@ -98,3 +98,14 @@ les dernières données publiées si YouTube est indisponible.
 La branche de développement ne publie rien sur OVH. Les nouveaux workflows
 ne sont disponibles au déclenchement manuel GitHub qu'après présence dans main.
 Aucune synchronisation réelle avec l'API n'a encore été confirmée.
+
+
+## Phasmophobia — carnet interactif : remarques et travaux à reprendre (25/10/2026)
+
+État : prototype fonctionnel sur `developpement/phasmo-v2`. Le livre s'ouvre, les onglets naviguent et le changement de double page fonctionne, mais le rendu n'est PAS validé.
+
+- **Animation de changement d'onglet / page : à refaire.** Observation utilisateur : les pages au centre semblent s'écarter / se séparer au lieu de se tourner. Cause probable à traiter : le prototype fait pivoter très légèrement une demi-page avec variation d'opacité (`journal.css`, `journal.js`), sans véritable feuille animée. Objectif : une seule feuille indépendante tourne naturellement autour de la reliure centrale, sans ouverture artificielle des deux pages. Travailler ce comportement après validation de la base du carnet ; éviter de conserver l'animation trompeuse comme finition.
+- **Direction artistique du livre : à reprendre après la structure.** Le carnet ouvert est provisoire. Une fois la navigation et les fiches structurées, rapprocher son aspect du journal de Phasmophobia : couverture/reliure, proportions, texture papier, onglets, disposition intérieure et effet de feuilletage. Ne pas considérer l'interface actuelle comme la version finale.
+- **Contenu :** ne pas inventer les informations du bot Discord ; récupérer les vraies fiches et faire valider leur organisation avant intégration.
+- **Validation :** présenter d'abord les principes et l'apparence à Deadelus ; ne rien publier sur `main` sans accord.
+
