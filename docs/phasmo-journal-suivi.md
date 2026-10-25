@@ -137,3 +137,12 @@ Décision : la rubrique **News devient un chantier prioritaire**, après validat
 - **Référence de spécification :** `docs/phasmo-blog-spec.md`, avec décisions prises, fonctionnement du prototype et points restant à arbitrer.
 - **Droits à clarifier :** la politique officielle Kinetic relative aux créations de fans n'est pas une autorisation explicite de republier toutes leurs actualités et images traduites. Obtenir une autorisation adaptée si nécessaire, ou préférer des résumés originaux avec un lien vers la source.
 - **Périmètre strict :** aucun changement sur `main` ni sur les données Supabase.
+
+
+### Publication directe du blog — décision du 26/10/2026
+
+- Le rédacteur des traductions Phasmophobia est un membre expérimenté de la modération de DeadelusTV. Il assure déjà les publications d'actualités Discord en autonomie et est considéré comme une personne de confiance.
+- **Publication directe validée** : création, brouillons, aperçu, publication immédiate et corrections après publication **sans validation préalable** par Deadelus ou par la responsable du site.
+- Les droits restent strictement réservés à **News Phasmophobia** ; pas d'accès administrateur général, au TCG ni aux autres modules. L'authentification et les permissions doivent être effectivement vérifiées côté serveur.
+- À choisir ultérieurement : mode de connexion, modalités de dépublication/suppression, historique. Les autorisations ne seront pas automatiquement déduites de son statut de modérateur Discord.
+- Les comptes, services de publication et droits réels **ne sont pas encore configurés**. La décision est documentée dans `docs/phasmo-blog-spec.md` ; aucun changement à la branche `main` ni à la base Supabase.
