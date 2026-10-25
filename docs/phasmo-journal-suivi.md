@@ -126,3 +126,14 @@ Décision utilisateur à appliquer sur le journal interactif. Cette section déc
 - Shorts YouTube : 10 vidéos maximum conservées dans leur ordre, suivies d'une 11e carte permanente vers la playlist complète, même en cas d'indisponibilité des miniatures.
 - News : garder la présentation actuelle pour l'instant. Lorsque des articles seront disponibles, créer un carrousel de neuf vignettes d'articles traduits et une dixième vignette fixe vers Kinetic Games. La vignette fixe, illustrée comme les autres, remplacera alors le bouton actuel « Actualités officielles ». Référence visuelle : vignettes des news Kinetic Games, avec présentation horizontale en carrousel plutôt qu'en grille.
 - Ne pas créer d'articles fictifs. Aucun changement sur la branche principale.
+
+### Priorité blog Phasmophobia (26/10/2026)
+
+Décision : la rubrique **News devient un chantier prioritaire**, après validation de l'aspect des accordéons. Le déroulant News reste fermé par défaut et sa présentation d'attente n'est pas remplacée tant qu'il n'y a aucun article réel.
+
+- **Socle de lecture seule développé sur cette branche :** `modules/phasmophobia/news.js`, `news.css`, `data/phasmo-news.json` (vide), prise en charge des liens `#phasmophobia/news` et `#phasmophobia/news/{slug}`.
+- Contenu prévu : **9 vignettes de traductions + 1 vignette Kinetic permanente**, lecture intégrée, attribution de la traduction, lien original et archives au-delà des neuf plus récentes.
+- **Non réalisé à ce stade :** éditeur en ligne, stockage et publication serveur, authentification, permissions du compte rédacteur, workflow de relecture. Ne pas confondre l'interface de lecture avec un blog opérationnel.
+- **Référence de spécification :** `docs/phasmo-blog-spec.md`, avec décisions prises, fonctionnement du prototype et points restant à arbitrer.
+- **Droits à clarifier :** la politique officielle Kinetic relative aux créations de fans n'est pas une autorisation explicite de republier toutes leurs actualités et images traduites. Obtenir une autorisation adaptée si nécessaire, ou préférer des résumés originaux avec un lien vers la source.
+- **Périmètre strict :** aucun changement sur `main` ni sur les données Supabase.
