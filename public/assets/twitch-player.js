@@ -164,6 +164,8 @@
       this.generation++;
       clearTimeout(this.watchdog);
       clearTimeout(this.poll);
+      clearTimeout(this.startupTimer);
+      cancelAnimationFrame(this.startupFrame);
       try { this.instance?.destroy(); } catch { /* Supprimer l'iframe suffit au repli. */ }
       this.instance = null;
       this.mount.replaceChildren();
@@ -179,47 +181,91 @@
       }, 60000);
     }
 
-    async check() {
+    async check(showLive = false) {
       if (!this.active) return;
       this.stop();
       const generation = this.generation;
       const current = () => this.active && generation === this.generation;
-      this.setState('loading');
+      this.setState(showLive ? 'live' : 'loading');
       try {
         const Twitch = await loadSDK();
         if (!current()) return;
+        if (showLive) {
+          // Twitch vérifie la visibilité au chargement de l'iframe : créer un
+          // nouveau lecteur après affichage du cadre, plutôt que réutiliser la sonde masquée.
+          await new Promise(resolve => requestAnimationFrame(resolve));
+          if (!current()) return;
+        }
         const parents = [location.hostname, ...(this.config.twitchExtraParents || [])];
         this.instance = new Twitch.Player(this.mount.id, {
           channel: this.config.channel,
           width: '100%', height: '100%',
-          parent: [...new Set(parents)], autoplay: true, muted: true
+          parent: [...new Set(parents)], autoplay: showLive, muted: true
         });
         const instance = this.instance;
         const listen = (event, callback) => instance.addEventListener(event, () => {
           if (current()) callback();
         });
-        listen(Twitch.Player.READY, () => instance.setMuted(true));
+        let ready = false;
+        let online = false;
+        let startupQueued = false;
+        const beginPlayback = () => {
+          if (!showLive || !ready || !online || startupQueued) return;
+          startupQueued = true;
+          this.startupFrame = requestAnimationFrame(() => {
+            if (!current() || this.state !== 'live') return;
+            this.startupTimer = setTimeout(() => {
+              if (current() && this.state === 'live') this.controls.hidden = false;
+            }, 8000);
+            try {
+              instance.setMuted(true);
+              instance.play();
+            } catch {
+              clearTimeout(this.startupTimer);
+              this.controls.hidden = false;
+            }
+          });
+        };
+        listen(Twitch.Player.READY, () => {
+          ready = true;
+          instance.setMuted(true);
+          beginPlayback();
+        });
         listen(Twitch.Player.OFFLINE, () => {
           clearTimeout(this.watchdog);
+          clearTimeout(this.startupTimer);
+          cancelAnimationFrame(this.startupFrame);
+          online = false;
           this.setState('offline');
           this.scheduleCheck();
         });
         listen(Twitch.Player.ONLINE, () => {
+          if (!showLive || this.state !== 'live') {
+            this.check(true);
+            return;
+          }
           clearTimeout(this.watchdog);
           clearTimeout(this.poll);
-          this.setState('live');
-          instance.setMuted(true);
-          instance.play();
+          online = true;
+          beginPlayback();
         });
         // PLAYING peut également concerner une rediffusion : seul ONLINE confirme le direct.
         listen(Twitch.Player.PLAYING, () => {
-          if (this.state === 'live') this.controls.hidden = true;
+          if (this.state === 'live') {
+            clearTimeout(this.startupTimer);
+            this.controls.hidden = true;
+          }
         });
         listen(Twitch.Player.PLAYBACK_BLOCKED, () => {
-          if (this.state === 'live') this.controls.hidden = false;
+          if (this.state === 'live') {
+            clearTimeout(this.startupTimer);
+            this.controls.hidden = false;
+          }
         });
         // Une fin de lecture ne prouve pas que la chaîne est hors ligne.
         listen(Twitch.Player.ENDED, () => {
+          clearTimeout(this.startupTimer);
+          cancelAnimationFrame(this.startupFrame);
           if (this.state === 'live') this.setState('unknown');
           this.scheduleCheck();
         });
@@ -227,6 +273,8 @@
           if (current() && this.state === 'loading') {
             this.setState('unknown');
             this.scheduleCheck();
+          } else if (current() && showLive && this.state === 'live') {
+            this.controls.hidden = false;
           }
         }, 20000);
       } catch {
