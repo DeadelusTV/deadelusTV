@@ -199,6 +199,52 @@
 
 <section class="page" id="page-phasmophobia" data-page="phasmophobia" hidden aria-labelledby="phasmo-title">
  <div class="breadcrumb"><a href="#accueil">Accueil</a><span>/</span><span>Phasmophobia</span></div><div class="page-header phasma-hero"><div class="eyebrow">Le coin des enquêteurs</div><h1 id="phasmo-title" tabindex="-1">Phasmophobia</h1><p>Astuces, tutoriels et ressources pour mieux comprendre Phasmophobia, avec la communauté DeadelusTV.</p></div>
+ <section class="phasma-resources" aria-labelledby="phasma-resources-title">
+  <header class="phasma-resources-header">
+   <span class="eyebrow">LE BUREAU DES ENQUÊTEURS</span>
+   <h2 id="phasma-resources-title">Où trouver les ressources ?</h2>
+   <p>Choisis une rubrique pour consulter les actualités, ouvrir le carnet ou retrouver les tutoriels de DeadelusTV.</p>
+  </header>
+  <div class="phasma-resources-list">
+   <details class="phasma-resource" data-phasma-section="news">
+    <summary><span class="phasma-resource-number">01 / LES ACTUALITÉS</span><span class="phasma-resource-summary"><strong>News</strong><small>Les dernières informations du jeu</small></span><svg class="icon stroke phasma-resource-chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary>
+    <div class="phasma-resource-body">
+     <div class="phasma-news-intro">
+      <div class="phasma-news-copy">
+       <span class="eyebrow">LE FIL D'ACTUALITÉ · EN PRÉPARATION</span>
+       <h3>Les nouvelles de Phasmophobia, bientôt en français</h3>
+       <p>Les traductions des annonces de Kinetic Games et les archives seront regroupées ici, une fois leur publication validée.</p>
+      </div>
+      <a class="btn btn-outline phasma-news-official" href="https://www.kineticgames.co.uk/news" target="_blank" rel="noopener noreferrer">Actualités officielles <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+     </div>
+     <div id="phasma-news-feed" class="phasma-news-feed" hidden aria-label="Futures actualités traduites"></div>
+    </div>
+   </details>
+   <details class="phasma-resource" data-phasma-section="livre">
+    <summary><span class="phasma-resource-number">02 / LE CARNET</span><span class="phasma-resource-summary"><strong>Livre</strong><small>Le journal interactif des enquêteurs</small></span><svg class="icon stroke phasma-resource-chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary>
+    <div class="phasma-resource-body">
+ <section class="phasma-journal-section" aria-labelledby="phasma-journal-title">
+  <div class="phasma-journal-copy">
+   <span class="eyebrow">LE JOURNAL DES ENQUÊTEURS</span>
+   <h2 id="phasma-journal-title">Le carnet des enquêteurs</h2>
+   <p>Feuillette les rubriques du carnet. Les fiches et astuces du bot Discord seront ajoutées au fur et à mesure de leur validation.</p>
+   <div class="phasma-journal-topics" aria-label="Ouvrir une rubrique du carnet">
+    <button type="button" data-phasma-open-category="entites">Entités</button>
+    <button type="button" data-phasma-open-category="cartes">Maps</button>
+    <button type="button" data-phasma-open-category="objets">Objets maudits</button>
+    <button type="button" data-phasma-open-category="equipements">Équipements</button>
+    <button type="button" data-phasma-open-category="divers">Divers</button>
+   </div>
+   <button class="btn btn-gold phasma-journal-open" type="button" data-phasma-open>Ouvrir le carnet</button>
+   <p class="phasma-journal-note">Sommaire interactif : les fiches détaillées seront ajoutées après vérification.</p>
+  </div>
+  <button type="button" class="phasma-journal-art" data-phasma-open aria-label="Ouvrir le carnet des enquêteurs"></button>
+ </section>
+    </div>
+   </details>
+   <details class="phasma-resource" data-phasma-section="tutos" open>
+    <summary><span class="phasma-resource-number">03 / LES VIDÉOS</span><span class="phasma-resource-summary"><strong>Tutos</strong><small>Les Shorts et conseils de Deadelus</small></span><svg class="icon stroke phasma-resource-chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary>
+    <div class="phasma-resource-body">
  <section class="phasma-shorts-section" aria-labelledby="phasmo-shorts-title">
   <div class="phasma-shorts-heading">
    <div class="phasma-shorts-heading-main">
@@ -217,22 +263,9 @@
    </div>
   </div>
  </section>
- <section class="phasma-journal-section" aria-labelledby="phasma-journal-title">
-  <div class="phasma-journal-copy">
-   <span class="eyebrow">LE JOURNAL DES ENQUÊTEURS</span>
-   <h2 id="phasma-journal-title">Le carnet des enquêteurs</h2>
-   <p>Feuillette les rubriques du carnet. Les fiches et astuces du bot Discord seront ajoutées au fur et à mesure de leur validation.</p>
-   <div class="phasma-journal-topics" aria-label="Ouvrir une rubrique du carnet">
-    <button type="button" data-phasma-open-category="entites">Entités</button>
-    <button type="button" data-phasma-open-category="cartes">Maps</button>
-    <button type="button" data-phasma-open-category="objets">Objets maudits</button>
-    <button type="button" data-phasma-open-category="equipements">Équipements</button>
-    <button type="button" data-phasma-open-category="divers">Divers</button>
-   </div>
-   <button class="btn btn-gold phasma-journal-open" type="button" data-phasma-open>Ouvrir le carnet</button>
-   <p class="phasma-journal-note">Sommaire interactif : les fiches détaillées seront ajoutées après vérification.</p>
+    </div>
+   </details>
   </div>
-  <button type="button" class="phasma-journal-art" data-phasma-open aria-label="Ouvrir le carnet des enquêteurs"></button>
  </section>
 </section>
 
