@@ -1,0 +1,377 @@
+/* Journal Phasmophobia, prototype interactif : aucun style global modifié. */
+#page-phasmophobia .phasma-journal-art[data-phasma-open] {
+  pointer-events: auto;
+  cursor: pointer;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  width: auto;
+  background-color: transparent;
+}
+#page-phasmophobia .phasma-journal-art[data-phasma-open]:hover {
+  filter: brightness(1.12);
+}
+#page-phasmophobia .phasma-journal-art[data-phasma-open]:focus-visible {
+  outline: 2px solid #dcb772;
+  outline-offset: -12px;
+}
+#page-phasmophobia .phasma-journal-topics button {
+  border: 1px solid #504534;
+  border-radius: 3px;
+  background: #211e1a;
+  color: #dbc8a8;
+  padding: 5px 10px;
+  font-size: 11px;
+  letter-spacing: .2px;
+  cursor: pointer;
+}
+#page-phasmophobia .phasma-journal-topics button:hover,
+#page-phasmophobia .phasma-journal-topics button:focus-visible {
+  border-color: #e0bb7b;
+  color: #f4e6ce;
+}
+#page-phasmophobia .phasma-journal-open {
+  margin-top: 19px;
+  font-size: 13px;
+}
+#phasma-book-dialog {
+  --paper: #cbbb9d;
+  --paper-light: #e4d8bd;
+  --ink: #2e261f;
+  box-sizing: border-box;
+  width: min(1120px, calc(100% - 28px));
+  max-width: 1120px;
+  max-height: min(94dvh, 900px);
+  padding: 16px;
+  border: 1px solid #80694b;
+  border-radius: 11px;
+  background: #171411;
+  color: #efe1c7;
+  box-shadow: 0 36px 120px #000d, inset 0 0 55px #0008;
+  overflow: auto;
+}
+#phasma-book-dialog::backdrop {
+  background: #030404e6;
+  backdrop-filter: blur(6px);
+}
+#phasma-book-dialog button {
+  font: inherit;
+  cursor: pointer;
+}
+#phasma-book-dialog button:focus-visible {
+  outline: 2px solid #dcb772;
+  outline-offset: 3px;
+}
+#phasma-book-dialog .phasma-book-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 0 14px;
+  padding: 0 3px;
+  color: #d3b989;
+  font: 11px Arial, sans-serif;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+#phasma-book-dialog .phasma-book-close {
+  border: 1px solid #725e43;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: 50%;
+  background: #2c251d;
+  color: #f3debe;
+  font: 25px/1 Arial, sans-serif;
+}
+#phasma-book-dialog .phasma-book-close:hover {
+  background: #48372a;
+}
+#phasma-book-dialog .phasma-book-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 105px;
+  align-items: stretch;
+  gap: 4px;
+}
+#phasma-book-dialog .phasma-book-spread {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+  min-height: 430px;
+  perspective: 1100px;
+  border: 8px solid #33251b;
+  border-radius: 14px 3px 4px 14px;
+  box-shadow: 0 12px 23px #000b, 0 0 0 1px #826643;
+  overflow: hidden;
+}
+#phasma-book-dialog .phasma-book-spread::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 22px;
+  transform: translateX(-50%);
+  background: linear-gradient(to right, #21181052, #5d452e72 43%, #21181055 54%, transparent);
+  pointer-events: none;
+  z-index: 2;
+}
+#phasma-book-dialog .phasma-book-page {
+  position: relative;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 35px 34px 26px;
+  color: var(--ink);
+  background:
+    repeating-linear-gradient(0deg, transparent 0 29px, #4f3a2408 30px, transparent 31px),
+    radial-gradient(ellipse at 23% 19%, #f0e7d270, transparent 68%),
+    linear-gradient(115deg, #d9c9ab 0%, var(--paper-light) 50%, #c9b593 100%);
+  font: 15px/1.55 Georgia, 'Times New Roman', serif;
+  transform-origin: center;
+  backface-visibility: hidden;
+}
+#phasma-book-dialog .phasma-book-page--left {
+  box-shadow: inset -19px 0 26px #62452c2a, inset 9px 0 15px #fff6;
+}
+#phasma-book-dialog .phasma-book-page--right {
+  box-shadow: inset 18px 0 26px #62452c2a, inset -8px 0 14px #39251524;
+}
+#phasma-book-dialog .phasma-book-page .phasma-book-overline {
+  font: 10px Arial, sans-serif;
+  letter-spacing: 1.7px;
+  text-transform: uppercase;
+  color: #79583c;
+}
+#phasma-book-dialog .phasma-book-page h2 {
+  margin: 18px 0 15px;
+  font: 500 clamp(29px, 3.1vw, 40px)/1.13 Georgia, serif;
+  color: #31251b;
+  letter-spacing: -.5px;
+}
+#phasma-book-dialog .phasma-book-page h3 {
+  margin: 18px 0 14px;
+  font: 500 clamp(21px, 2.3vw, 28px)/1.2 Georgia, serif;
+  color: #3b2a1e;
+}
+#phasma-book-dialog .phasma-book-page p {
+  margin: 0 0 17px;
+  max-width: 390px;
+  color: #554534;
+  line-height: 1.75;
+}
+#phasma-book-dialog .phasma-book-ornament {
+  width: 58px;
+  height: 1px;
+  background: #796044;
+  margin: 8px 0 23px;
+}
+#phasma-book-dialog .phasma-book-note {
+  border-left: 2px solid #8e7753;
+  padding-left: 13px;
+  font-size: 13px;
+  font-style: italic;
+}
+#phasma-book-dialog .phasma-book-folio {
+  display: block;
+  color: #896d4e;
+  margin-top: auto;
+  padding-top: 22px;
+  font: 11px Arial, sans-serif;
+  letter-spacing: 1px;
+}
+#phasma-book-dialog .phasma-book-page--right .phasma-book-folio {
+  text-align: right;
+}
+#phasma-book-dialog .phasma-book-content {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+#phasma-book-dialog .phasma-book-content .phasma-book-entry {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 11px 13px;
+  background: #d2bd988a;
+  border: 1px solid #a2875b9e;
+  color: #493629;
+  font: 15px Georgia, serif;
+  border-radius: 2px;
+}
+#phasma-book-dialog .phasma-book-content .phasma-book-entry:hover {
+  background: #bba57fa1;
+}
+#phasma-book-dialog .phasma-book-placeholder {
+  border: 1px solid #a792725e;
+  padding: 16px;
+  margin-top: 8px;
+  background: #d2c19c3b;
+  color: #685744;
+  font: 13px/1.75 Arial, sans-serif;
+}
+#phasma-book-dialog .phasma-book-example {
+  display: inline-block;
+  margin-top: 11px;
+  border: 1px solid #a58b66;
+  padding: 4px 10px;
+  background: #e5d3b5;
+  font: 12px/1.4 monospace;
+  color: #58462f;
+}
+#phasma-book-dialog .phasma-book-tabs {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 29px 0 12px;
+}
+#phasma-book-dialog .phasma-book-tab {
+  position: relative;
+  padding: 12px 6px 12px 10px;
+  text-align: left;
+  border: 1px solid #806e55;
+  border-left: 0;
+  border-radius: 0 5px 5px 0;
+  background: #aa9474;
+  box-shadow: 3px 3px 3px #0005;
+  color: #30251b;
+  font: 12px Georgia, serif;
+  transition: background .15s ease, transform .15s ease;
+}
+#phasma-book-dialog .phasma-book-tab:nth-child(even) {
+  background: #bfa883;
+}
+#phasma-book-dialog .phasma-book-tab[aria-current="page"] {
+  transform: translateX(4px);
+  background: #e1cda6;
+  font-weight: bold;
+  border-color: #f0d7a0;
+}
+#phasma-book-dialog .phasma-book-tab:hover {
+  background: #d8c6a6;
+}
+#phasma-book-dialog .phasma-book-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 4px 0;
+  color: #ae9573;
+  font: 12px Arial, sans-serif;
+}
+#phasma-book-dialog .phasma-book-controls button {
+  border: 1px solid #66533b;
+  border-radius: 3px;
+  background: #272119;
+  color: #e2ccaa;
+  padding: 10px 16px;
+  min-width: 140px;
+}
+#phasma-book-dialog .phasma-book-controls button:hover:not(:disabled) {
+  border-color: #d2a764;
+}
+#phasma-book-dialog .phasma-book-controls button:disabled {
+  opacity: .35;
+  cursor: default;
+}
+#phasma-book-dialog .phasma-book-spread.is-turning-forward .phasma-book-page--right {
+  animation: phasma-book-turn-forward .35s ease-out;
+}
+#phasma-book-dialog .phasma-book-spread.is-turning-back .phasma-book-page--left {
+  animation: phasma-book-turn-back .35s ease-out;
+}
+@keyframes phasma-book-turn-forward {
+  0% { transform: rotateY(0deg); opacity: 1; }
+  47% { transform: rotateY(-12deg); opacity: .55; }
+  100% { transform: rotateY(0deg); opacity: 1; }
+}
+@keyframes phasma-book-turn-back {
+  0% { transform: rotateY(0deg); opacity: 1; }
+  47% { transform: rotateY(12deg); opacity: .55; }
+  100% { transform: rotateY(0deg); opacity: 1; }
+}
+@media(max-width: 780px) {
+  #phasma-book-dialog {
+    padding: 12px;
+    max-height: 94dvh;
+  }
+  #phasma-book-dialog .phasma-book-shell {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0;
+  }
+  #phasma-book-dialog .phasma-book-tabs {
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 2px 0 12px;
+    gap: 6px;
+    scrollbar-width: thin;
+  }
+  #phasma-book-dialog .phasma-book-tab {
+    flex: none;
+    border-left: 1px solid #806e55;
+    border-radius: 4px;
+    padding: 8px 12px;
+  }
+  #phasma-book-dialog .phasma-book-tab[aria-current="page"] {
+    transform: none;
+  }
+  #phasma-book-dialog .phasma-book-page {
+    padding: 25px 21px 23px;
+  }
+  #phasma-book-dialog .phasma-book-spread {
+    min-height: 385px;
+  }
+}
+@media(max-width: 540px) {
+  #phasma-book-dialog .phasma-book-spread {
+    grid-template-columns: 1fr;
+    min-height: 0;
+    border-width: 5px;
+  }
+  #phasma-book-dialog .phasma-book-page--left {
+    padding: 22px 21px 8px;
+  }
+  #phasma-book-dialog .phasma-book-page--right {
+    padding: 18px 21px 22px;
+  }
+  #phasma-book-dialog .phasma-book-page--left .phasma-book-folio {
+    display: none;
+  }
+  #phasma-book-dialog .phasma-book-spread::after {
+    left: 0;
+    top: 50%;
+    right: 0;
+    height: 17px;
+    width: auto;
+    transform: translateY(-50%);
+    background: linear-gradient(to bottom, #4b301a3d, transparent);
+  }
+  #phasma-book-dialog .phasma-book-page h2 {
+    margin: 9px 0 8px;
+    font-size: 30px;
+  }
+  #phasma-book-dialog .phasma-book-page h3 {
+    margin: 4px 0 9px;
+    font-size: 22px;
+  }
+  #phasma-book-dialog .phasma-book-page p {
+    font-size: 13px;
+    margin-bottom: 9px;
+  }
+  #phasma-book-dialog .phasma-book-ornament {
+    margin-bottom: 12px;
+  }
+  #phasma-book-dialog .phasma-book-controls button {
+    padding: 10px 9px;
+    min-width: 0;
+  }
+}
+@media(prefers-reduced-motion: reduce) {
+  #phasma-book-dialog .phasma-book-page,
+  #phasma-book-dialog .phasma-book-tab {
+    animation: none !important;
+    transition: none !important;
+  }
+}
