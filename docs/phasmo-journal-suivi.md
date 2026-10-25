@@ -107,3 +107,14 @@ Décision utilisateur à appliquer sur le journal interactif. Cette section déc
 **Priorités enregistrées :** 1) finir les menus accordéon et la page Phasmophobia en cours, avec prototypes du journal hors ligne ; 2) développer ensuite news, édition déléguée, archives et tutos selon validation ; 3) étudier les tournois, le vote sécurisé et les boosters comme évolution ultérieure.
 
 **Limite :** notes seulement dans la branche developpement/phasmo-v2. Aucune modification de main, du site public, des permissions ni des règles du TCG.
+
+
+### Mise en page Phasmophobia : prototype du 26/10/2026
+
+**Statut : sur `developpement/phasmo-v2` uniquement ; non validé visuellement et non publié.**
+
+- Trois accordéons accessibles : **News**, **Livre**, **Tutos**. La rubrique Tutos est ouverte par défaut. Les rubriques peuvent être ouvertes indépendamment.
+- Livre reprend l'accès au carnet interactif existant, sans changer la navigation à l'intérieur.
+- Tutos conserve la synchronisation YouTube et l'accès à la playlist entière, mais affiche au plus **10 Shorts au lieu de 12**, dans l'ordre choisi dans la playlist. Ses flèches se recalculent lors de l'ouverture.
+- News contient une zone d'attente et un lien externe vers Kinetic Games. **Aucune actualité fictive et aucun éditeur ou traitement automatique** n'a été ajouté.
+- À développer après validation : 9 cartes d'actualités traduites + 1 carte fixe vers Kinetic Games, archives, gestion des images et des droits de reproduction, permissions de rédaction limitées à Phasmophobia et validation avant publication. Les 9+1 cartes News sont indépendantes de la limite des 10 Shorts.
