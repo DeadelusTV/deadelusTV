@@ -1,31 +1,108 @@
 'use strict';
-/* Galerie Shorts : aucune vidéo n'est inventée ; seuls les emplacements défilent. */
+/* Galerie Phasmophobia : aucune clé API côté navigateur. Données JSON produites
+   par un workflow GitHub. Le visiteur ne contacte jamais l'API Google. */
 (() => {
   const track = document.querySelector('#page-phasmophobia .phasma-shorts-track');
+  const status = document.getElementById('phasma-shorts-status');
   const prev = document.querySelector('[data-phasma-shorts-prev]');
   const next = document.querySelector('[data-phasma-shorts-next]');
-  if (!track || !prev || !next) return;
+  if (!track || !status || !prev || !next) return;
 
   function syncButtons() {
-    const end = track.scrollWidth - track.clientWidth;
-    prev.disabled = track.scrollLeft <= 2;
-    next.disabled = track.scrollLeft >= end - 2;
+    const end = Math.max(0, track.scrollWidth - track.clientWidth);
+    const noOverflow = end < 2;
+    prev.disabled = noOverflow || track.scrollLeft <= 2;
+    next.disabled = noOverflow || track.scrollLeft >= end - 2;
+    prev.hidden = noOverflow;
+    next.hidden = noOverflow;
   }
 
-  function move(direction) {
+  function step(direction) {
     const card = track.querySelector('.phasma-short-card');
     if (!card) return;
     const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
-    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
     track.scrollBy({
       left: direction * (card.getBoundingClientRect().width + gap) * 2,
-      behavior: reducedMotion ? 'auto' : 'smooth'
+      behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
     });
   }
 
-  prev.addEventListener('click', () => move(-1));
-  next.addEventListener('click', () => move(1));
+  function validVideo(video) {
+    if (!video || !/^[A-Za-z0-9_-]{11}$/.test(video.id) ||
+        typeof video.title !== 'string' || !video.title.trim()) return false;
+    try {
+      const url = new URL(video.thumbnail);
+      return url.protocol === 'https:' &&
+        (url.hostname === 'i.ytimg.com' || url.hostname.endsWith('.ytimg.com'));
+    } catch {
+      return false;
+    }
+  }
+
+  function render(videos) {
+    const fragment = document.createDocumentFragment();
+    for (const video of videos) {
+      if (!validVideo(video)) continue;
+      const a = document.createElement('a');
+      a.className = 'phasma-short-card phasma-short-link';
+      a.setAttribute('role', 'listitem');
+      a.href = 'https://www.youtube.com/shorts/' + video.id;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.setAttribute('aria-label', 'Voir le Short « ' + video.title + ' » sur YouTube');
+
+      const imageWrap = document.createElement('span');
+      imageWrap.className = 'phasma-short-placeholder';
+      const image = document.createElement('img');
+      image.className = 'phasma-short-thumb';
+      image.src = video.thumbnail;
+      image.alt = '';
+      image.loading = 'lazy';
+      image.decoding = 'async';
+      imageWrap.appendChild(image);
+
+      const play = document.createElement('span');
+      play.className = 'phasma-short-mark';
+      play.setAttribute('aria-hidden', 'true');
+      play.textContent = '▶';
+      imageWrap.appendChild(play);
+
+      const title = document.createElement('span');
+      title.className = 'phasma-short-caption';
+      title.textContent = video.title;
+      a.append(imageWrap, title);
+      fragment.appendChild(a);
+    }
+    track.replaceChildren(fragment);
+    status.textContent = track.childElementCount
+      ? ''
+      : 'Les miniatures apparaîtront après la première synchronisation YouTube.';
+    status.hidden = track.childElementCount > 0;
+    track.hidden = track.childElementCount === 0;
+    syncButtons();
+  }
+
+  prev.addEventListener('click', () => step(-1));
+  next.addEventListener('click', () => step(1));
   track.addEventListener('scroll', syncButtons, { passive: true });
   window.addEventListener('resize', syncButtons);
   syncButtons();
+
+  fetch('data/phasmo-shorts.json', { cache: 'no-store' })
+    .then(response => {
+      if (!response.ok) throw new Error('JSON indisponible');
+      return response.json();
+    })
+    .then(data => {
+      if (!data || data.schemaVersion !== 1 || !Array.isArray(data.videos)) {
+        throw new Error('Format JSON inattendu');
+      }
+      render(data.videos);
+    })
+    .catch(() => {
+      track.hidden = true;
+      status.hidden = false;
+      status.textContent = 'Impossible de charger les Shorts. La playlist reste accessible avec le bouton YouTube.';
+      syncButtons();
+    });
 })();
