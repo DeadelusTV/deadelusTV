@@ -14,7 +14,8 @@
   const reader = document.createElement('section');
   reader.className = 'phasma-news-reader';
   reader.hidden = true;
-  reader.setAttribute('aria-live', 'polite');
+  reader.tabIndex = -1;
+  reader.setAttribute('aria-label', 'Lecture des actualités Phasmophobia');
   feed.after(reader);
 
   let entries = [];
@@ -241,7 +242,9 @@
   }
 
   function route() {
-    const route = decodeURIComponent(location.hash.slice(1));
+    let route;
+    try { route = decodeURIComponent(location.hash.slice(1)); }
+    catch { route = location.hash.slice(1); }
     const isNews = route === 'phasmophobia/news' || route.startsWith('phasmophobia/news/');
     if (!loaded && !isNews) return;
     if (!isNews) {
@@ -260,6 +263,12 @@
     }
     if (route === 'phasmophobia/news') showArchive();
     else showArticle(route.slice('phasmophobia/news/'.length));
+    // Sur un lien partagé, afficher directement l'article, après le routeur principal.
+    requestAnimationFrame(() => {
+      if (reader.hidden || document.getElementById('page-phasmophobia').hidden) return;
+      reader.focus({ preventScroll: true });
+      reader.scrollIntoView({ block: 'start', behavior: 'auto' });
+    });
   }
 
   window.addEventListener('hashchange', route);
