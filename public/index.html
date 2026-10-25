@@ -9,10 +9,13 @@
 <title>DeadelusTV — Le repaire de la communauté</title>
 <link rel="icon" href="assets/logo-chaine.png" type="image/png">
 <link rel="stylesheet" href="assets/styles.css">
+<link rel="stylesheet" href="modules/phasmophobia/style.css">
+<script src="modules/phasmophobia/module.js" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bungee+Inline&family=Great+Vibes&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/twitch-neon.css">
+<link rel="stylesheet" href="assets/tcg-attente.css">
 <script src="assets/config.js" defer></script>
 <link rel="stylesheet" href="modules/pavillon-noir/style.css">
 <script src="modules/pavillon-noir/module.js" defer></script>
@@ -20,7 +23,6 @@
 <script src="modules/crewmongus/module.js" defer></script>
 <script src="assets/twitch-player.js" defer></script>
 <script src="assets/app.js" defer></script>
-<link rel="stylesheet" href="assets/tcg-attente.css">
 </head>
 <body>
 <a class="skip" href="#main-content">Aller au contenu</a>
@@ -116,7 +118,7 @@
   </article>
   <article class="universe-card">
    <a class="universe-art-link" href="#jeux-de-role" aria-label="Découvrir Pavillon noir"><div class="art art-jdr" aria-hidden="true"></div></a>
-   <div class="universe-body"><span class="universe-category">Les carnets de campagne</span><h3><a href="#jeux-de-role">Pavillon Noire</a></h3><p>Des équipages, des personnages et des histoires qui continuent entre deux lives.</p><a class="arrow-link" data-link="pavillonNoir" href="#pavillon-noir">Ouvrir Pavillon Noir <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
+   <div class="universe-body"><span class="universe-category">Les carnets de campagne</span><h3><a href="#jeux-de-role">Pavillon Noir</a></h3><p>Des équipages, des personnages et des histoires qui continuent entre deux lives.</p><a class="arrow-link" data-link="pavillonNoir" href="#pavillon-noir">Ouvrir Pavillon Noir <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
   </article>
  </div></section>
 </section>
@@ -193,9 +195,37 @@
 </section>
 
 <section class="page" id="page-phasmophobia" data-page="phasmophobia" hidden aria-labelledby="phasmo-title">
- <div class="breadcrumb"><a href="#accueil">Accueil</a><span>/</span><span>Phasmophobia</span></div><div class="page-header"><div class="eyebrow">Le coin des enquêteurs</div><h1 id="phasmo-title" tabindex="-1">Un peu de méthode.<br>Quelques bonnes frayeurs.</h1><p>Les guides et les tutos de la chaîne, rassemblés pour apprendre, comprendre et profiter des enquêtes ensemble.</p></div>
- <div class="feature phasma-banner"><div class="art art-phasmo feature-art" aria-hidden="true"></div><div class="feature-copy"><span class="pill pill-gold">GUIDES & TUTOS</span><h2>Prépare ta prochaine enquête.</h2><p>Retrouve les vidéos Phasmophobia de DeadelusTV : des explications, des situations de jeu et de quoi progresser à ton rythme.</p><a class="btn btn-gold" data-link="phasmoVideos" href="https://www.youtube.com/@deadelustv/search?query=phasmophobia" target="_blank" rel="noopener noreferrer"><svg class="icon" aria-hidden="true"><use href="#i-youtube"/></svg>Voir les vidéos Phasmophobia</a></div></div>
- <div class="section-label"><h2>Où trouver les ressources ?</h2></div><div class="faq-list"><details><summary>Les tutoriels en vidéo</summary><p>Retrouve les formats longs et les démonstrations sur <a data-link="phasmoVideos" href="https://www.youtube.com/@deadelustv/search?query=phasmophobia" target="_blank" rel="noopener noreferrer">la chaîne YouTube</a>. Les vidéos pourront ensuite être classées ici par sujet et par niveau.</p></details><details><summary>Le carnet des entités</summary><p>Les ressources partagées sur <a data-link="discord" href="https://discord.gg/eMhE3uSHQS" target="_blank" rel="noopener noreferrer">le Discord de la communauté</a> pourront trouver ici leur place, sous forme de fiches faciles à consulter.</p></details><details><summary>Les enquêtes ensemble</summary><p>Pour échanger, poser tes questions et voir les enquêtes en direct, retrouve la communauté <a data-link="twitch" href="https://www.twitch.tv/deadelustv" target="_blank" rel="noopener noreferrer">sur Twitch</a>.</p></details></div>
+ <div class="breadcrumb"><a href="#accueil">Accueil</a><span>/</span><span>Phasmophobia</span></div><div class="page-header phasma-hero"><div class="eyebrow">Le coin des enquêteurs</div><h1 id="phasmo-title" tabindex="-1">Phasmophobia</h1><p>Astuces, tutoriels et ressources pour mieux comprendre Phasmophobia, avec la communauté DeadelusTV.</p></div>
+ <section class="phasma-shorts-section" aria-labelledby="phasmo-shorts-title">
+  <div class="phasma-shorts-heading">
+   <div class="phasma-shorts-heading-main">
+    <span class="eyebrow">LES RESSOURCES VIDÉO</span>
+    <h2 id="phasmo-shorts-title">Tutoriels Phasmophobia</h2>
+   </div>
+   <p>Les tutoriels Phasmophobia de Deadelus, regroupés dans leur playlist YouTube.</p>
+   <a class="btn btn-outline phasma-shorts-link" data-link="phasmoShortsPlaylist" href="https://www.youtube.com/playlist?list=PL-fyrrZ6KfGkn4a2bt07-HqyjIncP_X7g" target="_blank" rel="noopener noreferrer"><svg class="icon" aria-hidden="true"><use href="#i-youtube"/></svg>Ouvrir la playlist Phasmo</a>
+  </div>
+  <div class="phasma-shorts-gallery">
+   <div class="phasma-shorts-track" role="list" tabindex="0" aria-label="Tutoriels Shorts Phasmophobia"></div>
+   <p id="phasma-shorts-status" class="phasma-shorts-status" role="status" aria-live="polite">Chargement des Shorts Phasmophobia…</p>
+   <div class="phasma-shorts-controls" aria-label="Parcourir la galerie">
+    <button class="phasma-shorts-arrow" type="button" data-phasma-shorts-prev aria-label="Défiler les emplacements vers la gauche"><svg class="icon stroke" aria-hidden="true"><use href="#i-chevron"/></svg></button>
+    <button class="phasma-shorts-arrow" type="button" data-phasma-shorts-next aria-label="Défiler les emplacements vers la droite"><svg class="icon stroke" aria-hidden="true"><use href="#i-chevron"/></svg></button>
+   </div>
+  </div>
+ </section>
+ <section class="phasma-journal-section" aria-labelledby="phasma-journal-title">
+  <div class="phasma-journal-copy">
+   <span class="eyebrow">LE JOURNAL DES ENQUÊTEURS</span>
+   <h2 id="phasma-journal-title">Le carnet des enquêteurs</h2>
+   <p>Les informations et astuces partagées sur le Discord pourront bientôt se retrouver ici, dans un carnet à feuilleter directement sur le site.</p>
+   <div class="phasma-journal-topics" aria-label="Rubriques prévues du carnet">
+    <span>Entités</span><span>Cartes</span><span>Équipements</span><span>Conseils</span>
+   </div>
+   <p class="phasma-journal-note">Aperçu visuel : les pages interactives sont encore à construire.</p>
+  </div>
+  <div class="phasma-journal-art" role="img" aria-label="Carnet noir Phasmophobia posé sur un bureau sombre, éclairé par une lampe, avec des onglets Entités, Cartes, Équipements et Conseils."></div>
+ </section>
 </section>
 
 <aside class="community" aria-labelledby="community-title"><div class="art art-library community-art" aria-hidden="true"></div><svg class="icon" aria-hidden="true"><use href="#i-discord"/></svg><div class="community-text"><h2 id="community-title">On continue sur Discord ?</h2><p><span>Rejoins la communauté</span> pour échanger, partager et suivre les prochains projets.</p></div><a class="btn btn-gold" data-link="discord" href="https://discord.gg/eMhE3uSHQS" target="_blank" rel="noopener noreferrer">Rejoindre la communauté <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></aside>

@@ -22,6 +22,9 @@ function route(focus=false){
   const name=isCrew?'crewmongus':isCampaign?'pavillon-noir':Object.hasOwn(routeTitles,requested)?requested:'accueil';
   const navName=isCampaign&&!isCrew?'jeux-de-role':name;
   $$('[data-page]').forEach(section=>section.hidden=section.dataset.page!==name);
+  // Le bandeau Discord reste inchangé pour les pages existantes.
+  const communityBanner=$('.community');
+  if (communityBanner) communityBanner.hidden=(name==='tcg'||name==='phasmophobia');
   $$('[data-nav]').forEach(a=>{const current=a.dataset.nav===navName;if(current)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
   document.title='DeadelusTV — '+routeTitles[name];
 activeRoute=name;
@@ -51,9 +54,7 @@ function syncTwitchPlayer() {
 window.addEventListener('resize', () => {
   syncTwitchPlayer();
   if (window.innerWidth > 900) closeMenu();
-});
-
-// Réseaux flottants, repris depuis le pied de page
+});// Réseaux flottants, repris depuis le pied de page
 (() => {
   const footerSocials = document.querySelector('.site-footer .socials');
   if (!footerSocials) return;
