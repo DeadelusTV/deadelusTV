@@ -9,10 +9,13 @@
 <title>DeadelusTV — Le repaire de la communauté</title>
 <link rel="icon" href="assets/logo-chaine.png" type="image/png">
 <link rel="stylesheet" href="assets/styles.css">
+<link rel="stylesheet" href="modules/phasmophobia/style.css">
+<script src="modules/phasmophobia/module.js" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bungee+Inline&family=Great+Vibes&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/twitch-neon.css">
+<link rel="stylesheet" href="assets/tcg-attente.css">
 <script src="assets/config.js" defer></script>
 <link rel="stylesheet" href="modules/pavillon-noir/style.css">
 <script src="modules/pavillon-noir/module.js" defer></script>
@@ -107,7 +110,7 @@
   </article>
   <article class="universe-card">
    <a class="universe-art-link" href="#tcg" aria-label="Découvrir le projet de cartes à collectionner"><div class="art art-tcg" aria-hidden="true"></div></a>
-   <div class="universe-body"><span class="universe-category">Le projet se prépare</span><h3><a href="#tcg">Trading Card Game</a></h3><p>Des cartes, des boosters et les moments de la communauté à collectionner.</p><a class="arrow-link" href="#tcg">Découvrir le projet <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
+   <div class="universe-body"><span class="universe-category">Un nouvel univers se prépare</span><h3><a href="#tcg">Trading Card Game</a></h3><p>Un jeu de cartes à collectionner signé DeadelusTV. Le reste est encore sous scellés.</p><a class="arrow-link" href="#tcg">Voir l’annonce <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
   </article>
   <article class="universe-card">
    <a class="universe-art-link" data-link="crewmongus" href="#crewmongus" aria-label="Ouvrir les statistiques Crewmong Us"><div class="art art-crew" aria-hidden="true"></div></a>
@@ -149,20 +152,80 @@
 </section>
 
 <section class="page" id="page-tcg" data-page="tcg" hidden aria-labelledby="tcg-title">
- <div class="breadcrumb"><a href="#accueil">Accueil</a><span>/</span><span>Trading Card Game</span></div><div class="page-header"><div class="eyebrow">Un projet de la communauté</div><h1 id="tcg-title" tabindex="-1">Nos moments.<br>Tes prochaines cartes.</h1><p>Un univers à collectionner autour de la chaîne : des cartes, des raretés et le plaisir de découvrir ce que réserve le prochain booster.</p></div>
- <div class="tcg-demo"><span class="pill pill-gold">APERÇU INTERACTIF</span><h2>Et si on ouvrait un booster ?</h2><p>Trois cartes fictives pour essayer l’animation. Aucune collection réelle n’est créée.</p><div class="booster-cards" aria-label="Trois cartes de démonstration">
- <div class="trading-card" style="--delay:0ms"><div class="card-side card-back" aria-hidden="true"><span class="sigil">D</span><span>DEADELUS · TV</span></div><div class="card-side card-front" aria-hidden="true"><div class="art art-jdr"></div><div class="card-caption"><h3>Le capitaine</h3><span class="card-rarity">Rare</span></div></div></div>
- <div class="trading-card card-epic" style="--delay:170ms"><div class="card-side card-back" aria-hidden="true"><span class="sigil">D</span><span>DEADELUS · TV</span></div><div class="card-side card-front" aria-hidden="true"><div class="art art-phasmo"></div><div class="card-caption"><h3>Dans l’ombre</h3><span class="card-rarity">Épique</span></div></div></div>
- <div class="trading-card card-common" style="--delay:340ms"><div class="card-side card-back" aria-hidden="true"><span class="sigil">D</span><span>DEADELUS · TV</span></div><div class="card-side card-front" aria-hidden="true"><div class="art art-crew"></div><div class="card-caption"><h3>Le fidèle du Crew</h3><span class="card-rarity">Commune</span></div></div></div>
- </div><button class="btn btn-gold" id="open-booster">Ouvrir le booster de démo <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></button><p id="demo-result" class="demo-result" aria-live="polite"></p></div>
- <div class="section-label"><h2>L’idée derrière les cartes</h2></div><div class="info-grid"><article class="info-card"><span class="info-no">01 / COLLECTIONNER</span><h3>Un bout de la chaîne</h3><p>Des cartes inspirées de la communauté, de ses membres et de ses moments mémorables.</p></article><article class="info-card"><span class="info-no">02 / DÉCOUVRIR</span><h3>La surprise du booster</h3><p>Des raretés différentes et de nouveaux visuels à découvrir au fil du projet.</p></article><article class="info-card"><span class="info-no">03 / SE RETROUVER</span><h3>Des rendez-vous en live</h3><p>Des ouvertures et des drops imaginés pour prolonger les moments partagés sur Twitch.</p></article></div>
- <p class="page-note">Le TCG est en préparation. Cette animation illustre son ambiance ; les comptes, les vrais boosters et les collections seront reliés au projet final.</p>
+  <div class="breadcrumb"><a href="#accueil">Accueil</a><span>/</span><span>Trading Card Game</span></div>
+
+  <div class="tcg-awaiting" aria-describedby="tcg-intro">
+    <div class="tcg-awaiting__depth" aria-hidden="true">
+      <div class="tcg-awaiting__horizon"></div>
+      <div class="tcg-awaiting__rays"></div>
+      <div class="tcg-awaiting__dust tcg-awaiting__dust--back"></div>
+    </div>
+
+    <div class="tcg-awaiting__copy">
+      <div class="tcg-awaiting__eyebrow"><span class="tcg-awaiting__spark" aria-hidden="true"></span> UN NOUVEL UNIVERS SE PRÉPARE</div>
+      <h1 id="tcg-title" tabindex="-1">Le TCG<br><span>DeadelusTV</span><span class="tcg-awaiting__point">.</span></h1>
+      <p class="tcg-awaiting__lead" id="tcg-intro">Un <strong>jeu de cartes à collectionner</strong> se prépare dans l'univers DeadelusTV.</p>
+      <p class="tcg-awaiting__secret">Derrière ces cartes, il y a encore des secrets.<br>Le moment de les révéler viendra.</p>
+      <div class="tcg-awaiting__status"><span class="tcg-awaiting__status-dot" aria-hidden="true"></span><span><strong>EN PRÉPARATION</strong><span class="tcg-awaiting__status-sep" aria-hidden="true">/</span>Date d'ouverture non annoncée</span></div>
+    </div>
+
+    <div class="tcg-awaiting__visual" role="img" aria-label="Trois cartes symboliques et mystérieuses en suspension dans un halo doré. Aucun visuel définitif du TCG n'est dévoilé.">
+      <div class="tcg-awaiting__portal" aria-hidden="true"><div class="tcg-awaiting__portal-core"></div><div class="tcg-awaiting__portal-inner"></div></div>
+      <div class="tcg-awaiting__arc tcg-awaiting__arc--a" aria-hidden="true"></div>
+      <div class="tcg-awaiting__arc tcg-awaiting__arc--b" aria-hidden="true"></div>
+      <div class="tcg-awaiting__rune tcg-awaiting__rune--one" aria-hidden="true">✦</div>
+      <div class="tcg-awaiting__rune tcg-awaiting__rune--two" aria-hidden="true">✧</div>
+      <div class="tcg-awaiting__rune tcg-awaiting__rune--three" aria-hidden="true">✦</div>
+      <div class="tcg-awaiting__deck" aria-hidden="true">
+        <div class="tcg-awaiting__card tcg-awaiting__card--rear"><span class="tcg-awaiting__card-lines"></span><span class="tcg-awaiting__card-small-mark">D</span></div>
+        <div class="tcg-awaiting__card tcg-awaiting__card--left"><span class="tcg-awaiting__card-lines"></span><span class="tcg-awaiting__card-small-mark">D</span></div>
+        <div class="tcg-awaiting__card tcg-awaiting__card--front"><span class="tcg-awaiting__card-lines"></span><span class="tcg-awaiting__emblem"><span>TCG</span></span><span class="tcg-awaiting__card-word">DEADELUSTV</span><span class="tcg-awaiting__shine"></span></div>
+      </div>
+      <div class="tcg-awaiting__floor" aria-hidden="true"></div>
+      <div class="tcg-awaiting__dust tcg-awaiting__dust--front" aria-hidden="true"></div>
+    </div>
+
+    <div class="tcg-awaiting__edge" aria-hidden="true"></div>
+  </div>
+
+  <div class="tcg-awaiting__after">
+    <div><span class="tcg-awaiting__after-mark" aria-hidden="true">✧</span><strong>Un nouveau chapitre se dessine.</strong><span> Encore un peu de mystère avant l'ouverture.</span></div>
+    <span class="tcg-awaiting__after-label">PROJET EN COURS DE CRÉATION</span>
+  </div>
 </section>
 
 <section class="page" id="page-phasmophobia" data-page="phasmophobia" hidden aria-labelledby="phasmo-title">
- <div class="breadcrumb"><a href="#accueil">Accueil</a><span>/</span><span>Phasmophobia</span></div><div class="page-header"><div class="eyebrow">Le coin des enquêteurs</div><h1 id="phasmo-title" tabindex="-1">Un peu de méthode.<br>Quelques bonnes frayeurs.</h1><p>Les guides et les tutos de la chaîne, rassemblés pour apprendre, comprendre et profiter des enquêtes ensemble.</p></div>
- <div class="feature phasma-banner"><div class="art art-phasmo feature-art" aria-hidden="true"></div><div class="feature-copy"><span class="pill pill-gold">GUIDES & TUTOS</span><h2>Prépare ta prochaine enquête.</h2><p>Retrouve les vidéos Phasmophobia de DeadelusTV : des explications, des situations de jeu et de quoi progresser à ton rythme.</p><a class="btn btn-gold" data-link="phasmoVideos" href="https://www.youtube.com/@deadelustv/search?query=phasmophobia" target="_blank" rel="noopener noreferrer"><svg class="icon" aria-hidden="true"><use href="#i-youtube"/></svg>Voir les vidéos Phasmophobia</a></div></div>
- <div class="section-label"><h2>Où trouver les ressources ?</h2></div><div class="faq-list"><details><summary>Les tutoriels en vidéo</summary><p>Retrouve les formats longs et les démonstrations sur <a data-link="phasmoVideos" href="https://www.youtube.com/@deadelustv/search?query=phasmophobia" target="_blank" rel="noopener noreferrer">la chaîne YouTube</a>. Les vidéos pourront ensuite être classées ici par sujet et par niveau.</p></details><details><summary>Le carnet des entités</summary><p>Les ressources partagées sur <a data-link="discord" href="https://discord.gg/eMhE3uSHQS" target="_blank" rel="noopener noreferrer">le Discord de la communauté</a> pourront trouver ici leur place, sous forme de fiches faciles à consulter.</p></details><details><summary>Les enquêtes ensemble</summary><p>Pour échanger, poser tes questions et voir les enquêtes en direct, retrouve la communauté <a data-link="twitch" href="https://www.twitch.tv/deadelustv" target="_blank" rel="noopener noreferrer">sur Twitch</a>.</p></details></div>
+ <div class="breadcrumb"><a href="#accueil">Accueil</a><span>/</span><span>Phasmophobia</span></div><div class="page-header phasma-hero"><div class="eyebrow">Le coin des enquêteurs</div><h1 id="phasmo-title" tabindex="-1">Phasmophobia</h1><p>Astuces, tutoriels et ressources pour mieux comprendre Phasmophobia, avec la communauté DeadelusTV.</p></div>
+ <section class="phasma-shorts-section" aria-labelledby="phasmo-shorts-title">
+  <div class="phasma-shorts-heading">
+   <div class="phasma-shorts-heading-main">
+    <span class="eyebrow">LES RESSOURCES VIDÉO</span>
+    <h2 id="phasmo-shorts-title">Tutoriels Phasmophobia</h2>
+   </div>
+   <p>Les tutoriels Phasmophobia de Deadelus, regroupés dans leur playlist YouTube.</p>
+   <a class="btn btn-outline phasma-shorts-link" data-link="phasmoShortsPlaylist" href="https://www.youtube.com/playlist?list=PL-fyrrZ6KfGkn4a2bt07-HqyjIncP_X7g" target="_blank" rel="noopener noreferrer"><svg class="icon" aria-hidden="true"><use href="#i-youtube"/></svg>Ouvrir la playlist Phasmo</a>
+  </div>
+  <div class="phasma-shorts-gallery">
+   <div class="phasma-shorts-track" role="list" tabindex="0" aria-label="Tutoriels Shorts Phasmophobia"></div>
+   <p id="phasma-shorts-status" class="phasma-shorts-status" role="status" aria-live="polite">Chargement des Shorts Phasmophobia…</p>
+   <div class="phasma-shorts-controls" aria-label="Parcourir la galerie">
+    <button class="phasma-shorts-arrow" type="button" data-phasma-shorts-prev aria-label="Défiler les emplacements vers la gauche"><svg class="icon stroke" aria-hidden="true"><use href="#i-chevron"/></svg></button>
+    <button class="phasma-shorts-arrow" type="button" data-phasma-shorts-next aria-label="Défiler les emplacements vers la droite"><svg class="icon stroke" aria-hidden="true"><use href="#i-chevron"/></svg></button>
+   </div>
+  </div>
+ </section>
+ <section class="phasma-journal-section" aria-labelledby="phasma-journal-title">
+  <div class="phasma-journal-copy">
+   <span class="eyebrow">LE JOURNAL DES ENQUÊTEURS</span>
+   <h2 id="phasma-journal-title">Le carnet des enquêteurs</h2>
+   <p>Les informations et astuces partagées sur le Discord pourront bientôt se retrouver ici, dans un carnet à feuilleter directement sur le site.</p>
+   <div class="phasma-journal-topics" aria-label="Rubriques prévues du carnet">
+    <span>Entités</span><span>Cartes</span><span>Équipements</span><span>Conseils</span>
+   </div>
+   <p class="phasma-journal-note">Aperçu visuel : les pages interactives sont encore à construire.</p>
+  </div>
+  <div class="phasma-journal-art" role="img" aria-label="Carnet noir Phasmophobia posé sur un bureau sombre, éclairé par une lampe, avec des onglets Entités, Cartes, Équipements et Conseils."></div>
+ </section>
 </section>
 
 <aside class="community" aria-labelledby="community-title"><div class="art art-library community-art" aria-hidden="true"></div><svg class="icon" aria-hidden="true"><use href="#i-discord"/></svg><div class="community-text"><h2 id="community-title">On continue sur Discord ?</h2><p><span>Rejoins la communauté</span> pour échanger, partager et suivre les prochains projets.</p></div><a class="btn btn-gold" data-link="discord" href="https://discord.gg/eMhE3uSHQS" target="_blank" rel="noopener noreferrer">Rejoindre la communauté <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></aside>

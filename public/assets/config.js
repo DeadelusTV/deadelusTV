@@ -7,6 +7,7 @@ window.DEADELUSTV_CONFIG = Object.freeze({
   youtube:'https://www.youtube.com/@deadelustv',
   youtubeVideos:'https://www.youtube.com/@deadelustv/videos',
   youtubeShorts:'https://www.youtube.com/@deadelustv/shorts',
+  phasmoShortsPlaylist:'https://www.youtube.com/playlist?list=PL-fyrrZ6KfGkn4a2bt07-HqyjIncP_X7g',
   tiktok:'https://www.tiktok.com/@deadelustv',
   discord:'https://discord.gg/eMhE3uSHQS',
   crewmongus:'#crewmongus',

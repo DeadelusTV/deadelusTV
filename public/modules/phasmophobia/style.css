@@ -1,0 +1,449 @@
+/* Bandeau Phasmophobia : styles isolés du reste de DeadelusTV */
+#page-phasmophobia .phasma-hero {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  box-sizing: border-box;
+  max-width: none;
+  min-height: 340px;
+  padding: 48px 34px 58px 0;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+/* Illustration à droite, marges de fondu prévues dès la création. */
+#page-phasmophobia .phasma-hero::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  bottom: 0;
+  left: 29%;
+  right: -4%;
+  background: url('../../assets/phasmo-bandeau.webp') 52% center / cover no-repeat;
+  opacity: .93;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 19%, #000 86%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 19%, #000 86%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Fondus adaptables en CSS, sans rogner ni modifier l'image d'origine. */
+#page-phasmophobia .phasma-hero::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  inset: 0 -4% 0 25%;
+  background:
+    linear-gradient(to bottom, #101112 0%, transparent 22%, transparent 69%, #101112 100%),
+    linear-gradient(to right, #101112 0%, #101112c7 9%, transparent 58%);
+  pointer-events: none;
+}
+
+#page-phasmophobia .phasma-hero > * {
+  position: relative;
+  z-index: 1;
+}
+#page-phasmophobia .phasma-hero .eyebrow {
+  color: #dcb772;
+  margin-bottom: 17px;
+}
+#page-phasmophobia .phasma-hero h1 {
+  max-width: 550px;
+  margin: 0 0 20px;
+  font-size: clamp(38px, 4.2vw, 54px);
+  letter-spacing: -.9px;
+  line-height: 1.1;
+  color: #f2eee7;
+  text-shadow: 0 2px 20px #101112b5;
+}
+#page-phasmophobia .phasma-hero > p {
+  max-width: 440px;
+  margin: 0;
+  color: #c6c5c2;
+  font-size: 15px;
+  line-height: 1.8;
+  text-shadow: 0 2px 16px #101112;
+}
+
+@media (max-width: 760px) {
+  #page-phasmophobia .phasma-hero {
+    min-height: 330px;
+    padding: 56px 0 54px;
+  }
+  #page-phasmophobia .phasma-hero::before {
+    left: 6%;
+    right: -42%;
+    background-position: 55% center;
+    opacity: .65;
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 34%, #000 89%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, #000 34%, #000 89%, transparent 100%);
+  }
+  #page-phasmophobia .phasma-hero::after {
+    inset: 0 -10%;
+    background:
+      linear-gradient(to bottom, #101112 0%, #10111222 23%, #10111222 55%, #101112 100%),
+      linear-gradient(to right, #101112 0%, #101112f0 20%, #101112a3 60%, #10111244 100%);
+  }
+  #page-phasmophobia .phasma-hero h1 {
+    font-size: clamp(34px, 9vw, 46px);
+  }
+  #page-phasmophobia .phasma-hero > p {
+    max-width: 345px;
+    font-size: 14px;
+  }
+}
+
+
+/* Section Shorts Phasmophobia : galerie native, sans médias fictifs. */
+#page-phasmophobia .phasma-shorts-section {
+  margin: 12px 0 48px;
+  padding: 14px 0 0;
+  border-top: 1px solid #2c2d2f;
+}
+#page-phasmophobia .phasma-shorts-heading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 26px;
+  margin-bottom: 24px;
+}
+#page-phasmophobia .phasma-shorts-heading-main {
+  flex: 0 1 auto;
+}
+#page-phasmophobia .phasma-shorts-heading .eyebrow {
+  display: block;
+  margin-bottom: 9px;
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+#page-phasmophobia .phasma-shorts-heading h2 {
+  font-size: clamp(27px, 2.8vw, 34px);
+  line-height: 1.25;
+}
+#page-phasmophobia .phasma-shorts-heading > p {
+  flex: 1 1 230px;
+  min-width: 0;
+  color: #b7b5b2;
+  font-size: 13px;
+  line-height: 1.7;
+}
+#page-phasmophobia .phasma-shorts-link {
+  flex: 0 0 auto;
+  font-size: 12px;
+  white-space: nowrap;
+}
+#page-phasmophobia .phasma-shorts-link .icon {
+  width: 17px;
+  height: 17px;
+}
+#page-phasmophobia .phasma-shorts-gallery {
+  position: relative;
+}
+#page-phasmophobia .phasma-shorts-track {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 0 2px 10px;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-color: #574c38 #171819;
+  scrollbar-width: thin;
+}
+#page-phasmophobia .phasma-short-card {
+  flex: 0 0 clamp(155px, 17vw, 205px);
+  min-width: 0;
+  scroll-snap-align: start;
+}
+#page-phasmophobia .phasma-short-placeholder {
+  aspect-ratio: 9 / 16;
+  position: relative;
+  display: grid;
+  place-items: center;
+  border: 1px solid #303132;
+  border-radius: 7px;
+  background: radial-gradient(ellipse at 60% 28%, #252628 0%, #1a1b1d 36%, #111213 80%);
+  overflow: hidden;
+}
+#page-phasmophobia .phasma-short-card:nth-child(even) .phasma-short-placeholder {
+  background: radial-gradient(ellipse at 30% 68%, #29251f 0%, #1a1919 40%, #111213 80%);
+}
+#page-phasmophobia .phasma-short-placeholder::after {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  border: 1px solid #ffffff0a;
+  border-radius: 3px;
+  pointer-events: none;
+}
+#page-phasmophobia .phasma-short-number {
+  position: absolute;
+  top: 13px;
+  left: 14px;
+  color: #8f877b;
+  font: 12px Georgia, serif;
+}
+#page-phasmophobia .phasma-short-mark {
+  display: grid;
+  place-items: center;
+  width: 49px;
+  height: 49px;
+  border: 1px solid #bba88675;
+  border-radius: 50%;
+  background: #1617189c;
+  color: #d7c098;
+}
+#page-phasmophobia .phasma-short-mark .icon {
+  width: 20px;
+  height: 20px;
+}
+#page-phasmophobia .phasma-short-caption {
+  display: block;
+  margin-top: 10px;
+  color: #9c9b97;
+  font-size: 12px;
+}
+#page-phasmophobia .phasma-shorts-controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 7px;
+  margin-top: 12px;
+}
+#page-phasmophobia .phasma-shorts-arrow {
+  display: grid;
+  place-items: center;
+  width: 35px;
+  height: 35px;
+  border: 1px solid #4c483f;
+  border-radius: 50%;
+  color: #e6d1a7;
+  background: #161719;
+}
+#page-phasmophobia .phasma-shorts-arrow:hover:not(:disabled) {
+  border-color: #dcb772;
+}
+#page-phasmophobia .phasma-shorts-arrow:disabled {
+  opacity: .3;
+  cursor: default;
+}
+#page-phasmophobia [data-phasma-shorts-prev] .icon {
+  transform: rotate(180deg);
+}
+#page-phasmophobia .phasma-shorts-note {
+  margin: 9px 0 0;
+  max-width: 800px;
+  color: #999a98;
+  font-size: 11px;
+  line-height: 1.6;
+}
+@media (max-width: 760px) {
+  #page-phasmophobia .phasma-shorts-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+  #page-phasmophobia .phasma-shorts-heading > p {
+    flex: auto;
+  }
+  #page-phasmophobia .phasma-shorts-link {
+    margin-top: 5px;
+  }
+  #page-phasmophobia .phasma-short-card {
+    flex-basis: clamp(145px, 47vw, 190px);
+  }
+  #page-phasmophobia .phasma-shorts-section {
+    margin-bottom: 37px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #page-phasmophobia .phasma-shorts-track {
+    scroll-behavior: auto;
+  }
+}
+
+
+/* Cartes réelles synchronisées depuis la playlist YouTube. */
+#page-phasmophobia .phasma-short-link {
+  display: block;
+  color: inherit;
+}
+#page-phasmophobia .phasma-short-link:hover .phasma-short-placeholder,
+#page-phasmophobia .phasma-short-link:focus-visible .phasma-short-placeholder {
+  border-color: #dcb772;
+}
+#page-phasmophobia .phasma-short-thumb {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  background: #1a1b1c;
+}
+#page-phasmophobia .phasma-short-link .phasma-short-mark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 16px;
+  padding-left: 3px;
+  box-shadow: 0 3px 20px #0009;
+}
+#page-phasmophobia .phasma-short-link .phasma-short-caption {
+  color: #e0ded7;
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+#page-phasmophobia .phasma-shorts-status {
+  width: 100%;
+  min-height: 112px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed #393a3a;
+  border-radius: 7px;
+  background: #161719;
+  padding: 22px;
+  text-align: center;
+  color: #c9c4ba;
+  font-size: 13px;
+}
+#page-phasmophobia .phasma-shorts-status[hidden] {
+  display: none;
+}
+
+
+/* Carnet des enquêteurs : aperçu visuel, aucune interaction factice. */
+#page-phasmophobia .phasma-journal-section {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(260px, 0.82fr) minmax(0, 1.18fr);
+  align-items: center;
+  gap: 18px;
+  border-top: 1px solid #2c2d2f;
+  margin: 0 0 42px;
+  padding: 34px 0 22px;
+  min-height: 342px;
+  isolation: isolate;
+}
+
+#page-phasmophobia .phasma-journal-copy {
+  position: relative;
+  z-index: 1;
+  padding: 6px 0 10px;
+}
+
+#page-phasmophobia .phasma-journal-copy .eyebrow {
+  display: block;
+  margin-bottom: 15px;
+  color: #dcb772;
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+
+#page-phasmophobia .phasma-journal-copy h2 {
+  margin: 0 0 16px;
+  max-width: 420px;
+  color: #f2eee7;
+  font-size: clamp(29px, 3.2vw, 39px);
+  line-height: 1.16;
+}
+
+#page-phasmophobia .phasma-journal-copy > p:not(.phasma-journal-note) {
+  color: #c0bfbb;
+  max-width: 430px;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+#page-phasmophobia .phasma-journal-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 23px;
+}
+
+#page-phasmophobia .phasma-journal-topics span {
+  border: 1px solid #504534;
+  border-radius: 3px;
+  background: #211e1a;
+  color: #dbc8a8;
+  font-size: 11px;
+  letter-spacing: .2px;
+  padding: 5px 10px;
+}
+
+#page-phasmophobia .phasma-journal-note {
+  margin-top: 17px;
+  color: #999793;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+#page-phasmophobia .phasma-journal-art {
+  position: relative;
+  min-width: 0;
+  min-height: 335px;
+  align-self: stretch;
+  margin: -18px -18px -22px -42px;
+  background:
+    url('../../assets/phasmo-journal.webp') 53% center / cover no-repeat,
+    radial-gradient(ellipse at 65% 50%, #2a201b 0%, #101112 70%);
+  -webkit-mask-image:
+    linear-gradient(to right, transparent 0%, #000 17%, #000 88%, transparent 100%);
+  mask-image:
+    linear-gradient(to right, transparent 0%, #000 17%, #000 88%, transparent 100%);
+  pointer-events: none;
+}
+
+#page-phasmophobia .phasma-journal-art::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, #101112 0%, transparent 20%, transparent 72%, #101112 100%),
+    linear-gradient(to right, #10111255, transparent 28%);
+}
+
+@media (max-width: 760px) {
+  #page-phasmophobia .phasma-journal-section {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    margin-bottom: 18px;
+    padding-top: 28px;
+  }
+  #page-phasmophobia .phasma-journal-copy {
+    padding-bottom: 6px;
+  }
+  #page-phasmophobia .phasma-journal-copy h2 {
+    font-size: clamp(28px, 8vw, 36px);
+  }
+  #page-phasmophobia .phasma-journal-art {
+    margin: -2px -10px -15px;
+    min-height: 240px;
+    aspect-ratio: 2.45 / 1;
+    background-size: cover;
+    background-position: 53% center;
+  }
+}
+
+@media (max-width: 480px) {
+  #page-phasmophobia .phasma-journal-art {
+    min-height: 202px;
+    background-position: 57% center;
+  }
+  #page-phasmophobia .phasma-journal-topics {
+    gap: 6px;
+  }
+  #page-phasmophobia .phasma-journal-topics span {
+    padding: 5px 8px;
+  }
+}
