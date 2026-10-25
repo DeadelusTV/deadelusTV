@@ -9,7 +9,7 @@ Mise à jour : 25 octobre 2026. Les états ci-dessous sont ceux du site principa
 | Dernière vidéo YouTube | Automatisé | Workflow indépendant toutes les 15 minutes prévues ; seules les métadonnées JSON sont transférées. |
 | Phasmophobia V2 : présentation, galerie Shorts, visuel de carnet | Publié | Version validée par Deadelus, intégration ciblée du 25/10/2026. |
 | TCG : page « À venir » | Publié | Univers TCG annoncé sans dévoiler les mécaniques ; site de jeu TCG distinct et encore en développement. |
-| Actualisation automatique des Shorts Phasmo | Validée à intégrer / contrôler | YouTube Data API v3, secret `YOUTUBE_API_KEY`, quatre passages quotidiens prévus ; vérifier le premier transfert OVH puis le suivi périodique. |
+| Actualisation automatique des Shorts Phasmo | Publiée, première exécution réussie | YouTube Data API v3, secret `YOUTUBE_API_KEY`, quatre vérifications quotidiennes prévues ; premier transfert OVH réussi (run `40218578291`). Suivi des prochains déclenchements à poursuivre. |
 | Livre interactif Phasmo avancé | En développement, non validé | Prototype `developpement/phasmo-v2` : rendu, animation et données réelles des fiches restent à travailler. Aucun import du prototype dans `main`. |
 | Crewmong Us et Pavillon Noir | Intégrations existantes | Préserver leurs pages, données et décisions ; revue des chantiers séparément. |
 | Démo temporaire Cloudflare | Présentation validée, conservée | `preview/presentation-deadelus` ; elle peut être supprimée ultérieurement sans toucher à `main`. |

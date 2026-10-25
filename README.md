@@ -33,7 +33,7 @@ Les pages Phasmo V2 et TCG d'attente ont été publiées sur `main` le **25 octo
 
 - Source : https://www.youtube.com/playlist?list=PL-fyrrZ6KfGkn4a2bt07-HqyjIncP_X7g.
 - `scripts/update-phasmo-shorts.py` utilise YouTube Data API v3 pour récupérer les métadonnées publiques de la playlist, avec pagination. Il vérifie les identifiants, déduplique, conserve l'ordre de la playlist et écrit atomiquement le JSON. Il ne télécharge **aucune vidéo**.
-- Le secret GitHub Actions `YOUTUBE_API_KEY` est lu **uniquement par GitHub Actions**. La clé doit être limitée à l'API YouTube Data API v3 et jamais ajoutée au dépôt ni exposée dans le navigateur. Le test sur la branche de développement a réussi le 25/10/2026, mais le bon fonctionnement continu sur `main` doit être suivi via Actions.
+- Le secret GitHub Actions `YOUTUBE_API_KEY` est lu **uniquement par GitHub Actions**. La clé doit être limitée à l'API YouTube Data API v3 et jamais ajoutée au dépôt ni exposée dans le navigateur. Le test sur la branche de développement a réussi le 25/10/2026. Le premier workflow sur `main` a également réussi le 25/10/2026 : récupération YouTube, vérifications locales et transfert SSH OVH, exécution GitHub Actions `40218578291`. La fiabilité des prochains déclenchements programmés reste à surveiller via Actions.
 - `.github/workflows/refresh-phasmo-shorts.yml` vérifie **quatre fois par jour**, à **01:13, 07:13, 13:13 et 19:13 UTC**, avec lancement manuel possible sur `main`. La publication modifie uniquement `data/phasmo-shorts.json` sur le VPS, sans commit automatique.
 - La galerie affiche jusqu'à **12 cartes** et propose le lien vers la playlist. Son affichage dépend de la disponibilité des miniatures YouTube.
 
