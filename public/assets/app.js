@@ -51,13 +51,6 @@ function syncTwitchPlayer() {
 window.addEventListener('resize', () => {
   syncTwitchPlayer();
   if (window.innerWidth > 900) closeMenu();
-});const booster=$('#open-booster');let revealed=false,boosterTimer;
-booster.addEventListener('click',()=>{
-  clearTimeout(boosterTimer);revealed=!revealed;
-  $$('.trading-card').forEach(card=>{card.classList.toggle('revealed',revealed);card.querySelector('.card-front').setAttribute('aria-hidden',String(!revealed));});
-  booster.innerHTML=revealed?'Rejouer l’animation':'Ouvrir le booster de démo <svg class="icon stroke"><use href="#i-arrow"/></svg>';
-  $('#demo-result').textContent='';
-  if(revealed)boosterTimer=setTimeout(()=>{$('#demo-result').textContent='Le capitaine · Rare — Dans l’ombre · Épique — Le fidèle du Crew · Commune';},1100);
 });
 
 // Réseaux flottants, repris depuis le pied de page
