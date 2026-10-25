@@ -21,7 +21,7 @@ function route(focus=false){
   const isCrew=crewAuth||requested==='crewmongus'||requested.startsWith('crewmongus/');
   const name=isCrew?'crewmongus':isCampaign?'pavillon-noir':Object.hasOwn(routeTitles,requested)?requested:'accueil';
   const navName=isCampaign&&!isCrew?'jeux-de-role':name;
-  $('[data-page]').forEach(section=>section.hidden=section.dataset.page!==name);
+  $$('[data-page]').forEach(section=>section.hidden=section.dataset.page!==name);
   // Le bandeau Discord appartient à l'accueil, pas aux univers thématiques.
   const communityBanner=$('.community');
   if(communityBanner)communityBanner.hidden=(name!=='accueil');
