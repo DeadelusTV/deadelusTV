@@ -1,6 +1,13 @@
 name: Actualiser les Shorts Phasmophobia
 
 on:
+  # Test automatisé uniquement lorsque ce workflow change sur la branche de travail.
+  # Pas de publication OVH hors de main.
+  push:
+    branches:
+      - developpement/phasmo-v2
+    paths:
+      - .github/workflows/refresh-phasmo-shorts.yml
   schedule:
     - cron: '13 1,7,13,19 * * *'
   workflow_dispatch:
