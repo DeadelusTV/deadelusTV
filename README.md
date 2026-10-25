@@ -109,3 +109,42 @@ Aucune synchronisation réelle avec l'API n'a encore été confirmée.
 - **Contenu :** ne pas inventer les informations du bot Discord ; récupérer les vraies fiches et faire valider leur organisation avant intégration.
 - **Validation :** présenter d'abord les principes et l'apparence à Deadelus ; ne rien publier sur `main` sans accord.
 
+
+
+## Phasmophobia — direction artistique proposée : journal V2 (25/10/2026)
+
+**Statut : proposition visuelle à valider avant codage.** Référence : captures fournies du journal et des fiches du bot Discord DeadelusTV. Ne pas confondre ce cahier des charges avec un rendu déjà implémenté.
+
+### Direction esthétique
+- Journal ancien très large et presque plein écran : tranche visible, feuillets empilés, angles usés, parchemin jaune/beige texturé et reliure centrale foncée.
+- Titres manuscrits noirs, fortement hiérarchisés, lignes de séparation épaisses ; police libre lisible à choisir après essais. Pas de gros boutons web au milieu des pages.
+- Silhouettes de fantômes très discrètes en filigrane, à partir de médias autorisés ; texte et fond doivent rester distincts pour l'accessibilité.
+- Arrière-plan extérieur noir, commandes discrètes, sans l'actuelle barre de modalité trop visible.
+
+### Sommaire : disposition des deux pages d'après la capture Discord
+- Page gauche : Les Entités en haut (noms en trois colonnes), Les Équipements en bas (noms en colonnes). Illustration spectrale pâle en arrière-plan.
+- Page droite : Les Maps en haut, Les Objets Maudits au milieu, Divers en bas. Les noms sont en colonnes, avec filigrane spectral pâle.
+- Titres manuscrits centrés, soulignés de traits noirs. Chaque nom est cliquable et utilisable au clavier, avec retour visible mais discret.
+- Flèches en languettes parchemin de chaque côté du livre pour tourner la double page.
+- Le sommaire constitue la navigation principale, sans imposer les onglets épais du prototype actuel. Réévaluer les onglets s'ils apportent une vraie utilité.
+- Ne pas inventer de noms, de descriptions ou de catégories : utiliser les données validées du bot Discord.
+
+### Gabarits après le sommaire
+- Fiche entité : titre, preuves, seuil de chasse et illustration à gauche ; comportement, vitesse et astuces à droite.
+- Fiche objet maudit : visuel de l'objet à gauche ; description, fonctionnement et conseils à droite.
+- Page map : grande carte annotée, autre gabarit de lecture distinct.
+- Fiche équipement : visuel, fonctionnement et astuces selon le contenu réel du bot.
+- Tableau récapitulatif preuves / santé mentale : complément envisageable, pas automatiquement une double page de carnet.
+
+### Feuilletage à corriger
+- Défaut actuel confirmé : les pages centrales semblent s'écarter au lieu de se tourner.
+- La V2 doit faire pivoter UNE feuille indépendante avec recto/verso autour de la reliure, perspective cohérente et ombres, et non animer les deux pages fixes.
+- Respecter le mode mouvement réduit ; navigation clavier, fermeture par Échap, état de focus clair. Bruit de page éventuel plus tard, désactivé par défaut.
+
+### Adaptation et ordre de travail
+- Ordinateur : double page large, fidèle au rapport d'aspect du journal Discord ; mobile : lecture page par page sans texte minuscule.
+- Étape 1 : valider le système visuel de la coque + double page sommaire avant de coder les fiches.
+- Étape 2 : correction de la véritable animation de feuilletage.
+- Étape 3 : gabarits et première fiche réelle vérifiée par type.
+- Étape 4 : récupération et import contrôlé des vraies fiches Discord.
+- Travailler exclusivement sur la branche developpement/phasmo-v2 et ne rien publier sur main sans validation.
