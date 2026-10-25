@@ -32,7 +32,19 @@ Schéma de lecture envisagé pour chaque publication : `slug`, `title`, `excerpt
 
 **Limite :** ce JSON statique est une interface provisoire de lecture. Ajouter des fichiers au dépôt ne constitue pas une interface de rédaction ni un mécanisme sécurisé de publication. Un CMS/API contrôlé doit remplacer la source JSON avant usage régulier.
 
-## 4. Espace de rédaction : prochaine étape prioritaire (NON développé)
+## 4. Espace de rédaction : prototype local créé, publication réelle à développer
+
+**Prototype de rédaction :** `public/modules/phasmophobia/editor-preview.html` (avec `editor-preview.js` et `editor-preview.css`), accessible par son adresse directe de prévisualisation de branche, **non lié depuis le menu public**, et présenté explicitement comme une démonstration sans connexion.
+
+**Fonctions du prototype :** plusieurs brouillons et sauvegarde de texte dans le navigateur, formulaires titre/résumé/date/source/auteur/identifiant/couverture, blocs paragraphes/intertitres/listes/images réordonnables, aperçu de l'article et export d'un brouillon JSON. Importation de fichiers PNG/JPEG/WebP (2 Mo maximum) **pour l'aperçu temporaire uniquement** : ces images ne sont ni enregistrées, ni publiées.
+
+**Absents pour le moment :** authentification, partage des brouillons entre machines, stockage d'images, droit d'éditeur côté serveur, vrai bouton Publier et historique des corrections. Le bouton Publier est désactivé, sans simuler de mise en ligne.
+
+**Architecture de comptes prévue :** connexion principale Twitch, association Discord facultative, **un seul compte utilisateur DeadelusTV** ; le rôle `phasmo_news_editor` est affecté à l'utilisateur et non à Discord ou Twitch en tant que tel. Il ne sera pas accordé automatiquement aux modérateurs Discord.
+
+**Point d'architecture à résoudre avant l'authentification :** deux projets Supabase distincts existent aujourd'hui, **Crew'mong Us** et **DeadelusTV TCG**. Les sessions et utilisateurs Auth ne sont pas automatiquement partagés entre ces projets. Définir une source d'identité commune et la stratégie de rattachement des profils existants avant d'ajouter l'accès au blog. Aucun changement n'a été fait sur leurs bases.
+
+
 
 Le rédacteur, membre de longue date de la modération DeadelusTV et déjà responsable des actualités Discord en autonomie, doit rédiger et publier en ligne sans manipuler GitHub, HTML ou JSON. Sa confiance éditoriale est actée, tout en conservant des autorisations techniques limitées.
 
