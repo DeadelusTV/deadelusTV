@@ -100,6 +100,9 @@
     });
   }
   window.addEventListener('resize', syncButtons);
+  // Le routeur SPA affiche Phasmophobia après l'initialisation de ce module.
+  window.addEventListener('hashchange', () => requestAnimationFrame(syncButtons));
+  requestAnimationFrame(syncButtons);
   syncButtons();
 
   fetch('data/phasmo-shorts.json', { cache: 'no-store' })
