@@ -10,7 +10,9 @@
 <link rel="icon" href="assets/logo-chaine.png" type="image/png">
 <link rel="stylesheet" href="assets/styles.css">
 <link rel="stylesheet" href="modules/phasmophobia/style.css">
+<link rel="stylesheet" href="modules/phasmophobia/journal.css">
 <script src="modules/phasmophobia/module.js" defer></script>
+<script src="modules/phasmophobia/journal.js" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bungee+Inline&family=Great+Vibes&display=swap" rel="stylesheet">
@@ -185,19 +187,60 @@
   <div class="phasma-journal-copy">
    <span class="eyebrow">LE JOURNAL DES ENQUÊTEURS</span>
    <h2 id="phasma-journal-title">Le carnet des enquêteurs</h2>
-   <p>Les informations et astuces partagées sur le Discord pourront bientôt se retrouver ici, dans un carnet à feuilleter directement sur le site.</p>
-   <div class="phasma-journal-topics" aria-label="Rubriques prévues du carnet">
-    <span>Entités</span><span>Cartes</span><span>Équipements</span><span>Conseils</span>
+   <p>Feuillette les rubriques du carnet. Les fiches et astuces du bot Discord seront ajoutées au fur et à mesure de leur validation.</p>
+   <div class="phasma-journal-topics" aria-label="Ouvrir une rubrique du carnet">
+    <button type="button" data-phasma-open-category="entites">Entités</button>
+    <button type="button" data-phasma-open-category="cartes">Cartes</button>
+    <button type="button" data-phasma-open-category="equipements">Équipements</button>
+    <button type="button" data-phasma-open-category="conseils">Conseils</button>
    </div>
-   <p class="phasma-journal-note">Aperçu visuel : les pages interactives sont encore à construire.</p>
+   <button class="btn btn-gold phasma-journal-open" type="button" data-phasma-open>Ouvrir le carnet</button>
+   <p class="phasma-journal-note">Version de démonstration : le carnet se feuillette, les fiches restent à importer.</p>
   </div>
-  <div class="phasma-journal-art" role="img" aria-label="Carnet noir Phasmophobia posé sur un bureau sombre, éclairé par une lampe, avec des onglets Entités, Cartes, Équipements et Conseils."></div>
+  <button type="button" class="phasma-journal-art" data-phasma-open aria-label="Ouvrir le carnet des enquêteurs"></button>
  </section>
 </section>
 
 <aside class="community" aria-labelledby="community-title" hidden><div class="art art-library community-art" aria-hidden="true"></div><svg class="icon" aria-hidden="true"><use href="#i-discord"/></svg><div class="community-text"><h2 id="community-title">On continue sur Discord ?</h2><p><span>Rejoins la communauté</span> pour échanger, partager et suivre les prochains projets.</p></div><a class="btn btn-gold" data-link="discord" href="https://discord.gg/eMhE3uSHQS" target="_blank" rel="noopener noreferrer">Rejoindre la communauté <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></aside>
 </main>
 <footer class="container site-footer"><div class="footer-top"><a href="#accueil" class="brand" aria-label="Retour à l’accueil"><img class="brand-avatar" src="assets/logo-chaine.png" alt="" width="42" height="42"><span class="brand-name">Deadelus<span>TV</span></span></a><nav class="socials" aria-label="Réseaux sociaux"><a data-link="twitch" href="https://www.twitch.tv/deadelustv" target="_blank" rel="noopener noreferrer"><svg class="icon tw" aria-hidden="true"><use href="#i-twitch"/></svg>Twitch</a><a data-link="youtube" href="https://www.youtube.com/@deadelustv" target="_blank" rel="noopener noreferrer"><svg class="icon youtube" aria-hidden="true"><use href="#i-youtube"/></svg>YouTube</a><a data-link="tiktok" href="https://www.tiktok.com/@deadelustv" target="_blank" rel="noopener noreferrer"><svg class="icon tiktok" aria-hidden="true"><use href="#i-tiktok"/></svg>TikTok</a><a data-link="discord" href="https://discord.gg/eMhE3uSHQS" target="_blank" rel="noopener noreferrer"><svg class="icon dc" aria-hidden="true"><use href="#i-discord"/></svg>Discord</a></nav></div><div class="footer-bottom"><p>DeadelusTV · Le repaire de la communauté</p><button class="btn-quiet back-top" id="back-top" type="button">Retour en haut <svg class="icon stroke" aria-hidden="true"><use href="#i-up"/></svg></button></div></footer>
+
+<dialog id="phasma-book-dialog" aria-labelledby="phasma-book-title" aria-describedby="phasma-book-intro">
+ <div class="phasma-book-header">
+  <span>DeadelusTV · Journal Phasmophobia</span>
+  <button class="phasma-book-close" type="button" data-phasma-close aria-label="Fermer le carnet">×</button>
+ </div>
+ <div class="phasma-book-shell">
+  <div class="phasma-book-spread">
+   <article class="phasma-book-page phasma-book-page--left" aria-label="Page de gauche">
+    <span class="phasma-book-overline" id="phasma-book-overline">Bienvenue à bord</span>
+    <h2 id="phasma-book-title">Journal des enquêteurs</h2>
+    <div class="phasma-book-ornament" aria-hidden="true"></div>
+    <p id="phasma-book-intro">Choisis une rubrique pour parcourir le carnet.</p>
+    <p class="phasma-book-note">Carnet en préparation · Version de démonstration</p>
+    <span class="phasma-book-folio" id="phasma-book-folio-left">01</span>
+   </article>
+   <article class="phasma-book-page phasma-book-page--right" aria-label="Page de droite">
+    <span class="phasma-book-overline">Notes de terrain</span>
+    <h3 id="phasma-book-right-title">Table des matières</h3>
+    <div class="phasma-book-content" id="phasma-book-content"></div>
+    <span class="phasma-book-folio" id="phasma-book-folio-right">02</span>
+   </article>
+  </div>
+  <nav class="phasma-book-tabs" aria-label="Rubriques du carnet">
+   <button type="button" class="phasma-book-tab" data-phasma-chapter="sommaire">Sommaire</button>
+   <button type="button" class="phasma-book-tab" data-phasma-chapter="entites">Entités</button>
+   <button type="button" class="phasma-book-tab" data-phasma-chapter="cartes">Cartes</button>
+   <button type="button" class="phasma-book-tab" data-phasma-chapter="equipements">Équipements</button>
+   <button type="button" class="phasma-book-tab" data-phasma-chapter="conseils">Conseils</button>
+  </nav>
+ </div>
+ <div class="phasma-book-controls">
+  <button type="button" data-phasma-page-prev>← Page précédente</button>
+  <span id="phasma-book-counter" aria-live="polite">Double page 1 / 5</span>
+  <button type="button" data-phasma-page-next>Page suivante →</button>
+ </div>
+</dialog>
 
 <dialog id="live-dialog" aria-labelledby="live-dialog-title"><button class="close-dialog" aria-label="Fermer" data-close><svg class="icon stroke" aria-hidden="true"><use href="#i-close"/></svg></button><span class="pill"><svg class="icon" aria-hidden="true"><use href="#i-twitch"/></svg>DEADELUSTV</span><h2 id="live-dialog-title">La suite se passe sur Twitch.</h2><p id="live-dialog-copy">Retrouve le live, le chat et les replays sur la chaîne DeadelusTV.</p><div class="dialog-actions"><a class="btn btn-gold" data-link="twitch" href="https://www.twitch.tv/deadelustv" target="_blank" rel="noopener noreferrer">Rejoindre la chaîne <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a><button class="btn btn-outline" data-close>Continuer la visite</button></div></dialog>
 
