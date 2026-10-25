@@ -173,3 +173,24 @@ Décision utilisateur à appliquer sur le journal interactif. Cette section déc
 - **Navigation directe entre catégories :** depuis n'importe quelle fiche, sélectionner un autre onglet ouvre l'accueil de l'autre catégorie ; aucun passage obligé par le sommaire général.
 - **À préciser pendant l'implémentation :** comportement en début/fin de liste (flèche désactivée ou boucle) ; classement des entrées ; placement exact de Médias parmi les cinq onglets physiques existants ; éventuel découpage des longues listes en plusieurs pages. Ne pas présumer ces arbitrages.
 - **Technique :** séparer l'état de navigation (accueil général / catégorie / fiche, identifiant de catégorie, identifiant de fiche), afin que contenu, onglets et flèches reflètent tous la même sélection.
+
+
+### Phasmophobia — idées de structure et événements communautaires (25/10/2026)
+
+**Statut : idées et propositions à étudier, non implémentées, non toutes validées.** Transcription fidèle de la demande utilisateur. Ne pas transformer les points encore ambigus en décisions implicites.
+
+#### Structure proposée de la section Phasmophobia
+- **Navigation par déroulement** : préférence exprimée pour une navigation par défilement ; préciser ultérieurement comment elle cohabite avec les trois onglets.
+- **Premier onglet : News / blog** inspiré de Kinetic (référence au studio / actualités Phasmophobia). Prévoir un espace de publication, ainsi qu'un **accès spécial réservé pour rédiger** les news.
+- **Rédaction des news simplifiée** : formulaire prérempli, notamment pour l'ajout d'images et autres champs de l'article ; éviter le besoin d'éditer le code.
+- **Présentation des news** : carrousel et système d'archives. Mention exacte à clarifier : « 9 + 10 = lien vers kinetic » (ne pas décider sans confirmation s'il s'agit de neuf cartes + une dixième menant à Kinetic).
+- **Deuxième onglet : Livre** : accès au carnet Phasmophobia interactif en cours de prototypage dans la conversation Tips. Préserver la navigation interne Sommaire → Rubrique → Fiche.
+- **Troisième onglet : Tutos** : espace dédié aux tutoriels ; format et alimentation à définir.
+
+#### Idée future d'événement participatif (non validée)
+- Mettre en place une sorte de **duel de badges Phasmophobia** : confrontations successives et **arbre de tournoi** représentant les gagnants et les perdants jusqu'à un vainqueur.
+- Permettre aux utilisateurs de **voter** pour les badges lors des affrontements.
+- Exemple de durée événementielle : **deux semaines**.
+- Récompense envisageable : **voter donne droit à un booster TCG**. Règles à décider avant développement : qui peut participer, fréquence et nombre de boosters accordés, prévention des votes répétés/abus, intégration entre le module Phasmo et le système TCG, et règles de participation.
+
+**Important** : aucun changement du site public ni des règles TCG n'est autorisé par cette seule note ; conception visuelle et fonctionnelle à travailler en prototype d'abord.
