@@ -113,8 +113,16 @@ Décision utilisateur à appliquer sur le journal interactif. Cette section déc
 
 **Statut : sur `developpement/phasmo-v2` uniquement ; non validé visuellement et non publié.**
 
-- Trois accordéons accessibles : **News**, **Livre**, **Tutos**. La rubrique Tutos est ouverte par défaut. Les rubriques peuvent être ouvertes indépendamment.
+- Trois accordéons accessibles : **News**, **Livre**, **Tutos**. Les trois rubriques sont désormais fermées par défaut. Les rubriques peuvent être ouvertes indépendamment.
 - Livre reprend l'accès au carnet interactif existant, sans changer la navigation à l'intérieur.
 - Tutos conserve la synchronisation YouTube et l'accès à la playlist entière, mais affiche au plus **10 Shorts au lieu de 12**, dans l'ordre choisi dans la playlist. Ses flèches se recalculent lors de l'ouverture.
 - News contient une zone d'attente et un lien externe vers Kinetic Games. **Aucune actualité fictive et aucun éditeur ou traitement automatique** n'a été ajouté.
 - À développer après validation : 9 cartes d'actualités traduites + 1 carte fixe vers Kinetic Games, archives, gestion des images et des droits de reproduction, permissions de rédaction limitées à Phasmophobia et validation avant publication. Les 9+1 cartes News sont indépendantes de la limite des 10 Shorts.
+
+
+### Retours de mise en page (26/10/2026)
+
+- Garder la présentation et le style des menus News / Livre / Tutos. Les trois accordéons sont fermés par défaut.
+- Shorts YouTube : 10 vidéos maximum conservées dans leur ordre, suivies d'une 11e carte permanente vers la playlist complète, même en cas d'indisponibilité des miniatures.
+- News : garder la présentation actuelle pour l'instant. Lorsque des articles seront disponibles, créer un carrousel de neuf vignettes d'articles traduits et une dixième vignette fixe vers Kinetic Games. La vignette fixe, illustrée comme les autres, remplacera alors le bouton actuel « Actualités officielles ». Référence visuelle : vignettes des news Kinetic Games, avec présentation horizontale en carrousel plutôt qu'en grille.
+- Ne pas créer d'articles fictifs. Aucun changement sur la branche principale.
