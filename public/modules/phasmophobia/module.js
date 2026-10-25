@@ -39,10 +39,17 @@
     }
   }
 
+  // La playlist peut contenir des centaines de Shorts : limiter la galerie.
+  // L'ordre affiché reste celui choisi dans la playlist YouTube.
+  const MAX_VISIBLE_SHORTS = 12;
+
   function render(videos) {
     const fragment = document.createDocumentFragment();
+    let displayed = 0;
     for (const video of videos) {
+      if (displayed >= MAX_VISIBLE_SHORTS) break;
       if (!validVideo(video)) continue;
+      displayed += 1;
       const a = document.createElement('a');
       a.className = 'phasma-short-card phasma-short-link';
       a.setAttribute('role', 'listitem');
