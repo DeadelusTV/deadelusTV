@@ -319,3 +319,131 @@
 #page-phasmophobia .phasma-shorts-status[hidden] {
   display: none;
 }
+
+
+/* Carnet des enquêteurs : aperçu visuel, aucune interaction factice. */
+#page-phasmophobia .phasma-journal-section {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(260px, 0.82fr) minmax(0, 1.18fr);
+  align-items: center;
+  gap: 18px;
+  border-top: 1px solid #2c2d2f;
+  margin: 0 0 42px;
+  padding: 34px 0 22px;
+  min-height: 342px;
+  isolation: isolate;
+}
+
+#page-phasmophobia .phasma-journal-copy {
+  position: relative;
+  z-index: 1;
+  padding: 6px 0 10px;
+}
+
+#page-phasmophobia .phasma-journal-copy .eyebrow {
+  display: block;
+  margin-bottom: 15px;
+  color: #dcb772;
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+
+#page-phasmophobia .phasma-journal-copy h2 {
+  margin: 0 0 16px;
+  max-width: 420px;
+  color: #f2eee7;
+  font-size: clamp(29px, 3.2vw, 39px);
+  line-height: 1.16;
+}
+
+#page-phasmophobia .phasma-journal-copy > p:not(.phasma-journal-note) {
+  color: #c0bfbb;
+  max-width: 430px;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+#page-phasmophobia .phasma-journal-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 23px;
+}
+
+#page-phasmophobia .phasma-journal-topics span {
+  border: 1px solid #504534;
+  border-radius: 3px;
+  background: #211e1a;
+  color: #dbc8a8;
+  font-size: 11px;
+  letter-spacing: .2px;
+  padding: 5px 10px;
+}
+
+#page-phasmophobia .phasma-journal-note {
+  margin-top: 17px;
+  color: #999793;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+#page-phasmophobia .phasma-journal-art {
+  position: relative;
+  min-width: 0;
+  min-height: 335px;
+  align-self: stretch;
+  margin: -18px -18px -22px -42px;
+  background:
+    url('../../assets/phasmo-journal.webp') 53% center / cover no-repeat,
+    radial-gradient(ellipse at 65% 50%, #2a201b 0%, #101112 70%);
+  -webkit-mask-image:
+    linear-gradient(to right, transparent 0%, #000 17%, #000 88%, transparent 100%);
+  mask-image:
+    linear-gradient(to right, transparent 0%, #000 17%, #000 88%, transparent 100%);
+  pointer-events: none;
+}
+
+#page-phasmophobia .phasma-journal-art::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, #101112 0%, transparent 20%, transparent 72%, #101112 100%),
+    linear-gradient(to right, #10111255, transparent 28%);
+}
+
+@media (max-width: 760px) {
+  #page-phasmophobia .phasma-journal-section {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    margin-bottom: 18px;
+    padding-top: 28px;
+  }
+  #page-phasmophobia .phasma-journal-copy {
+    padding-bottom: 6px;
+  }
+  #page-phasmophobia .phasma-journal-copy h2 {
+    font-size: clamp(28px, 8vw, 36px);
+  }
+  #page-phasmophobia .phasma-journal-art {
+    margin: -2px -10px -15px;
+    min-height: 240px;
+    aspect-ratio: 2.45 / 1;
+    background-size: cover;
+    background-position: 53% center;
+  }
+}
+
+@media (max-width: 480px) {
+  #page-phasmophobia .phasma-journal-art {
+    min-height: 202px;
+    background-position: 57% center;
+  }
+  #page-phasmophobia .phasma-journal-topics {
+    gap: 6px;
+  }
+  #page-phasmophobia .phasma-journal-topics span {
+    padding: 5px 8px;
+  }
+}
