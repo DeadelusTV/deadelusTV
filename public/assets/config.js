@@ -12,5 +12,7 @@ window.DEADELUSTV_CONFIG = Object.freeze({
   crewmongus:'#crewmongus',
   pavillonNoir:'#pavillon-noir',
   phasmoVideos:'https://www.youtube.com/@deadelustv/search?query=phasmophobia',
+  offlineTitle:'HORS LIGNE',
+  offlineSubtitle:'Rendez-vous à 21h en live',
   twitchExtraParents:[] // Si le portail est lui-même dans une iframe.
 });

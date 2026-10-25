@@ -42,6 +42,25 @@
       image.width = 853;
       image.height = 480;
       image.className = 'twitch-offline-image';
+      // Texte néon indépendant du bandeau, pour modifier l'horaire sans refaire l'image.
+      const neon = document.createElement('div');
+      neon.className = 'twitch-neon-message';
+      neon.setAttribute('aria-label', 'Écran hors ligne');
+      const neonTitle = document.createElement('strong');
+      neonTitle.className = 'twitch-neon-title';
+      const neonText = String(config.offlineTitle || 'HORS LIGNE');
+      neonTitle.setAttribute('aria-label', neonText);
+      for (const character of neonText) {
+        const letter = document.createElement('span');
+        letter.className = 'letter';
+        letter.textContent = character === ' ' ? '\u00a0' : character;
+        letter.setAttribute('aria-hidden', 'true');
+        neonTitle.append(letter);
+      }
+      const neonSubtitle = document.createElement('span');
+      neonSubtitle.className = 'twitch-neon-subtitle';
+      neonSubtitle.textContent = String(config.offlineSubtitle || 'Rendez-vous à 21h en live');
+      neon.append(neonTitle, neonSubtitle);
       const copy = document.createElement('div');
       copy.className = 'twitch-offline-copy';
       const badge = document.createElement('span');
@@ -64,7 +83,7 @@
       actions.className = 'twitch-offline-actions';
       actions.append(link, retry);
       copy.append(badge, title, description, actions);
-      panel.append(image, copy);
+      panel.append(image, neon, copy);
       const mount = document.createElement('div');
       mount.id = 'twitch-live-mount';
       mount.className = 'twitch-live-mount';
@@ -82,10 +101,11 @@
       controls.append(play);
       root.append(panel, mount);
       root.after(controls);
-      Object.assign(this, {panel, mount, controls, badge, title, description, retry});
+      Object.assign(this, {panel, mount, controls, badge, title, description, retry, neon, copy});
       this.setState('loading');
       this.onVisibility = () => {
         if (!document.hidden && this.active && this.state !== 'live') this.check();
+        else this.updateFlicker();
       };
       document.addEventListener('visibilitychange', this.onVisibility);
       window.addEventListener('online', this.onVisibility);
@@ -97,6 +117,9 @@
       const live = state === 'live';
       this.mount.hidden = !live;
       this.panel.hidden = live;
+      this.neon.hidden = state !== 'offline';
+      this.copy.hidden = state === 'offline';
+      this.updateFlicker();
       if (!live) this.controls.hidden = true;
       const messages = {
         loading: ['TWITCH', 'Le live DeadelusTV', 'Vérification du direct…'],
@@ -108,6 +131,32 @@
         [this.badge.textContent, this.title.textContent, this.description.textContent] = messages[state];
       }
       this.retry.hidden = ['loading', 'small'].includes(state);
+    }
+
+    updateFlicker() {
+      clearTimeout(this.flickerTimer);
+      this.neon.querySelectorAll('.letter.flicker').forEach(letter => letter.classList.remove('flicker'));
+      if (this.state !== 'offline' || document.hidden ||
+          window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const loop = () => {
+        this.flickerTimer = setTimeout(() => {
+          if (this.state !== 'offline' || document.hidden) return;
+          const letters = [...this.neon.querySelectorAll('.letter')]
+            .filter(letter => letter.textContent.trim());
+          const count = Math.random() < .23 ? 2 : 1;
+          for (let i = 0; i < count && letters.length; i++) {
+            const index = Math.floor(Math.random() * letters.length);
+            const letter = letters.splice(index, 1)[0];
+            letter.classList.remove('flicker');
+            void letter.offsetWidth;
+            letter.classList.add('flicker');
+            letter.addEventListener('animationend',
+              () => letter.classList.remove('flicker'), {once: true});
+          }
+          loop();
+        }, 2100 + Math.random() * 4100);
+      };
+      loop();
     }
 
     stop() {
@@ -161,11 +210,9 @@
           instance.setMuted(true);
           instance.play();
         });
+        // PLAYING peut également concerner une rediffusion : seul ONLINE confirme le direct.
         listen(Twitch.Player.PLAYING, () => {
-          clearTimeout(this.watchdog);
-          clearTimeout(this.poll);
-          this.setState('live');
-          this.controls.hidden = true;
+          if (this.state === 'live') this.controls.hidden = true;
         });
         listen(Twitch.Player.PLAYBACK_BLOCKED, () => {
           if (this.state === 'live') this.controls.hidden = false;
