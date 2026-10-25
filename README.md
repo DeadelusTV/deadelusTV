@@ -57,3 +57,44 @@ L’archive contient des fichiers complets à appliquer, pas un nouveau site à 
 La récupération réelle sur la chaîne a été exécutée. Les cas onglet incorrect, mauvais tri, Shorts, vidéo classique courte et panne ont été contrôlés. Les syntaxes JavaScript, Python, YAML et Bash ainsi que la publication et le repli ont été vérifiés localement ; le transfert SSH a été simulé sans toucher au serveur. La logique JavaScript des liens et du rafraîchissement a été contrôlée.
 
 Le rendu visuel de cette évolution et l’exécution réelle des nouveaux workflows restent à vérifier après publication par Yekelle. L’aperçu local n’était pas accessible depuis le navigateur de contrôle. Ne pas confondre ces fichiers préparés avec un déploiement déjà effectué.
+
+
+## Phasmophobia : synchronisation des Shorts (en développement)
+
+La galerie de la rubrique Phasmophobia lit public/data/phasmo-shorts.json.
+Elle affiche les vrais titres, miniatures et liens publics, fournis par YouTube.
+Le navigateur ne contacte pas directement l'API Google et ne reçoit aucune clé.
+
+Playlist : https://www.youtube.com/playlist?list=PL-fyrrZ6KfGkn4a2bt07-HqyjIncP_X7g
+
+### Configuration
+1. Créer une clé Google Cloud, activer YouTube Data API v3 et restreindre
+   la clé à cette API. Ne jamais l'ajouter au HTML, JavaScript ou à un commit.
+2. Dans le dépôt GitHub : Settings > Secrets and variables > Actions >
+   New repository secret, nom YOUTUBE_API_KEY, valeur = clé API.
+3. Sur un ordinateur de confiance, pour un test local : définir temporairement
+   la variable YOUTUBE_API_KEY puis lancer le script ci-dessous.
+4. Pour les tests sans réseau :
+   python -m unittest discover -s scripts -p 'test_phasmo_shorts.py'
+
+### Test local (Live Server)
+Dans le terminal VS Code du dépôt, après définition de la variable :
+python scripts/update-phasmo-shorts.py
+
+Le script écrit public/data/phasmo-shorts.json, lu immédiatement par Live Server.
+Ne jamais mettre la clé elle-même dans les fichiers du dépôt.
+
+### Publication
+Le script scripts/update-phasmo-shorts.py utilise playlistItems.list avec
+pagination, vérifie les métadonnées, puis écrit atomiquement le JSON.
+En cas d'erreur ou de liste vide, l'ancienne version est conservée.
+
+Après fusion dans main, le workflow refresh-phasmo-shorts.yml vérifie la playlist
+à 01:13, 07:13, 13:13 et 19:13 UTC (déclenchements non garantis à la minute).
+Il transfère uniquement le JSON vers OVH, sans commit.
+Le déploiement du site tente également une synchronisation et conserve
+les dernières données publiées si YouTube est indisponible.
+
+La branche de développement ne publie rien sur OVH. Les nouveaux workflows
+ne sont disponibles au déclenchement manuel GitHub qu'après présence dans main.
+Aucune synchronisation réelle avec l'API n'a encore été confirmée.
