@@ -1,207 +1,59 @@
-# DeadelusTV — accueil public
+# DeadelusTV — site principal
 
-Site : https://www.deadelustv.com/#accueil
+Site public : https://www.deadelustv.com/
+Dépôt : https://github.com/DeadelusTV/deadelusTV
+Roadmap : [docs/ROADMAP.md](docs/ROADMAP.md)
 
-Sources : https://github.com/DeadelusTV/deadelusTV
+## Architecture et publication
 
-Le site est statique : seuls les fichiers de `public/` sont servis. HTML, CSS et JavaScript sont séparés ; aucune dépendance ni compilation n’est nécessaire pour l’affichage. Les services Supabase existants ne sont pas utilisés par cet accueil.
+Le portail est un site statique (HTML, CSS, JavaScript), servi depuis `public/` sur OVH. Aucun service Supabase supplémentaire n'est nécessaire pour les pages de présentation Phasmophobia et TCG. Les modules Crewmong Us et Pavillon Noir suivent leurs intégrations propres ; ne pas considérer leurs données ou leur administration comme celles du TCG.
 
-## Accueil
+`main` est la branche qui déclenche `.github/workflows/deploy-ovh.yml` : construction des fichiers statiques dans une nouvelle release OVH, transfert SSH vérifié puis activation de `/var/www/deadelustv/accueil/current`. Le workflow ne publie que `public/`, et les clés d'accès OVH sont des secrets/variables GitHub Actions. Ne jamais ajouter de secret dans `public/`.
 
-- Photo de profil dans l’entête et en favicon ; le logo permet de revenir à l’accueil.
-- Menu et raccourcis : Phasmophobia, TCG, Crewmong Us, Jeux de rôle.
-- Lecteur Twitch chargé directement, en mode muet au départ. Si la largeur disponible est inférieure aux 400 px requis par Twitch, un lien vers la chaîne est proposé. Le badge violet ouvre également Twitch. Le lecteur est déchargé lorsqu’on quitte l’accueil.
-- Réseaux flottants sur le côté sur ordinateur et en barre basse sur mobile ; ils disparaissent lorsque les liens du pied de page sont entièrement visibles.
-- Grande vignette YouTube : dernière vidéo publiée dans l’onglet Vidéos, hors Shorts. La miniature mène à la vidéo, le titre à la chaîne. Le titre de rubrique « À retrouver en vidéo » reste à renommer.
-- Un seul bloc de vidéos courtes : TikTok. Son contenu reste illustratif et son lien ouvre le profil ; aucune récupération automatique TikTok n’est ajoutée.
-- Les présentations des univers restent distinctes des sites existants. Le booster TCG est une démonstration fictive.
+Les branches de développement sont indépendantes. La démo `preview/presentation-deadelus`, publiée séparément sur Cloudflare Pages, n'est pas une source de vérité pour le reste de l'accueil : **ne jamais fusionner l'intégralité de cette branche sur `main`** sans revue des fichiers.
 
-## Actualisation YouTube
+## Pages actuellement publiées
 
-`scripts/update-youtube.py` lit uniquement la page publique `https://www.youtube.com/@deadelustv/videos?hl=fr&gl=FR`. Il vérifie l’identifiant de chaîne, l’onglet sélectionné et le tri récent avant de retenir la première vidéo publiée. Les Shorts sont exclus par le choix de l’onglet, pas par un seuil de durée. Une vidéo classique courte reste donc éligible. Les directs en cours et les publications à venir ne sont pas retenus.
+- **Accueil** : lecteur Twitch avec écran hors ligne personnalisé et texte néon ; dernière vidéo principale YouTube, rubrique TikTok, liens sociaux et accès aux univers. Conserver le fonctionnement et les ajustements du site officiel en faisant évoluer d'autres pages.
+- **Phasmophobia V2** (`#phasmophobia`) : bandeau visuel, galerie des tutoriels Shorts issus de la playlist officielle et présentation visuelle du carnet des enquêteurs. Galerie : `public/modules/phasmophobia/module.js`, styles : `public/modules/phasmophobia/style.css`, données : `public/data/phasmo-shorts.json`. Le carnet représenté sur la page n'est **pas** encore le livre interactif terminé.
+- **TCG** (`#tcg`) : page d'attente immersive « Un nouvel univers se prépare » avec cartes symboliques, sans révélation des mécaniques du futur jeu. Style isolé dans `public/assets/tcg-attente.css`. L'ancien booster fictif n'est plus proposé sur cette page.
+- **Crewmong Us / Pavillon Noir** : intégrations existantes, conservées lors de la publication ciblée des deux rubriques ci-dessus. Se référer aussi à `docs/crewmongus-integration.md` et `docs/pavillon-noir-integration.md` pour leur historique d'intégration.
 
-Le script extrait seulement l’identifiant, le titre et l’adresse de la miniature. Il ne télécharge aucune vidéo. Python 3 et sa bibliothèque standard suffisent ; aucune clé API, aucun cookie ni compte YouTube n’est nécessaire. Cette lecture de page publique n’est pas l’API officielle : un changement de structure YouTube peut demander une adaptation. Une erreur ne remplace pas les données précédentes par un résultat vide.
+Les pages Phasmo V2 et TCG d'attente ont été publiées sur `main` le **25 octobre 2026** (commit `8db665fbf9d4b966e815a7d580fbbb4991ca3e1a`). La correction de libellé « Pavillon Noir » déjà présente sur `main` a été conservée. Ne pas confondre cette publication avec le **prototype de livre interactif Phasmo** en cours sur `developpement/phasmo-v2`, non retenu pour cette publication.
 
-Les métadonnées sont écrites atomiquement dans `public/data/latest-youtube.json`. Le fichier du dépôt est un premier instantané ; les actualisations suivantes sont publiées directement sur le site, sans créer de commits automatiques. Le navigateur relit ce fichier au chargement et environ toutes les cinq minutes quand l’accueil est visible. Les liens et le dernier affichage restent utilisables en cas d’erreur de récupération.
+## Deux actualisations YouTube distinctes
 
-## GitHub → OVH
+### 1. Dernière vidéo principale de l'accueil
 
-`.github/workflows/deploy-ovh.yml` conserve le déploiement sur chaque push vers `main`, ainsi que son lancement manuel. Il actualise les métadonnées YouTube avant de préparer `public/`, transfère la nouvelle version puis bascule le lien `current`. Si YouTube est indisponible, les métadonnées de la version déjà en ligne sont reprises avant activation.
+- `scripts/update-youtube.py` consulte la page publique des vidéos YouTube (pas la playlist Phasmo), sans clé API.
+- `public/data/latest-youtube.json` fournit la vignette et le titre.
+- `.github/workflows/refresh-youtube.yml` vérifie aux minutes 7, 22, 37 et 52 de chaque heure (UTC), et publie le seul JSON via OVH. Le navigateur vérifie périodiquement ce fichier lorsque l'accueil est visible.
 
-`.github/workflows/refresh-youtube.yml` vérifie YouTube aux minutes 7, 22, 37 et 52 de chaque heure, soit un intervalle prévu de quinze minutes. Il peut aussi être lancé manuellement dans Actions. Il ne transfère que le JSON de métadonnées et ne crée pas de nouvelle version complète du site. Le groupe de concurrence est partagé avec le déploiement pour éviter une écriture pendant la bascule de version.
+### 2. Galerie de tutoriels Phasmophobia
 
-Les deux workflows utilisent les paramètres déjà présents dans le dépôt : variables `VPS_HOST`, `VPS_USER`, `VPS_KNOWN_HOSTS` et secret `VPS_SSH_KEY`. La vérification de la clé du serveur SSH reste activée et les permissions GitHub restent en lecture seule. La racine de publication est `/var/www/deadelustv/accueil/current` ; aucune nouvelle configuration Caddy, tâche cron du VPS ou intervention Supabase n’est nécessaire.
+- Source : https://www.youtube.com/playlist?list=PL-fyrrZ6KfGkn4a2bt07-HqyjIncP_X7g.
+- `scripts/update-phasmo-shorts.py` utilise YouTube Data API v3 pour récupérer les métadonnées publiques de la playlist, avec pagination. Il vérifie les identifiants, déduplique, conserve l'ordre de la playlist et écrit atomiquement le JSON. Il ne télécharge **aucune vidéo**.
+- Le secret GitHub Actions `YOUTUBE_API_KEY` est lu **uniquement par GitHub Actions**. La clé doit être limitée à l'API YouTube Data API v3 et jamais ajoutée au dépôt ni exposée dans le navigateur. Le test sur la branche de développement a réussi le 25/10/2026. Le premier workflow sur `main` a également réussi le 25/10/2026 : récupération YouTube, vérifications locales et transfert SSH OVH, exécution GitHub Actions `40218578291`. La fiabilité des prochains déclenchements programmés reste à surveiller via Actions.
+- `.github/workflows/refresh-phasmo-shorts.yml` vérifie **quatre fois par jour**, à **01:13, 07:13, 13:13 et 19:13 UTC**, avec lancement manuel possible sur `main`. La publication modifie uniquement `data/phasmo-shorts.json` sur le VPS, sans commit automatique.
+- La galerie affiche jusqu'à **12 cartes** et propose le lien vers la playlist. Son affichage dépend de la disponibilité des miniatures YouTube.
 
-La planification GitHub n’est pas une garantie à la minute : GitHub peut retarder ou omettre une exécution en période de charge. Sur un dépôt public, les exécutions planifiées sont désactivées après soixante jours sans activité du dépôt ; il faut alors réactiver le workflow dans Actions. Source : https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
+En cas d'échec ou de réponse vide de YouTube, ne pas écraser le dernier JSON valide. Le déploiement général OVH tente lui aussi l'actualisation et conserve les données du site précédent si la collecte échoue ou si la clé manque. Les deux workflows YouTube et le workflow de déploiement partagent un même groupe de concurrence pour éviter des écritures simultanées sur `current`.
 
-## Installation de cette évolution
+**Limites :** les horaires GitHub Actions sont indicatifs, pas des garanties de déclenchement à la minute ; sur les dépôts publics inactifs, les workflows planifiés peuvent être désactivés. La clé et les quotas de YouTube Data API v3 restent à surveiller. Les données et leur actualisation sont indépendantes de Supabase.
 
-Récupérer d’abord les derniers changements de `main`. Appliquer les huit fichiers de cette mise à jour dans le dépôt en conservant exactement leurs chemins, puis faire un commit et un push. Aucun fichier existant supplémentaire n’est à supprimer.
+## Contrôles et tests
 
-| Fichiers à remplacer | Fichiers à ajouter |
-| --- | --- |
-| `public/index.html` | `public/data/latest-youtube.json` |
-| `public/assets/styles.css` | `scripts/update-youtube.py` |
-| `public/assets/app.js` | `.github/workflows/refresh-youtube.yml` |
-| `.github/workflows/deploy-ovh.yml` | |
-| `README.md` | |
+- Tests de récupération sans réseau : `python3 -m unittest discover -s scripts -p 'test_phasmo_shorts.py'`.
+- Lancer manuellement **Actualiser les Shorts Phasmophobia** dans GitHub → Actions après la mise en place sur `main`. Vérifier que l'étape de transfert OVH réussit ; un simple test sur une branche de développement ne prouve pas la publication.
+- Vérifier dans le navigateur : `/#accueil`, `/#phasmophobia`, `/#tcg`, mobile, lecture Twitch et contenu de la galerie Phasmo.
+- Après tout changement de `main`, vérifier le workflow **Deployer l'accueil sur OVH**, puis le rendu du site officiel.
 
-Avec GitHub Desktop : récupérer les changements avec Fetch/Pull, copier les fichiers fournis dans le dossier du dépôt local, vérifier les huit chemins dans la liste des changements, puis Commit et Push. Depuis GitHub web : remplacer ou ajouter ces mêmes fichiers ; appliquer les workflows après les fichiers publics et le script Python.
+## Ce qui n'est PAS publié
 
-Après publication, attendre la réussite de « Deployer l’accueil sur OVH », puis vérifier l’accueil en rechargeant la page. Dans Actions, lancer une fois « Actualiser la derniere video YouTube » sur `main` pour vérifier le transfert du JSON avec les droits SSH réels. Une exécution réussie confirme ce branchement ; les tests locaux ne le prouvent pas.
+Le livre interactif Phasmo, sa direction artistique avancée, son feuilletage et ses éventuelles fiches issues du bot Discord restent **en développement / à valider** sur `developpement/phasmo-v2`. Ils ne doivent pas être assimilés au carnet décoratif actuellement publié ni intégrés automatiquement sur `main`.
 
-L’archive contient des fichiers complets à appliquer, pas un nouveau site à placer dans un sous-dossier. `scripts/deploy-ovh.sh` reste un ancien utilitaire distinct ; les workflows actuels utilisent leur propre procédure.
+Voir [la roadmap](docs/ROADMAP.md) pour le statut, les limites et les prochaines décisions.
 
-## Vérifications et limites avant publication
+## Travaux propres à cette branche
 
-La récupération réelle sur la chaîne a été exécutée. Les cas onglet incorrect, mauvais tri, Shorts, vidéo classique courte et panne ont été contrôlés. Les syntaxes JavaScript, Python, YAML et Bash ainsi que la publication et le repli ont été vérifiés localement ; le transfert SSH a été simulé sans toucher au serveur. La logique JavaScript des liens et du rafraîchissement a été contrôlée.
-
-Le rendu visuel de cette évolution et l’exécution réelle des nouveaux workflows restent à vérifier après publication par Yekelle. L’aperçu local n’était pas accessible depuis le navigateur de contrôle. Ne pas confondre ces fichiers préparés avec un déploiement déjà effectué.
-
-
-## Phasmophobia : synchronisation des Shorts (en développement)
-
-La galerie de la rubrique Phasmophobia lit public/data/phasmo-shorts.json.
-Elle affiche les vrais titres, miniatures et liens publics, fournis par YouTube.
-Le navigateur ne contacte pas directement l'API Google et ne reçoit aucune clé.
-
-Playlist : https://www.youtube.com/playlist?list=PL-fyrrZ6KfGkn4a2bt07-HqyjIncP_X7g
-
-### Configuration
-1. Créer une clé Google Cloud, activer YouTube Data API v3 et restreindre
-   la clé à cette API. Ne jamais l'ajouter au HTML, JavaScript ou à un commit.
-2. Dans le dépôt GitHub : Settings > Secrets and variables > Actions >
-   New repository secret, nom YOUTUBE_API_KEY, valeur = clé API.
-3. Sur un ordinateur de confiance, pour un test local : définir temporairement
-   la variable YOUTUBE_API_KEY puis lancer le script ci-dessous.
-4. Pour les tests sans réseau :
-   python -m unittest discover -s scripts -p 'test_phasmo_shorts.py'
-
-### Test local (Live Server)
-Dans le terminal VS Code du dépôt, après définition de la variable :
-python scripts/update-phasmo-shorts.py
-
-Le script écrit public/data/phasmo-shorts.json, lu immédiatement par Live Server.
-Ne jamais mettre la clé elle-même dans les fichiers du dépôt.
-
-### Publication
-Le script scripts/update-phasmo-shorts.py utilise playlistItems.list avec
-pagination, vérifie les métadonnées, puis écrit atomiquement le JSON.
-En cas d'erreur ou de liste vide, l'ancienne version est conservée.
-
-Après fusion dans main, le workflow refresh-phasmo-shorts.yml vérifie la playlist
-à 01:13, 07:13, 13:13 et 19:13 UTC (déclenchements non garantis à la minute).
-Il transfère uniquement le JSON vers OVH, sans commit.
-Le déploiement du site tente également une synchronisation et conserve
-les dernières données publiées si YouTube est indisponible.
-
-La branche de développement ne publie rien sur OVH. Les nouveaux workflows
-ne sont disponibles au déclenchement manuel GitHub qu'après présence dans main.
-Aucune synchronisation réelle avec l'API n'a encore été confirmée.
-
-
-## Phasmophobia — carnet interactif : remarques et travaux à reprendre (25/10/2026)
-
-État : prototype fonctionnel sur `developpement/phasmo-v2`. Le livre s'ouvre, les onglets naviguent et le changement de double page fonctionne, mais le rendu n'est PAS validé.
-
-- **Animation de changement d'onglet / page : à refaire.** Observation utilisateur : les pages au centre semblent s'écarter / se séparer au lieu de se tourner. Cause probable à traiter : le prototype fait pivoter très légèrement une demi-page avec variation d'opacité (`journal.css`, `journal.js`), sans véritable feuille animée. Objectif : une seule feuille indépendante tourne naturellement autour de la reliure centrale, sans ouverture artificielle des deux pages. Travailler ce comportement après validation de la base du carnet ; éviter de conserver l'animation trompeuse comme finition.
-- **Direction artistique du livre : à reprendre après la structure.** Le carnet ouvert est provisoire. Une fois la navigation et les fiches structurées, rapprocher son aspect du journal de Phasmophobia : couverture/reliure, proportions, texture papier, onglets, disposition intérieure et effet de feuilletage. Ne pas considérer l'interface actuelle comme la version finale.
-- **Contenu :** ne pas inventer les informations du bot Discord ; récupérer les vraies fiches et faire valider leur organisation avant intégration.
-- **Validation :** présenter d'abord les principes et l'apparence à Deadelus ; ne rien publier sur `main` sans accord.
-
-
-
-## Phasmophobia — direction artistique proposée : journal V2 (25/10/2026)
-
-**Statut : proposition visuelle à valider avant codage.** Référence : captures fournies du journal et des fiches du bot Discord DeadelusTV. Ne pas confondre ce cahier des charges avec un rendu déjà implémenté.
-
-### Direction esthétique
-- Journal ancien très large et presque plein écran : tranche visible, feuillets empilés, angles usés, parchemin jaune/beige texturé et reliure centrale foncée.
-- Titres manuscrits noirs, fortement hiérarchisés, lignes de séparation épaisses ; police libre lisible à choisir après essais. Pas de gros boutons web au milieu des pages.
-- Silhouettes de fantômes très discrètes en filigrane, à partir de médias autorisés ; texte et fond doivent rester distincts pour l'accessibilité.
-- Arrière-plan extérieur noir, commandes discrètes, sans l'actuelle barre de modalité trop visible.
-
-### Sommaire : disposition des deux pages d'après la capture Discord
-- Page gauche : Les Entités en haut (noms en trois colonnes), Les Équipements en bas (noms en colonnes). Illustration spectrale pâle en arrière-plan.
-- Page droite : Les Maps en haut, Les Objets Maudits au milieu, Divers en bas. Les noms sont en colonnes, avec filigrane spectral pâle.
-- Titres manuscrits centrés, soulignés de traits noirs. Chaque nom est cliquable et utilisable au clavier, avec retour visible mais discret.
-- Flèches en languettes parchemin de chaque côté du livre pour tourner la double page.
-- Le sommaire constitue la navigation principale, sans imposer les onglets épais du prototype actuel. Réévaluer les onglets s'ils apportent une vraie utilité.
-- Ne pas inventer de noms, de descriptions ou de catégories : utiliser les données validées du bot Discord.
-
-### Gabarits après le sommaire
-- Fiche entité : titre, preuves, seuil de chasse et illustration à gauche ; comportement, vitesse et astuces à droite.
-- Fiche objet maudit : visuel de l'objet à gauche ; description, fonctionnement et conseils à droite.
-- Page map : grande carte annotée, autre gabarit de lecture distinct.
-- Fiche équipement : visuel, fonctionnement et astuces selon le contenu réel du bot.
-- Tableau récapitulatif preuves / santé mentale : complément envisageable, pas automatiquement une double page de carnet.
-
-### Feuilletage à corriger
-- Défaut actuel confirmé : les pages centrales semblent s'écarter au lieu de se tourner.
-- La V2 doit faire pivoter UNE feuille indépendante avec recto/verso autour de la reliure, perspective cohérente et ombres, et non animer les deux pages fixes.
-- Respecter le mode mouvement réduit ; navigation clavier, fermeture par Échap, état de focus clair. Bruit de page éventuel plus tard, désactivé par défaut.
-
-### Adaptation et ordre de travail
-- Ordinateur : double page large, fidèle au rapport d'aspect du journal Discord ; mobile : lecture page par page sans texte minuscule.
-- Étape 1 : valider le système visuel de la coque + double page sommaire avant de coder les fiches.
-- Étape 2 : correction de la véritable animation de feuilletage.
-- Étape 3 : gabarits et première fiche réelle vérifiée par type.
-- Étape 4 : récupération et import contrôlé des vraies fiches Discord.
-- Travailler exclusivement sur la branche developpement/phasmo-v2 et ne rien publier sur main sans validation.
-
-
-### Mise en oeuvre expérimentale du 25/10/2026 — NON VALIDÉE VISUELLEMENT
-- V2 coque et sommaire codée sur developpement/phasmo-v2, via public/index.html et public/modules/phasmophobia/journal.{css,js}.
-- Décor de livre entièrement CSS : parchemin texturé, tranche/reliure, légers filigranes provisoires. Aucune capture Discord incorporée dans la page ou utilisée comme arrière-plan.
-- Sommaire à deux pages reprenant les cinq rubriques visibles dans les captures : Entités, Équipements, Maps, Objets maudits, Divers.
-- Libellés visibles transcrits manuellement depuis la capture Discord uniquement pour tester la navigation ; orthographe, listes exhaustives et contenus des fiches encore à vérifier avant publication.
-- Les noms du sommaire ouvrent des fiches vides dédiées. Retour au sommaire et languettes latérales opérationnels ; sur téléphone, lecture page gauche / page droite séparément.
-- L'ancienne animation de demi-pages qui s'écartent a été SUPPRIMÉE ; elle est remplacée par un bref fondu sans faux tournage. Une véritable feuille qui pivote reste explicitement À FAIRE après validation visuelle.
-- Police manuscrite Caveat / Kalam récupérée via Google Fonts avec polices de repli si indisponible.
-- Aucune modification de main ni déploiement OVH ; demander une capture Live Server pour valider dimensions, disposition et lisibilité.
-
-
-### Journal V2 — navigation hiérarchique validée (25/10/2026)
-
-Décision utilisateur à appliquer sur le journal interactif. Cette section décrit la navigation souhaitée ; elle ne signifie pas que le code actuel l'implémente déjà entièrement.
-
-- **Première ouverture du journal / accueil :** afficher un sommaire général présentant les différents accès cliquables : Entités, Maps, Équipements, Objets maudits, Divers et les sous-sections comme Médias selon l'organisation finale. Un bouton discret permet de revenir au sommaire général depuis chaque vue.
-- **Clic sur une catégorie depuis le sommaire ou sur son onglet physique :** ouvrir systématiquement la **page d'accueil de cette catégorie**, avec sa liste de fiches cliquables. Exemple : cliquer « Entités » affiche la liste des entités, même si on se trouvait précédemment sur la fiche Obambo.
-- **Clic sur un élément de la liste :** ouvrir sa fiche détaillée dans la catégorie correspondante, sans quitter le livre. Exemple : « Obambo » → catégorie Entités → fiche Obambo.
-- **Flèches latérales depuis une fiche :** parcourir la fiche précédente/suivante **dans la même catégorie**, dans un ordre déterminé par la liste de cette catégorie ; ne pas passer automatiquement à une catégorie différente.
-- **Retour à la liste :** un clic sur l'onglet de la catégorie courante ramène immédiatement à la liste de ses fiches. Cette règle vaut pour Entités, Maps, Équipements, Objets maudits, Divers et leurs éventuelles subdivisions.
-- **Navigation directe entre catégories :** depuis n'importe quelle fiche, sélectionner un autre onglet ouvre l'accueil de l'autre catégorie ; aucun passage obligé par le sommaire général.
-- **À préciser pendant l'implémentation :** comportement en début/fin de liste (flèche désactivée ou boucle) ; classement des entrées ; placement exact de Médias parmi les cinq onglets physiques existants ; éventuel découpage des longues listes en plusieurs pages. Ne pas présumer ces arbitrages.
-- **Technique :** séparer l'état de navigation (accueil général / catégorie / fiche, identifiant de catégorie, identifiant de fiche), afin que contenu, onglets et flèches reflètent tous la même sélection.
-
-
-### Phasmophobia — clarification de la navigation et idées futures (25/10/2026)
-
-**Statuts distincts :** les menus déroulants existants relèvent du **développement de la page en cours**. Le blog/news, la rédaction en ligne, le carrousel d'actualités, les tutos à structurer et les tournois communautaires sont des **pistes à développer après finalisation de la page**, sauf décision ultérieure explicite.
-
-#### Navigation déroulante : chantier actuel
-- La capture utilisateur montre la section « Où trouver les ressources ? » et des **accordéons** : « Les tutoriels en vidéo », « Le carnet des entités », « Les enquêtes ensemble » ; un clic sur la flèche ouvre/referme le contenu du panneau. Cette interaction de déroulement fait partie des travaux de page **actuels**.
-- Il ne s'agit **pas** d'un défilement automatique de la page, ni des cinq onglets physiques du journal, ni nécessairement de trois pages Web distinctes.
-- La structure envisagée à terme est **News / Livre / Tutos**, en conservant le principe d'accès par rubriques déroulantes à discuter lors du développement final. Ne pas remplacer les panneaux actuels sans validation.
-
-#### Blog / actualités Phasmophobia : fonctionnalité future
-- Source : actualités du **blog des développeurs Kinetic Games**, liées à Phasmophobia. Une autre personne de la communauté effectue déjà les **traductions françaises** des actualités du blog développeur ; l'objectif est de les publier sur le site sous forme d'articles, avec crédit/source et lien vers l'original.
-- **Carrousel** : **9 vignettes d'actualités traduites**, plus **une 10e vignette fixe** qui renvoie directement à **https://www.kineticgames.co.uk/news**. Cette 10e vignette ne doit pas être remplacée par une actualité. Prévoir un **système d'archives** pour les anciennes publications.
-- Prévoir un **accès de rédaction spécifique** à la personne chargée des traductions, qui **n'est ni Deadelus ni l'utilisatrice** ; permissions limitées à l'espace news Phasmophobia, sans droits d'administrateur général, sans accès aux autres univers ni aux réglages sensibles. Identité, authentification et workflow de publication à déterminer avant implémentation.
-- L'éditeur de news sera **simple et en ligne** : formulaire guidé avec titre, source originale, texte riche, mise en page et insertion d'images **en blocs dans le flux du texte**, à l'emplacement choisi (pas en arrière-plan du texte, pas besoin d'écrire du HTML). Aperçu avant publication, gestion de stockage d'images et contenus à concevoir. Prévoir sécurité des fichiers et du contenu saisi.
-- Ne pas supposer que la reproduction intégrale des articles ou images Kinetic est automatiquement autorisée : clarifier droits d'usage/crédits avant publication.
-
-#### Livre et tutos
-- **Rubrique « Livre »** : accès au journal Phasmophobia interactif actuellement prototypé en dehors du déploiement public. Navigation interne du livre conservée : Sommaire général → liste par catégorie → fiche ; onglet de catégorie = retour à sa liste ; flèches dans une fiche = fiche précédente/suivante de la même catégorie.
-- **Rubrique « Tutos »** : accès aux ressources pédagogiques et tutoriels ; forme et alimentation à décider ultérieurement.
-
-#### Événements participatifs / tournois : idée future, pas de développement immédiat
-- Idée : **duels de badges Phasmophobia**, ou de **fantômes/entités**, d'**équipements/matériel**, ou de toute autre catégorie choisie pour l'événement. Chaque confrontation est soumise au **vote de la communauté** ; un arbre affiche gagnants/perdants et progressions jusqu'au vainqueur.
-- **Durée variable en fonction de l'événement et de son sujet** : l'exemple « deux semaines » évoqué précédemment n'est **pas** une durée fixe. Le format, les dates, le nombre de manches et les règles sont à paramétrer pour chaque événement.
-- **Récompense envisageable, acceptée comme piste :** un booster TCG lié à la participation au vote. Plafonds, timing de l'attribution, conditions d'éligibilité et intégration TCG restent à décider ; ne pas créer de boosters automatiquement sans ces validations.
-- **Connexion et anti-abus à étudier :** authentification Twitch **ou** Discord (choix non arrêté), contrôle d'ancienneté du compte ou autre signal approprié, prévention des comptes multiples/votes répétés, cohérence avec les règles existantes du TCG, protection des données.
-- Le vote ne devrait pas exiger des permissions disproportionnées et la solution de vérification d'ancienneté dépendra des données effectivement accessibles à la plateforme choisie.
-
-**Priorités enregistrées :** 1) finir les menus accordéon et la page Phasmophobia en cours, avec prototypes du journal hors ligne ; 2) développer ensuite news, édition déléguée, archives et tutos selon validation ; 3) étudier les tournois, le vote sécurisé et les boosters comme évolution ultérieure.
-
-**Limite :** notes seulement dans la branche developpement/phasmo-v2. Aucune modification de main, du site public, des permissions ni des règles du TCG.
+Le prototype du carnet interactif Phasmophobia et ses styles/scripts restent exclusivement dans `developpement/phasmo-v2` et ne sont pas déployés. Les notes d'interface, de navigation, les limites et les idées en suspens ont été préservées dans [docs/phasmo-journal-suivi.md](docs/phasmo-journal-suivi.md).
