@@ -45,48 +45,7 @@ $$('dialog').forEach(dialog=>{
   dialog.addEventListener('close',()=>{document.body.classList.remove('dialog-open');const trigger=modalTriggers.get(dialog);if(trigger&&trigger.isConnected)trigger.focus();});
 });
 function syncTwitchPlayer() {
-  if (!player) return;
-
-  const homeVisible = !player.closest('[data-page]').hidden;
-  const secure = location.protocol === 'https:' ||
-    ['localhost', '127.0.0.1'].includes(location.hostname);
-  const canEmbed = secure && player.clientWidth >= 400;
-  const mode = !homeVisible ? 'hidden' : canEmbed ? 'embed' : 'link';
-
-  if (player.dataset.mode === mode) return;
-  player.dataset.mode = mode;
-  player.replaceChildren();
-
-  if (mode === 'hidden') return;
-
-  if (mode === 'link') {
-    const link = document.createElement('a');
-    link.href = CONFIG.twitch;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    link.className = 'twitch-fallback-link';
-    link.textContent = 'Regarder la chaîne sur Twitch ↗';
-    player.append(link);
-    return;
-  }
-
-  const src = new URL('https://player.twitch.tv/');
-  src.searchParams.set('channel', CONFIG.channel);
-  src.searchParams.set('parent', location.hostname);
-  src.searchParams.set('autoplay', 'true');
-  src.searchParams.set('muted', 'true');
-
-  (CONFIG.twitchExtraParents || []).forEach(parent => {
-    src.searchParams.append('parent', parent);
-  });
-
-  const iframe = document.createElement('iframe');
-  iframe.src = src.href;
-  iframe.title = 'Chaîne Twitch de DeadelusTV';
-  iframe.allow = 'autoplay; fullscreen';
-  iframe.allowFullscreen = true;
-  iframe.referrerPolicy = 'strict-origin-when-cross-origin';
-  player.append(iframe);
+  if (player) window.DEADELUSTV_TWITCH.sync(player, CONFIG);
 }
 
 window.addEventListener('resize', () => {
