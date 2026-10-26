@@ -26,10 +26,10 @@
   <span class="phasma-editor-mode">ESPACE DE RÉDACTION · ACCÈS RÉSERVÉ</span>
 </header>
 <div class="phasma-editor-warning" role="note">
-  <strong>Espace de rédaction privé (préparation).</strong>
-  Une fois les autorisations du blog installées, les brouillons textuels sont conservés sur Supabase.
-  Les images provenant du PC restent <strong>temporaires</strong> dans cette première version ; utilisez une URL HTTPS pour les images qui doivent rester dans le texte après rechargement.
-  Aucune publication publique n'est encore possible.
+  <strong>Espace de rédaction privé.</strong>
+  Vos brouillons et les images collées ou importées depuis le PC sont enregistrés sur Supabase.
+  Attendez le message de confirmation de l'enregistrement avant de fermer ou actualiser la page.
+  Les images restent privées. Aucune publication publique n'est encore possible.
 </div>
 <section id="editor-private-gate" class="phasma-editor-private-gate" aria-label="Accès à la rédaction">
   <h1>Accès au bureau de rédaction</h1>
@@ -44,7 +44,7 @@
   <button type="button" id="editor-private-logout" class="phasma-editor-btn">Se déconnecter</button>
 </div>
 <div class="phasma-editor-shell" id="editor-private-content" hidden>
-  <aside class="phasma-editor-sidebar" aria-label="Mes brouillons de démonstration">
+  <aside class="phasma-editor-sidebar" aria-label="Mes brouillons privés">
     <div class="phasma-editor-sidebar-head">
       <h2>Mes brouillons</h2>
       <button id="editor-new" class="phasma-editor-btn phasma-editor-btn--gold" type="button">+ Nouvel article</button>
@@ -57,14 +57,14 @@
       <div>
         <p class="phasma-editor-kicker">LE BUREAU DE RÉDACTION</p>
         <h1>Écrire une actualité</h1>
-        <p id="editor-save-status" role="status" aria-live="polite">Brouillon local</p>
+        <p id="editor-save-status" role="status" aria-live="polite">Vérification de la sauvegarde…</p>
       </div>
       <div class="phasma-editor-actions">
         <button type="button" id="editor-mode-edit" class="phasma-editor-btn phasma-editor-btn--selected" aria-pressed="true">Rédaction</button>
         <button type="button" id="editor-mode-preview" class="phasma-editor-btn" aria-pressed="false">Aperçu</button>
         <button type="button" id="editor-save-now" class="phasma-editor-btn phasma-editor-btn--gold">Enregistrer</button>
         <button type="button" id="editor-export" class="phasma-editor-btn">Exporter le brouillon</button>
-        <button type="button" class="phasma-editor-btn phasma-editor-btn--disabled" disabled title="Connexion et autorisations non configurées">Publier · bientôt</button>
+        <button type="button" class="phasma-editor-btn phasma-editor-btn--disabled" disabled title="Publication publique non encore activée">Publier · bientôt</button>
       </div>
     </div>
 
@@ -101,7 +101,7 @@
             <div class="phasma-editor-media-or" aria-hidden="true">ou</div>
             <label class="phasma-editor-field">Choisir une image sur votre ordinateur
               <input id="editor-cover-upload" type="file" accept="image/png,image/jpeg,image/webp">
-              <span class="phasma-editor-hint">Aperçu local : PNG, JPEG ou WebP, maximum 2 Mo. Le fichier n'est pas encore enregistré sur le serveur.</span>
+              <span class="phasma-editor-hint">PNG, JPEG ou WebP, maximum 2 Mo. Après chargement, le fichier est enregistré dans l'espace privé du blog.</span>
             </label>
             <div id="editor-cover-preview" class="phasma-editor-cover-preview" role="status" aria-live="polite"></div>
           </div>
@@ -156,7 +156,7 @@
     </section>
 
     <section id="editor-preview" aria-label="Aperçu de l'article" hidden>
-      <p class="phasma-editor-preview-hint">Aperçu local, non publié. Les images du PC sont temporaires ; les URL externes ne sont pas importées sur le site.</p>
+      <p class="phasma-editor-preview-hint">Aperçu privé, non publié. Les images insérées depuis le PC ou le presse-papiers sont conservées après enregistrement. Les images liées par une URL externe ne sont pas importées sur le site.</p>
       <div id="editor-preview-article" class="phasma-news-reader">
         <div id="wys-preview-heading"></div>
         <div id="wys-preview-body" class="phasma-wysiwyg-preview-body"></div>
