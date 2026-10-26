@@ -50,16 +50,28 @@
   padding: clamp(21px, 3vw, 39px) clamp(21px, 5vw, 70px);
   background: linear-gradient(180deg, #1d1f1f 0%, #191b1b 100%);
 }
+.phasma-editor-demo .phasma-wysiwyg-editor.tiptap,
 .phasma-editor-demo .phasma-wysiwyg-editor .tiptap,
 .phasma-editor-demo .phasma-wysiwyg-preview-body .tiptap {
-  min-height: 330px;
+  display: block;
+  width: 100%;
+  min-height: 340px;
   outline: 0;
   color: #e8e2d8;
   font: 15px/1.95 system-ui, -apple-system, "Segoe UI", sans-serif;
   white-space: normal;
   overflow-wrap: anywhere;
 }
+.phasma-editor-demo .phasma-wysiwyg-editor.tiptap {
+  cursor: text;
+  caret-color: #f4d49b;
+  border: 0;
+}
+.phasma-editor-demo .phasma-wysiwyg-editor.tiptap:focus,
+.phasma-editor-demo .phasma-wysiwyg-editor.tiptap:focus-visible,
 .phasma-editor-demo .phasma-wysiwyg-editor .tiptap:focus-visible { outline: 0; }
+.phasma-editor-demo .phasma-wysiwyg-editor.tiptap :is(p,div,h2,h3,ul,ol):focus-visible { outline: 0; }
+.phasma-editor-demo .phasma-wysiwyg-editor.tiptap > p:first-child { margin-top: 0; }
 .phasma-editor-demo .tiptap p { margin: 0 0 18px; }
 .phasma-editor-demo .tiptap :is(h2,h3) {
   color: #ecd2a3;
