@@ -215,3 +215,48 @@ body.phasma-editor-demo {
   border-radius: 3px;
   color: #e7cea1;
 }
+
+/* Actions insérées entre deux blocs d'article (texte → image → texte). */
+.phasma-editor-inline-insert {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 4px;
+  padding: 6px 12px;
+  border-top: 1px dashed #5b513e;
+  color: #bcb09d;
+}
+.phasma-editor-inline-insert-label {
+  font-size: 11px;
+  letter-spacing: .1px;
+}
+.phasma-editor-inline-insert .phasma-editor-btn {
+  min-height: 30px;
+  padding: 5px 12px;
+  border: 1px solid #4f4434;
+  border-radius: 18px;
+  background: #25231f;
+  color: #d9c29a;
+  font-size: 11px;
+}
+.phasma-editor-inline-insert .phasma-editor-btn:hover {
+  background: #3b3021;
+  border-color: #bb955b;
+}
+.phasma-editor-insert-help {
+  max-width: 700px;
+  margin-top: 0 !important;
+  color: #d4bd96 !important;
+}
+.phasma-editor-insert-help strong { color: #f0d3a0; }
+@media (max-width: 540px) {
+  .phasma-editor-inline-insert {
+    justify-content: flex-start;
+    gap: 6px;
+    margin: 0;
+    padding-inline: 4px;
+  }
+}
