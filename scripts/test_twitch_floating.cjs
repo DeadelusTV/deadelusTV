@@ -57,7 +57,7 @@ class Element {
   click() { for (const fn of this.listeners.get('click') || []) fn(); }
   focus() { this.focused = true; }
   setAttribute(name, value) { this.attributes[name] = value; }
-  getBoundingClientRect() { return this.rect || {left:20, top:120, right:920, bottom:625, width:900, height:505}; }
+  getBoundingClientRect() { return this.rect || {left:20, top:330, right:920, bottom:836, width:900, height:506}; }
 }
 function createEnv({consent = true, width = 1400, height = 800, state = 'live'} = {}) {
   let allowed = consent;
