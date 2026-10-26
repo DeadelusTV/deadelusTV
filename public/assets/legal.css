@@ -21,3 +21,5 @@
 .cookie-panel a{color:var(--gold-bright);text-decoration:underline}
 .cookie-panel button:focus-visible{outline-offset:3px}
 @media(max-width:600px){.legal-links{gap:0 18px}.cookie-panel{inset:auto 8px 8px;padding:18px}.cookie-panel .cookie-actions{flex-direction:column}.cookie-panel .cookie-actions .btn{width:100%}}
+/* Les liens réservés ne doivent pas réapparaître à cause du display:inline-flex des liens du footer. */
+.legal-links [hidden]{display:none!important}
