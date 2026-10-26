@@ -61,7 +61,7 @@ Le rédacteur, membre de longue date de la modération DeadelusTV et déjà resp
 Écran envisagé :
 - Liste de ses articles publiés et de ses brouillons.
 - Formulaire guidé : titre français, résumé, date, URL de l'original, traduction, crédit, image de couverture et texte alternatif.
-- Éditeur de blocs, dans l'ordre librement choisi : paragraphe, intertitre, liste, illustration avec légende ; insertion des images **entre les paragraphes**, jamais en arrière-plan.
+- Éditeur visuel type traitement de texte (WYSIWYG), validé en test : texte et images directement dans le flux, gras/italique/souligné, alignements, titres et listes ; aucune manipulation de blocs par le rédacteur.
 - Sauvegarde de brouillon, aperçu fidèle au lecteur public et bouton **Publier** qui met en ligne directement, sans validation par un autre membre de l'équipe.
 - Possibilité de corriger et mettre à jour ses articles déjà publiés. La dépublication et les suppressions définitives restent à préciser.
 
@@ -87,3 +87,32 @@ Le rédacteur, membre de longue date de la modération DeadelusTV et déjà resp
 ## 6. Pas dans le périmètre immédiat
 
 Webhook Discord automatique des News, import automatisé du blog Kinetic, newsletters, votes/tournois, fonctions du TCG.
+
+
+## 7. Validation de l'éditeur et intégration sécurisée au site (26/10/2026)
+
+**Décision utilisateur :** l'ergonomie du prototype WYSIWYG corrigé est **validée après essai réel dans le navigateur** (« Parfait ça fonctionne ! » puis « On valide l'éditeur »). Cela valide l'interface et le comportement attendu, **pas** l'utilisation de la commande navigateur dépréciée `execCommand` en production. Le moteur final devra être maintenu et testé ; préserver la simplicité de l'interface validée.
+
+### Intégration côté visiteurs
+
+- Conserver la rubrique News dans la page Phasmophobia, avec le carrousel de 9 publications traduites + la carte Kinetic permanente et les archives.
+- Une vignette ouvre une **page de lecture dédiée** (ou une vue pleine page avec son URL partageable) avec fond sobre et lisibilité, sans exposer les outils de rédaction aux visiteurs ; maquette finale à valider.
+- Le lecteur public `news.js` repose actuellement sur un JSON statique vide. Avant d'activer « Publier », il faut **remplacer cette source de test par une source d'articles publiés dynamique** (API/DB sécurisée) ou mettre en place une génération serveur fiable déclenchée lors de chaque publication. La consultation publique ne doit jamais exposer les brouillons.
+- Le document riche WYSIWYG doit être rendu de façon contrôlée/assainie, sans insertion brute du HTML produit par l'éditeur.
+
+### Espace privé de rédaction
+
+- Prévoir une URL stable de rédaction, sans onglet public consacré à l'administration (p. ex. `/redaction/phasmo/`), et un lien discret « Gérer les actualités » **visible seulement pour le compte autorisé** dans la page News. Ce masquage est une amélioration ergonomique, **jamais la protection réelle**.
+- Compte DeadelusTV : connexion Twitch comme entrée principale, Discord associable facultativement. Un **unique compte identifié par son UUID d'authentification** reçoit le rôle `phasmo_news_editor`, attribué manuellement par une administration fiable (ne pas déduire le rôle du fait d'être modérateur Discord/Twitch). Les règles prévoient un retrait immédiat de ce droit en cas de besoin.
+- Les règles d'accès côté base (RLS) et le contrôle des API autorisent uniquement ce rôle à consulter ses brouillons, créer, modifier et publier les billets Phasmo ; **aucun droit TCG, Crewmong Us ou administration générale**. Ne jamais mettre de `service_role`/clé secrète dans les pages du site. Le stockage d'images doit appliquer le même contrôle de rôle et ses propres règles de taille/type.
+- La page HTML/JS d'administration d'un site statique peut rester techniquement téléchargeable par quiconque connaît son URL : seule **la lecture des données privées et l'écriture sur les contenus** sont réellement protégées par l'authentification et les règles serveur. Pour bloquer aussi la livraison du fichier HTML, il faudrait une protection supplémentaire du côté de l'hébergement.
+- Statuts `draft` et `published`, sauvegarde des brouillons sur serveur, publication directe et corrections. Aucun utilisateur non autorisé ne doit pouvoir lire un brouillon, modifier une image, usurper l'auteur ou forcer le passage au statut publié.
+- Vérifier en tests une session anonyme, un compte Twitch standard, le seul compte autorisé, une tentative de requête forgée, le téléversement d'images et la révocation du droit.
+
+### Prérequis de comptes communs et déploiement
+
+- Constat vérifié : **DeadelusTV TCG** possède déjà une table `tcg_accounts.user_id` liée à `auth.users`, et `tcg_admins.user_id` lié à `auth.users`, mais le périmètre reste propre au TCG ; **Crew'mong Us** est dans une autre instance Supabase. Aucun partage d'identité automatique entre ces projets.
+- Décider quel projet `auth.users` sera la **source de vérité du compte DeadelusTV** et comment rattacher les utilisateurs existants, plutôt que créer des accès isolés pour le blog.
+- Réaliser le développement sur `developpement/phasmo-v2`, revoir les migrations et RLS avant toute modification d'une base réelle, tester et faire valider ; **aucun changement à `main` sans accord explicite**.
+
+**État actuel :** ce chapitre est un cahier des charges. Aucune connexion privée, table d'articles ou politique RLS nouvelle n'a encore été mise en place pour le blog.
