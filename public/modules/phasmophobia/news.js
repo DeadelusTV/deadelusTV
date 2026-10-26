@@ -251,6 +251,26 @@
         return result;
       }
       if(raw.type==='hardBreak')return document.createElement('br');
+      if(raw.type==='youtube'){
+        const id=String(raw.attrs?.videoId||'');
+        if(!/^[A-Za-z0-9_-]{11}$/.test(id))return null;
+        const panel=el('div','phasma-youtube-card');
+        const button=el('button','phasma-youtube-play','▶  Lire la vidéo YouTube');
+        button.type='button';
+        button.setAttribute('aria-label','Charger la vidéo YouTube intégrée');
+        button.addEventListener('click',()=>{
+          const iframe=el('iframe','phasma-youtube-iframe');
+          iframe.src='https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&rel=0';
+          iframe.title='Vidéo YouTube';
+          iframe.loading='lazy';
+          iframe.referrerPolicy='strict-origin-when-cross-origin';
+          iframe.allow='accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share';
+          iframe.allowFullscreen=true;
+          panel.replaceChildren(iframe);
+        },{once:true});
+        panel.append(button,el('span','phasma-youtube-privacy','La vidéo ne se charge qu’après votre clic.'));
+        return panel;
+      }
       if(raw.type==='image'){
         const src=mediaUrl(raw.attrs?.src);
         if(!src)return null;
