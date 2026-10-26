@@ -37,7 +37,10 @@ def main():
             errors.append(f"Fichier de travail dans public/: {path.name}")
     for source in ROOT.rglob("*.html"):
         page = Page()
-        page.feed(source.read_text(encoding="utf-8"))
+        text = source.read_text(encoding="utf-8")
+        page.feed(text)
+        if 'data-legal-pending="true"' in text:
+            errors.append("Textes légaux non finalisés : ne pas déployer les pages provisoires.")
         errors.extend(page.errors)
         errors.extend(f"Identifiant HTML répété : {key}" for key, n in Counter(page.ids).items() if n > 1)
         for asset in filter(None, page.local_assets):
