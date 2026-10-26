@@ -195,3 +195,13 @@ Décision : la rubrique **News devient un chantier prioritaire**, après validat
 - Le système conserve le format de brouillon JSON, la sauvegarde locale, la lecture des anciens brouillons, l'aperçu et l'export. Les images PC restent temporaires. Le bouton Publier reste désactivé.
 - Une duplication de versions internes de ProseMirror constitue une **cause possible**, déjà documentée par ses mainteneurs pour des symptômes similaires lors de l'utilisation de CDN ; sans trace console de ce navigateur, ne pas la présenter comme certaine.
 - Correctifs de code vérifiés statiquement et par tests de conversion, mais **régression interactive dans le navigateur encore à confirmer**. Aucune modification de `main` ou des projets Supabase.
+
+
+### Validation éditeur et protection du rédacteur unique (26/10/2026)
+
+- **Ergonomie de l'éditeur WYSIWYG corrigé validée par l'utilisatrice après test.** Ce n'est pas une validation technique de son moteur déprécié pour la production.
+- Prochain chantier : intégrer le blog aux News Phasmo et afficher les articles en page de lecture dédiée, avec une URL partageable, un fond adapté et les archives.
+- Ajouter un espace privé de rédaction avec bouton « Gérer les actualités » visible uniquement pour le compte autorisé. Une URL cachée ne constitue pas une sécurité.
+- Connexion principale prévue avec Twitch, Discord associable ; accorder `phasmo_news_editor` **manuellement à un seul UUID utilisateur**, avec RLS et restrictions Storage/API côté serveur. Aucun privilège administrateur général ni sur le TCG.
+- Le blog public charge encore un JSON statique de test vide : prévoir une source dynamique des articles publiés ou un déploiement serveur à la publication, sans exposer les brouillons.
+- Auth commune à définir entre les projets Supabase existants avant attribution effective des droits. **Aucun déploiement, aucune table ni aucun compte nouveau créés à ce stade.**
