@@ -309,3 +309,14 @@ Décision : la rubrique **News devient un chantier prioritaire**, après validat
 - Formats import PC/presse-papiers validés par code : PNG, JPEG et WebP, maximum 2 Mio par image. GIF et SVG non acceptés.
 - **Accès mattarix_ : reporté explicitement par l'utilisatrice** jusqu'à la validation et mise sur `main` ; ne pas le pousser à se connecter à la démo pour l'instant.
 - Régressions techniques : 12/12 vérifications statiques sur les correctifs de l'éditeur. **Essai réel du bouton Importer et de la nouvelle position des alertes restant à valider dans le navigateur.**
+
+
+### Validation utilisatrice : alertes, import JSON et F5 (26/10/2026)
+
+- **Validation en conditions réelles** par l'utilisatrice sur l'éditeur privé de développement :
+  - messages d'erreur de publication désormais bien visibles **en haut de l'éditeur** ;
+  - bouton **Importer un JSON** fonctionnel ;
+  - contenu du brouillon importé conservé après **F5** (persistance confirmée).
+- Correctifs concernés : `editor-private.html`, `editor-private.css`, `editor-native.js`. Les essais utilisateur ferment les points ouverts de la recette précédente.
+- Reste à contrôler séparément avant ouverture officielle : erreurs d'upload et limite 2 Mio, image de couverture, autres appareils/comptes, prévention des pertes de travail, liens et publication après transfert sur `main`. **L'accès du rédacteur mattarix_ attend explicitement le passage sur `main`**.
+- Aucun changement demandé ni effectué sur `main` dans cette étape.
