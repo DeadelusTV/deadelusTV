@@ -332,7 +332,8 @@
       const persist = !visible && float?.shouldPersist(this);
       float?.refresh();
       const secure = location.protocol === 'https:' || ['localhost', '127.0.0.1'].includes(location.hostname);
-      const largeEnough = this.root.clientWidth >= 400;
+      // Un dock volontairement masque mesure 0px pendant une reprise sur un autre onglet.
+      const largeEnough = persist || this.root.clientWidth >= 400;
       if ((!visible && !persist) || !secure || !largeEnough) {
         this.active = false;
         this.stop();
