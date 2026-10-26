@@ -159,3 +159,14 @@ Webhook Discord automatique des News, import automatisé du blog Kinetic, newsle
 - Deux politiques Storage : les comptes News activés envoient dans leur propre dossier, le rédacteur ne lit que ses images, et l'admin Phasmo peut relire celles du rédacteur. Les rôles TCG n'accordent aucune permission supplémentaire. Aucune dépendance au pseudo Twitch, aucun bucket public.
 - Upload synchronisé avec la sauvegarde des brouillons dans l'éditeur natif privé, pour images dans le corps de l'article et couvertures. L'aperçu/démo locale conserve son fonctionnement antérieur.
 - La publication publique devra mettre à disposition des images publiques distinctes : **ne jamais publier une URL blob locale ni un chemin privé directement**. Nettoyage ultérieur des orphelins.
+
+
+### Publication test des articles et sécurité du lecteur (26/10/2026)
+
+Pour valider la rédaction avant mise en production, ajouter un **canal de publication `preview`** distinct de `production` dans `public.phasmo_news_articles`. La page de développement lit seulement `stage=preview,status=published` et le compte rédacteur/admin ne peut insérer ou éditer que des publications preview. Le site principal ne lit pas ce flux, et son code `main` n'est pas modifié.
+
+La publication prend un **instantané JSON validé** du brouillon privé, copie ses éventuelles images dans `phasmo-news-published-images` (bucket public séparé du stockage privé), puis insère/actualise l'article. Les visiteurs lisent uniquement les snapshots publiés ; aucun accès aux brouillons. Les articles gardent un slug stable pour conserver leurs liens de partage, une révision peut être ouverte dans l'éditeur, mise à jour, puis retirée de la démo sans supprimer son brouillon.
+
+Le lecteur construit des éléments DOM contrôlés, avec `textContent`/nœuds texte et attributs d'URL validés, jamais du HTML libre issu de la rédaction. Les images du bucket public sont réellement publiques dès publication : **ne pas publier de données personnelles ou de brouillon confidentiel dans un essai**.
+
+SQL et code présents sur la branche Phasmo ; vérifications mock/règles effectuées. La recette dans le navigateur réel et la phase `production` restent à valider. Prévoir ultérieurement la suppression de médias orphelins et les procédures de bascule entre canaux.
