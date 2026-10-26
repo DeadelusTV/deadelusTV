@@ -233,3 +233,12 @@ Décision : la rubrique **News devient un chantier prioritaire**, après validat
 - La connexion ne sera opérationnelle qu'après ajout de la redirection OAuth, application contrôlée des tables et RLS, identification et attribution du compte Twitch. Guide : `docs/phasmo-acces-redacteur-mvp.md`.
 - Premier lot : brouillons de texte côté serveur, export local de secours ; fichiers images du PC encore temporaires, et publication désactivée.
 - Tests de contrôles d'accès sur mocks 9/9 réussis, tests RLS et authentification Twitch réelle encore à conduire après configuration. Aucun changement `main` ni production TCG.
+
+
+### Migration des droits de rédaction Phasmo activée (26/10/2026)
+
+- Autorisation utilisateur de passer à la suite : installation de la migration Supabase `phasmo_news_editor_single_account_private_drafts_v1` dans le projet **DeadelusTV TCG**, sans modification des tables TCG existantes.
+- Vérification post-migration : `phasmo_news_editors` et `phasmo_news_drafts` créées, RLS activée, **5 politiques**, **0 rédacteur autorisé**, **0 brouillon enregistré**. La migration a retourné succès.
+- Le code privé reste sur `developpement/phasmo-v2`, sans publication sur `main`.
+- **À faire pour premier accès réel :** ajouter l'URL exacte de l'éditeur dans les Redirect URLs Supabase Authentication, vérifier le retour OAuth Twitch et recueillir l'UUID du compte Twitch authentifié du rédacteur pour attribuer `phasmo_news_editor`. Ne pas ouvrir par défaut à tous les modérateurs.
+- Un contrôle des conseillers de sécurité Supabase a affiché des avertissements liés à des composants préexistants du TCG / de la base ; aucun ne concerne les deux nouvelles tables Phasmo. Aucun changement hors périmètre appliqué.
