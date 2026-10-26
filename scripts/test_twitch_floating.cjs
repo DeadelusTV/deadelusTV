@@ -150,7 +150,7 @@ test('pas de live ou pas de consentement : pas de mini-lecteur', () => {
   }
 });
 test('petit ecran : pas de lecteur flottant', () => {
-  const e = createEnv({width: 650, height: 600});
+  const e = createEnv({width: 850, height: 600});
   assert.equal(e.dock.classList.contains('is-floating'), false);
   assert.equal(e.window.DEADELUSTV_TWITCH_FLOAT.shouldPersist(e.player), false);
 });
