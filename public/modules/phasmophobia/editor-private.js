@@ -165,6 +165,8 @@
       const published=await pub.list();
       if(seq!==requestId)return;
       window.PhasmoDraftBackend=Object.assign(enqueueBackend(rows||[]),{
+        viewerId:user.id,
+        canEditAll:isNewsAdmin,
         published,
         listPublished:()=>pub.list(),
         publish:draft=>pub.publish(draft),
