@@ -127,3 +127,19 @@ Webhook Discord automatique des News, import automatisé du blog Kinetic, newsle
 **Audit de connexion Twitch du 26/10/2026 effectué (lecture seule) :** `docs/phasmo-audit-auth-twitch.md`. Il confirme des identités OAuth Twitch déjà présentes dans le projet Supabase TCG, les relations des comptes avec `auth.users` et la séparation entre permissions d'administration TCG et statut viewer modérateur. Il reste à inventorier le frontend TCG et l'origine exacte de sa session avant tout partage de connexion sur le site principal. Règle cible : rôle News accordé à **un seul utilisateur Supabase Auth**, indépendamment des rôles Twitch ou TCG.
 
 **État actuel :** ce chapitre est un cahier des charges. Aucune connexion privée, table d'articles ou politique RLS nouvelle n'a encore été mise en place pour le blog.
+
+## 8. Premier accès privé au rédacteur, prêt en code (26/10/2026)
+
+**Objectif prioritaire :** donner au rédacteur l'accès à l'éditeur validé dès que l'authentification et la permission ont été installées, **sans attendre la finalisation du TCG ni du système de publication**.
+
+**Fichiers :** `public/modules/phasmophobia/editor-private.html` (nouvelle page privée), `editor-private.js`, `editor-private.css`, adaptation du moteur existant `editor-native.js`. La démo `editor-preview.html` reste autonome et sauvegardée dans son stockage local d'origine.
+
+- Connexion Twitch via le **même projet Supabase Auth que le TCG** ; nouvelle session OAuth PKCE avec URL de retour propre à la page. Le TCG final intégrera cette authentification au portail lorsqu'il y sera publié. Discord reste facultatif.
+- Vérification de la table dédiée `phasmo_news_editors` avant même de charger le moteur d'édition. Accès réservé à l'unique compte dont `enabled=true`, **indépendamment du statut de modérateur et des permissions TCG**.
+- Brouillons personnels enregistrés côté Supabase dans `phasmo_news_drafts` via un pont facultatif du moteur de rédaction. L'éditeur affiche un état de sauvegarde et permet un enregistrement manuel. Une erreur serveur est signalée et l'export JSON reste disponible.
+- Scripts SQL proposés **mais non exécutés** : `docs/phasmo-news-sql-a-revoir.sql` : tables ACL et brouillons, RLS INSERT/SELECT/UPDATE/DELETE, `auth.uid()`, au plus un rédacteur actif. Aucune permission directe d'écriture sur l'ACL depuis le navigateur.
+- **Limites de ce premier accès :** fichiers images du PC encore temporaires, URL d'image HTTPS persistantes, aucun bouton Publier activé, moteur `execCommand` déprécié à remplacer ultérieurement.
+- **À activer pour le test réel :** revue puis migration de la base Supabase (pas de changement sans accord sur le schéma), URL OAuth de rédaction à autoriser, première connexion Twitch du rédacteur pour connaître son UUID, attribution manuelle du rôle, tests RLS avec plusieurs comptes.
+- Document de mise en service : `docs/phasmo-acces-redacteur-mvp.md`. 9/9 simulations JavaScript d'accès et de sauvegarde réussies, **pas encore de test OAuth/RLS réel**.
+
+**État : code prêt à être branché, rédacteur non encore autorisé.** Aucun déploiement sur `main`, aucune nouvelle table créée, aucune configuration Auth/Supabase modifiée pour l'instant.
