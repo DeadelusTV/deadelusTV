@@ -36,3 +36,42 @@
 }
 .phasma-editor-private-account .phasma-editor-btn { min-height: 34px; }
 .phasma-editor-demo [hidden] { display: none !important; }
+
+/* Publications de la branche de développement. */
+.phasma-editor-published-header {
+  margin: 24px 0 8px;
+  padding-top: 16px;
+  border-top: 1px solid #66513d;
+}
+.phasma-editor-published-header h3 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  color: #e4c992;
+}
+.phasma-editor-published-header small {
+  font-size: 11px;
+  color: #beb2a1;
+}
+.phasma-editor-publication {
+  padding: 7px 0 11px;
+  border-bottom: 1px solid #4b4035;
+}
+.phasma-editor-publication .phasma-editor-draft {
+  width: 100%;
+}
+.phasma-editor-published-link,
+.phasma-editor-unpublish {
+  display: inline-block;
+  margin: 7px 10px 0 2px;
+  padding: 3px;
+  font-size: 11px;
+  color: #ddc69e;
+}
+.phasma-editor-unpublish {
+  border: none;
+  border-bottom: 1px solid #ca9686;
+  background: transparent;
+  color: #e1a698;
+  cursor: pointer;
+}
+.phasma-editor-unpublish:hover { color: #ffcec1; }
