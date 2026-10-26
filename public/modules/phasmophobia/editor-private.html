@@ -67,9 +67,12 @@
         <button type="button" id="editor-mode-preview" class="phasma-editor-btn" aria-pressed="false">Aperçu</button>
         <button type="button" id="editor-save-now" class="phasma-editor-btn phasma-editor-btn--gold">Enregistrer</button>
         <button type="button" id="editor-export" class="phasma-editor-btn">Exporter le brouillon</button>
+        <button type="button" id="editor-import" class="phasma-editor-btn">Importer un JSON</button>
+        <input type="file" id="editor-import-file" accept=".json,application/json" hidden aria-label="Choisir un brouillon JSON à importer">
         <button type="button" id="editor-publish" class="phasma-editor-btn phasma-editor-btn--gold">Publier sur la démo</button>
       </div>
     </div>
+    <p id="wys-editor-error" class="phasma-editor-image-error phasma-editor-alert-top" role="alert" hidden tabindex="-1"></p>
 
     <section id="editor-form" aria-label="Rédiger l'article">
       <div class="phasma-editor-panel">
@@ -150,7 +153,7 @@
           <div id="wys-editor" class="phasma-wysiwyg-editor" aria-label="Zone de rédaction de l'article"></div>
         </div>
         <p class="phasma-wysiwyg-hint">Astuce : collez directement votre texte depuis Discord. Vous pouvez aussi coller une image depuis le presse-papiers, ou la déposer dans le document.</p>
-        <p id="wys-editor-error" class="phasma-editor-image-error" role="alert" hidden></p>
+
       </div>
       <div class="phasma-editor-bottom">
         <button type="button" id="editor-delete" class="phasma-editor-btn phasma-editor-btn--danger">Supprimer ce brouillon</button>
