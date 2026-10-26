@@ -115,4 +115,13 @@ Webhook Discord automatique des News, import automatisé du blog Kinetic, newsle
 - Décider quel projet `auth.users` sera la **source de vérité du compte DeadelusTV** et comment rattacher les utilisateurs existants, plutôt que créer des accès isolés pour le blog.
 - Réaliser le développement sur `developpement/phasmo-v2`, revoir les migrations et RLS avant toute modification d'une base réelle, tester et faire valider ; **aucun changement à `main` sans accord explicite**.
 
+### Clarification des identités et des droits (26/10/2026)
+
+**Séparer l'identité du compte et ses permissions :**
+- **Connexion DeadelusTV recommandée : Twitch comme seule méthode principale de connexion.** Le rattachement Discord est **facultatif**, utilisé pour les interactions communautaires ; ne pas exiger une deuxième connexion Discord pour publier les News ni proposer 25 modes de connexion distincts. Un même profil de site est associé aux identités concernées, jamais deux profils indépendants.
+- **TCG :** le rédacteur est également l'un des modérateurs de la chaîne Twitch. Il reçoit les capacités modérateur TCG prévues par le module, comme les autres modérateurs admissibles. **Plusieurs comptes peuvent être modérateurs du TCG**.
+- **Blog News Phasmo :** la permission indépendante `phasmo_news_editor` est ajoutée **seulement au compte utilisateur précis du rédacteur**, via son UUID d'authentification. Être modérateur Twitch, Discord ou TCG ne suffit jamais à obtenir cette permission. Les autres modérateurs TCG restent exclus de la rédaction.
+- **Crewmong Us :** compte e-mail d'une autre personne et projet distinct, **hors périmètre de l'identité unique souhaitée pour les visiteurs DeadelusTV / le blog Phasmo**. Aucun changement de compte ni de liaison requis pour lui.
+- **Projet d'authentification canonique :** réutiliser ou faire évoluer le système Supabase Auth existant du TCG si l'audit d'architecture le confirme ; ne pas décider d'un partage automatique entre bases Supabase, ni affecter un UUID avant vérification des comptes réels. Les permissions du blog ne sont pas synonymes du rôle `tcg_admins`.
+
 **État actuel :** ce chapitre est un cahier des charges. Aucune connexion privée, table d'articles ou politique RLS nouvelle n'a encore été mise en place pour le blog.
