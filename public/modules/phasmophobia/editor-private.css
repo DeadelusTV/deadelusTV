@@ -1,0 +1,38 @@
+
+/* Accès Twitch réservé à l'espace de rédaction Phasmo.
+   Ne pas appliquer cette présentation à la démo publique. */
+.phasma-editor-private-gate {
+  max-width: 760px;
+  margin: clamp(28px, 5vw, 65px) auto;
+  padding: clamp(26px, 4vw, 45px);
+  border: 1px solid #745d3b;
+  border-radius: 12px;
+  background: linear-gradient(150deg, #29241d, #181a1b 65%);
+  box-shadow: 0 22px 65px #0007;
+  color: #efe7d7;
+}
+.phasma-editor-private-gate h1 {
+  margin: 0 0 18px;
+  color: #eed8b5;
+  font: 600 clamp(25px, 4vw, 36px)/1.2 Georgia, serif;
+}
+.phasma-editor-private-gate p {
+  margin: 0 0 22px;
+  line-height: 1.7;
+  color: #e1d5c2;
+}
+.phasma-editor-private-actions { display: flex; flex-wrap: wrap; gap: 11px; }
+.phasma-editor-private-account {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  max-width: 1540px;
+  margin: 14px auto 0;
+  padding: 0 clamp(15px, 2vw, 32px);
+  font-size: 12px;
+  color: #dcc59e;
+}
+.phasma-editor-private-account .phasma-editor-btn { min-height: 34px; }
+.phasma-editor-demo [hidden] { display: none !important; }
