@@ -55,7 +55,7 @@
     title.id = 'twitch-consent-title';
     title.textContent = 'Lecture du live Twitch';
     const message = document.createElement('p');
-    message.textContent = 'Le lecteur Twitch peut utiliser des cookies et traceurs tiers. Nous ne le chargeons qu’avec votre accord. Vous pouvez refuser sans perdre l’accès au site et changer d’avis à tout moment.';
+    message.textContent = 'Le lecteur Twitch peut déposer des traceurs, notamment pour son fonctionnement, ses statistiques ou la publicité selon Twitch. Nous ne le chargeons qu’avec votre accord. Refuser n’empêche pas de consulter DEADELUSTV ; tu peux modifier ton choix à tout moment.';
     const actions = document.createElement('div');
     actions.className = 'cookie-actions';
     const refuse = document.createElement('button');
@@ -74,7 +74,12 @@
     const policy = document.createElement('a');
     policy.href = '#confidentialite';
     policy.textContent = 'Politique de confidentialité';
-    info.append('Choix conservé jusqu’à six mois. ', policy);
+    const twitchPolicy = document.createElement('a');
+    twitchPolicy.href = 'https://legal.twitch.com/fr-fr/legal/privacy-notice/';
+    twitchPolicy.target = '_blank';
+    twitchPolicy.rel = 'noopener noreferrer';
+    twitchPolicy.textContent = 'Confidentialité Twitch (site externe)';
+    info.append('Choix conservé jusqu’à six mois. ', policy, ' · ', twitchPolicy);
     section.append(title, message, actions, info);
     document.body.append(section);
     panel = section;

@@ -8,6 +8,7 @@ Les routes sont des pages du portail : `/#mentions-legales` et `/#confidentialit
 La vérification `python3 scripts/verify-static.py` refuse les textes d'attente ; le workflow de déploiement appelle désormais ce contrôle. Ne publier **ni** l'intégration **ni** des mentions provisoires avant finalisation.
 
 ## Consentement
+Le module affiche un lien vers la notice Twitch en français, et la notice finale de DEADELUSTV devra expliquer les finalités et le périmètre réel des traceurs.
 `public/assets/consent.js` conserve pendant au plus 180 jours `accept` ou `refuse` dans le stockage local du portail (un choix nécessaire pour mémoriser le refus ou le consentement). Des boutons de même niveau permettent d'accepter et de refuser. Le footer propose « Gestion des cookies » à tout moment. Le retrait empêche les chargements futurs et détruit l'iframe Twitch en cours. Les cookies appartenant à Twitch ne peuvent pas nécessairement être supprimés depuis deadelustv.com. Le refus affiche « Regarder sur Twitch » ouvrant un autre site, sans seconde autorisation.
 
 **Ne pas interpréter ce mécanisme comme un audit RGPD complet :** examiner aussi les autres ressources externes et la finalité des traitements ; vérifier la notice définitive avec Deadelus.
