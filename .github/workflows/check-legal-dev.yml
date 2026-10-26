@@ -1,0 +1,33 @@
+name: Vérifications de la préparation légale (branche uniquement)
+
+on:
+  push:
+    branches:
+      - developpement/legal-et-consentement
+  pull_request:
+    paths:
+      - 'public/**'
+      - 'scripts/**'
+      - '.github/workflows/check-legal-dev.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verifications:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Récupérer la branche de travail
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Vérifier le HTML statique (textes provisoires autorisés sur cette branche seulement)
+        run: python3 scripts/verify-static.py --allow-legal-pending
+      - name: Vérifier les scripts JavaScript
+        run: |
+          node --check public/assets/consent.js
+          node --check public/assets/twitch-player.js
+          node --check public/assets/app.js
+      - name: Tester le statut Twitch sans réseau
+        run: python3 -m unittest discover -s scripts -p 'test_twitch_status.py'

@@ -3,6 +3,7 @@
 from collections import Counter
 from html.parser import HTMLParser
 from pathlib import Path
+import sys
 from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[1] / "public"
@@ -39,7 +40,7 @@ def main():
         page = Page()
         text = source.read_text(encoding="utf-8")
         page.feed(text)
-        if 'data-legal-pending="true"' in text:
+        if 'data-legal-pending="true"' in text and '--allow-legal-pending' not in sys.argv:
             errors.append("Textes légaux non finalisés : ne pas déployer les pages provisoires.")
         errors.extend(page.errors)
         errors.extend(f"Identifiant HTML répété : {key}" for key, n in Counter(page.ids).items() if n > 1)
