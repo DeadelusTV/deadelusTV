@@ -242,3 +242,12 @@ Décision : la rubrique **News devient un chantier prioritaire**, après validat
 - Le code privé reste sur `developpement/phasmo-v2`, sans publication sur `main`.
 - **À faire pour premier accès réel :** ajouter l'URL exacte de l'éditeur dans les Redirect URLs Supabase Authentication, vérifier le retour OAuth Twitch et recueillir l'UUID du compte Twitch authentifié du rédacteur pour attribuer `phasmo_news_editor`. Ne pas ouvrir par défaut à tous les modérateurs.
 - Un contrôle des conseillers de sécurité Supabase a affiché des avertissements liés à des composants préexistants du TCG / de la base ; aucun ne concerne les deux nouvelles tables Phasmo. Aucun changement hors périmètre appliqué.
+
+
+### Compte rédacteur et lien direct News (26/10/2026)
+
+- Rédacteur désigné : **mattarix_**, profil public https://www.twitch.tv/mattarix_. Le pseudo sert à organiser les essais, pas à fournir une preuve d'identité ni un rôle automatiquement.
+- Contrôle en lecture seule Supabase : **aucune identité Twitch existante contenant mattarix dans les champs d'identité**, et zéro rédaction habilitée. Il faut une première connexion Twitch pour obtenir l'UUID Auth exact avant attribution manuelle ; aucun compte n'a été créé/autorisé.
+- Rubrique News `public/index.html` enrichie d'un petit lien de connexion Twitch et du bouton « Gérer les actualités » ; logique `public/modules/phasmophobia/news-access.js` + CSS. Bouton d'édition rendu **seulement après validation côté base** de `phasmo_news_editors.enabled` pour `auth.uid()`.
+- 11/11 scénarios JavaScript simulés validés (anon, viewer non autorisé, rédacteur, callback, logout). Pas encore de test OAuth réel ni de publication.
+- Environnement de présentation Cloudflare déjà existant `https://deadelustv.pages.dev`, branche `preview/presentation-deadelus` : la branche de démo est en retard sur les nouveaux modules Phasmo ; **pas de fusion ni de remplacement global effectué**. `main` non modifiée.
