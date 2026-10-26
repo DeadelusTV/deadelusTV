@@ -15,8 +15,8 @@
   const message=$('#editor-private-message');
   let client=null, booted=false, requestId=0;
   const IMAGE_BUCKET='phasmo-news-draft-images';
-  const MAX_IMAGE_SIZE=2*1024*1024;
-  const IMAGE_TYPES={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'};
+  const MAX_IMAGE_SIZE=10*1024*1024;
+  const IMAGE_TYPES={'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif'};
   const imageCache=new Map();
   let verifiedUserId=null;
   const imagePath=ref=>{
@@ -51,7 +51,7 @@
       validImageRef:ref=>!!imagePath(ref),
       async uploadImage(file){
         if(!verifiedUserId||!IMAGE_TYPES[file?.type]||!file.size||file.size>MAX_IMAGE_SIZE)
-          throw new Error('Image refusée : PNG, JPEG ou WebP, 2 Mo maximum.');
+          throw new Error('Image refusée : PNG, JPEG, WebP animé ou GIF, 10 Mo maximum.');
         const path=verifiedUserId+'/'+crypto.randomUUID()+'.'+IMAGE_TYPES[file.type];
         const {error}=await client.storage.from(IMAGE_BUCKET).upload(path,file,{
           contentType:file.type,upsert:false,cacheControl:'3600'
