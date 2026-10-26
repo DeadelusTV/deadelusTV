@@ -28,3 +28,9 @@ Après validation de licence, ajuster le titre `HORS LIGNE` (ne pas toucher auto
 Les polices OFL auto-hébergées restent le choix technique actuel ; Academy et Varsity sont deux alternatives purement envisagées.
 
 **Décision :** hébergement local des polices OFL approuvé ; utilisation web d'Academy et de Varsity uniquement envisagée et subordonnée à la preuve des licences ; aucune modification de la production.
+
+## 26 octobre 2026 — Graduate, police validée et intégrée à la branche
+
+La police **Graduate** (Eduardo Tunni, copyright 2012, licence SIL OFL 1.1, Reserved Font Name « Graduate ») remplace **Bungee Inline** pour le titre « HORS LIGNE ». Le fichier WOFF2 latin est auto-hébergé dans `public/assets/fonts/graduate-latin-400-normal.woff2`, avec la licence complète dans `public/assets/fonts/OFL-Graduate.txt`. Bungee Inline reste dans les assets par précaution, mais n'est plus utilisé par le titre ; le sous-titre conserve Great Vibes.
+
+**Rendu A validé :** liseré blanc 2,2 px, halo bleu 130 %, largeur des lettres 91 %, taille 8,2 cqw, X 52 %, Y 40,5 %. Effet CSS par couche floue `::before` et lettres individuelles conservées pour le scintillement. **Développé sur `developpement/legal-et-consentement`, non publié sur `main`.** Contrôle de rendu en navigateur réel restant, y compris fond de briques, écran mobile, absence d'appels Google Fonts, animations et sous-titre.
