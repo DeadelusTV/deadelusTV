@@ -277,3 +277,11 @@ Décision : la rubrique **News devient un chantier prioritaire**, après validat
 - Aperçu privé `editor-private.html` et messages actualisés. L'export JSON inclut les références de fichiers mais **n'embarque pas les fichiers images** et n'est pas autonome hors du site.
 - Vérifications : état bucket et deux politiques RLS confirmés en base, 9/9 simulations backend upload/lecture/F5, 10/10 tests statiques d'intégration du moteur. **Le fonctionnement en session Twitch réelle avec collage puis F5 doit encore être validé par l'utilisatrice**, ainsi que les images de couverture et la reconnexion depuis un autre appareil.
 - À prévoir après la publication : mécanisme distinct de publication d'images (les références de brouillons restent privées) et nettoyage audité des fichiers orphelins/supprimés. Aucune publication publique activée.
+
+
+### Validation réelle de la persistance texte + images après F5 (26/10/2026)
+
+- **Test validé explicitement par l'utilisatrice** sur l'éditeur privé de la branche Phasmo déployée sur Cloudflare : après sauvegarde et actualisation **F5**, **le texte ET l'image insérée sont toujours présents** dans le brouillon.
+- Ce résultat confirme dans un navigateur réel la restauration du brouillon texte et de son image depuis le stockage privé Supabase après rechargement, pour le parcours testé avec le compte administratrice Twitch.
+- **Statut : fonctionnalité « images persistantes dans les brouillons » validée pour le cas testé.** Ne pas confondre avec une validation exhaustive des formats, des couvertures, d'un autre appareil, ou de la publication publique.
+- Prochaine étape possible : premier accès du rédacteur mattarix_ (connexion Twitch, attribution du rôle après vérification de l'UUID) et/ou chantier de publication avec images rendues publiques par un flux distinct, sans exposer les fichiers des brouillons.
