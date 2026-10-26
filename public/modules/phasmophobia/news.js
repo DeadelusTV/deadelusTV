@@ -1,6 +1,6 @@
 'use strict';
-/* Blog Phasmophobia, lecture seule. La rédaction et les permissions ne sont PAS
-   implémentées ici. Aucune actualité n'est copiée automatiquement de Kinetic. */
+/* Lecture du blog Phasmophobia, données de publication prévisualisation Supabase.
+   Seuls les articles au statut publié apparaissent aux visiteurs. DOM sans innerHTML. */
 (() => {
   const root = document.querySelector('#page-phasmophobia [data-phasma-section="news"]');
   if (!root) return;
@@ -11,6 +11,20 @@
 
   const MAX_FRONT = 9;
   const ORIGINAL_URL = 'https://www.kineticgames.co.uk/news';
+  const SUPABASE_URL='https://eodtxlhnfzyapkyvvxdi.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY='sb_publishable_HwLsESqtQglS7FoSTxBX-Q_GzxyLX_Z';
+  // Ce fichier n'existe que sur la branche de développement tant que non validé.
+  // Toute intégration sur main devra passer au canal 'production' explicitement.
+  const STAGE='preview';
+  function mediaUrl(value){
+    if(typeof value!=='string'||value.length>2048)return null;
+    const local=asset(value);
+    if(local)return local;
+    try{
+      const u=new URL(value);
+      return u.protocol==='https:'&&!u.username&&!u.password&&!/\.svg$/i.test(u.pathname)?u.href:null;
+    }catch{return null;}
+  }
   const reader = document.createElement('section');
   reader.className = 'phasma-news-reader';
   reader.hidden = true;
@@ -46,21 +60,26 @@
   }
 
   function cleanItem(raw) {
+    if (raw?.payload && typeof raw.payload === 'object') {
+      raw={...raw.payload,slug:raw.slug,publishedAt:raw.published_on};
+    }
     if (!raw || typeof raw !== 'object' ||
         !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(raw.slug || '') ||
         typeof raw.title !== 'string' || !raw.title.trim() ||
         typeof raw.excerpt !== 'string' ||
         !/^\d{4}-\d{2}-\d{2}$/.test(raw.publishedAt || '') ||
-        !sourceUrl(raw.sourceUrl) || !Array.isArray(raw.blocks)) return null;
+        !sourceUrl(raw.sourceUrl) ||
+        (!Array.isArray(raw.blocks) && !(raw.document?.type==='doc'&&Array.isArray(raw.document.content)))) return null;
     return {
       slug: raw.slug,
       title: raw.title.trim().slice(0, 160),
       excerpt: raw.excerpt.trim().slice(0, 350),
       publishedAt: raw.publishedAt,
-      cover: asset(raw.cover),
+      cover: mediaUrl(raw.cover),
       translator: typeof raw.translator === 'string' ? raw.translator.trim().slice(0, 120) : '',
       sourceUrl: sourceUrl(raw.sourceUrl),
-      blocks: raw.blocks.slice(0, 150),
+      blocks: Array.isArray(raw.blocks)?raw.blocks.slice(0,150):null,
+      document:raw.document?.type==='doc'&&Array.isArray(raw.document.content)?raw.document:null
     };
   }
 
@@ -210,6 +229,57 @@
     }
   }
 
+  function renderRichArticle(container,doc){
+    // Toutes les valeurs viennent de JSON. Aucune chaîne n'est interprétée en HTML.
+    // Limites de profondeur et de nœuds aussi côté lecteur.
+    let count=0;
+    function walk(raw,depth){
+      if(!raw||typeof raw!=='object'||depth>15||++count>1800)return null;
+      if(raw.type==='text'){
+        let result=document.createTextNode(String(raw.text||'').slice(0,20000));
+        for(const mark of (Array.isArray(raw.marks)?raw.marks:[]).slice(0,12)){
+          const tag={bold:'strong',italic:'em',underline:'u',strike:'s',code:'code',link:'a'}[mark?.type];
+          if(!tag)continue;
+          const wrapper=document.createElement(tag);
+          if(tag==='a'){
+            const href=mediaUrl(mark.attrs?.href);
+            if(!href)continue;
+            wrapper.href=href;wrapper.target='_blank';wrapper.rel='noopener noreferrer';
+          }
+          wrapper.append(result);result=wrapper;
+        }
+        return result;
+      }
+      if(raw.type==='hardBreak')return document.createElement('br');
+      if(raw.type==='image'){
+        const src=mediaUrl(raw.attrs?.src);
+        if(!src)return null;
+        const figure=el('figure','phasma-news-article-figure');
+        const img=el('img');
+        img.src=src;img.alt=String(raw.attrs?.alt||'').slice(0,180);
+        img.loading='lazy';img.decoding='async';
+        figure.append(img);return figure;
+      }
+      const tag={doc:'div',paragraph:'p',heading:raw.attrs?.level===3?'h4':'h3',
+        bulletList:'ul',orderedList:'ol',listItem:'li',blockquote:'blockquote'}[raw.type];
+      if(!tag)return null;
+      const classes={paragraph:'phasma-news-article-paragraph',heading:'phasma-news-article-heading',
+        bulletList:'phasma-news-article-list',orderedList:'phasma-news-article-list',
+        blockquote:'phasma-news-article-quote'};
+      const node=el(tag,classes[raw.type]||'');
+      if(['paragraph','heading'].includes(raw.type)&&['left','center','right'].includes(raw.attrs?.textAlign))
+        node.style.textAlign=raw.attrs.textAlign;
+      if(Array.isArray(raw.content)){
+        for(const item of raw.content.slice(0,200)){
+          const child=walk(item,depth+1);
+          if(child)node.append(child);
+        }
+      }
+      return node;
+    }
+    const node=walk(doc,0);
+    if(node)container.append(node);
+  }
   function showArticle(slug) {
     reader.replaceChildren();
     reader.append(backLink('← Retour aux actualités'));
@@ -229,7 +299,8 @@
       reader.append(cover);
     }
     const article = el('article', 'phasma-news-article');
-    item.blocks.forEach(block => addBlock(article, block));
+    if(item.document)renderRichArticle(article,item.document);
+    else item.blocks.forEach(block => addBlock(article, block));
     reader.append(article);
     const credits = el('div', 'phasma-news-credits');
     if (item.translator) credits.append(el('p', '', 'Traduction française : ' + item.translator));
@@ -272,26 +343,38 @@
   }
 
   window.addEventListener('hashchange', route);
-  fetch('data/phasmo-news.json', { cache: 'no-store' })
-    .then(res => { if (!res.ok) throw new Error('Fichier News absent'); return res.json(); })
-    .then(data => {
-      if (!data || data.schemaVersion !== 1 || !Array.isArray(data.articles))
-        throw new Error('Format des News invalide');
-      const seen = new Set();
-      entries = data.articles.map(cleanItem).filter(item => {
-        if (!item || seen.has(item.slug)) return false;
-        seen.add(item.slug);
-        return true;
-      }).sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
-      loaded = true;
-      if (entries.length) gallery();
-      route();
-    })
-    .catch(() => {
-      loaded = true;
-      entries = [];
-      route();
-      // L'affichage d'attente reste accessible en cas d'erreur réseau.
+  const live=new URL(SUPABASE_URL+'/rest/v1/phasmo_news_articles');
+  live.searchParams.set('select','slug,payload,published_on');
+  live.searchParams.set('stage','eq.'+STAGE);
+  live.searchParams.set('status','eq.published');
+  live.searchParams.set('order','published_on.desc');
+  live.searchParams.set('limit','100');
+  const remote=fetch(live,{headers:{apikey:SUPABASE_PUBLISHABLE_KEY,'Accept':'application/json'},cache:'no-store'})
+    .then(async response=>{
+      if(!response.ok)throw new Error('Lecture des publications indisponible');
+      const data=await response.json();
+      if(!Array.isArray(data))throw new Error('Format publication incorrect');
+      return data.map(cleanItem).filter(Boolean);
     });
+  const local=fetch('data/phasmo-news.json',{cache:'no-store'})
+    .then(async response=>{
+      if(!response.ok)throw new Error('Archives statiques indisponibles');
+      const data=await response.json();
+      return data?.schemaVersion===1&&Array.isArray(data.articles)
+        ?data.articles.map(cleanItem).filter(Boolean):[];
+    });
+  Promise.allSettled([remote,local]).then(results=>{
+    const seen=new Set();
+    // Les nouvelles publications Supabase prévalent sur les archives statiques.
+    entries=results.flatMap(result=>result.status==='fulfilled'?result.value:[])
+      .filter(item=>{
+        if(seen.has(item.slug))return false;
+        seen.add(item.slug);return true;
+      }).sort((a,b)=>b.publishedAt.localeCompare(a.publishedAt));
+    loaded=true;
+    if(entries.length)gallery();
+    route();
+    if(results[0].status==='rejected')console.warn('Actualités Phasmo : publication distante indisponible.');
+  });
   route();
 })();
