@@ -396,7 +396,12 @@
     return true;
   }
   $('#editor-cover-upload').addEventListener('change', event => {
-    if (registerImage(event.target.files?.[0], current().id + ':cover')) {
+    const d = current();
+    if (!d) return;
+    if (registerImage(event.target.files?.[0], d.id + ':cover')) {
+      // Ne jamais exporter une ancienne URL lorsque le fichier local la remplace.
+      d.cover = '';
+      $('[data-field="cover"]').value = '';
       changed();
       renderCoverPreview();
     }
@@ -413,7 +418,12 @@
     }
     const blockId = event.target.dataset.imageUpload;
     if (!blockId) return;
-    if (registerImage(event.target.files?.[0], current().id + ':' + blockId)) {
+    const d = current();
+    if (!d) return;
+    if (registerImage(event.target.files?.[0], d.id + ':' + blockId)) {
+      // Conserver uniquement le fichier temporaire, sans vieille URL trompeuse.
+      const block = d.blocks.find(x => x.id === blockId);
+      if (block) block.src = '';
       changed(); renderBlocks();
     }
   });
