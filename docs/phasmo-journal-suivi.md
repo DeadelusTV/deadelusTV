@@ -214,3 +214,13 @@ Décision : la rubrique **News devient un chantier prioritaire**, après validat
 - Le rédacteur Phasmo est aussi modérateur Twitch et doit conserver **ses droits de modération TCG**, qui sont partagés avec d'autres comptes modérateurs ; **seul son compte** doit obtenir séparément `phasmo_news_editor`.
 - Protection côté API/RLS/Storage avec identifiant Auth exact ; ne jamais accorder l'édition News automatiquement en fonction des rôles Discord, Twitch ou TCG.
 - Principe enregistré dans `docs/phasmo-blog-spec.md` sans implémentation ni changement de base, ni déploiement sur `main`.
+
+
+### Audit technique Twitch / TCG → authentification DeadelusTV (26/10/2026)
+
+- Audit **en lecture seule** de l'existant Supabase TCG : identités `twitch` présentes, `tcg_accounts.user_id` et `tcg_admins.user_id` rattachés à `auth.users`, `tcg_is_admin()` fondé sur les seuls rôles TCG `owner/admin/editor`, politique de lecture privée déjà en place pour les comptes et inventaires TCG.
+- `tcg_viewers.is_moderator` (statut Twitch) **ne vaut pas** autorisation de rédaction ou pouvoir administrateur TCG. Seul le compte exact du rédacteur recevra `phasmo_news_editor`.
+- **Condition pour la connexion unique** : vérifier le véritable frontend TCG actuellement déployé, son origine et la gestion des sessions OAuth. Des origines différentes ne partagent pas automatiquement le stockage du navigateur.
+- Discord facultatif ; aucun lien d'identité Discord n'est présumé déjà opérationnel.
+- Rapport complet, risques, prérequis et plan de tests : `docs/phasmo-audit-auth-twitch.md`.
+- **Aucune écriture Supabase, aucun compte créé et aucune modification de `main`**.
