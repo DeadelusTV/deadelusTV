@@ -224,3 +224,12 @@ Décision : la rubrique **News devient un chantier prioritaire**, après validat
 - Discord facultatif ; aucun lien d'identité Discord n'est présumé déjà opérationnel.
 - Rapport complet, risques, prérequis et plan de tests : `docs/phasmo-audit-auth-twitch.md`.
 - **Aucune écriture Supabase, aucun compte créé et aucune modification de `main`**.
+
+### Préparation de l'accès privé pour le rédacteur (26/10/2026)
+
+- Priorité utilisatrice : rendre l'éditeur rapidement accessible au rédacteur, **sans attendre le TCG complet**.
+- Nouvelle page privée `public/modules/phasmophobia/editor-private.html`, contrôlée par `editor-private.js` (Twitch via Supabase Auth TCG, profil vérifié côté serveur, rôle News séparé des droits TCG). Le moteur `editor-native.js` sauvegarde sur Supabase uniquement si le backend privé est injecté ; la démo validée reste en mode local.
+- Règles de tables privées préparées dans `docs/phasmo-news-sql-a-revoir.sql`, avec un seul compte rédacteur actif et RLS. **SQL jamais appliqué à la base** ; aucune personne n'a reçu le rôle.
+- La connexion ne sera opérationnelle qu'après ajout de la redirection OAuth, application contrôlée des tables et RLS, identification et attribution du compte Twitch. Guide : `docs/phasmo-acces-redacteur-mvp.md`.
+- Premier lot : brouillons de texte côté serveur, export local de secours ; fichiers images du PC encore temporaires, et publication désactivée.
+- Tests de contrôles d'accès sur mocks 9/9 réussis, tests RLS et authentification Twitch réelle encore à conduire après configuration. Aucun changement `main` ni production TCG.
