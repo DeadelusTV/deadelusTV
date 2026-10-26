@@ -85,13 +85,23 @@
         .select('enabled').eq('user_id',user.id).maybeSingle();
       if(seq!==requestId)return;
       if(roleError)throw roleError;
+      let isNewsAdmin=false;
       if(role?.enabled!==true){
-        update('Ce compte Twitch n’est pas autorisé à rédiger les actualités Phasmophobia.');
-        account.hidden=false;
-        content.hidden=true;
-        gate.hidden=false;
-        name.textContent='Compte connecté, sans permission rédaction';
-        return;
+        // Le compte d'administration de secours n'est pas un deuxième
+        // rédacteur et ne dépend pas du statut de modérateur Twitch/TCG.
+        const {data:adminRole,error:adminError}=await client.from('phasmo_news_admins')
+          .select('enabled').eq('user_id',user.id).maybeSingle();
+        if(seq!==requestId)return;
+        if(adminError)throw adminError;
+        isNewsAdmin=adminRole?.enabled===true;
+        if(!isNewsAdmin){
+          update('Ce compte Twitch n’est pas autorisé à gérer les actualités Phasmophobia.');
+          account.hidden=false;
+          content.hidden=true;
+          gate.hidden=false;
+          name.textContent='Compte connecté, sans permission rédaction';
+          return;
+        }
       }
       update('Chargement des brouillons privés…');
       const {data:rows,error:listError}=await client.from('phasmo_news_drafts')
@@ -99,7 +109,7 @@
       if(seq!==requestId)return;
       if(listError)throw listError;
       window.PhasmoDraftBackend=enqueueBackend(rows||[]);
-      name.textContent='Compte rédacteur Twitch : '+(String(user.user_metadata?.preferred_username||
+      name.textContent=(isNewsAdmin?'Administration du blog · ':'Rédaction du blog · ')+(String(user.user_metadata?.preferred_username||
         user.user_metadata?.user_name||user.user_metadata?.name||'connecté').slice(0,60));
       await loadEditor();
       if(seq!==requestId)return;
