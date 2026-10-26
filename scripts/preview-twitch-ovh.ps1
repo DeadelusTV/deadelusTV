@@ -89,7 +89,22 @@ try {
         continue
       }
       if ($urlPath -eq '/') { $urlPath = '/index.html' }
-      $path = [IO.Path]::GetFullPath((Join-Path $public $urlPath.TrimStart('/').Replace('/', [IO.Path]::DirectorySeparatorChar)))
+      # Attention PowerShell : ne pas chaîner des méthodes directement dans les
+      # arguments d'un cmdlet (Join-Path), la chaîne peut être mal interprétée.
+      if (-not $urlPath.StartsWith('/')) {
+        Respond $stream 403 'text/plain; charset=utf-8' (Text-Bytes 'Chemin invalide')
+        continue
+      }
+      $relativePath = $urlPath.Substring(1)
+      $relativePath = $relativePath.Replace([char]'/', [IO.Path]::DirectorySeparatorChar)
+      try {
+        $combinedPath = [IO.Path]::Combine([string]$public, [string]$relativePath)
+        $path = [IO.Path]::GetFullPath($combinedPath)
+      } catch {
+        Write-Host "Chemin local invalide : $urlPath" -ForegroundColor Yellow
+        Respond $stream 403 'text/plain; charset=utf-8' (Text-Bytes 'Chemin invalide')
+        continue
+      }
       if (-not $path.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase)) {
         Respond $stream 403 'text/plain; charset=utf-8' (Text-Bytes 'Acces interdit')
         continue
