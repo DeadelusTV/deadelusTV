@@ -13,7 +13,7 @@
   const account=$('#editor-private-account'), name=$('#editor-private-name');
   const login=$('#editor-private-login'), retry=$('#editor-private-retry'), logout=$('#editor-private-logout');
   const message=$('#editor-private-message');
-  let client=null, booted=false, requestId=0, initDone=false;
+  let client=null, booted=false, requestId=0;
 
   function update(messageText, options = {}) {
     message.textContent = messageText;
@@ -101,9 +101,11 @@
       window.PhasmoDraftBackend=enqueueBackend(rows||[]);
       name.textContent='Compte rédacteur Twitch : '+(String(user.user_metadata?.preferred_username||
         user.user_metadata?.user_name||user.user_metadata?.name||'connecté').slice(0,60));
-      booted=true;
       await loadEditor();
       if(seq!==requestId)return;
+      if($('#wys-editor')?.getAttribute('contenteditable')!=='true')
+        throw new Error('L’éditeur ne s’est pas initialisé.');
+      booted=true;
       update('',{account:true});
     }catch(error){
       if(seq!==requestId)return;
@@ -149,7 +151,6 @@
         update('Session terminée. Reconnectez-vous avec Twitch.',{login:true});
       }
     });
-    initDone=true;
     verify();
   }catch(error){
     console.error('Initialisation accès Phasmo :',error?.code||'erreur');
