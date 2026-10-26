@@ -57,6 +57,8 @@ Ne pas confondre : (a) cookie/traceur facultatif nécessitant potentiellement un
 
 **Portée :** ce résultat renforce les essais précédents, car Edge n'avait pas le blocage explicite des cookies tiers. D'autres mécanismes de prévention du suivi peuvent s'appliquer ; aucune garantie globale d'absence de cookies pour tous les navigateurs, toutes les versions ou toutes les situations. Le lecteur Twitch *avec consentement et véritable live*, la révocation pendant le live et les sessions Crew authentifiées restent **non testés en conditions réelles**. Pas de changement de code ni de serveur effectué.
 
+**Test complémentaire du choix utilisateur (Edge local, 26/10/2026) :** aller-retour de consentement « Refuser → Accepter → Refuser », répété via le bouton « Gestion des cookies » du footer. L'utilisatrice a vérifié dans le stockage local que la propriété `choice` passe effectivement à `accept` puis à `refuse` à chaque clic. **VALIDÉ : fonctionnement et mémorisation du choix.** Ne vaut pas validation de la suppression de l'iframe pendant un direct, car `/api/twitch-status` est encore indisponible en local.
+
 ## Suites suggérées (non décidées, non développées)
 
 - Étudier l'**hébergement local de Bungee Inline et Great Vibes**, licences vérifiées, pour éviter les contacts avec Google Fonts sur chaque page tout en conservant à l'identique notre néon.
