@@ -143,3 +143,10 @@ Webhook Discord automatique des News, import automatisé du blog Kinetic, newsle
 - Document de mise en service : `docs/phasmo-acces-redacteur-mvp.md`. 9/9 simulations JavaScript d'accès et de sauvegarde réussies, **pas encore de test OAuth/RLS réel**.
 
 **État : code prêt à être branché, rédacteur non encore autorisé.** Aucun déploiement sur `main`, aucune nouvelle table créée, aucune configuration Auth/Supabase modifiée pour l'instant.
+
+
+### Accès direct validé par l'utilisatrice et rédacteur désigné (26/10/2026)
+
+- Prévoir un accès direct **« Gérer les actualités » dans la rubrique News** après connexion Twitch, uniquement visible pour le compte autorisé. Le site propose une connexion Twitch discrète aux comptes non connectés ; jamais de privilège dérivé des autres modérateurs.
+- Compte Twitch cible : `mattarix_` (https://www.twitch.tv/mattarix_). Son identité Supabase Auth n'a pas encore été reconnue dans les données existantes. Accorder le droit seulement **après connexion et vérification de l'UUID du véritable utilisateur**, pas à un pseudo arbitraire.
+- Code développé sur `developpement/phasmo-v2` : `public/modules/phasmophobia/news-access.js`, ajustements `public/index.html` et `news.css`. Lien direct fonctionnel en simulation ; **les URLs OAuth et le déploiement sur le site de test restent à réaliser**. 11/11 scénarios JS simulés validés ; aucune modification de `main` ou attribution de rôle.
