@@ -77,3 +77,15 @@ Dans l'éditeur privé, coller/déposer/choisir une image lance un upload authen
 **Limites :** pas d'accès public aux images de brouillon ; le JSON exporté ne contient pas les octets des images ; toute image supprimée du texte peut rester temporairement dans Storage en attendant un nettoyage séparé ; la publication d'un article demandera son propre traitement des médias publiés. Si un upload échoue, ne pas considérer le brouillon comme enregistré. La version autonome `editor-preview.html` reste un prototype local.
 
 **Test utilisateur à refaire :** sur l'URL de branche Cloudflare existante, ouvrir un brouillon de test, coller une image PNG/JPEG/WebP de moins de 2 Mio, attendre la confirmation « Brouillon et images enregistrés sur Supabase », faire F5 et confirmer que le texte ET l'image restent visibles. Essayer aussi une image de couverture. Les tests réalisés jusqu'ici sont des simulations backend (9/9) et des vérifications statiques (10/10), pas encore une recette réelle en navigateur connecté.
+
+
+## Test de publication sur Cloudflare (après validation des brouillons/images)
+
+1. Ouvrir `https://developpement-phasmo-v2.deadelustv.pages.dev/modules/phasmophobia/editor-private.html` avec le compte Twitch administratrice existant.
+2. Préparer un **article de test non confidentiel** : titre, résumé, date, lien Kinetic Games valide, texte et image de moins de 2 Mio déjà sauvegardée.
+3. Cliquer sur **Publier sur la démo**, confirmer. La publication devient **publique sur l'environnement de développement** : le brouillon, lui, demeure privé.
+4. Dans un onglet de navigation privée (sans connexion Twitch), ouvrir `https://developpement-phasmo-v2.deadelustv.pages.dev/#phasmophobia`, déplier News, voir la vignette et ouvrir la page de l'article. Vérifier texte, gras/titres/liens, image et couverture.
+5. Revenir à l'éditeur, repérer la publication dans **Publications de test**, cliquer sur le titre, changer un paragraphe, puis **Mettre à jour sur la démo**. Actualiser la page publique et vérifier la correction.
+6. Tester **Retirer de la démo** : l'article ne doit plus apparaître dans les News. Il reste récupérable dans la liste privée (statut Retiré) pour nouvelle édition, et le brouillon privé est conservé.
+7. **Ne pas utiliser les articles de test pour des informations confidentielles.** Ils sont publics sur le domaine de développement et via l'API. Il n'y a pas encore de publication officielle : canal `preview` uniquement.
+8. Si l'article n'apparaît pas : vérifier d'abord les erreurs affichées dans l'éditeur et le statut des appels réseau, sans altérer les réglages OAuth/Twitch déjà validés. Un résultat simulé n'équivaut pas à une recette utilisateur.
