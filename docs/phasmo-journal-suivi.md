@@ -259,3 +259,10 @@ Décision : la rubrique **News devient un chantier prioritaire**, après validat
 - L'éditeur WYSIWYG a été testé avec succès, notamment le **collage direct d'une image copiée** ; l'**export d'un brouillon au format JSON** sur le PC fonctionne.
 - **Portée précise de la validation :** l'authentification réelle, le contrôle d'accès administrateur, l'ouverture de l'éditeur, le collage visuel et l'export local sont validés par essai utilisateur. **La persistance après F5 d'un brouillon Supabase n'a pas encore été explicitement confirmée** dans ce retour ; le stockage durable des images collées n'est pas implémenté : les images du PC/presse-papiers utilisent encore des blobs temporaires et ne sont pas intégrées au JSON exporté.
 - **Suite recommandée :** vérifier création d'un brouillon, saisie de texte, clic « Enregistrer », F5 et restauration du contenu ; puis implémenter le stockage persistant des images avant de préparer la publication publique. La connexion du rédacteur mattarix_ reste à effectuer séparément.
+
+
+### Confirmation persistance des brouillons après F5 (26/10/2026)
+
+- **Validation réelle par l'utilisatrice** sur la branche de développement Cloudflare : après enregistrement puis actualisation **F5**, le brouillon et son contenu textuel sont **conservés et retrouvés**.
+- Confirmation concomitante : une **image collée dans le corps de l'article disparaît au rechargement**. C'est le comportement temporaire attendu du prototype, qui n'a pas encore de stockage permanent des images.
+- **Statut :** connexion Twitch administratrice et restauration du brouillon validées en essai réel ; prochaine étape technique recommandée : stockage pérenne des images de rédaction dans Supabase Storage avec restrictions d'accès par rôle News et sécurité RLS, sans toucher aux droits TCG. Le flux de publication publique reste hors service.
