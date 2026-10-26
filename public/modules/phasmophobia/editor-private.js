@@ -160,7 +160,16 @@
         .select('id,payload,updated_at').order('updated_at',{ascending:false}).limit(40);
       if(seq!==requestId)return;
       if(listError)throw listError;
-      window.PhasmoDraftBackend=enqueueBackend(rows||[]);
+      if(!window.PhasmoNewsPublication)throw new Error('Module de publication indisponible.');
+      const pub=window.PhasmoNewsPublication(client,user.id);
+      const published=await pub.list();
+      if(seq!==requestId)return;
+      window.PhasmoDraftBackend=Object.assign(enqueueBackend(rows||[]),{
+        published,
+        listPublished:()=>pub.list(),
+        publish:draft=>pub.publish(draft),
+        unpublish:id=>pub.unpublish(id)
+      });
       name.textContent=(isNewsAdmin?'Administration du blog · ':'Rédaction du blog · ')+(String(user.user_metadata?.preferred_username||
         user.user_metadata?.user_name||user.user_metadata?.name||'connecté').slice(0,60));
       await loadEditor();
