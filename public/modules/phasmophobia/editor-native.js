@@ -419,7 +419,23 @@
       if(text===null)return;
       const href=url(text);
       if(!href){report('Lien invalide. Utilisez http:// ou https://.');return;}
-      restoreSelection();command('createLink',href);
+      restoreSelection();
+      const selection=window.getSelection();
+      if(!selection?.rangeCount||!root.contains(selection.anchorNode)){
+        root.focus();
+        command('insertText',href);
+        return;
+      }
+      if(selection.isCollapsed){
+        // Aucun texte sélectionné : créer directement un lien cliquable.
+        const link=el('a','',href);
+        link.href=href;link.target='_blank';link.rel='noopener noreferrer';
+        const range=selection.getRangeAt(0);
+        range.insertNode(link);
+        range.setStartAfter(link);range.collapse(true);
+        selection.removeAllRanges();selection.addRange(range);
+        changed();updateToolbar();
+      }else command('createLink',href);
     }
   });
   $('#wys-block-style').addEventListener('change',event=>{
