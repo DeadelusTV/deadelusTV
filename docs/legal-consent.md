@@ -27,7 +27,7 @@ Le module affiche un lien vers la notice Twitch en français, et la notice final
 ## Statut live sans chargement du lecteur
 Le navigateur appelle uniquement `GET /api/twitch-status` sur **son propre domaine**. Réponse attendue : HTTP 200, JSON `{"live":true}` ou `{"live":false}`. Si l'appel échoue, le statut est **inconnu**, pas hors ligne ; l'utilisateur conserve le lien direct vers Twitch. Tant que la réponse n'est pas `true` **et** que le consentement n'est pas accordé, aucun SDK ni iframe Twitch n'est chargé. La vérification est répétée environ toutes les 60 secondes hors live.
 
-`scripts/twitch_status_service.py` est un service Python standard library **préparé mais non déployé** à connecter derrière Caddy sur OVH. Il n'est pas copié dans `public/`. Il requiert des secrets **uniquement côté serveur** : `TWITCH_CLIENT_ID`, `TWITCH_CLIENT_SECRET` d'une application Twitch créée par le propriétaire. Il utilise l'OAuth `client_credentials` puis Helix `GET /streams?user_login=deadelustv`, avec cache serveur 45 secondes. Il écoute seulement sur `127.0.0.1:8765`.
+`scripts/twitch_status_service.py` est le service Python standard library préparé dans le dépôt. **Premier retour positif en production de l'API le 26/10/2026 : l'utilisatrice rapporte `{"live":false}` sur l'URL publique OVH**. Reste à confirmer le redémarrage automatique du service et le test pendant un vrai live. Il n'est pas copié dans `public/`. Il requiert des secrets **uniquement côté serveur** : `TWITCH_CLIENT_ID`, `TWITCH_CLIENT_SECRET` d'une application Twitch créée par le propriétaire. Il utilise l'OAuth `client_credentials` puis Helix `GET /streams?user_login=deadelustv`, avec cache serveur 45 secondes. Il écoute seulement sur `127.0.0.1:8765`.
 
 La configuration Caddy existante étant hors du dépôt, ne rien y modifier automatiquement. Exigences de raccordement par l'administrateur :
 - faire démarrer le service Python en tant qu'utilisateur peu privilégié, avec les secrets fournis par un fichier d'environnement protégé ;
@@ -49,3 +49,9 @@ La configuration Caddy existante étant hors du dépôt, ne rien y modifier auto
 
 ## À ne pas faire
 Ne pas fusionner cette branche sur `main` tant que les textes officiels, le service OVH, les tests réels et la validation humaine ne sont pas terminés.
+
+## Prévisualisation locale connectée à OVH (26 octobre 2026)
+
+Pour tester le nouveau lecteur **sans déployer `main` ni toucher à Caddy**, utiliser `scripts/tester-twitch-local.bat` sous Windows (Python 3 requis) ou `py -3 scripts/preview-twitch-ovh.py`. Ouvrir `http://127.0.0.1:8766/` : le serveur local sert le dossier `public/` et relaie uniquement `GET /api/twitch-status` vers la vraie API publique OVH. Voir `docs/test-lecteur-twitch-local.md` pour le protocole. Ne pas utiliser le port 5500 de Live Server pour ce test : son API locale est absente.
+
+Le néon Graduate validé a été intégré sur cette même branche, et devra être testé sur le vrai fond. Les mentions légales et la politique de confidentialité contiennent encore `data-legal-pending="true"` : **elles restent un blocage explicite au déploiement, même si le live fonctionne parfaitement**. Ne pas désactiver le contrôle de publication.
