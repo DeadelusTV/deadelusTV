@@ -84,10 +84,22 @@
         show({signout:true,message:'Vérification de l’accès rédaction indisponible.'});
         return;
       }
+      let canManageNews=permission?.enabled===true;
+      if(!canManageNews){
+        // Droit d'administration du blog indépendant de tout rôle TCG.
+        const {data:adminPermission,error:adminError}=await auth.from('phasmo_news_admins')
+          .select('enabled').eq('user_id',data.user.id).maybeSingle();
+        if(request !== requestId || !root.open)return;
+        if(adminError){
+          show({signout:true,message:'Vérification du rôle administrateur News indisponible.'});
+          return;
+        }
+        canManageNews=adminPermission?.enabled===true;
+      }
       show({
-        editor:permission?.enabled===true,
+        editor:canManageNews,
         signout:true,
-        message:permission?.enabled===true ? '' : 'Connexion Twitch active · rédaction réservée au compte autorisé.'
+        message:canManageNews ? '' : 'Connexion Twitch active · rédaction réservée aux comptes autorisés.'
       });
     } catch {
       if (request === requestId && root.open)
