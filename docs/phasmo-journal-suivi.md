@@ -320,3 +320,15 @@ Décision : la rubrique **News devient un chantier prioritaire**, après validat
 - Correctifs concernés : `editor-private.html`, `editor-private.css`, `editor-native.js`. Les essais utilisateur ferment les points ouverts de la recette précédente.
 - Reste à contrôler séparément avant ouverture officielle : erreurs d'upload et limite 2 Mio, image de couverture, autres appareils/comptes, prévention des pertes de travail, liens et publication après transfert sur `main`. **L'accès du rédacteur mattarix_ attend explicitement le passage sur `main`**.
 - Aucun changement demandé ni effectué sur `main` dans cette étape.
+
+
+### Médias animés et vidéos YouTube : développement (26/10/2026)
+
+- Demande utilisatrice : permettre les images animées (notamment les WebP sur les annonces Kinetic Games, p. ex. `Phasmophobia Quality of Life Preview #2` et le média `TWITCHDROPS.webp`) et les vidéos insérées dans l'article (YouTube représente l'essentiel des besoins).
+- Le WebP (y compris animé) était déjà un type d'image admissible, mais **le presse-papiers peut figer une animation en capture PNG**. Aucun traitement d'image n'est effectué : le fichier GIF/WebP animé d'origine ou son URL HTTPS directe est nécessaire pour conserver les frames.
+- Migration Supabase appliquée : `phasmo_news_animated_gif_webp_storage_v1`; SQL conservé dans `docs/phasmo-news-animation-gif-storage.sql`. Les **deux buckets Phasmo uniquement** acceptent désormais PNG/JPEG/WebP/GIF, maximum **10 Mio** par fichier, avec règles INSERT strictes sur l'UUID du compte et le rôle News, sans modifier les politiques TCG.
+- `editor-private.js` accepte les GIF sauvegardés en `phasmo-media:<UUID>/<UUID>.gif` et les récupère après F5 ; `editor-native.js` accepte les GIF et WebP animés dans le corps et la couverture, par fichier ou par URL.
+- Bouton **+ Vidéo YouTube** dans les éditeurs privé et de démonstration locale : reconnaît les liens HTTPS `youtube.com/watch?v=`, `youtu.be/`, `youtube.com/shorts/`, `youtube.com/live/`, `youtube.com/embed/` ; stockage du nœud `{type:'youtube',attrs:{videoId:'...'}}` après validation d'un identifiant de 11 caractères.
+- Dans l'éditeur, un bloc vidéo non modifiable dans son contenu peut être retiré ou ouvrir YouTube. Dans l'aperçu et le lecteur News public, le panneau vidéo n'ajoute un iframe `youtube-nocookie.com` **qu'après clic**, afin d'éviter les requêtes tierces automatiques. CSS responsive et règles de sécurité inchangées pour la publication `preview`.
+- Tests techniques : 13/13 vérifications statiques de l'intégration + 6/6 simulations publication GIF, couverture et YouTube ; stockage et règles confirmés par SQL. **Essai en navigateur réel des deux nouveautés à réaliser**. Les vidéos MP4 uploadées/hébergées directement ne sont pas prises en charge à cette étape ; priorité donnée à YouTube.
+- Ce travail reste sur `developpement/phasmo-v2`. Accès `mattarix_` toujours en attente du passage sur `main`.
