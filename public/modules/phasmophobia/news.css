@@ -338,3 +338,30 @@
     justify-content: flex-start;
   }
 }
+
+/* Documents riches issus de l'éditeur de rédaction : titres, citations,
+   listes et images sans interprétation de HTML fourni par l'utilisateur. */
+#page-phasmophobia .phasma-news-article-quote {
+  border-left: 3px solid #ba955c;
+  margin: 1.5rem 0;
+  padding: 0.45rem 1.25rem;
+  color: #dec8a7;
+  background: rgba(151,112,70,.09);
+}
+#page-phasmophobia .phasma-news-article ol.phasma-news-article-list {
+  list-style: decimal;
+  padding-left: 1.7rem;
+}
+#page-phasmophobia .phasma-news-article ul.phasma-news-article-list {
+  list-style: disc;
+  padding-left: 1.7rem;
+}
+#page-phasmophobia .phasma-news-article-figure img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 7px;
+}
+#page-phasmophobia .phasma-news-article a {
+  color: #efc98f;
+  overflow-wrap: anywhere;
+}
