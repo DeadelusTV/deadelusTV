@@ -75,3 +75,25 @@
   cursor: pointer;
 }
 .phasma-editor-unpublish:hover { color: #ffcec1; }
+
+
+/* Une erreur de publication doit être visible avant les champs de rédaction,
+   au lieu d'être cachée sous l'éditeur. */
+.phasma-editor-demo .phasma-editor-alert-top {
+  display: block;
+  margin: 0 0 18px;
+  padding: 13px 16px;
+  border: 1px solid #9d6058;
+  border-left: 4px solid #df9686;
+  border-radius: 8px;
+  background: #392522;
+  color: #ffe1db;
+  font-size: 13px;
+  line-height: 1.6;
+  scroll-margin-top: 16px;
+}
+.phasma-editor-demo .phasma-editor-field [aria-invalid="true"] {
+  outline: 2px solid #df9686;
+  outline-offset: 2px;
+  border-color: #df9686;
+}
