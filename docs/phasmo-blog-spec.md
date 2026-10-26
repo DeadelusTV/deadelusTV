@@ -150,3 +150,12 @@ Webhook Discord automatique des News, import automatisé du blog Kinetic, newsle
 - Prévoir un accès direct **« Gérer les actualités » dans la rubrique News** après connexion Twitch, uniquement visible pour le compte autorisé. Le site propose une connexion Twitch discrète aux comptes non connectés ; jamais de privilège dérivé des autres modérateurs.
 - Compte Twitch cible : `mattarix_` (https://www.twitch.tv/mattarix_). Son identité Supabase Auth n'a pas encore été reconnue dans les données existantes. Accorder le droit seulement **après connexion et vérification de l'UUID du véritable utilisateur**, pas à un pseudo arbitraire.
 - Code développé sur `developpement/phasmo-v2` : `public/modules/phasmophobia/news-access.js`, ajustements `public/index.html` et `news.css`. Lien direct fonctionnel en simulation ; **les URLs OAuth et le déploiement sur le site de test restent à réaliser**. 11/11 scénarios JS simulés validés ; aucune modification de `main` ou attribution de rôle.
+
+
+### Images dans les brouillons, persistance privée (26/10/2026)
+
+- Sous-type média de l'article validé : image privée de rédaction stockée sur Supabase Storage dans `phasmo-news-draft-images` (bucket `public=false`, limite 2 Mio, `image/png`, `image/jpeg`, `image/webp`).
+- Références stables `phasmo-media:<UUID-du-compte>/<UUID-de-fichier>.<ext>` dans le JSON éditorial ; rendu `img` à partir d'un objet Blob temporaire téléchargé après vérification de la session Auth et de la RLS.
+- Deux politiques Storage : les comptes News activés envoient dans leur propre dossier, le rédacteur ne lit que ses images, et l'admin Phasmo peut relire celles du rédacteur. Les rôles TCG n'accordent aucune permission supplémentaire. Aucune dépendance au pseudo Twitch, aucun bucket public.
+- Upload synchronisé avec la sauvegarde des brouillons dans l'éditeur natif privé, pour images dans le corps de l'article et couvertures. L'aperçu/démo locale conserve son fonctionnement antérieur.
+- La publication publique devra mettre à disposition des images publiques distinctes : **ne jamais publier une URL blob locale ni un chemin privé directement**. Nettoyage ultérieur des orphelins.
