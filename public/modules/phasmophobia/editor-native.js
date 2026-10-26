@@ -278,19 +278,28 @@
     for(const item of cleanDoc(doc,false).content||[])walk(documentRoot,item);
     if(!documentRoot.childNodes.length)documentRoot.append(el('p'));
   }
-  function store(){
+  async function store(){
     clearTimeout(timer);timer=null;
     if (BACKEND) {
       const d=current();
-      if(!d)return Promise.resolve();
+      if(!d)return;
+      const pending=[...(pendingImages.get(d.id)||[])];
+      status.textContent=pending.length?'Envoi des images puis sauvegarde…':'Sauvegarde du brouillon sur Supabase…';
+      if(pending.length)await Promise.allSettled(pending);
+      if(failedImages.has(d.id)){
+        status.textContent='Image non envoyée : brouillon non sauvegardé, réinsérez l’image.';
+        return;
+      }
+      if(current()?.id===d.id)d.doc=readEditor();
       const payload={...d,doc:cleanDoc(d.doc,true)};
-      status.textContent='Sauvegarde du brouillon sur Supabase…';
-      return BACKEND.save(payload).then(()=>{
-        if(current()?.id===payload.id)status.textContent='Brouillon enregistré sur Supabase · images du PC temporaires';
-      }).catch(err=>{
+      try{
+        await BACKEND.save(payload);
+        if(current()?.id===payload.id)status.textContent='Brouillon et images enregistrés sur Supabase';
+      }catch(err){
         status.textContent='ERREUR : brouillon non sauvegardé. Utilisez « Exporter le brouillon ».';
         report('Sauvegarde distante refusée : '+String(err?.message||err));
-      });
+      }
+      return;
     }
     try{
       localStorage.setItem(KEY,JSON.stringify({selectedId:selected,drafts:drafts.map(d=>({...d,doc:cleanDoc(d.doc,true)}))}));
