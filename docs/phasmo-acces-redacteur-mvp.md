@@ -1,8 +1,10 @@
+> **MISE À JOUR 26/10/2026 :** migration `phasmo_news_editor_single_account_private_drafts_v1` **appliquée avec succès** dans le projet Supabase TCG. Vérification : deux tables, cinq politiques RLS, 0 autorisation de rédacteur, 0 brouillon. Le SQL `docs/phasmo-news-sql-a-revoir.sql` est désormais l'archive du SQL préparé initialement ; **ne pas le réexécuter**. Il reste à configurer la Redirect URL OAuth et à attribuer manuellement le droit à l'UUID Twitch exact après première connexion. **Aucun test OAuth réel ni test RLS avec plusieurs sessions encore effectué.**
+
 # Première mise en accès du rédacteur Phasmophobia — 26 octobre 2026
 
 ## État réel
 
-**Code prêt en branche** `developpement/phasmo-v2` ; **accès non encore activé dans Supabase**.
+**Code prêt en branche** `developpement/phasmo-v2` ; **tables et RLS désormais activées dans Supabase**, mais aucun utilisateur encore habilité.
 Les fichiers livrés ne suffisent pas à autoriser le rédacteur tant que les règles et son compte ne sont pas configurés. L'éditeur de démonstration reste indépendant.
 
 ## Fichiers
@@ -28,7 +30,7 @@ Les fichiers livrés ne suffisent pas à autoriser le rédacteur tant que les r�
 - L'éditeur natif utilise encore `execCommand()`, méthode dépréciée ; remplacer son moteur avant une exploitation de production à grande échelle sans modifier l'ergonomie validée.
 - La page HTML n'est pas secrète sur un hébergement statique ; la protection doit impérativement demeurer dans les politiques de base.
 
-## Activer l'accès en toute sécurité (reste à faire, non autorisé automatiquement)
+## Mise en service : migration déjà exécutée, étapes OAuth et attribution encore à effectuer
 
 1. **Revoir** la proposition `docs/phasmo-news-sql-a-revoir.sql` avec les règles existantes du projet TCG. Convertir ensuite en **migration officielle** et effectuer une sauvegarde avant application, puis tester la migration et la RLS dans un environnement isolé si possible. Ne pas utiliser l'ancienne table `tcg_admins` ni le statut `is_moderator` comme permission News.
 2. Installer et vérifier ces tables/RLS dans le projet Supabase TCG **après validation explicite du changement de base**. Tester : utilisateur anonyme, simple viewer, autre modérateur, rédacteur et rôle révoqué. La politique `UPDATE` doit protéger aussi les valeurs modifiées (`WITH CHECK`), en plus des valeurs anciennes (`USING`).
