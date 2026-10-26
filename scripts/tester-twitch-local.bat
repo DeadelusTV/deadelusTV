@@ -1,17 +1,11 @@
 @echo off
 setlocal
 cd /d "%~dp0\.."
-where py >nul 2>&1
-if %errorlevel%==0 (
-    py -3 scripts\preview-twitch-ovh.py
+echo Demarrage du site DEADELUSTV et de son acces API OVH...
+if exist "%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" (
+  "%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%~dp0preview-twitch-ovh.ps1"
 ) else (
-    where python >nul 2>&1
-    if %errorlevel%==0 (
-        python scripts\preview-twitch-ovh.py
-    ) else (
-        echo Python 3 est necessaire pour ce test local.
-        echo Le deploiement sur OVH n'a pas besoin de Python sur ton PC.
-    )
+  echo PowerShell Windows introuvable. Voir docs\test-lecteur-twitch-local.md.
 )
 echo.
 pause

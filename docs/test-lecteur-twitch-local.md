@@ -1,28 +1,30 @@
 # Prévisualisation du lecteur Twitch avec la vraie API OVH
 
-**Branche :** `developpement/legal-et-consentement`. Aucun déploiement OVH n'est effectué.
+**Branche :** `developpement/legal-et-consentement`, pas de déploiement OVH.
 
-## Démarrer sous Windows
+## Démarrer sur Windows, sans installation
 
-1. Dans GitHub Desktop, choisir la branche `developpement/legal-et-consentement`, puis **Fetch origin / Pull origin**.
-2. Dans le dossier `scripts`, double-cliquer `tester-twitch-local.bat`. Il faut Python 3 sur le PC ; le script indique s'il manque. Alternative dans un terminal : `py -3 scripts/preview-twitch-ovh.py`.
-3. Ouvrir **http://127.0.0.1:8766/**, pas le port 5500 de Live Server.
-4. Vérifier **http://127.0.0.1:8766/api/twitch-status** : le proxy transmet la requête à **https://www.deadelustv.com/api/twitch-status** sans changer Caddy, les secrets ou le service OVH.
-5. Fermer le terminal avec Ctrl+C pour arrêter.
+1. GitHub Desktop : branche `developpement/legal-et-consentement` puis **Fetch origin / Pull origin**.
+2. Dans le dossier `scripts`, double-cliquer sur `tester-twitch-local.bat`. Ce lanceur utilise **Windows PowerShell intégré à Windows**, sans installer Python.
+3. **Garder la fenêtre PowerShell ouverte**, puis visiter **http://127.0.0.1:8766/** (pas 5500 de Live Server).
+4. Tester aussi **http://127.0.0.1:8766/api/twitch-status**. La demande est transmise à la vraie URL publique `https://www.deadelustv.com/api/twitch-status` ; l'API et les fichiers apparaissent sur une origine locale commune. Aucune modification Caddy ni OVH.
+5. Arrêter avec Ctrl+C ou en fermant la fenêtre du lanceur.
 
-Le proxy écoute sur 127.0.0.1 uniquement et sert le dossier public/. Le site et l'API deviennent de même origine. Le stockage local et les choix de cookies du port 8766 sont séparés de ceux du port 5500.
+Si le lancement PowerShell échoue, copier le message d'erreur sans informations sensibles. Alternative technique facultative pour un développeur ayant Python 3 : `python scripts/preview-twitch-ovh.py`.
 
-## Cas à tester
+Le port 8766 écoute sur l'interface locale 127.0.0.1. Les cookies et localStorage y sont différents du port 5500 et du domaine public.
 
-- **API false, hors direct :** afficher mur de briques + « HORS LIGNE » en Graduate, sans iframe Twitch.
-- **API true, refus :** pas de lecteur intégré ; lien « Regarder sur Twitch ».
-- **API true, acceptation :** SDK et lecteur Twitch autorisés ; lecture muette possible selon les restrictions du navigateur et de Twitch.
-- **Retrait de l'accord en direct :** iframe retirée.
-- **API 502/503 ou réponse erronée :** ne pas annoncer « HORS LIGNE », afficher l'indisponibilité.
-- Dans DevTools > Réseau, confirmer l'absence de chargement Twitch hors direct/refus ; vérifier aussi mobile et navigation clavier.
+## Tests à effectuer
 
-Un lecteur Twitch embarqué peut être limité sur une URL locale HTTP : si c'est le cas, effectuer la validation finale sur le domaine HTTPS réel.
+- **API false, hors direct :** image de briques et « HORS LIGNE » en Graduate, aucun SDK/iframe Twitch chargé.
+- **API true, refus :** aucun lecteur intégré et lien « Regarder sur Twitch ».
+- **API true, acceptation :** SDK et lecteur Twitch chargés, tentative de lecture muette.
+- **Retrait du consentement pendant le live :** l'iframe est retirée.
+- **API 502/503 ou réponse JSON invalide :** statut inconnu, sans fausse annonce « HORS LIGNE ».
+- Vérifier dans F12 > Réseau l'absence de requêtes vers Twitch avant consentement ; tester aussi Chrome/Edge, mobile et clavier.
 
-## Bloqueur pour le déploiement
+Une lecture Twitch intégrée peut être bloquée sur une origine HTTP locale ; dans ce cas, la lecture elle-même devra être revalidée sur le domaine HTTPS réel.
 
-Les pages légales ont encore `data-legal-pending="true"` ; le contrôle de publication `python3 scripts/verify-static.py` refuse volontairement un déploiement sans les textes de Deadelus. **Ne pas supprimer ce contrôle pour publier plus vite.**
+## Publication sur main : attention
+
+Les pages légales contiennent encore `data-legal-pending="true"` ; le déploiement `scripts/verify-static.py` est volontairement bloqué tant que Deadelus n'a pas fourni et validé les textes. **Ne pas désactiver cette vérification.**
