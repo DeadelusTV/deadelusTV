@@ -254,9 +254,11 @@
       report('Image insérée pour cette session. Elle devra être réinsérée après rechargement de la page.');
     }
   }
-  function showDraft(id) {
+  function showDraft(id, initialLoad = false) {
     if (saveTimer)persist();
-    syncFromEditor();
+    // Important : ne pas écraser le document sauvegardé par l'éditeur vierge
+    // lors de la toute première ouverture du prototype.
+    if (!initialLoad) syncFromEditor();
     selectedId=id;
     const d=current();
     if(!d)return;
@@ -401,7 +403,7 @@
     editorProps:{attributes:{'aria-label':'Aperçu de votre article'}}
   });
   loadDrafts();
-  showDraft(selectedId);
+  showDraft(selectedId, true);
   updateToolbar();
   $('#editor-new').addEventListener('click',()=>{
     if(drafts.length>=MAX_DRAFTS){report('Limite de 40 brouillons locaux atteinte.');return;}
