@@ -14,6 +14,7 @@
 <!-- L'éditeur de test se charge localement, sans bibliothèques CDN. -->
 <link rel="stylesheet" href="editor-private.css">
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.76.1"></script>
+<script defer src="news-publication.js"></script>
 <script defer src="editor-private.js"></script>
 </head>
 <body class="phasma-editor-demo" id="page-phasmophobia">
@@ -29,7 +30,7 @@
   <strong>Espace de rédaction privé.</strong>
   Vos brouillons et les images collées ou importées depuis le PC sont enregistrés sur Supabase.
   Attendez le message de confirmation de l'enregistrement avant de fermer ou actualiser la page.
-  Les images restent privées. Aucune publication publique n'est encore possible.
+  Les brouillons et leurs images restent privés. Une publication en <strong>mode test</strong> est visible sur le site de développement, jamais sur le site officiel.
 </div>
 <section id="editor-private-gate" class="phasma-editor-private-gate" aria-label="Accès à la rédaction">
   <h1>Accès au bureau de rédaction</h1>
@@ -50,7 +51,9 @@
       <button id="editor-new" class="phasma-editor-btn phasma-editor-btn--gold" type="button">+ Nouvel article</button>
     </div>
     <div id="editor-draft-list" class="phasma-editor-draft-list"></div>
-    <p class="phasma-editor-sidebar-note">Brouillons privés enregistrés sur le serveur après autorisation. Aucune publication n'est encore possible.</p>
+    <p class="phasma-editor-sidebar-note">Brouillons privés · sauvegarde automatique sur Supabase.</p>
+    <div class="phasma-editor-published-header"><h3>Publications de test</h3><small>Visibles sur la démo uniquement</small></div>
+    <div id="editor-published-list" class="phasma-editor-draft-list" aria-label="Articles publiés sur le site de développement"></div>
   </aside>
   <main id="editor-main" class="phasma-editor-main" tabindex="-1">
     <div class="phasma-editor-toolbar">
@@ -64,7 +67,7 @@
         <button type="button" id="editor-mode-preview" class="phasma-editor-btn" aria-pressed="false">Aperçu</button>
         <button type="button" id="editor-save-now" class="phasma-editor-btn phasma-editor-btn--gold">Enregistrer</button>
         <button type="button" id="editor-export" class="phasma-editor-btn">Exporter le brouillon</button>
-        <button type="button" class="phasma-editor-btn phasma-editor-btn--disabled" disabled title="Publication publique non encore activée">Publier · bientôt</button>
+        <button type="button" id="editor-publish" class="phasma-editor-btn phasma-editor-btn--gold">Publier sur la démo</button>
       </div>
     </div>
 
@@ -151,7 +154,7 @@
       </div>
       <div class="phasma-editor-bottom">
         <button type="button" id="editor-delete" class="phasma-editor-btn phasma-editor-btn--danger">Supprimer ce brouillon</button>
-        <p>Les brouillons sont privés. Seules les informations publiées ultérieurement seront visibles par les visiteurs.</p>
+        <p>Les brouillons sont privés. Les articles publiés en mode test sont visibles par les visiteurs de cette démo uniquement.</p>
       </div>
     </section>
 
