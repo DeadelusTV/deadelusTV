@@ -173,3 +173,13 @@ Décision : la rubrique **News devient un chantier prioritaire**, après validat
 - L'éditeur `editor-preview.js` propose sous chaque bloc « + Texte ici » et « + Image ici », insérant le nouveau bloc **juste après celui qui précède** ; on peut toujours réordonner ensuite avec les boutons Monter / Descendre.
 - Chaque image peut être ajoutée via sélection PC ou lien HTTPS, avec texte alternatif et légende facultative. L'aperçu et le lecteur public respectent l'ordre des blocs.
 - Ce chantier reste sur `developpement/phasmo-v2` ; pas d'authentification ou publication serveur ajoutée, pas de changement sur `main` ou sur Supabase.
+
+
+### Éditeur visuel WYSIWYG pour le blog (26/10/2026)
+
+- À la demande de simplification, la rédaction passe à un **éditeur façon traitement de texte** (Tiptap 3 en JavaScript vanilla). Il remplace à l'écran le système de blocs précédent, dont les fichiers sont conservés mais non chargés.
+- L'éditeur autorise le texte libre, gras, italique, souligné, deux styles de sous-titre, alignements, listes, liens, annuler/rétablir, avec images insérées directement au curseur par fichier, URL HTTPS, collage ou glisser-déposer.
+- Les anciens brouillons locaux sont migrés dans une nouvelle clé sans effacer le stockage du prototype précédent ; l'aperçu restitue le document riche, et l'export reste un brouillon JSON.
+- Attention : le fichier PC n'est pas conservé après rechargement ; un rappel remplace l'image dans le document sauvegardé. La publication et les permissions serveur restent inactives. L'éditeur dépend pour l'instant de la disponibilité du CDN Tiptap (`3.31.3`) pendant les tests.
+- La lecture publique attend encore l'ancien schéma par blocs. Il faudra sécuriser l'interprétation du nouveau document riche lorsque le blog sera relié au stockage de publication.
+- Travail exclusivement sur `developpement/phasmo-v2`, sans modification de `main` ni des projets Supabase.
