@@ -19,6 +19,8 @@
   const MAX_DRAFTS = 40, MAX_IMAGE = 2 * 1024 * 1024;
   const MIME = ['image/png','image/jpeg','image/webp'];
   const tempUrls = new Set(), covers = new Map();
+  const pendingImages=new Map(), failedImages=new Set();
+  const isPrivateImage=value=>!!BACKEND?.validImageRef?.(value);
   const today = () => new Date().toISOString().slice(0,10);
   let seq=0, drafts=[], selected=null, timer=null, savedRange=null;
 
@@ -37,6 +39,7 @@
     const text=value.trim();
     if(kind==='image'&&/^(?:\.\.\/\.\.\/)?assets\/phasmo-news\/[a-z0-9/_-]+\.(?:png|jpg|jpeg|webp)$/i.test(text))
       return text.startsWith('assets/')?'../../'+text:text;
+    if(kind==='image'&&isPrivateImage(text))return text;
     if(kind==='image'&&text.startsWith('blob:')&&tempUrls.has(text))return text;
     try{
       const parsed=new URL(text);
@@ -190,7 +193,7 @@
       for(const child of element.childNodes){
         if(child.nodeType===Node.ELEMENT_NODE&&child.tagName==='IMG'){
           flush();
-          const src=url(child.getAttribute('src'),'image');
+          const src=url(child.dataset.remoteImage||child.getAttribute('src'),'image');
           if(src)content.push({type:'image',attrs:{src,alt:child.alt||''}});
         }else if(child.nodeType===Node.ELEMENT_NODE&&child.tagName==='BR'){
           pending.push({type:'hardBreak'});
@@ -209,7 +212,7 @@
       if(child.nodeType!==Node.ELEMENT_NODE)continue;
       const name=child.tagName;
       if(name==='IMG'){
-        const src=url(child.getAttribute('src'),'image');
+        const src=url(child.dataset.remoteImage||child.getAttribute('src'),'image');
         if(src)content.push({type:'image',attrs:{src,alt:child.alt||''}});
       }else if(name==='UL'||name==='OL')content.push(parseList(child,name==='UL'?'bulletList':'orderedList'));
       else if(name==='H2'||name==='H3')flushText('heading',child);
@@ -236,14 +239,24 @@
       parent.append(node);
     }
   }
+  function setImageSource(image,src){
+    if(isPrivateImage(src)){
+      image.dataset.remoteImage=src;
+      image.alt=image.alt||'Image privée du brouillon';
+      BACKEND.imageUrl(src).then(blobUrl=>{
+        if(image.isConnected && image.dataset.remoteImage===src)image.src=blobUrl;
+      }).catch(()=>{if(image.isConnected)report('Une image privée ne peut pas être chargée.');});
+    }else image.src=src;
+  }
   function buildDoc(documentRoot,doc){
     documentRoot.replaceChildren();
     const walk=(container,item)=>{
       if(item.type==='image'){
         const src=url(item.attrs?.src,'image');
         if(src){
-          const image=el('img');image.src=src;image.alt=item.attrs?.alt||'';
+          const image=el('img');image.alt=item.attrs?.alt||'';
           image.referrerPolicy='no-referrer';
+          setImageSource(image,src);
           container.append(image);
         }else container.append(el('p','', 'Image non disponible.'));
         return;
@@ -308,8 +321,9 @@
     return covers.get(d?.id)||url(d?.cover,'image');
   }
   function picture(parent,src,cls){
-    const image=el('img',cls);image.src=src;image.alt='';
+    const image=el('img',cls);image.alt='';
     image.referrerPolicy='no-referrer';
+    setImageSource(image,src);
     image.addEventListener('error',()=>{image.remove();parent.append(el('p','phasma-editor-image-error','Image inaccessible depuis ce site.'));},{once:true});
     parent.append(image);
   }
