@@ -65,3 +65,15 @@ Les fichiers livrés ne suffisent pas à autoriser le rédacteur tant que les r�
 - **Attribution du rôle administrateur non effectuée :** l'outil de modification SQL a bloqué l'opération nominative d'attribution malgré l'identité vérifiée. Ne pas annoncer l'accès `yekelle` comme actif avant insertion administrative contrôlée du bon UUID dans `public.phasmo_news_admins`.
 - **Recette requise :** confirmer la ligne enabled=true dans `phasmo_news_admins`, tester dans un navigateur la connexion Twitch sur la branche déployée avec callback autorisé, tester l'ouverture de la rédaction et la sauvegarde, puis re-tester le refus d'un compte tiers. Vérifier aussi l'accès de mattarix_ uniquement après sa première connexion et l'attribution de son rôle rédaction.
 - 12/12 simulations JS ont validé visiteurs refusés, rôles rédacteur/admin acceptés, opérations insertion/modification/suppression et absence de transfert du propriétaire. **Pas encore de test réel OAuth/RLS avec ces comptes.**
+
+
+## Images pérennes dans les brouillons (26/10/2026)
+
+**Implémentation préparée et déployable sur `developpement/phasmo-v2` :**
+le bucket privé Supabase `phasmo-news-draft-images` est créé, avec RLS fondée sur l'UUID connecté et les rôles dédiés News. PNG, JPEG, WebP acceptés, taille maximale 2 Mio. L'administratrice peut relire les images du rédacteur sans modifier le contenu du TCG.
+
+Dans l'éditeur privé, coller/déposer/choisir une image lance un upload authentifié ; la sauvegarde du brouillon attend sa fin, puis persiste uniquement la référence `phasmo-media:<uuid>/<uuid>.<ext>` dans le document JSON. Au rechargement/F5, le navigateur télécharge l'image avec l'authentification Twitch et crée un blob local pour l'affichage. Les couvertures sont prises en charge aussi. Les URL d'images HTTPS déjà présentes continuent de fonctionner sans être copiées.
+
+**Limites :** pas d'accès public aux images de brouillon ; le JSON exporté ne contient pas les octets des images ; toute image supprimée du texte peut rester temporairement dans Storage en attendant un nettoyage séparé ; la publication d'un article demandera son propre traitement des médias publiés. Si un upload échoue, ne pas considérer le brouillon comme enregistré. La version autonome `editor-preview.html` reste un prototype local.
+
+**Test utilisateur à refaire :** sur l'URL de branche Cloudflare existante, ouvrir un brouillon de test, coller une image PNG/JPEG/WebP de moins de 2 Mio, attendre la confirmation « Brouillon et images enregistrés sur Supabase », faire F5 et confirmer que le texte ET l'image restent visibles. Essayer aussi une image de couverture. Les tests réalisés jusqu'ici sont des simulations backend (9/9) et des vérifications statiques (10/10), pas encore une recette réelle en navigateur connecté.
