@@ -627,6 +627,7 @@
   document.querySelectorAll('#editor-form [data-field]').forEach(input=>{
     input.addEventListener('input',()=>{
       const d=current();if(!d)return;d[input.dataset.field]=input.value;
+      input.removeAttribute('aria-invalid');
       if(input.dataset.field==='title'&&!d.slugCustomized){
         d.slug=slugify(d.title);$('[data-field="slug"]').value=d.slug;
       }
@@ -682,10 +683,43 @@
       }finally{off.disabled=false;}
     }
   });
+  function validateBeforePublishing(d){
+    const fields=[
+      ['title','Indiquez le titre de l’article.',v=>!!v.trim()&&v.trim().length<=160],
+      ['excerpt','Indiquez un résumé pour la vignette.',v=>!!v.trim()&&v.trim().length<=350],
+      ['publishedAt','Choisissez une date de publication.',v=>/^\\d{4}-\\d{2}-\\d{2}$/.test(v)],
+      ['sourceUrl','Indiquez le lien HTTPS de l’annonce originale Kinetic Games (rubrique /news).',v=>{
+        try{
+          const u=new URL(v.trim());
+          return u.protocol==='https:'&&!u.username&&!u.password&&
+            ['kineticgames.co.uk','www.kineticgames.co.uk'].includes(u.hostname)&&
+            (u.pathname==='/news'||u.pathname.startsWith('/news/'));
+        }catch{return false;}
+      }],
+      ['slug','L’identifiant de l’article doit contenir uniquement des minuscules, chiffres et tirets.',v=>/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(v)&&v.length<=100]
+    ];
+    for(const [key,message,test] of fields){
+      const input=$('[data-field="'+key+'"]');
+      if(!test(String(d[key]||''))){
+        input?.setAttribute('aria-invalid','true');
+        report(message,true);
+        return false;
+      }
+      input?.removeAttribute('aria-invalid');
+    }
+    if(d.publishedId && d.publishedSlug!==d.slug){
+      $('[data-field="slug"]')?.setAttribute('aria-invalid','true');
+      report('L’identifiant d’un article déjà publié doit rester identique pour préserver son lien.',true);
+      return false;
+    }
+    return true;
+  }
   const publishButton=$('#editor-publish');
   if(publishButton)publishButton.addEventListener('click',async()=>{
     const d=current();if(!d||!BACKEND?.publish)return;
     d.doc=readEditor();
+    if(!validateBeforePublishing(d))return;
+    report('');
     if(!d.publishedId&&!confirm('Publier cet article sur le SITE DE DÉVELOPPEMENT ? Il sera visible par tous les visiteurs de la démo.'))return;
     publishButton.disabled=true;
     try{
