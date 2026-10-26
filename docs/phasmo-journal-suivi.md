@@ -165,3 +165,11 @@ Décision : la rubrique **News devient un chantier prioritaire**, après validat
 - Une image PC donne un aperçu temporaire, sans envoi serveur et sans inclusion dans l'export JSON. Une image externe est prévisualisée directement par le navigateur et son URL reste dans le brouillon local, mais elle peut être bloquée par le site source.
 - **Pour la publication réelle** : héberger les fichiers et les images autorisées via un stockage contrôlé, sans faire dépendre les articles de liens externes ni permettre de récupérer n'importe quelle URL côté serveur. Règles d'upload, droits et sécurité à définir lors du raccordement.
 - Aucun changement dans `main`, aucune modification de Supabase.
+
+
+### Mise en page des articles : images au milieu du texte (26/10/2026)
+
+- **Disposition validée :** paragraphe → paragraphe → image dans le flux du texte → paragraphe → paragraphe, comme les billets du blog Kinetic Games. Aucun placement en arrière-plan et pas de galerie distincte.
+- L'éditeur `editor-preview.js` propose sous chaque bloc « + Texte ici » et « + Image ici », insérant le nouveau bloc **juste après celui qui précède** ; on peut toujours réordonner ensuite avec les boutons Monter / Descendre.
+- Chaque image peut être ajoutée via sélection PC ou lien HTTPS, avec texte alternatif et légende facultative. L'aperçu et le lecteur public respectent l'ordre des blocs.
+- Ce chantier reste sur `developpement/phasmo-v2` ; pas d'authentification ou publication serveur ajoutée, pas de changement sur `main` ou sur Supabase.
