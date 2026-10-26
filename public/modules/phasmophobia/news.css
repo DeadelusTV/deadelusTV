@@ -285,3 +285,56 @@
   #page-phasmophobia .phasma-news-card,
   #page-phasmophobia .phasma-news-arrow { transition: none; }
 }
+
+
+/* Accès rédaction conditionnel : discret et séparé du fil public. */
+#page-phasmophobia .phasma-news-editor-access[hidden],
+#page-phasmophobia .phasma-news-editor-access [hidden] {
+  display: none !important;
+}
+#page-phasmophobia .phasma-news-editor-access {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin: 14px 0 20px;
+  min-width: 0;
+}
+#page-phasmophobia .phasma-news-editor-access #phasma-news-editor-link {
+  font-size: 12px;
+  min-height: 38px;
+  border-color: #907044;
+}
+#page-phasmophobia .phasma-news-editor-login,
+#page-phasmophobia .phasma-news-editor-logout {
+  border: 0;
+  border-bottom: 1px solid #8e754e;
+  border-radius: 0;
+  background: transparent;
+  padding: 7px 2px;
+  color: #e4c992;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+#page-phasmophobia .phasma-news-editor-login:hover,
+#page-phasmophobia .phasma-news-editor-logout:hover {
+  color: #f8e5bb;
+  border-color: currentColor;
+}
+#page-phasmophobia .phasma-news-editor-login:focus-visible,
+#page-phasmophobia .phasma-news-editor-logout:focus-visible {
+  outline: 2px solid #e4c992;
+  outline-offset: 4px;
+}
+#page-phasmophobia .phasma-news-editor-note {
+  margin: 0;
+  color: #a9a397;
+  font-size: 12px;
+}
+@media (max-width: 550px) {
+  #page-phasmophobia .phasma-news-editor-access {
+    justify-content: flex-start;
+  }
+}
