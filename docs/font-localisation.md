@@ -21,4 +21,10 @@ L'auteur indique sur DaFont « Free for personal use », mais **Creative Fabrica
 
 Après validation de licence, ajuster le titre `HORS LIGNE` (ne pas toucher automatiquement au sous-titre) et effectuer un contrôle de rendu mobile/desktop, car les métriques des glyphes peuvent modifier l'alignement validé de la maquette. La police Academy reçue ne contient pas tous les caractères accentués du français ; cela ne pose pas de problème pour « HORS LIGNE » mais peut limiter d'autres textes.
 
-**Décision :** hébergement local des polices OFL approuvé ; utilisation web d'Academy uniquement envisagée et subordonnée à la licence ; aucune modification de la production.
+## Police Varsity par Brøderbund Software — autre piste visuelle, licence inconnue
+
+**Piste proposée par l'utilisatrice le 26 octobre 2026 :** la police « Varsity » ressemble à Academy pour le grand texte néon « HORS LIGNE ». Fiche : https://www.dafont.com/varsity-2.font . Sur DaFont, cette version est attribuée à Brøderbund Software et le téléchargement s'appelle `varsity_regular.ttf` ; aucune licence commerciale ou web explicite n'est indiquée sur la fiche. La FAQ DaFont précise qu'une licence absente ne signifie pas que la police est libre (https://www.dafont.com/faq.php). **Statut : IDÉE À ÉTUDIER, aucun droit d'auto-hébergement établi**. Ne pas intégrer de police Varsity dans le dépôt ou la feuille CSS sans preuve d'une licence commerciale et web compatible.
+
+Les polices OFL auto-hébergées restent le choix technique actuel ; Academy et Varsity sont deux alternatives purement envisagées.
+
+**Décision :** hébergement local des polices OFL approuvé ; utilisation web d'Academy et de Varsity uniquement envisagée et subordonnée à la preuve des licences ; aucune modification de la production.
