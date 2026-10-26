@@ -83,7 +83,8 @@
   white-space: nowrap;
   color: #ffe8ff;
   text-shadow: 0 0 2px #fff,0 0 6px #fa64ff,0 0 13px #d52aff,0 0 25px #b91aff,0 0 42px #9c13ff;
-  transform: translate(-50%,-50%) rotate(-7deg) scaleX(.96);
+  transform: translate(-50%,-50%) rotate(-7deg) scaleX(.96) translateZ(0);
+  backface-visibility: hidden;
 }
 .twitch-neon-title .letter.flicker {
   animation: deadelus-electric-buzz .64s steps(1,end) both;
