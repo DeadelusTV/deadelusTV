@@ -16,3 +16,12 @@
   font-display: swap;
   src: url('fonts/great-vibes-latin-400-normal.woff2') format('woff2');
 }
+
+/* Graduate, titre néon HORS LIGNE, licence SIL OFL 1.1. */
+@font-face {
+  font-family: 'Graduate';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/graduate-latin-400-normal.woff2') format('woff2');
+}
