@@ -100,7 +100,8 @@
       const auth = await getClient();
       // Le retour sur le portail est autorisé dans Supabase Auth après
       // ajout explicite de son URL, sans toucher au callback du TCG.
-      sessionStorage.setItem(RETURN_MARK,'1');
+      try { sessionStorage.setItem(RETURN_MARK,'1'); }
+      catch { /* Le navigateur peut interdire le stockage session. */ }
       const {error} = await auth.auth.signInWithOAuth({
         provider:'twitch',
         options:{redirectTo:window.location.origin + window.location.pathname}
