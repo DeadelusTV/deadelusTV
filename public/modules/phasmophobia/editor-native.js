@@ -30,7 +30,14 @@
     if (content!==undefined) node.textContent=String(content);
     return node;
   };
-  const report = value => {errorBox.textContent=value;errorBox.hidden=!value;};
+  const report = (value,bringIntoView=false) => {
+    errorBox.textContent=value;
+    errorBox.hidden=!value;
+    if(value&&bringIntoView) {
+      $('#editor-main')?.scrollIntoView({block:'start',behavior:'auto'});
+      errorBox.focus({preventScroll:true});
+    }
+  };
   const slugify = text => String(text||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
     .toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,100);
   const uid=()=>globalThis.crypto?.randomUUID?.()||'draft-'+Date.now()+'-'+(++seq);
@@ -405,7 +412,7 @@
     if(src)picture(target,src,'phasma-editor-img-preview');
     else target.append(el('p','phasma-editor-media-placeholder','Aucune couverture sélectionnée.'));
   }
-  function showDraft(id){
+  function showDraft(id,save=true){
     if(timer)store();
     selected=id;const d=current();if(!d)return;
     buildDoc(root,d.doc);
@@ -414,7 +421,7 @@
     coverPreview();listDrafts();showPreview(false);
     const publishButton=$('#editor-publish');
     if(publishButton)publishButton.textContent=d.publishedId?'Mettre à jour sur la démo':'Publier sur la démo';
-    store();
+    if(save)store();
   }
   function showPreview(on){
     $('#editor-form').hidden=on;$('#editor-preview').hidden=!on;
@@ -696,8 +703,8 @@
         status.textContent='Article '+(again?'publié':'publié (sauvegarde de la liaison à vérifier)')+' sur le site de développement !';
       }
     }catch(error){
-      report('Publication impossible : '+String(error.message||error));
-      status.textContent='Échec de la publication. Votre brouillon reste privé.';
+      report('Publication impossible : '+String(error.message||error),true);
+      status.textContent='Échec de la publication. Le brouillon reste enregistré séparément.';
     }finally{publishButton.disabled=false;}
   });
   $('#editor-mode-edit').addEventListener('click',()=>showPreview(false));
