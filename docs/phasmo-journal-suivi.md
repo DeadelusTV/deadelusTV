@@ -183,3 +183,15 @@ Décision : la rubrique **News devient un chantier prioritaire**, après validat
 - Attention : le fichier PC n'est pas conservé après rechargement ; un rappel remplace l'image dans le document sauvegardé. La publication et les permissions serveur restent inactives. L'éditeur dépend pour l'instant de la disponibilité du CDN Tiptap (`3.31.3`) pendant les tests.
 - La lecture publique attend encore l'ancien schéma par blocs. Il faudra sécuriser l'interprétation du nouveau document riche lorsque le blog sera relié au stockage de publication.
 - Travail exclusivement sur `developpement/phasmo-v2`, sans modification de `main` ni des projets Supabase.
+
+
+### Correctif WYSIWYG après test utilisateur (26/10/2026)
+
+**Constats du test initial :** touche Entrée inactive, boutons gras/italique/alignement/listes/images sans effet, clic possible seulement sur le rectangle blanc de la première ligne au lieu de l'ensemble de la zone.
+
+- Correctif ciblé sur `developpement/phasmo-v2` : la page de test charge désormais `editor-native.js` à la place du prototype Tiptap/CDN, dont le fichier est conservé hors exécution. Aucun téléchargement externe de bibliothèques n'est nécessaire pour l'éditeur.
+- CSS corrigé pour que `#wys-editor.tiptap` et non un descendant hypothétique occupe la hauteur, prenne le focus et accepte les clics sur toute la surface.
+- Commandes de mise en forme via fonctions natives du navigateur pour la démonstration : **limitation** importante, `document.execCommand` est déprécié. La future version destinée à la publication devra revenir à un éditeur maintenu correctement bundlé et testé en navigateur.
+- Le système conserve le format de brouillon JSON, la sauvegarde locale, la lecture des anciens brouillons, l'aperçu et l'export. Les images PC restent temporaires. Le bouton Publier reste désactivé.
+- Une duplication de versions internes de ProseMirror constitue une **cause possible**, déjà documentée par ses mainteneurs pour des symptômes similaires lors de l'utilisation de CDN ; sans trace console de ce navigateur, ne pas la présenter comme certaine.
+- Correctifs de code vérifiés statiquement et par tests de conversion, mais **régression interactive dans le navigateur encore à confirmer**. Aucune modification de `main` ou des projets Supabase.
