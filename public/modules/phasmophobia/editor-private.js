@@ -20,7 +20,7 @@
   const imageCache=new Map();
   let verifiedUserId=null;
   const imagePath=ref=>{
-    if(typeof ref!=='string'||!/^phasmo-media:[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\/[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(png|jpg|webp)$/.test(ref))return null;
+    if(typeof ref!=='string'||!/^phasmo-media:[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\/[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(png|jpg|webp|gif)$/.test(ref))return null;
     return ref.slice('phasmo-media:'.length);
   };
 
