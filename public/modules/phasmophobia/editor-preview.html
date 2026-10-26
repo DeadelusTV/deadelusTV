@@ -85,8 +85,8 @@
             </label>
             <div class="phasma-editor-media-or" aria-hidden="true">ou</div>
             <label class="phasma-editor-field">Choisir une image sur votre ordinateur
-              <input id="editor-cover-upload" type="file" accept="image/png,image/jpeg,image/webp">
-              <span class="phasma-editor-hint">Aperçu local : PNG, JPEG ou WebP, maximum 2 Mo. Le fichier n'est pas encore enregistré sur le serveur.</span>
+              <input id="editor-cover-upload" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+              <span class="phasma-editor-hint">Aperçu local : PNG, JPEG, GIF animé ou WebP animé, maximum 10 Mo. Le fichier n'est pas encore enregistré sur le serveur.</span>
             </label>
             <div id="editor-cover-preview" class="phasma-editor-cover-preview" role="status" aria-live="polite"></div>
           </div>
@@ -124,14 +124,15 @@
             <span class="phasma-wysiwyg-toolbar-divider" aria-hidden="true"></span>
             <button type="button" id="wys-image-pc" title="Insérer une image depuis le PC">+ Image PC</button>
             <button type="button" id="wys-image-url" title="Insérer une image via URL HTTPS">+ Image URL</button>
+            <button type="button" id="wys-video-youtube" title="Insérer une vidéo YouTube ou un Short">+ Vidéo YouTube</button>
             <span class="phasma-wysiwyg-toolbar-divider" aria-hidden="true"></span>
             <button type="button" data-format="undo" aria-label="Annuler" title="Annuler (Ctrl+Z)">↶</button>
             <button type="button" data-format="redo" aria-label="Rétablir" title="Rétablir (Ctrl+Y)">↷</button>
           </div>
-          <input id="wys-image-file" type="file" accept="image/jpeg,image/png,image/webp" hidden aria-label="Sélectionner une image à insérer">
+          <input id="wys-image-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden aria-label="Sélectionner une image à insérer">
           <div id="wys-editor" class="phasma-wysiwyg-editor" aria-label="Zone de rédaction de l'article"></div>
         </div>
-        <p class="phasma-wysiwyg-hint">Astuce : collez directement votre texte depuis Discord. Vous pouvez aussi coller une image depuis le presse-papiers, ou la déposer dans le document.</p>
+        <p class="phasma-wysiwyg-hint">Astuce : collez du texte Discord et insérez des images GIF/WebP animées depuis leur fichier original ou leur URL. Le presse-papiers peut figer une animation. Vous pouvez aussi intégrer des liens YouTube.</p>
         <p id="wys-editor-error" class="phasma-editor-image-error" role="alert" hidden></p>
       </div>
       <div class="phasma-editor-bottom">
