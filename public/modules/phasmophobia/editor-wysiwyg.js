@@ -32,6 +32,10 @@
     if (mode === 'image' && /^assets\/phasmo-news\/[a-zA-Z0-9/_-]+\.(?:png|jpg|jpeg|webp)$/i.test(candidate) && !candidate.includes('..')) {
       return '../../' + candidate;
     }
+    // Les chemins du vieux prototype ont déjà parfois un préfixe relatif.
+    if (mode === 'image' && /^\.\.\/\.\.\/assets\/phasmo-news\/[a-zA-Z0-9/_-]+\.(?:png|jpg|jpeg|webp)$/i.test(candidate)) {
+      return candidate;
+    }
     if (mode === 'image' && candidate.startsWith('blob:') && temporary.has(candidate)) return candidate;
     try {
       const u = new URL(candidate);
