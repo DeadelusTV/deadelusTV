@@ -13,6 +13,7 @@
   const status = $('#editor-save-status'), errorBox = $('#wys-editor-error');
   if (!root || !toolbar || !status || !errorBox) return;
 
+  const BACKEND = window.PhasmoDraftBackend || null;
   const KEY = 'deadelustv.phasmo.editor.wysiwyg.v1';
   const LEGACY = 'deadelustv.phasmo.editor.demo.v1';
   const MAX_DRAFTS = 40, MAX_IMAGE = 2 * 1024 * 1024;
@@ -118,13 +119,20 @@
   const current=()=>drafts.find(d=>d.id===selected);
   function load(){
     try{
+      if (BACKEND) {
+        const incoming=BACKEND.initial;
+        if(!incoming||!Array.isArray(incoming.drafts))throw new Error('Brouillons serveur non initialisés');
+        drafts=incoming.drafts.slice(0,MAX_DRAFTS).map(x=>readDraft(x)).filter(Boolean);
+        selected=incoming.selectedId;
+      }else{
       const modern=localStorage.getItem(KEY);
       const data=JSON.parse(modern||localStorage.getItem(LEGACY)||'null');
       if(Array.isArray(data?.drafts)){
         drafts=data.drafts.slice(0,MAX_DRAFTS).map(x=>readDraft(x,!modern)).filter(Boolean);
         selected=data.selectedId;
       }
-    }catch{report('Anciennes sauvegardes locales illisibles.');}
+      }
+    }catch(err){report(BACKEND?'Brouillons serveur non disponibles : '+String(err.message||err):'Anciennes sauvegardes locales illisibles.');}
     if(!drafts.length)drafts=[newDraft()];
     if(!current())selected=drafts[0].id;
   }
@@ -259,10 +267,23 @@
   }
   function store(){
     clearTimeout(timer);timer=null;
+    if (BACKEND) {
+      const d=current();
+      if(!d)return Promise.resolve();
+      const payload={...d,doc:cleanDoc(d.doc,true)};
+      status.textContent='Sauvegarde du brouillon sur Supabase…';
+      return BACKEND.save(payload).then(()=>{
+        if(current()?.id===payload.id)status.textContent='Brouillon enregistré sur Supabase · images du PC temporaires';
+      }).catch(err=>{
+        status.textContent='ERREUR : brouillon non sauvegardé. Utilisez « Exporter le brouillon ».';
+        report('Sauvegarde distante refusée : '+String(err?.message||err));
+      });
+    }
     try{
       localStorage.setItem(KEY,JSON.stringify({selectedId:selected,drafts:drafts.map(d=>({...d,doc:cleanDoc(d.doc,true)}))}));
       status.textContent='Texte enregistré localement · images du PC temporaires';
     }catch{status.textContent='Stockage local impossible : exportez votre article.';}
+    return Promise.resolve();
   }
   function changed(){
     const d=current();if(!d)return;
@@ -500,6 +521,9 @@
     if(!d||!confirm('Supprimer le brouillon « '+(d.title||'sans titre')+' » ?'))return;
     drafts=drafts.filter(x=>x.id!==d.id);
     if(!drafts.length)drafts=[newDraft()];
+    if(BACKEND){
+      BACKEND.remove(d.id).catch(err=>report('Suppression serveur refusée : '+String(err.message||err)));
+    }
     showDraft(drafts[0].id);
   });
   $('#editor-export').addEventListener('click',()=>{
@@ -514,6 +538,14 @@
     a.href=src;a.download=(slugify(d.slug)||'brouillon-phasmo')+'.json';a.click();
     setTimeout(()=>URL.revokeObjectURL(src),1000);
     status.textContent='Brouillon exporté, non publié.';
+  });
+  const saveButton=$('#editor-save-now');
+  if(saveButton)saveButton.addEventListener('click',async()=>{
+    const d=current();
+    if(!d)return;
+    d.doc=readEditor();
+    saveButton.disabled=true;
+    try{await store();}finally{saveButton.disabled=false;}
   });
   window.addEventListener('pagehide',()=>{const d=current();if(d)d.doc=readEditor();if(timer)store();});
   root.setAttribute('contenteditable','true');
