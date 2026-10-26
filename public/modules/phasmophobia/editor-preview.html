@@ -24,7 +24,8 @@
 <div class="phasma-editor-warning" role="note">
   <strong>Éditeur de démonstration.</strong>
   Les brouillons restent uniquement dans ce navigateur. Rien n'est envoyé sur le site ou sur Supabase.
-  Les images chargées depuis votre ordinateur sont temporaires et devront être ajoutées à nouveau après fermeture.
+  Les images choisies depuis votre PC servent uniquement à l'aperçu et devront être ajoutées à nouveau après fermeture.
+  Vous pouvez également coller une URL HTTPS d'image ; elle ne sera pas importée sur notre serveur à ce stade.
 </div>
 <div class="phasma-editor-shell">
   <aside class="phasma-editor-sidebar" aria-label="Mes brouillons de démonstration">
@@ -73,14 +74,20 @@
             <input name="slug" data-field="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" placeholder="nom-de-l-article">
             <span class="phasma-editor-hint">L'identifiant est proposé automatiquement à partir du titre. Modifiable avant publication.</span>
           </label>
-          <label class="phasma-editor-field phasma-editor-field--wide">Chemin de l'image de couverture (facultatif)
-            <input name="cover" data-field="cover" placeholder="assets/phasmo-news/couverture.webp">
-            <span class="phasma-editor-hint">Pour le futur système de publication. Le chemin doit correspondre à une image autorisée sur le site.</span>
-          </label>
-          <label class="phasma-editor-field phasma-editor-field--wide">Essayer une couverture depuis votre ordinateur
-            <input id="editor-cover-upload" type="file" accept="image/png,image/jpeg,image/webp">
-            <span class="phasma-editor-hint">Aperçu temporaire seulement. Maximum 2 Mo, formats PNG/JPEG/WebP.</span>
-          </label>
+          <div class="phasma-editor-media-group phasma-editor-field--wide">
+            <h3>Image de couverture <small>(facultatif)</small></h3>
+            <p>Deux possibilités : coller l'adresse d'une image ou choisir un fichier sur votre PC.</p>
+            <label class="phasma-editor-field">Coller l'URL d'une image
+              <input name="cover" data-field="cover" placeholder="https://exemple.com/image.webp" spellcheck="false">
+              <span class="phasma-editor-hint">Lien direct HTTPS, sans téléchargement manuel. Les anciens chemins <code>assets/phasmo-news/...</code> restent utilisables.</span>
+            </label>
+            <div class="phasma-editor-media-or" aria-hidden="true">ou</div>
+            <label class="phasma-editor-field">Choisir une image sur votre ordinateur
+              <input id="editor-cover-upload" type="file" accept="image/png,image/jpeg,image/webp">
+              <span class="phasma-editor-hint">Aperçu local : PNG, JPEG ou WebP, maximum 2 Mo. Le fichier n'est pas encore enregistré sur le serveur.</span>
+            </label>
+            <div id="editor-cover-preview" class="phasma-editor-cover-preview" role="status" aria-live="polite"></div>
+          </div>
         </div>
       </div>
 
@@ -103,7 +110,7 @@
     </section>
 
     <section id="editor-preview" aria-label="Aperçu de l'article" hidden>
-      <p class="phasma-editor-preview-hint">Aperçu local, non publié. Les images temporaires disparaîtront après fermeture de la page.</p>
+      <p class="phasma-editor-preview-hint">Aperçu local, non publié. Les fichiers choisis sur votre PC sont temporaires ; les images externes restent hébergées par leur site d'origine.</p>
       <div id="editor-preview-article" class="phasma-news-reader"></div>
     </section>
   </main>
