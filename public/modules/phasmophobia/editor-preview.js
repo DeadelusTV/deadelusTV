@@ -244,7 +244,27 @@
       }
       section.append(fields);
       blocksRoot.append(section);
+
+      // Insérer un média précisément ENTRE deux paragraphes, sans devoir
+      // l'ajouter à la fin puis le déplacer bloc par bloc.
+      const insertion = node('div', 'phasma-editor-inline-insert');
+      insertion.setAttribute('role', 'group');
+      insertion.setAttribute('aria-label', 'Insérer un bloc après le bloc ' + (i + 1));
+      insertion.append(
+        node('span', 'phasma-editor-inline-insert-label', 'Insérer juste après :'),
+        action('+ Texte ici', 'insertAfter', block.id + ':paragraph'),
+        action('+ Image ici', 'insertAfter', block.id + ':image')
+      );
+      blocksRoot.append(insertion);
     });
+  }
+  function focusBlock(blockId) {
+    const section = Array.from(blocksRoot.querySelectorAll('[data-block]'))
+      .find(element => element.dataset.block === blockId);
+    if (!section) return;
+    const field = section.querySelector('[data-block-field="text"], [data-block-field="src"], textarea, input');
+    if (field) field.focus({ preventScroll: true });
+    section.scrollIntoView({ block: 'nearest', behavior: 'auto' });
   }
   function showDraft(id) {
     if (saveTimer) persist();
@@ -360,14 +380,36 @@
   document.querySelector('.phasma-editor-add').addEventListener('click', event => {
     const b = event.target.closest('[data-add]');
     if (!b || !BLOCK_TYPES.has(b.dataset.add)) return;
-    current().blocks.push(plainBlock(b.dataset.add));
+    const d = current();
+    if (!d || d.blocks.length >= 150) {
+      status.textContent = 'Limite de 150 blocs atteinte pour ce brouillon.';
+      return;
+    }
+    d.blocks.push(plainBlock(b.dataset.add));
     changed(); renderBlocks();
     blocksRoot.lastElementChild?.querySelector('textarea,input')?.focus();
   });
   blocksRoot.addEventListener('click', event => {
     const d = current();
+    if (!d) return;
+    const insert = event.target.closest('[data-insert-after]');
     const remove = event.target.closest('[data-remove-block]');
     const move = event.target.closest('[data-move]');
+    if (insert) {
+      // Le dernier deux-points sépare le type du bloc et son identifiant.
+      const value = insert.dataset.insertAfter;
+      const separator = value.lastIndexOf(':');
+      const afterId = value.slice(0, separator);
+      const type = value.slice(separator + 1);
+      const index = d.blocks.findIndex(block => block.id === afterId);
+      if (index < 0 || !['paragraph', 'image'].includes(type) || d.blocks.length >= 150) return;
+      const newBlock = plainBlock(type);
+      d.blocks.splice(index + 1, 0, newBlock);
+      changed();
+      renderBlocks();
+      focusBlock(newBlock.id);
+      return;
+    }
     if (remove) {
       const index = d.blocks.findIndex(b => b.id === remove.dataset.removeBlock);
       if (index < 0 || !confirm('Supprimer ce bloc du brouillon local ?')) return;
