@@ -14,6 +14,15 @@
   const login=$('#editor-private-login'), retry=$('#editor-private-retry'), logout=$('#editor-private-logout');
   const message=$('#editor-private-message');
   let client=null, booted=false, requestId=0;
+  const IMAGE_BUCKET='phasmo-news-draft-images';
+  const MAX_IMAGE_SIZE=2*1024*1024;
+  const IMAGE_TYPES={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'};
+  const imageCache=new Map();
+  let verifiedUserId=null;
+  const imagePath=ref=>{
+    if(typeof ref!=='string'||!/^phasmo-media:[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\/[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(png|jpg|webp)$/.test(ref))return null;
+    return ref.slice('phasmo-media:'.length);
+  };
 
   function update(messageText, options = {}) {
     message.textContent = messageText;
@@ -39,6 +48,35 @@
       return result;
     }
     return {
+      validImageRef:ref=>!!imagePath(ref),
+      async uploadImage(file){
+        if(!verifiedUserId||!IMAGE_TYPES[file?.type]||!file.size||file.size>MAX_IMAGE_SIZE)
+          throw new Error('Image refusée : PNG, JPEG ou WebP, 2 Mo maximum.');
+        const path=verifiedUserId+'/'+crypto.randomUUID()+'.'+IMAGE_TYPES[file.type];
+        const {error}=await client.storage.from(IMAGE_BUCKET).upload(path,file,{
+          contentType:file.type,upsert:false,cacheControl:'3600'
+        });
+        if(error)throw new Error('Envoi de l’image refusé par Supabase ('+(error.statusCode||error.message||'erreur')+').');
+        const ref='phasmo-media:'+path;
+        // Affichage local après l'envoi, puis rechargement possible depuis
+        // le bucket privé lors du prochain F5.
+        imageCache.set(ref,Promise.resolve(URL.createObjectURL(file)));
+        return ref;
+      },
+      imageUrl(ref){
+        const path=imagePath(ref);
+        if(!path)return Promise.reject(new Error('Référence image invalide.'));
+        if(!imageCache.has(ref)){
+          const job=(async()=>{
+            const {data,error}=await client.storage.from(IMAGE_BUCKET).download(path);
+            if(error||!data)throw new Error('Lecture de l’image privée impossible.');
+            return URL.createObjectURL(data);
+          })();
+          imageCache.set(ref,job);
+          job.catch(()=>imageCache.delete(ref));
+        }
+        return imageCache.get(ref);
+      },
       initial:{
         drafts:rows.filter(item=>item?.payload&&typeof item.payload==='object').map(item=>item.payload),
         selectedId:rows[0]?.payload?.id||null
@@ -94,6 +132,7 @@
         return;
       }
       const user=data.user;
+      verifiedUserId=user.id;
       const {data:role,error:roleError}=await client.from('phasmo_news_editors')
         .select('enabled').eq('user_id',user.id).maybeSingle();
       if(seq!==requestId)return;
@@ -170,6 +209,8 @@
     client.auth.onAuthStateChange((event)=>{
       if(event==='SIGNED_OUT'){
         requestId++;
+        verifiedUserId=null;
+        imageCache.clear();
         gate.hidden=false;account.hidden=true;content.hidden=true;
         update('Session terminée. Reconnectez-vous avec Twitch.',{login:true});
       }
