@@ -517,9 +517,10 @@
     setTimeout(()=>URL.revokeObjectURL(url),1000);
     status.textContent='Brouillon exporté. Aucun article n’a été publié.';
   });
+  // pagehide peut conduire au cache arrière/avant (BFCache).
+  // Ne pas détruire les éditeurs : le navigateur peut restaurer cette même page.
   window.addEventListener('pagehide',()=>{
-    syncFromEditor();if(saveTimer)persist();
-    for(const url of temporary)URL.revokeObjectURL(url);
-    editor.destroy();previewEditor.destroy();
+    syncFromEditor();
+    if(saveTimer)persist();
   });
 })();
