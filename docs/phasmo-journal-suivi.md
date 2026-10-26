@@ -156,3 +156,12 @@ Décision : la rubrique **News devient un chantier prioritaire**, après validat
 - Les identités Twitch/Discord sont prévues au niveau d'un profil DeadelusTV commun, avec le rôle éditorial `phasmo_news_editor` strictement limité au blog.
 - Attention : Supabase héberge actuellement deux projets distincts, Crewmong Us et TCG ; les connexions ne sont pas automatiquement communes. L'architecture de compte unifié reste à mettre en œuvre avant d'activer le blog.
 - Ne touche pas à `main` ni aux bases Supabase.
+
+
+### Images dans l'éditeur de blog (26/10/2026)
+
+- Validation utilisateur : les illustrations **ne doivent pas nécessiter une manipulation du dossier `assets`**. Deux choix dans l'interface : importer depuis le PC ou coller une URL directe d'image (HTTPS), autant pour la couverture que pour les images au fil des paragraphes.
+- Le prototype `editor-preview.html/js/css` accepte désormais les deux méthodes, plus les anciens chemins `assets/phasmo-news/...` pour compatibilité.
+- Une image PC donne un aperçu temporaire, sans envoi serveur et sans inclusion dans l'export JSON. Une image externe est prévisualisée directement par le navigateur et son URL reste dans le brouillon local, mais elle peut être bloquée par le site source.
+- **Pour la publication réelle** : héberger les fichiers et les images autorisées via un stockage contrôlé, sans faire dépendre les articles de liens externes ni permettre de récupérer n'importe quelle URL côté serveur. Règles d'upload, droits et sécurité à définir lors du raccordement.
+- Aucun changement dans `main`, aucune modification de Supabase.
