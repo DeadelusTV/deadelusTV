@@ -251,3 +251,11 @@ Décision : la rubrique **News devient un chantier prioritaire**, après validat
 - Rubrique News `public/index.html` enrichie d'un petit lien de connexion Twitch et du bouton « Gérer les actualités » ; logique `public/modules/phasmophobia/news-access.js` + CSS. Bouton d'édition rendu **seulement après validation côté base** de `phasmo_news_editors.enabled` pour `auth.uid()`.
 - 11/11 scénarios JavaScript simulés validés (anon, viewer non autorisé, rédacteur, callback, logout). Pas encore de test OAuth réel ni de publication.
 - Environnement de présentation Cloudflare déjà existant `https://deadelustv.pages.dev`, branche `preview/presentation-deadelus` : la branche de démo est en retard sur les nouveaux modules Phasmo ; **pas de fusion ni de remplacement global effectué**. `main` non modifiée.
+
+
+### Premier test réel par l'administratrice sur Cloudflare (26/10/2026)
+
+- **Retour utilisatrice positif :** la connexion Twitch sur l'URL de développement Cloudflare a fonctionné, avec accès effectif à l'éditeur depuis son compte administratrice.
+- L'éditeur WYSIWYG a été testé avec succès, notamment le **collage direct d'une image copiée** ; l'**export d'un brouillon au format JSON** sur le PC fonctionne.
+- **Portée précise de la validation :** l'authentification réelle, le contrôle d'accès administrateur, l'ouverture de l'éditeur, le collage visuel et l'export local sont validés par essai utilisateur. **La persistance après F5 d'un brouillon Supabase n'a pas encore été explicitement confirmée** dans ce retour ; le stockage durable des images collées n'est pas implémenté : les images du PC/presse-papiers utilisent encore des blobs temporaires et ne sont pas intégrées au JSON exporté.
+- **Suite recommandée :** vérifier création d'un brouillon, saisie de texte, clic « Enregistrer », F5 et restauration du contenu ; puis implémenter le stockage persistant des images avant de préparer la publication publique. La connexion du rédacteur mattarix_ reste à effectuer séparément.
