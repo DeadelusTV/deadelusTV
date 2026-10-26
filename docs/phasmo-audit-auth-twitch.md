@@ -73,3 +73,14 @@ Proposition de modèle à concevoir : registre dédié de permissions du site (p
 - Aucun rapprochement avec le compte e-mail de Crewmong Us, qui appartient à une **autre personne** et est hors périmètre.
 
 **Conclusion :** réutiliser l'Auth Twitch du TCG est crédible et devrait être privilégié, **sous réserve du contrôle des origines et de la session du frontend TCG**. L'accès au blog reste indépendant des permissions de modération TCG. L'étape technique suivante, à l'issue de cet audit documentaire, est l'intégration de la session Twitch commune et des permissions News dans un environnement de développement.
+
+
+## Complément : frontend TCG retrouvé (26/10/2026)
+
+Après l'audit initial, le vrai dépôt privé **`Yekelle/TCG`**, branche `develop`, a été retrouvé et consulté. `public/auth.js` établit un client du projet Supabase TCG via `@supabase/supabase-js@2.76.1` et une **connexion Twitch OAuth PKCE** : `flowType: 'pkce'`, `detectSessionInUrl: true`, `persistSession: true`, `autoRefreshToken: true`. Son `redirectTo` normal est `window.location.origin + '/'`. Il expose l'état de la connexion via `tcg:auth-change` et utilise `tcg_is_admin()` pour l'administration TCG. Une version d'essai supplémentaire du flux Twitch pour le diffuseur comporte des scopes spéciaux, **à ne pas copier pour un rédacteur News**.
+
+Le `wrangler.jsonc` du TCG configure les **Cloudflare Workers Static Assets**, qui servent uniquement d'environnement de **développement TCG** selon la précision de la responsable du site. L'intégration finale doit se faire sur le site principal DeadelusTV hébergé par OVH, pas en créant un site de production TCG séparé. L'adresse exacte de l'aperçu en ligne et ses URL de callback déjà autorisées n'ont pas été vérifiées ; les redirections de la rédaction devront être ajoutées sans retirer les URLs du TCG.
+
+Les documents Google Drive « TCG - Documentation et décisions », « TCG - Journal technique » et « TCG - Suivi du développement » confirment ces choix et que le frontend `Yekelle/TCG` est séparé du dépôt du portail.
+
+**Prototype de mise en accès préparé** sur `developpement/phasmo-v2` : `public/modules/phasmophobia/editor-private.html`, `editor-private.js`, `editor-private.css`, adaptation facultative de `editor-native.js` à une sauvegarde Supabase. Brouillons et ACL définis dans `docs/phasmo-news-sql-a-revoir.sql` **non appliqué**. L'accès n'est pas encore activé pour le rédacteur, et l'éditeur démo `editor-preview.html` reste fonctionnel en local.
