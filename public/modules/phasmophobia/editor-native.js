@@ -34,7 +34,7 @@
   function url(value,kind='link') {
     if(typeof value!=='string'||value.length>2048)return '';
     const text=value.trim();
-    if(kind==='image'&&/^(?:\.\.\/\.\.\/)?assets\/phasmo-news\/[a-z0-9/_-]+\.(?:png|jpg|jpeg|webp)$/i.test(text)&&!text.includes('..','../../assets/phasmo-news/'.length))
+    if(kind==='image'&&/^(?:\.\.\/\.\.\/)?assets\/phasmo-news\/[a-z0-9/_-]+\.(?:png|jpg|jpeg|webp)$/i.test(text))
       return text.startsWith('assets/')?'../../'+text:text;
     if(kind==='image'&&text.startsWith('blob:')&&tempUrls.has(text))return text;
     try{
