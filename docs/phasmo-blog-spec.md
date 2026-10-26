@@ -170,3 +170,10 @@ La publication prend un **instantané JSON validé** du brouillon privé, copie 
 Le lecteur construit des éléments DOM contrôlés, avec `textContent`/nœuds texte et attributs d'URL validés, jamais du HTML libre issu de la rédaction. Les images du bucket public sont réellement publiques dès publication : **ne pas publier de données personnelles ou de brouillon confidentiel dans un essai**.
 
 SQL et code présents sur la branche Phasmo ; vérifications mock/règles effectuées. La recette dans le navigateur réel et la phase `production` restent à valider. Prévoir ultérieurement la suppression de médias orphelins et les procédures de bascule entre canaux.
+
+
+### Médias animés et vidéos YouTube (26/10/2026)
+
+Le modèle d'article riche accepte désormais un nœud `youtube` dont `attrs.videoId` respecte strictement le format des identifiants YouTube (11 caractères alphanumériques, tiret, souligné). Le lecteur côté visiteur ne transforme **jamais** un lien arbitraire en iframe, et ne charge l'iframe depuis `www.youtube-nocookie.com` qu'après clic explicite. Cette approche évite la collecte tierce avant lecture. Le bouton de l'éditeur accepte watch, youtu.be, shorts, live, embed.
+
+Les images PNG/JPEG/WebP et GIF, y compris les GIF/WebP animés, sont acceptées jusqu'à 10 Mio par fichier dans les buckets Supabase *Phasmo uniquement*. Pas de conversion : conserver le fichier animé d'origine, et éviter les captures du presse-papiers, qui peuvent figer les images. Référence privée `phasmo-media:<UUID>/<UUID>.<extension>`, copie publique lors de la publication. Les vidéos MP4 téléversées ne sont pas incluses pour l'instant ; à étudier selon besoins.
