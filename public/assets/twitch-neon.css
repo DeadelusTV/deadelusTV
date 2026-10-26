@@ -1,5 +1,5 @@
 /* Habillage hors ligne Twitch, basé sur la maquette V5 validée le 25/10/2026.
-   Le lecteur Twitch reste intact en mode live. Polices provisoires. */
+   Le lecteur Twitch reste intact en mode live. Graduate validée le 26/10. */
 .player-shell.twitch-player:not([data-mode="live"]) {
   aspect-ratio: 853 / 480;
   min-height: 0;
@@ -37,26 +37,39 @@
 }
 .twitch-neon-title {
   position: absolute;
-  left: 51.5%;
+  left: 52%;
   top: 40.5%;
   margin: 0;
-  color: #124e9b;
-  font-family: 'Bungee Inline', Impact, 'Arial Black', sans-serif;
+  color: #0873da;
+  font-family: 'Graduate', Georgia, serif;
   text-transform: uppercase;
-  font-size: 7.6cqw;
-  font-weight: 900;
+  font-size: 8.2cqw;
+  font-weight: 400;
   line-height: 1.05;
   letter-spacing: -.012em;
   white-space: nowrap;
-  transform: translate(-50%,-50%) scaleX(.9);
+  transform: translate(-50%,-50%) scaleX(.91);
   transform-origin: center;
-  filter: drop-shadow(0 0 12px rgba(0,170,255,.55));
+  /* Rendu A : contour 2,2 px, halo 130 %, largeur 91 %. */
+  -webkit-text-stroke: 2.2px #fffaff;
+  text-shadow: 0 0 2px #f2ffff, 0 0 10.4px #00a2ff, 0 0 28.6px #0067ff;
+  filter: drop-shadow(0 0 3.9px #0f8cfa);
+}
+.twitch-neon-title::before {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  white-space: nowrap;
+  color: #056cde;
+  -webkit-text-stroke: 4.84px #0082ff;
+  filter: blur(6.5px);
 }
 .twitch-neon-title .letter {
   display: inline-block;
   white-space: pre;
-  -webkit-text-stroke: 1px #effbff;
-  text-shadow: 0 0 2px #fff,0 0 6px #22c8ff,0 0 12px #0097ff,0 0 23px #0089ff,0 0 40px #0570d2;
+  -webkit-text-stroke: inherit;
+  text-shadow: inherit;
 }
 .twitch-neon-subtitle {
   position: absolute;
