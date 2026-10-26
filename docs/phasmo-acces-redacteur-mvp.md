@@ -1,3 +1,5 @@
+> **Rédacteur désigné (26/10/2026) :** [mattarix_](https://www.twitch.tv/mattarix_) ; compte Twitch **pas encore identifié dans les identités Auth actuellement présentes** (recherche correspondance de pseudo : 0 résultat). **N'attribuer aucun droit sur la seule base du pseudo.** Faire d'abord connecter la personne à Twitch sur le portail (environnement de test), puis confirmer son UUID Supabase et attribuer exclusivement à cet UUID l'autorisation `phasmo_news_editor`. L'URL de connexion OAuth du portail doit être autorisée dans Supabase Auth avant cet essai.
+
 > **MISE À JOUR 26/10/2026 :** migration `phasmo_news_editor_single_account_private_drafts_v1` **appliquée avec succès** dans le projet Supabase TCG. Vérification : deux tables, cinq politiques RLS, 0 autorisation de rédacteur, 0 brouillon. Le SQL `docs/phasmo-news-sql-a-revoir.sql` est désormais l'archive du SQL préparé initialement ; **ne pas le réexécuter**. Il reste à configurer la Redirect URL OAuth et à attribuer manuellement le droit à l'UUID Twitch exact après première connexion. **Aucun test OAuth réel ni test RLS avec plusieurs sessions encore effectué.**
 
 # Première mise en accès du rédacteur Phasmophobia — 26 octobre 2026
@@ -44,3 +46,11 @@ Les fichiers livrés ne suffisent pas à autoriser le rédacteur tant que les r�
 - Vérifications statiques du chargement différé et du code de permissions.
 - 9/9 simulations JavaScript : utilisateur anonyme, compte non habilité, utilisateur habilité, sauvegarde et suppression via l'API. **Simulations, pas essais réels de connexion / RLS.**
 - Aucune création de compte, aucun changement Supabase, aucune activation de rôle, aucun déploiement `main` dans ce lot.
+
+## Accès direct depuis la rubrique News (préparé dans la branche Phasmo)
+
+- Le portail `public/index.html` intègre `modules/phasmophobia/news-access.js`, chargé avec la rubrique News. Une connexion Twitch discrète est proposée dans cette rubrique ; **« Gérer les actualités » n'est visible que si le compte connecté possède réellement le rôle News**. Les autres modérateurs/lecteurs n'obtiennent pas ce bouton.
+- La connexion Twitch sur le portail et celle de `editor-private.html` emploient le **même projet Supabase et le même stockage de session** si les deux pages sont diffusées sur la même origine. Après authentification, le rédacteur reste connecté en passant à l'éditeur.
+- Développement et tests statiques sur `developpement/phasmo-v2` : 11/11 scénarios JS simulés ont validé l'affichage connecté/non connecté, l'interdiction d'accès à un non-rédacteur, le retour OAuth, la déconnexion et le lien direct. Ces tests **ne prouvent pas encore** le fonctionnement du vrai callback ni des politiques en navigateur.
+- Démonstration existante : `https://deadelustv.pages.dev`, publiée depuis `preview/presentation-deadelus` et **non synchronisée avec les nouveaux fichiers Phasmo**. Ne pas utiliser la démo actuelle comme preuve que ce lien est déjà accessible ; intégrer ces changements sélectivement, sans écraser le reste de la présentation. Aucun changement de `main`.
+- Lorsqu'une version de test sera effectivement déployée sur ce domaine, ajouter **les URL réellement servies** à Authentication → URL Configuration → Redirect URLs, par exemple `https://deadelustv.pages.dev/` et `https://deadelustv.pages.dev/modules/phasmophobia/editor-private.html`. Les laisser en parallèle avec les URL existantes du TCG. Confirmer le chemin exact du callback avant l'essai.
