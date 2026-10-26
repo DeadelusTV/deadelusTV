@@ -594,8 +594,10 @@
   $('#editor-export').addEventListener('click',()=>{
     const d=current();if(!d)return;
     d.doc=readEditor();store();
-    const data={schemaVersion:2,status:'draft',localPrototype:true,
-      note:'Document JSON en brouillon uniquement. Images PC à réinsérer, aucune publication effectuée.',
+    const data={schemaVersion:2,status:'draft',localPrototype:!BACKEND,
+      note:BACKEND
+        ?'Brouillon privé, non publié. Les images privées sont référencées par chemin Supabase ; le fichier JSON ne contient pas leurs octets et ne permet pas une consultation hors connexion.'
+        :'Document JSON en brouillon uniquement. Images PC à réinsérer, aucune publication effectuée.',
       article:{slug:d.slug,title:d.title,excerpt:d.excerpt,publishedAt:d.publishedAt,
         translator:d.translator,sourceUrl:d.sourceUrl,cover:d.cover,document:cleanDoc(d.doc,true)}};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
