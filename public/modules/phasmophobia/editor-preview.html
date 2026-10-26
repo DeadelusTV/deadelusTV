@@ -10,7 +10,8 @@
 <link rel="stylesheet" href="../../assets/styles.css">
 <link rel="stylesheet" href="news.css">
 <link rel="stylesheet" href="editor-preview.css">
-<script src="editor-preview.js" defer></script>
+<link rel="stylesheet" href="editor-wysiwyg.css">
+<script type="module" src="editor-wysiwyg.js"></script>
 </head>
 <body class="phasma-editor-demo" id="page-phasmophobia">
 <a class="phasma-editor-skip" href="#editor-main">Aller à la rédaction</a>
@@ -24,8 +25,8 @@
 <div class="phasma-editor-warning" role="note">
   <strong>Éditeur de démonstration.</strong>
   Les brouillons restent uniquement dans ce navigateur. Rien n'est envoyé sur le site ou sur Supabase.
-  Les images choisies depuis votre PC servent uniquement à l'aperçu et devront être ajoutées à nouveau après fermeture.
-  Vous pouvez également coller une URL HTTPS d'image ; elle ne sera pas importée sur notre serveur à ce stade.
+  Les textes sont sauvegardés dans ce navigateur. Les images choisies ou collées depuis votre PC restent temporaires et devront être réinsérées après rechargement.
+  Les URL d'images restent des liens externes : rien n'est encore publié ni envoyé sur Supabase.
 </div>
 <div class="phasma-editor-shell">
   <aside class="phasma-editor-sidebar" aria-label="Mes brouillons de démonstration">
@@ -91,20 +92,46 @@
         </div>
       </div>
 
-      <div class="phasma-editor-panel">
+      <div class="phasma-editor-panel phasma-wysiwyg-panel">
         <div class="phasma-editor-section-heading">
-          <div><h2>Contenu de l'article</h2>
-            <p>Composez l'article dans l'ordre souhaité : texte, texte, image, texte…</p>
-            <p class="phasma-editor-insert-help">Pour placer une illustration au milieu du récit, cliquez sur <strong>« + Image ici »</strong> juste sous le paragraphe voulu. Le texte continuera naturellement après l'image.</p>
+          <div>
+            <h2>Contenu de l'article</h2>
+            <p>Écrivez comme dans un document : mettez en forme le texte, insérez une image et reprenez votre rédaction juste en dessous.</p>
           </div>
         </div>
-        <div id="editor-blocks" class="phasma-editor-blocks"></div>
-        <div class="phasma-editor-add" aria-label="Insérer un bloc">
-          <button type="button" data-add="paragraph" class="phasma-editor-btn">+ Paragraphe</button>
-          <button type="button" data-add="heading" class="phasma-editor-btn">+ Intertitre</button>
-          <button type="button" data-add="list" class="phasma-editor-btn">+ Liste</button>
-          <button type="button" data-add="image" class="phasma-editor-btn">+ Image</button>
+        <div class="phasma-wysiwyg-wrapper">
+          <div id="wys-toolbar" class="phasma-wysiwyg-toolbar" role="toolbar" aria-label="Mise en forme de l'article">
+            <label class="phasma-wysiwyg-format-label">Style
+              <select id="wys-block-style" aria-label="Style du paragraphe">
+                <option value="paragraph">Texte normal</option>
+                <option value="heading-2">Titre de section</option>
+                <option value="heading-3">Sous-titre</option>
+              </select>
+            </label>
+            <span class="phasma-wysiwyg-toolbar-divider" aria-hidden="true"></span>
+            <button type="button" data-format="bold" title="Gras (Ctrl+B)" aria-label="Gras" aria-pressed="false"><strong>G</strong></button>
+            <button type="button" data-format="italic" title="Italique (Ctrl+I)" aria-label="Italique" aria-pressed="false"><em>I</em></button>
+            <button type="button" data-format="underline" title="Souligné (Ctrl+U)" aria-label="Souligné" aria-pressed="false"><u>S</u></button>
+            <span class="phasma-wysiwyg-toolbar-divider" aria-hidden="true"></span>
+            <button type="button" data-format="align-left" title="Aligner à gauche" aria-label="Aligner à gauche" aria-pressed="false">☰</button>
+            <button type="button" data-format="align-center" title="Centrer" aria-label="Centrer" aria-pressed="false">≡</button>
+            <button type="button" data-format="align-right" title="Aligner à droite" aria-label="Aligner à droite" aria-pressed="false">☷</button>
+            <span class="phasma-wysiwyg-toolbar-divider" aria-hidden="true"></span>
+            <button type="button" data-format="bullet-list" title="Liste à puces" aria-label="Liste à puces" aria-pressed="false">• Liste</button>
+            <button type="button" data-format="ordered-list" title="Liste numérotée" aria-label="Liste numérotée" aria-pressed="false">1. Liste</button>
+            <button type="button" data-format="link" title="Insérer ou modifier un lien" aria-label="Insérer un lien" aria-pressed="false">Lien</button>
+            <span class="phasma-wysiwyg-toolbar-divider" aria-hidden="true"></span>
+            <button type="button" id="wys-image-pc" title="Insérer une image depuis le PC">+ Image PC</button>
+            <button type="button" id="wys-image-url" title="Insérer une image via URL HTTPS">+ Image URL</button>
+            <span class="phasma-wysiwyg-toolbar-divider" aria-hidden="true"></span>
+            <button type="button" data-format="undo" aria-label="Annuler" title="Annuler (Ctrl+Z)">↶</button>
+            <button type="button" data-format="redo" aria-label="Rétablir" title="Rétablir (Ctrl+Y)">↷</button>
+          </div>
+          <input id="wys-image-file" type="file" accept="image/jpeg,image/png,image/webp" hidden aria-label="Sélectionner une image à insérer">
+          <div id="wys-editor" class="phasma-wysiwyg-editor" aria-label="Zone de rédaction de l'article"></div>
         </div>
+        <p class="phasma-wysiwyg-hint">Astuce : collez directement votre texte depuis Discord. Vous pouvez aussi coller une image depuis le presse-papiers, ou la déposer dans le document.</p>
+        <p id="wys-editor-error" class="phasma-editor-image-error" role="alert" hidden></p>
       </div>
       <div class="phasma-editor-bottom">
         <button type="button" id="editor-delete" class="phasma-editor-btn phasma-editor-btn--danger">Supprimer ce brouillon</button>
@@ -113,8 +140,12 @@
     </section>
 
     <section id="editor-preview" aria-label="Aperçu de l'article" hidden>
-      <p class="phasma-editor-preview-hint">Aperçu local, non publié. Les fichiers choisis sur votre PC sont temporaires ; les images externes restent hébergées par leur site d'origine.</p>
-      <div id="editor-preview-article" class="phasma-news-reader"></div>
+      <p class="phasma-editor-preview-hint">Aperçu local, non publié. Les images du PC sont temporaires ; les URL externes ne sont pas importées sur le site.</p>
+      <div id="editor-preview-article" class="phasma-news-reader">
+        <div id="wys-preview-heading"></div>
+        <div id="wys-preview-body" class="phasma-wysiwyg-preview-body"></div>
+        <div id="wys-preview-source"></div>
+      </div>
     </section>
   </main>
 </div>
