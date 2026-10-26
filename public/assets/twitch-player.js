@@ -50,6 +50,7 @@
       neonTitle.className = 'twitch-neon-title';
       const neonText = String(config.offlineTitle || 'HORS LIGNE');
       neonTitle.setAttribute('aria-label', neonText);
+      neonTitle.dataset.text = neonText; // double de halo bleu derrière les lettres
       for (const character of neonText) {
         const letter = document.createElement('span');
         letter.className = 'letter';
