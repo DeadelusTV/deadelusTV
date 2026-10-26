@@ -492,7 +492,9 @@
     const cover=coverFiles.get(d.id);
     if(cover){URL.revokeObjectURL(cover);temporary.delete(cover);coverFiles.delete(d.id);}
     if(!drafts.length)drafts=[newDraft()];
-    selectedId=drafts[0].id;showDraft(selectedId);
+    // Ne pas transférer accidentellement le contenu de l'article supprimé
+    // vers le brouillon sélectionné ensuite.
+    showDraft(drafts[0].id, true);
   });
   $('#editor-export').addEventListener('click',()=>{
     syncFromEditor();persist();
