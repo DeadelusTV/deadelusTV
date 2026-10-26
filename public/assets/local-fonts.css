@@ -1,0 +1,27 @@
+/* Polices libres auto-hébergées, utilisées par l'écran néon.
+   Origine : Fontsource, subsets latin WOFF2 ; licences SIL OFL :
+   assets/fonts/OFL-Bungee-Inline.txt et OFL-Great-Vibes.txt.
+   Academy n'est PAS distribuée : licence web/commerciale à confirmer. */
+@font-face {
+  font-family: 'Bungee Inline';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/bungee-inline-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Great Vibes';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/great-vibes-latin-400-normal.woff2') format('woff2');
+}
+
+/* Graduate, titre néon HORS LIGNE, licence SIL OFL 1.1. */
+@font-face {
+  font-family: 'Graduate';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/graduate-latin-400-normal.woff2') format('woff2');
+}
