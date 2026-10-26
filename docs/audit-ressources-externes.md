@@ -33,6 +33,22 @@ Ne pas confondre : (a) cookie/traceur facultatif nécessitant potentiellement un
 6. **Twitch en direct :** consentement accepté, puis révocation pendant la lecture ; vérifier destruction de l'iframe et absence de nouvelles requêtes du lecteur après retrait. L'endpoint OVH doit d'abord être raccordé pour reproduire cette partie en conditions réelles.
 7. **Comparer avec `main`** sans confondre comportement en production et branche en cours. Noter les fournisseurs, usages, cookies effectifs, durée et destination des données.
 
+## Recette manuelle Chrome du 26 octobre 2026 — navigation anonyme avec refus
+
+**Rapport utilisateur, environnement :** Chrome en navigation privée, extensions de blocage désactivées pour les essais, site local Live Server `http://127.0.0.1:5500`, branche `developpement/legal-et-consentement`. Ces résultats portent sur **ce scénario**, pas sur le site OVH en production. Le service `/api/twitch-status` retourne 404 en local tant qu'il n'est pas raccordé.
+
+- **Accueil :** bandeau « Lecture du live Twitch » visible à la première visite, boutons « Refuser » et « Accepter » présentés ; après « Refuser », aucune requête vers le lecteur externe Twitch observée dans le filtre Réseau. Seuls les fichiers Twitch *locaux* et le contrôle de statut 404 y apparaissaient. Un retour/rechargement de l'accueil n'a pas rouvert spontanément le bandeau.
+- **Google Fonts :** requête HTTP 200 vers `fonts.googleapis.com`, depuis `public/index.html`.
+- **Miniatures :** requête HTTP 200 vers `i.ytimg.com` sur l'accueil et plusieurs miniatures `maxresdefault.jpg` ajoutées en visitant les Shorts Phasmophobia.
+- **Crew'mong Us :** requêtes Supabase publiques `players`, `sessions`, `games`, `session_participants`, `records` renvoyant 200 ; pas de nouvelles requêtes Supabase constatées pendant la navigation interne. Au rechargement de la page Joueurs, plusieurs images de profil ont été téléchargées depuis le domaine `static-cdn.jtvnw.net` de Twitch. L'utilisation des images Twitch est **intentionnelle**. Les URLs précises doivent rester actualisées si Twitch change leurs chemins.
+- **Stockages :** aucune entrée cookie visible pour `127.0.0.1` pendant les essais ; `localStorage` contient uniquement `deadelustv_twitch_consent_v1` avec un choix de refus et sa date ; `sessionStorage` contient `IsThisFirstTime_Log_From_LiveServer` (environnement local).
+- **Pavillon Noir, TCG et pages légales :** après navigation dans ces rubriques, aucun cookie ou stockage supplémentaire observé par l'utilisatrice dans les panneaux consultés. Aucun changement de la liste des stockages en revenant à l'accueil.
+- **Gestion des cookies :** le bouton du footer rouvre correctement le panneau avec « Accepter » et « Refuser » après mémorisation du choix ; le choix ne se redemande pas spontanément au simple rechargement.
+
+**Portée exacte :** recette manuelle partielle **validée pour la navigation anonyme avec refus** ; les captures et observations ne prouvent pas l'absence universelle de cookies tiers ni de connexions réseau sur toutes les vues.
+
+**Encore en attente :** simulation/recette d'un vrai live après raccordement du serveur OVH, consentement accepté avec lecteur puis révocation, connexion réelle Crew'mong Us et tests de conformité/mentions définitives. **Aucun changement du site public ni du code fonctionnel dans cette mise à jour documentaire.**
+
 ## Suites suggérées (non décidées, non développées)
 
 - Étudier l'**hébergement local de Bungee Inline et Great Vibes**, licences vérifiées, pour éviter les contacts avec Google Fonts sur chaque page tout en conservant à l'identique notre néon.
