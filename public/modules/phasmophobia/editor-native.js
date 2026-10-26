@@ -687,7 +687,7 @@
     const fields=[
       ['title','Indiquez le titre de l’article.',v=>!!v.trim()&&v.trim().length<=160],
       ['excerpt','Indiquez un résumé pour la vignette.',v=>!!v.trim()&&v.trim().length<=350],
-      ['publishedAt','Choisissez une date de publication.',v=>/^\\d{4}-\\d{2}-\\d{2}$/.test(v)],
+      ['publishedAt','Choisissez une date de publication.',v=>/^\d{4}-\d{2}-\d{2}$/.test(v)],
       ['sourceUrl','Indiquez le lien HTTPS de l’annonce originale Kinetic Games (rubrique /news).',v=>{
         try{
           const u=new URL(v.trim());
@@ -753,6 +753,56 @@
     }
     showDraft(drafts[0].id);
   });
+  const importButton=$('#editor-import');
+  const importFile=$('#editor-import-file');
+  if(importButton&&importFile){
+    importButton.addEventListener('click',()=>importFile.click());
+    importFile.addEventListener('change',async event=>{
+      const file=event.target.files?.[0];
+      importFile.value='';
+      if(!file)return;
+      importButton.disabled=true;
+      try{
+        if(!/\.json$/i.test(file.name)&&file.type!=='application/json')
+          throw new Error('Sélectionnez un fichier .json exporté depuis le bureau de rédaction.');
+        if(file.size===0||file.size>1200000)
+          throw new Error('Fichier JSON vide ou trop volumineux (maximum 1,2 Mo).');
+        if(drafts.length>=MAX_DRAFTS)
+          throw new Error('La limite de 40 brouillons est atteinte.');
+        const raw=JSON.parse(await file.text());
+        if(!raw||raw.schemaVersion!==2||raw.status!=='draft'||!raw.article||
+          typeof raw.article!=='object'||Array.isArray(raw.article)||
+          !raw.article.document||raw.article.document.type!=='doc'||
+          !Array.isArray(raw.article.document.content))
+          throw new Error('Format non reconnu : importez un brouillon JSON exporté par cet éditeur.');
+        if(typeof raw.article.title!=='string')
+          throw new Error('Le titre du brouillon est manquant.');
+        const imported=readDraft({
+          ...raw.article,doc:raw.article.document,
+          slugCustomized:!!raw.article.slug,
+          publishedId:null,publishedSlug:null
+        });
+        // Toujours créer un nouveau brouillon : l'import n'écrase pas le
+        // brouillon courant et ne restaure pas une publication existante.
+        imported.id=uid();
+        imported.publishedId=null;
+        imported.publishedSlug=null;
+        imported.updatedAt=Date.now();
+        const previous=current();
+        if(previous)previous.doc=readEditor();
+        drafts.unshift(imported);
+        showDraft(imported.id,false);
+        const ok=await store();
+        if(!ok)throw new Error('Le brouillon importé est affiché mais sa sauvegarde a échoué. Réessayez avec Enregistrer.');
+        status.textContent='Brouillon JSON importé et enregistré sur Supabase.';
+        report('');
+      }catch(err){
+        report('Import JSON impossible : '+String(err?.message||err),true);
+      }finally{
+        importButton.disabled=false;
+      }
+    });
+  }
   $('#editor-export').addEventListener('click',async()=>{
     const d=current();if(!d)return;
     d.doc=readEditor();
