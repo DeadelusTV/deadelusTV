@@ -6,8 +6,8 @@
   const BUCKET_PUBLIC='phasmo-news-published-images';
   const BUCKET_PRIVATE='phasmo-news-draft-images';
   const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  const MIME={png:'image/png',jpg:'image/jpeg',webp:'image/webp'};
-  const ALLOWED_BLOCKS=new Set(['doc','paragraph','heading','text','image','bulletList','orderedList','listItem','hardBreak','blockquote']);
+  const MIME={png:'image/png',jpg:'image/jpeg',webp:'image/webp',gif:'image/gif'};
+  const ALLOWED_BLOCKS=new Set(['doc','paragraph','heading','text','image','bulletList','orderedList','listItem','hardBreak','blockquote','youtube']);
   const ALLOWED_MARKS=new Set(['bold','italic','underline','strike','code']);
   const slugValid=x=>typeof x==='string'&&/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(x)&&x.length<=100;
   const cleanHttps=value=>{
@@ -74,6 +74,12 @@
           if(++images>40)throw new Error('Limite de 40 images par article.');
           return {type:'image',attrs:{src:await publicImage(raw.attrs?.src,uploaded),
             alt:String(raw.attrs?.alt||'').slice(0,180)}};
+        }
+        if(raw.type==='youtube'){
+          const videoId=String(raw.attrs?.videoId||'');
+          if(!/^[A-Za-z0-9_-]{11}$/.test(videoId))
+            throw new Error('La vidéo YouTube insérée n’a pas un identifiant valide.');
+          return {type:'youtube',attrs:{videoId}};
         }
         const result={type:raw.type};
         if(raw.type==='heading')result.attrs={level:raw.attrs?.level===3?3:2};
