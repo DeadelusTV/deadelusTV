@@ -27,10 +27,11 @@ jobs:
       - name: Vérifier les scripts JavaScript
         run: |
           node --check public/assets/consent.js
+          node --check public/assets/twitch-floating.js
           node --check public/assets/twitch-player.js
           node --check public/assets/app.js
-      - name: Tester le consentement et le chargement du lecteur sans réseau
-        run: node --test scripts/test_frontend_consent.cjs
+      - name: Tester le consentement, le lecteur et le mode flottant sans réseau
+        run: node --test scripts/test_frontend_consent.cjs scripts/test_twitch_floating.cjs
       - name: Vérifier les polices hébergées localement
         run: python3 -m unittest discover -s scripts -p 'test_local_fonts.py'
       - name: Tester le statut Twitch sans réseau
