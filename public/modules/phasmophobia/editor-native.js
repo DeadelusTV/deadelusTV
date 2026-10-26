@@ -413,14 +413,56 @@
       report('Image refusée : choisissez PNG/JPEG/WebP de moins de 2 Mo.');
       return;
     }
+    const d=current();if(!d)return;
     const src=URL.createObjectURL(file);tempUrls.add(src);
     if(isCover){
-      const d=current(),old=covers.get(d.id);
+      const old=covers.get(d.id);
       if(old){URL.revokeObjectURL(old);tempUrls.delete(old);}
       covers.set(d.id,src);d.cover='';$('[data-field="cover"]').value='';
-      coverPreview();store();
+      coverPreview();
     }else insertImage(src);
     report('');
+    if(!BACKEND){if(isCover)store();return;}
+    failedImages.delete(d.id);
+    const job=BACKEND.uploadImage(file).then(ref=>{
+      if(isCover){
+        if(covers.get(d.id)===src){
+          d.cover=ref;covers.delete(d.id);
+          if(current()?.id===d.id){
+            $('[data-field="cover"]').value=ref;coverPreview();
+          }
+        }
+      }else{
+        const replaceInDoc=entry=>{
+          if(!entry||typeof entry!=='object')return;
+          if(entry.type==='image'&&entry.attrs?.src===src)entry.attrs.src=ref;
+          for(const child of entry.content||[])replaceInDoc(child);
+        };
+        replaceInDoc(d.doc);
+        if(current()?.id===d.id){
+          for(const img of root.querySelectorAll('img')){
+            if(img.getAttribute('src')===src)img.dataset.remoteImage=ref;
+          }
+          d.doc=readEditor();
+        }
+      }
+      d.updatedAt=Date.now();
+      listDrafts();
+      if(current()?.id===d.id)status.textContent='Image envoyée, enregistrement du brouillon…';
+      return ref;
+    }).catch(err=>{
+      failedImages.add(d.id);
+      if(current()?.id===d.id){
+        status.textContent='Image non enregistrée sur Supabase';
+        report('Envoi de l’image impossible : '+String(err?.message||err));
+      }
+      throw err;
+    });
+    if(!pendingImages.has(d.id))pendingImages.set(d.id,new Set());
+    pendingImages.get(d.id).add(job);
+    job.then(()=>pendingImages.get(d.id)?.delete(job),()=>pendingImages.get(d.id)?.delete(job));
+    job.catch(()=>{});
+    if(isCover)store();
   }
   // Lorsqu'on clique une zone vide, placer le curseur à la fin du document.
   root.addEventListener('mousedown',event=>{
