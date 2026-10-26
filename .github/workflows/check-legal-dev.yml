@@ -29,5 +29,7 @@ jobs:
           node --check public/assets/consent.js
           node --check public/assets/twitch-player.js
           node --check public/assets/app.js
+      - name: Tester le consentement et le chargement du lecteur sans réseau
+        run: node --test scripts/test_frontend_consent.cjs
       - name: Tester le statut Twitch sans réseau
         run: python3 -m unittest discover -s scripts -p 'test_twitch_status.py'

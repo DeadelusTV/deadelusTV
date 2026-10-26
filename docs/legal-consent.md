@@ -7,6 +7,15 @@ Les routes sont des pages du portail : `/#mentions-legales` et `/#confidentialit
 
 La vérification `python3 scripts/verify-static.py` refuse les textes d'attente ; le workflow de déploiement appelle désormais ce contrôle. Ne publier **ni** l'intégration **ni** des mentions provisoires avant finalisation.
 
+## Points à inclure ou à vérifier avec Deadelus avant publication
+Cette liste est une aide à la rédaction et **ne remplace pas** les textes juridiques qu'il doit valider.
+
+**Mentions légales :** identification de l'éditeur professionnel et du directeur de publication, coordonnées/immatriculation applicables, OVH comme hébergeur effectif. **Propriété intellectuelle :** préciser les droits sur les éléments réellement créés pour DEADELUSTV (identité graphique, illustrations, textes, code, cartes originales), la présence de contenus appartenant à des tiers (noms et logos de jeux, illustrations officielles, images Twitch/YouTube, captures, clips), leurs conditions de réutilisation et les autorisations pertinentes. Une simple mention « tous droits réservés » ne suffit pas à donner des droits sur les œuvres de tiers. Distinguer aussi les créations de contributeurs et les autorisations éventuellement accordées au site. Ne jamais supposer une cession de droits sans preuve.
+
+**Politique de confidentialité :** préciser les traitements actuels réellement présents : journaux techniques OVH, lecteur Twitch conditionné au consentement, images/minatures YouTube externes, éventuels Google Fonts chargés depuis Google et fonctions propres au module Crewmong Us/Supabase (comptes existants, selon le périmètre réel). Distinguer du futur TCG et de ses connexions, non encore ouverts sur ce portail. Examiner la durée de conservation, les destinataires, les droits des personnes et le moyen de contact.
+
+**À contrôler également :** droits à l'image/voix des personnes apparaissant dans des clips ou illustrations, marques et licences des jeux, demandes de retrait de contenus, licences des bibliothèques logicielles et éventuelles conditions liées aux futurs contenus envoyés par les streamers. Aucune mention ne remplace la vérification des licences ou autorisations.
+
 ## Consentement
 Le module affiche un lien vers la notice Twitch en français, et la notice finale de DEADELUSTV devra expliquer les finalités et le périmètre réel des traceurs.
 `public/assets/consent.js` conserve pendant au plus 180 jours `accept` ou `refuse` dans le stockage local du portail (un choix nécessaire pour mémoriser le refus ou le consentement). Des boutons de même niveau permettent d'accepter et de refuser. Le footer propose « Gestion des cookies » à tout moment. Le retrait empêche les chargements futurs et détruit l'iframe Twitch en cours. Les cookies appartenant à Twitch ne peuvent pas nécessairement être supprimés depuis deadelustv.com. Le refus affiche « Regarder sur Twitch » ouvrant un autre site, sans seconde autorisation.
@@ -28,7 +37,7 @@ La configuration Caddy existante étant hors du dépôt, ne rien y modifier auto
 ## Tests avant toute fusion
 1. `python3 -m unittest discover -s scripts -p 'test_twitch_status.py'`
 2. `python3 scripts/verify-static.py` **doit échouer tant que les textes provisoires restent** ; ensuite réussir.
-3. Valider syntaxe JS : `node --check public/assets/consent.js` et `node --check public/assets/twitch-player.js`.
+3. Lancer les tests sans réseau du navigateur simulé : `node --test scripts/test_frontend_consent.cjs` ; puis valider syntaxe JS : `node --check public/assets/consent.js` et `node --check public/assets/twitch-player.js`.
 4. Navigateur vierge, hors live : aucune requête à `player.twitch.tv` ou `k.twitchcdn.net` ; même chose après refus.
 5. En live et refus : bouton « Regarder sur Twitch » sans iframe ; en live et accord : lecteur chargé, tentative de lecture muette.
 6. Révocation pendant le live : iframe supprimée immédiatement, aucun nouveau chargement.
