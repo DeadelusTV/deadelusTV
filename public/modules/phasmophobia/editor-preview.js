@@ -18,7 +18,37 @@
   const validAsset = path => typeof path === 'string' &&
     /^assets\/phasmo-news\/[a-zA-Z0-9/_-]+\.(?:webp|png|jpg|jpeg)$/.test(path) &&
     !path.includes('..');
-  const imageUrl = path => validAsset(path) ? '../../' + path : '';
+  // Une URL HTTPS est acceptée pour l'aperçu seulement : aucun serveur ne la télécharge.
+  // À la publication, elle devra être importée/validée côté serveur et réhébergée.
+  function remoteImageUrl(value) {
+    if (typeof value !== 'string' || value.length > 2048) return '';
+    try {
+      const url = new URL(value.trim());
+      if (url.protocol !== 'https:' || !url.hostname || url.username || url.password ||
+          /\.svg$/i.test(url.pathname)) return '';
+      return url.href;
+    } catch { return ''; }
+  }
+  const imageUrl = path => validAsset(path) ? '../../' + path : remoteImageUrl(path);
+  function removeTemporaryImage(key) {
+    const old = temporaryImages.get(key);
+    if (!old) return;
+    URL.revokeObjectURL(old);
+    temporaryImages.delete(key);
+  }
+  function imageElement(src, className, alt, parent) {
+    const img = node('img', className);
+    img.alt = alt;
+    img.referrerPolicy = 'no-referrer';
+    img.loading = 'lazy';
+    img.src = src;
+    img.addEventListener('error', () => {
+      img.remove();
+      parent.append(node('p', 'phasma-editor-image-error',
+        'Impossible d’afficher cette image. Vérifiez le lien direct ou choisissez un fichier sur votre PC.'));
+    });
+    parent.append(img);
+  }
   const temporaryImages = new Map();
   let drafts = [];
   let selectedId = null;
@@ -129,6 +159,24 @@
       input.value = d[input.dataset.field] || '';
     });
     $('#editor-cover-upload').value = '';
+    renderCoverPreview();
+  }
+  function renderCoverPreview() {
+    const box = $('#editor-cover-preview');
+    const d = current();
+    if (!box || !d) return;
+    box.replaceChildren();
+    const src = temporaryImages.get(d.id + ':cover') || imageUrl(d.cover);
+    if (src) {
+      box.append(node('span', 'phasma-editor-media-preview-label',
+        temporaryImages.has(d.id + ':cover') ? 'Aperçu temporaire depuis votre PC' : 'Aperçu depuis l’URL indiquée'));
+      imageElement(src, 'phasma-editor-img-preview', 'Aperçu de la couverture', box);
+    } else if (d.cover.trim()) {
+      box.append(node('p', 'phasma-editor-image-error',
+        'Adresse non valide. Collez une URL HTTPS d’image (hors SVG) ou choisissez un fichier depuis votre PC.'));
+    } else {
+      box.append(node('p', 'phasma-editor-media-placeholder', 'Aucune couverture sélectionnée pour le moment.'));
+    }
   }
   function blockInput(label, field, value, blockId, rows) {
     const wrapper = node('label');
@@ -139,7 +187,10 @@
     input.dataset.blockField = field;
     input.dataset.blockId = blockId;
     input.value = value || '';
-    if (field === 'src') input.placeholder = 'assets/phasmo-news/illustration.webp';
+    if (field === 'src') {
+      input.placeholder = 'https://exemple.com/illustration.webp';
+      input.spellcheck = false;
+    }
     if (field === 'items') input.placeholder = 'Un élément de liste par ligne';
     wrapper.append(input);
     return wrapper;
@@ -170,11 +221,13 @@
       } else if (block.type === 'list') {
         fields.append(blockInput('Éléments de la liste', 'items', block.items, block.id, 5));
       } else if (block.type === 'image') {
-        fields.append(blockInput('Chemin du média (pour la publication future)', 'src', block.src, block.id));
+        fields.append(node('p', 'phasma-editor-hint',
+          'Collez une URL HTTPS vers une image (ou un ancien chemin assets), ou choisissez un fichier sur votre PC.'));
+        fields.append(blockInput('Adresse de l’image (URL HTTPS)', 'src', block.src, block.id));
         fields.append(blockInput('Description de l’image (accessibilité)', 'alt', block.alt, block.id));
         fields.append(blockInput('Légende facultative', 'caption', block.caption, block.id));
         const uploader = node('label');
-        uploader.textContent = 'Tester une image depuis votre ordinateur (temporaire, 2 Mo max)';
+        uploader.textContent = 'Ou choisir une image depuis votre PC (aperçu temporaire, 2 Mo max)';
         const input = node('input');
         input.type = 'file';
         input.accept = 'image/png,image/jpeg,image/webp';
@@ -183,10 +236,10 @@
         fields.append(uploader);
         const src = temporaryImages.get(d.id + ':' + block.id) || imageUrl(block.src);
         if (src) {
-          const img = node('img', 'phasma-editor-img-preview');
-          img.src = src;
-          img.alt = block.alt || 'Image pour l’aperçu';
-          fields.append(img);
+          imageElement(src, 'phasma-editor-img-preview', block.alt || 'Image pour l’aperçu', fields);
+        } else if (block.src.trim()) {
+          fields.append(node('p', 'phasma-editor-image-error',
+            'Lien invalide. Utilisez une URL HTTPS d’image ou un fichier depuis votre PC.'));
         }
       }
       section.append(fields);
@@ -236,9 +289,7 @@
     );
     const coverUrl = temporaryImages.get(d.id + ':cover') || imageUrl(d.cover);
     if (coverUrl) {
-      const cover = node('img','phasma-news-article-cover');
-      cover.src = coverUrl; cover.alt = '';
-      previewRoot.append(cover);
+      imageElement(coverUrl, 'phasma-news-article-cover', '', previewRoot);
     }
     const body = node('article','phasma-news-article');
     d.blocks.forEach(block => {
@@ -254,10 +305,7 @@
         const fig = node('figure','phasma-news-article-figure');
         const src = temporaryImages.get(d.id + ':' + block.id) || imageUrl(block.src);
         if (src) {
-          const img = node('img');
-          img.src = src;
-          img.alt = block.alt || '';
-          fig.append(img);
+          imageElement(src, '', block.alt || '', fig);
         } else fig.append(node('p','phasma-news-empty','Image à choisir'));
         if (block.caption) fig.append(node('figcaption','',block.caption));
         body.append(fig);
@@ -287,6 +335,8 @@
     const field = event.target.dataset.field;
     if (field) {
       d[field] = event.target.value;
+      // Une URL saisie après un fichier PC prend la priorité lors du prochain aperçu.
+      if (field === 'cover') removeTemporaryImage(d.id + ':cover');
       if (field === 'slug') d.slugCustomized = true;
       if (field === 'title' && !d.slugCustomized) {
         d.slug = slugify(d.title);
@@ -300,7 +350,11 @@
     const blockId = event.target.dataset.blockId;
     if (blockField && blockId) {
       const b = d.blocks.find(x => x.id === blockId);
-      if (b) { b[blockField] = event.target.value; changed(); }
+      if (b) {
+        b[blockField] = event.target.value;
+        if (blockField === 'src') removeTemporaryImage(d.id + ':' + blockId);
+        changed();
+      }
     }
   });
   document.querySelector('.phasma-editor-add').addEventListener('click', event => {
@@ -319,8 +373,7 @@
       if (index < 0 || !confirm('Supprimer ce bloc du brouillon local ?')) return;
       const [deleted] = d.blocks.splice(index, 1);
       const key = d.id + ':' + deleted.id;
-      if (temporaryImages.has(key)) URL.revokeObjectURL(temporaryImages.get(key));
-      temporaryImages.delete(key);
+      removeTemporaryImage(key);
       changed(); renderBlocks();
     } else if (move) {
       const [id, dir] = move.dataset.move.split(':');
@@ -337,15 +390,27 @@
       status.textContent = 'Image non acceptée : utilisez JPG, PNG ou WebP de moins de 2 Mo.';
       return false;
     }
-    if (temporaryImages.has(key)) URL.revokeObjectURL(temporaryImages.get(key));
+    removeTemporaryImage(key);
     temporaryImages.set(key, URL.createObjectURL(file));
     status.textContent = 'Image chargée pour cet aperçu uniquement : elle ne sera pas enregistrée.';
     return true;
   }
   $('#editor-cover-upload').addEventListener('change', event => {
-    if (registerImage(event.target.files?.[0], current().id + ':cover')) changed();
+    if (registerImage(event.target.files?.[0], current().id + ':cover')) {
+      changed();
+      renderCoverPreview();
+    }
+  });
+  // Une URL est prévisualisée dès que l'on quitte le champ.
+  $('#editor-form').addEventListener('change', event => {
+    if (event.target.dataset.field === 'cover') renderCoverPreview();
   });
   blocksRoot.addEventListener('change', event => {
+    if (event.target.dataset.blockField === 'src') {
+      // Ne pas redessiner sur chaque frappe : garder le curseur dans le champ.
+      renderBlocks();
+      return;
+    }
     const blockId = event.target.dataset.imageUpload;
     if (!blockId) return;
     if (registerImage(event.target.files?.[0], current().id + ':' + blockId)) {
@@ -368,7 +433,7 @@
     const d = current();
     const exportData = {
       schemaVersion: 1, status: 'draft', localPrototype: true,
-      note: 'Brouillon local de démonstration. Aucun média temporaire inclus, aucune publication effectuée.',
+      note: 'Brouillon de démonstration. Les fichiers PC temporaires ne sont pas inclus. Les URL externes nécessitent import et validation par le serveur avant toute publication.',
       article: {
         slug: d.slug, title: d.title, excerpt: d.excerpt, publishedAt: d.publishedAt,
         translator: d.translator, sourceUrl: d.sourceUrl, cover: d.cover,
