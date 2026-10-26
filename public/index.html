@@ -16,6 +16,7 @@
 <script src="modules/phasmophobia/module.js" defer></script>
 <script src="modules/phasmophobia/journal.js" defer></script>
 <script src="modules/phasmophobia/news.js" defer></script>
+<script src="modules/phasmophobia/news-access.js" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bungee+Inline&family=Great+Vibes&display=swap" rel="stylesheet">
@@ -219,7 +220,14 @@
       </div>
       <a class="btn btn-outline phasma-news-official" href="https://www.kineticgames.co.uk/news" target="_blank" rel="noopener noreferrer">Actualités officielles <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a>
      </div>
-     <div id="phasma-news-feed" class="phasma-news-feed" hidden aria-label="Futures actualités traduites"></div>
+     <div class="phasma-news-editor-access" id="phasma-news-editor-access" hidden aria-live="polite">
+       <a class="btn btn-outline" id="phasma-news-editor-link"
+          href="modules/phasmophobia/editor-private.html" hidden>Gérer les actualités</a>
+       <button class="phasma-news-editor-login" id="phasma-news-editor-login"
+          type="button" hidden>Connexion Twitch <span aria-hidden="true">↗</span></button>
+       <p class="phasma-news-editor-note" id="phasma-news-editor-note" hidden></p>
+      </div>
+      <div id="phasma-news-feed" class="phasma-news-feed" hidden aria-label="Futures actualités traduites"></div>
     </div>
    </details>
    <details class="phasma-resource" data-phasma-section="livre">
