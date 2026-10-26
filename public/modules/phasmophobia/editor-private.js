@@ -31,6 +31,7 @@
     return 'Impossible de vérifier les droits ou de charger les brouillons. Réessayez plus tard.';
   }
   function enqueueBackend(rows){
+    const existing=new Set(rows.map(row=>row.id).filter(Boolean));
     let pending=Promise.resolve();
     function enqueue(callback) {
       const result=pending.then(callback);
@@ -46,16 +47,28 @@
         if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(draft.id))
           return Promise.reject(new Error('Identifiant du brouillon invalide (HTTPS nécessaire).'));
         return enqueue(async()=>{
-          const {error}=await client.from('phasmo_news_drafts').upsert({
-            id:draft.id,payload:draft,updated_at:new Date().toISOString()
-          },{onConflict:'id'});
-          if(error)throw error;
+          const updated_at=new Date().toISOString();
+          if(existing.has(draft.id)){
+            // Ne pas modifier id ni owner_id : seuls les champs éditoriaux
+            // sont modifiables par le client (privilèges SQL par colonne).
+            const {data,error}=await client.from('phasmo_news_drafts')
+              .update({payload:draft,updated_at}).eq('id',draft.id)
+              .select('id').maybeSingle();
+            if(error)throw error;
+            if(!data)throw new Error('Le brouillon est devenu inaccessible ou son accès a été révoqué.');
+          }else{
+            const {error}=await client.from('phasmo_news_drafts')
+              .insert({id:draft.id,payload:draft,updated_at});
+            if(error)throw error;
+            existing.add(draft.id);
+          }
         });
       },
       remove(id){
         return enqueue(async()=>{
           const {error}=await client.from('phasmo_news_drafts').delete().eq('id',id);
           if(error)throw error;
+          existing.delete(id);
         });
       }
     };
