@@ -29,3 +29,5 @@ Mise à jour : 25 octobre 2026. Les états ci-dessous sont ceux du site principa
 - [Intégration Crewmong Us](crewmongus-integration.md)
 - [Intégration Pavillon Noir](pavillon-noir-integration.md)
 - Document transversal Google Drive « DEADELUSTV - Banque d'idées et projets futurs » pour les pistes transversales et décisions datées.
+
+| Pages légales et consentement Twitch | Développé sur branche, non validé / non publié | `developpement/legal-et-consentement` : pages légales provisoires, footer, choix cookies révocable ; en attente textes officiels, raccordement OVH et tests fonctionnels. |

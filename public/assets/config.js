@@ -3,6 +3,7 @@
    Ajouter les éventuels domaines parents Twitch ici si le portail est intégré ailleurs. */
 window.DEADELUSTV_CONFIG = Object.freeze({
   channel:'deadelustv',
+  twitchStatusUrl:'/api/twitch-status', // Endpoint même origine hébergé sur OVH (pas de secret côté client).
   twitch:'https://www.twitch.tv/deadelustv',
   youtube:'https://www.youtube.com/@deadelustv',
   youtubeVideos:'https://www.youtube.com/@deadelustv/videos',

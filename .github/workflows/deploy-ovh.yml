@@ -90,6 +90,7 @@ jobs:
             echo 'Le dossier contient un lien symbolique : utiliser des fichiers ordinaires pour cette publication.' >&2
             exit 1
           fi
+          python3 scripts/verify-static.py
           stage="$RUNNER_TEMP/deadelustv-public"
           mkdir -m 755 "$stage"
           rsync -rtp --chmod=D755,F644 \

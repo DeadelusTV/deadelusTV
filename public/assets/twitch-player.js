@@ -101,7 +101,14 @@
       controls.append(play);
       root.append(panel, mount);
       root.after(controls);
-      Object.assign(this, {panel, mount, controls, badge, title, description, retry, neon, copy});
+      Object.assign(this, {panel, mount, controls, badge, title, description, retry, neon, copy, link});
+      // Retirer immédiatement toute iframe si le visiteur retire son accord.
+      this.onConsentChange = () => {
+        if (!this.active) return;
+        this.stop();
+        this.check();
+      };
+      window.addEventListener('deadelustv:consent-change', this.onConsentChange);
       this.setState('loading');
       this.onVisibility = () => {
         if (!document.hidden && this.active && this.state !== 'live') this.check();
@@ -126,12 +133,14 @@
         loading: ['TWITCH', 'Le live DeadelusTV', 'Vérification du direct…'],
         offline: ['HORS LIVE', 'On se retrouve au prochain live.', 'Le direct démarrera ici dès son retour.'],
         unknown: ['TWITCH', 'Retrouvons-nous sur Twitch.', 'Le statut du direct est momentanément indisponible.'],
-        small: ['TWITCH', 'Le live vous attend sur Twitch.', 'Ouvre la chaîne pour regarder le direct ou les rediffusions.']
+        small: ['TWITCH', 'Le live vous attend sur Twitch.', 'Ouvre la chaîne pour regarder le direct ou les rediffusions.'],
+        blocked: ['EN DIRECT', 'Regarde le live sur Twitch.', 'Le lecteur intégré reste désactivé puisque tu as refusé ses cookies.']
       };
       if (messages[state]) {
         [this.badge.textContent, this.title.textContent, this.description.textContent] = messages[state];
       }
-      this.retry.hidden = ['loading', 'small'].includes(state);
+      this.retry.hidden = ['loading', 'small', 'blocked'].includes(state);
+      this.link.textContent = state === 'blocked' ? 'Regarder sur Twitch ↗' : 'Voir la chaîne Twitch ↗';
     }
 
     updateFlicker() {
@@ -186,10 +195,40 @@
       this.stop();
       const generation = this.generation;
       const current = () => this.active && generation === this.generation;
-      this.setState(showLive ? 'live' : 'loading');
+      this.setState('loading');
       try {
-        const Twitch = await loadSDK();
+        // Aucune ressource Twitch ne doit être chargée pour interroger le statut.
+        // L'endpoint même origine est fourni par le serveur OVH, avec clé API secrète.
+        const abort = new AbortController();
+        const timer = setTimeout(() => abort.abort(), 8000);
+        let status;
+        try {
+          const response = await fetch(this.config.twitchStatusUrl || '/api/twitch-status', {
+            method: 'GET', credentials: 'same-origin',
+            cache: 'no-store', signal: abort.signal
+          });
+          if (!response.ok) throw new Error('Statut Twitch indisponible');
+          status = await response.json();
+        } finally {
+          clearTimeout(timer);
+        }
         if (!current()) return;
+        if (!status || typeof status.live !== 'boolean') throw new Error('Statut Twitch invalide');
+        if (!status.live) {
+          this.setState('offline');
+          this.scheduleCheck();
+          return;
+        }
+        // Consentement absent ou refusé : aucun SDK, iframe ou cookie Twitch.
+        if (!window.DEADELUSTV_CONSENT?.hasTwitchConsent()) {
+          this.setState('blocked');
+          this.scheduleCheck();
+          return;
+        }
+        showLive = true;
+        this.setState('live');
+        const Twitch = await loadSDK();
+        if (!current() || !window.DEADELUSTV_CONSENT?.hasTwitchConsent()) return;
         if (showLive) {
           // Twitch vérifie la visibilité au chargement de l'iframe : créer un
           // nouveau lecteur après affichage du cadre, plutôt que réutiliser la sonde masquée.
@@ -232,10 +271,8 @@
           beginPlayback();
         });
         listen(Twitch.Player.OFFLINE, () => {
-          clearTimeout(this.watchdog);
-          clearTimeout(this.startupTimer);
-          cancelAnimationFrame(this.startupFrame);
           online = false;
+          this.stop();
           this.setState('offline');
           this.scheduleCheck();
         });

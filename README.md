@@ -53,3 +53,7 @@ En cas d'échec ou de réponse vide de YouTube, ne pas écraser le dernier JSON 
 Le livre interactif Phasmo, sa direction artistique avancée, son feuilletage et ses éventuelles fiches issues du bot Discord restent **en développement / à valider** sur `developpement/phasmo-v2`. Ils ne doivent pas être assimilés au carnet décoratif actuellement publié ni intégrés automatiquement sur `main`.
 
 Voir [la roadmap](docs/ROADMAP.md) pour le statut, les limites et les prochaines décisions.
+
+## Préparation légale (non publiée)
+
+Branche de travail dédiée : `developpement/legal-et-consentement`. Pages légales, contrôle des textes provisoires, gestion du consentement Twitch et futur service de statut live OVH. Voir [docs/legal-consent.md](docs/legal-consent.md). Aucune mise en production autorisée avant insertion des textes rédigés par Deadelus et branchement du statut live côté OVH.
