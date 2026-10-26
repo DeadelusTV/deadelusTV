@@ -1,0 +1,44 @@
+# DEADELUSTV — Audit des ressources externes du portail
+
+**Date :** 26 octobre 2026. **Périmètre :** lecture statique des fichiers de la branche `developpement/legal-et-consentement` du dépôt `DeadelusTV/deadelusTV` ; pas d'examen du trafic navigateur réel, du serveur OVH, du tableau de bord Supabase ni de la configuration externe Caddy. **Statut :** constats de code, pas de validation juridique ou de test réseau.
+
+## Inventaire par service
+
+| Service / origine | Utilisation observée | Quand le navigateur l'appelle-t-il ? | Cookies et données : conclusion possible |
+| --- | --- | --- | --- |
+| **Twitch** (`player.twitch.tv`, domaines associés) | SDK et lecteur du direct dans `public/assets/twitch-player.js` | **Dans cette branche uniquement :** après résultat `live: true` de `/api/twitch-status` et consentement Twitch accepté. Le résultat « hors ligne », inconnu ou refus bloque le chargement du lecteur. | Des cookies Twitch ont déjà été observés sur la version antérieure. Le nouveau blocage est implémenté mais pas validé par un test réseau en direct ; le service OVH reste à raccorder. |
+| **Google Fonts** (`fonts.googleapis.com`, `fonts.gstatic.com`) | Deux polices, `Bungee Inline` et `Great Vibes`, utilisées notamment par le texte néon hors ligne (`public/assets/twitch-neon.css`) | Feuille CSS + preconnect insérés dès le chargement de `public/index.html`, quelle que soit la rubrique ouverte ; la police requise est téléchargée si utilisée. | Connexion aux serveurs Google et exposition d'informations de requête comme l'IP ; **le dépôt ne prouve aucun dépôt de cookie**. Piste : héberger localement les polices en respectant leurs licences, sans toucher aux styles ni proportions de l'écran néon. |
+| **YouTube / Google images** (`i.ytimg.com`) | Miniature de la dernière vidéo sur l'accueil (`public/index.html` / `public/assets/app.js`) ; jusqu'à 12 miniatures des Shorts Phasmo (`public/modules/phasmophobia/module.js`) | Le JSON des vidéos vient du site lui-même (`data/latest-youtube.json`, `data/phasmo-shorts.json`) ; **les images sont ensuite demandées directement à `i.ytimg.com`**, avec chargement lazy si applicable. | Pas d'iframe ni de lecteur YouTube intégré identifiés ; requêtes externes d'images et données techniques possibles. Aucun cookie concret déduit du code. Examiner dans Chrome avant de décider si modification nécessaire, et vérifier les conditions de réutilisation des miniatures avant tout miroir/cache local. |
+| **Supabase / Crew'mong Us** (`*.supabase.co`) | SDK Supabase JS fourni **localement** (`public/modules/crewmongus/vendor/supabase.js`) puis connexion directe à Supabase Auth et aux tables de statistiques | Le module est chargé à la première ouverture de Crew'mong Us (`public/modules/crewmongus/module.js`) ; les requêtes à la base et la restauration de session démarrent ensuite. | **Traitement réel de données et authentification** à inclure dans la politique de confidentialité ; les sessions Auth Supabase JS peuvent utiliser `localStorage` par défaut. Ce stockage lié à l'authentification ne signifie pas automatiquement « cookie publicitaire » ou consentement obligatoire. Ne pas bloquer les fonctions Crew avec le refus Twitch. |
+| **Avatars Crew'mong Us** (hôtes variables) | URLs enregistrées dans `avatar_url` et affichées comme images dans `public/modules/crewmongus/crew-app.js` | Consultation de la liste ou de la fiche joueur, selon les avatars renseignés. Les URLs `http:` et `https:` sont autorisées ; l'hôte n'est pas limité à Twitch. | Risque de connexions vers des domaines tiers variables, non déductibles de l'inventaire statique : vérifier les URLs effectivement présentes dans les données et les requêtes réseau. Piste : domaines autorisés, images hébergées sur infrastructure maîtrisée ou proxy, sans modifier le module sans validation. |
+| **Pavillon Noir** | Scripts, données, illustrations et images du dossier `public/modules/pavillon-noir/` servis localement ; des liens vers des VOD Twitch et YouTube dans `data/sessions.js` | Les scripts et images sont chargés sur le portail ; les pages Twitch/YouTube des VOD ne sont ouvertes qu'au clic sur un lien dans les éléments examinés. | Aucun lecteur tiers intégré ni appel externe autonome relevé dans les fichiers du module inspectés. La navigation vers les plateformes reste externe. |
+| **TikTok / Discord / réseaux sociaux** | Liens simples dans l'accueil, les panneaux et le footer | Navigation explicite vers un autre site lorsque le visiteur clique. | Aucun script, widget ou bouton social tiers chargé depuis ces domaines repéré dans le code examiné. |
+| **OVH** | Fournisseur du site statique et futur endpoint de statut Twitch | À chaque visite | Journaux techniques serveur et éventuels cookies définis par l'infrastructure à vérifier auprès de l'administrateur ; non auditables avec les seuls fichiers GitHub. |
+
+## Synthèse
+
+**Connexions externes dès l'ouverture :** Google Fonts ; la miniature YouTube de l'accueil peut également être demandée, selon la visibilité et le chargement différé du navigateur. **Au clic ou dans une rubrique dédiée :** Supabase et avatars en accédant à Crew, miniatures Phasmo, liens vidéo ou sociaux. Le lecteur Twitch est conditionné à l'accord dans cette branche, pas encore sur la production.
+
+Aucun code Google Analytics, GTM, Meta Pixel, widget Discord, lecteur YouTube iframe ou SDK TikTok n'a été identifié dans les principaux HTML/CSS/JS examinés. **Ce n'est pas une preuve d'absence globale de traceurs**, notamment côté hébergement, bibliothèques, services tiers et configurations non présentes dans le dépôt.
+
+Ne pas confondre : (a) cookie/traceur facultatif nécessitant potentiellement un accord, (b) stockage fonctionnel lié à une session ou au choix cookies et (c) simple appel HTTP vers un domaine tiers. Les règles et bases légales restent à vérifier pour chaque traitement. Les recommandations CNIL indiquent notamment que les traceurs nécessaires à l'authentification ou à la mémorisation du consentement peuvent être exemptés de consentement. Référence : https://www.cnil.fr/fr/cookies-et-autres-traceurs/regles/cookies/comment-mettre-mon-site-web-en-conformite ; documentation Supabase : https://supabase.com/docs/reference/javascript/auth
+
+## Vérifications à effectuer dans Chrome (session privée vraiment vierge)
+
+1. **Avant tout clic :** fermer toutes les fenêtres privées, rouvrir une fenêtre privée neuve, F12 → Réseau et Application, cocher « Conserver le journal » et désactiver le cache pour le test. Charger `www.deadelustv.com` sur la version de la branche.
+2. **Accueil, consentement refusé :** relever les hôtes sollicités (Google Fonts, YouTube miniature, OVH) ; s'assurer qu'aucune ressource `player.twitch.tv`, `twitchcdn.net`, `k.twitchcdn.net` n'est téléchargée ; inspecter cookies, localStorage et sessionStorage. Un filtre « twitch » seul ne couvre pas toutes les URL de services tiers.
+3. **Phasmophobia :** vérifier les requêtes `i.ytimg.com` quand les Shorts deviennent visibles ; constater l'absence de lecteur intégré.
+4. **Crew'mong Us :** vérifier les appels `*.supabase.co`, les clés de stockage de session si connexion, et surtout les **hôtes réels des avatars affichés**. Distinguer consultation anonyme, session existante et connexion.
+5. **Pavillon Noir / TCG :** confirmer l'absence d'autres appels tiers inattendus ; noter les liens qui ouvrent un autre domaine seulement après clic.
+6. **Twitch en direct :** consentement accepté, puis révocation pendant la lecture ; vérifier destruction de l'iframe et absence de nouvelles requêtes du lecteur après retrait. L'endpoint OVH doit d'abord être raccordé pour reproduire cette partie en conditions réelles.
+7. **Comparer avec `main`** sans confondre comportement en production et branche en cours. Noter les fournisseurs, usages, cookies effectifs, durée et destination des données.
+
+## Suites suggérées (non décidées, non développées)
+
+- Étudier l'**hébergement local de Bungee Inline et Great Vibes**, licences vérifiées, pour éviter les contacts avec Google Fonts sur chaque page tout en conservant à l'identique notre néon.
+- Tester puis documenter les requêtes de miniatures YouTube. Éviter de copier/mirrorer sans vérifier les conditions de la plateforme.
+- Auditer les URL `avatar_url` réellement enregistrées dans Crew'mong Us avant de proposer une limitation de domaines : fonctionnalité spécialisée à préserver.
+- Compléter la politique de confidentialité avec les traitements réels (Supabase Crew, connexion, hébergement OVH, images externes et lecteur Twitch). Les textes seront validés par Deadelus.
+- Après raccordement OVH, mener une **recette navigateur réelle**, non couverte par ce rapport statique.
+
+**Aucun de ces constats ne vaut autorisation de modifier les modules spécialisés, ni validation de conformité RGPD.**

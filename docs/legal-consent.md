@@ -16,6 +16,8 @@ Cette liste est une aide à la rédaction et **ne remplace pas** les textes juri
 
 **À contrôler également :** droits à l'image/voix des personnes apparaissant dans des clips ou illustrations, marques et licences des jeux, demandes de retrait de contenus, licences des bibliothèques logicielles et éventuelles conditions liées aux futurs contenus envoyés par les streamers. Aucune mention ne remplace la vérification des licences ou autorisations.
 
+Voir aussi l'[audit des ressources externes](audit-ressources-externes.md) pour les constats observés dans le dépôt et les tests réseau encore à effectuer.
+
 ## Consentement
 Le module affiche un lien vers la notice Twitch en français, et la notice finale de DEADELUSTV devra expliquer les finalités et le périmètre réel des traceurs.
 `public/assets/consent.js` conserve pendant au plus 180 jours `accept` ou `refuse` dans le stockage local du portail (un choix nécessaire pour mémoriser le refus ou le consentement). Des boutons de même niveau permettent d'accepter et de refuser. Le footer propose « Gestion des cookies » à tout moment. Le retrait empêche les chargements futurs et détruit l'iframe Twitch en cours. Les cookies appartenant à Twitch ne peuvent pas nécessairement être supprimés depuis deadelustv.com. Le refus affiche « Regarder sur Twitch » ouvrant un autre site, sans seconde autorisation.
