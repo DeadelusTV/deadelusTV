@@ -341,6 +341,53 @@
       list.append(button);
     }
   }
+  let publications=Array.isArray(BACKEND?.published)?BACKEND.published:[];
+  function editablePublications(){
+    return publications.filter(item=>BACKEND?.canEditAll||item.author_id===BACKEND?.viewerId);
+  }
+  function renderPublications(){
+    const list=$('#editor-published-list');
+    if(!list)return;
+    list.replaceChildren();
+    const items=editablePublications();
+    if(!items.length){
+      list.append(el('p','phasma-editor-sidebar-note','Aucune publication de test.'));
+      return;
+    }
+    for(const item of items){
+      const wrapper=el('div','phasma-editor-publication');
+      const edit=el('button','phasma-editor-draft');
+      edit.type='button';edit.dataset.publicationId=item.id;
+      edit.append(el('span','phasma-editor-draft-title',item.payload?.title||item.slug),
+        el('span','phasma-editor-draft-meta',item.status==='published'?'Publié sur la démo':'Retiré de la démo'));
+      wrapper.append(edit);
+      if(item.status==='published'){
+        const link=el('a','phasma-editor-published-link','Voir l’article');
+        link.href='../../index.html#phasmophobia/news/'+encodeURIComponent(item.slug);
+        link.target='_blank';link.rel='noopener noreferrer';
+        wrapper.append(link);
+        const off=el('button','phasma-editor-unpublish','Retirer de la démo');
+        off.type='button';off.dataset.unpublishId=item.id;wrapper.append(off);
+      }
+      list.append(wrapper);
+    }
+  }
+  async function refreshPublications(){
+    if(!BACKEND?.listPublished)return;
+    publications=await BACKEND.listPublished();
+    renderPublications();
+  }
+  function revisionFromPublished(item){
+    const p=item.payload||{};
+    const d=newDraft();
+    for(const key of ['title','excerpt','translator','sourceUrl','cover'])
+      if(typeof p[key]==='string')d[key]=p[key];
+    d.publishedAt=item.published_on||today();
+    d.slug=item.slug;d.slugCustomized=true;
+    d.publishedId=item.id;d.publishedSlug=item.slug;
+    d.doc=cleanDoc(p.document,true);
+    return d;
+  }
   function coverUrl(){
     const d=current();
     return covers.get(d?.id)||url(d?.cover,'image');
@@ -598,6 +645,61 @@
     const d=current();if(d)d.doc=readEditor();
     showDraft(btn.dataset.draftId);
   });
+  const publishedList=$('#editor-published-list');
+  if(publishedList)publishedList.addEventListener('click',async event=>{
+    const edit=event.target.closest('[data-publication-id]');
+    const off=event.target.closest('[data-unpublish-id]');
+    if(edit){
+      const item=editablePublications().find(item=>item.id===edit.dataset.publicationId);
+      if(!item)return;
+      const draft=drafts.find(d=>d.publishedId===item.id)||revisionFromPublished(item);
+      if(!drafts.includes(draft)){
+        if(drafts.length>=MAX_DRAFTS){report('Limite de brouillons atteinte.');return;}
+        drafts.unshift(draft);
+      }
+      const prev=current();if(prev)prev.doc=readEditor();
+      showDraft(draft.id);
+      report('Révision ouverte : les visiteurs verront toujours la version précédente jusqu’à « Mettre à jour ».');
+    }
+    if(off){
+      const item=editablePublications().find(item=>item.id===off.dataset.unpublishId);
+      if(!item||item.status!=='published')return;
+      if(!confirm('Retirer « '+(item.payload?.title||item.slug)+' » du blog de développement ?'))return;
+      off.disabled=true;
+      try{
+        await BACKEND.unpublish(item.id);
+        await refreshPublications();
+        report('Article retiré de la démo. Le brouillon et ses images privées sont conservés.');
+      }catch(error){
+        report('Retrait impossible : '+String(error.message||error));
+      }finally{off.disabled=false;}
+    }
+  });
+  const publishButton=$('#editor-publish');
+  if(publishButton)publishButton.addEventListener('click',async()=>{
+    const d=current();if(!d||!BACKEND?.publish)return;
+    d.doc=readEditor();
+    if(!d.publishedId&&!confirm('Publier cet article sur le SITE DE DÉVELOPPEMENT ? Il sera visible par tous les visiteurs de la démo.'))return;
+    publishButton.disabled=true;
+    try{
+      const saved=await store();
+      if(!saved)throw new Error('Le brouillon n’a pas été sauvegardé. Corrigez les erreurs avant publication.');
+      status.textContent='Préparation des images publiques et publication en cours…';
+      const result=await BACKEND.publish(d);
+      d.publishedId=result.id;d.publishedSlug=result.slug;
+      const again=await store();
+      if(!again)report('Article publié, mais association au brouillon non sauvegardée. Conservez son lien.');
+      else report('');
+      await refreshPublications();
+      if(current()?.id===d.id){
+        publishButton.textContent='Mettre à jour sur la démo';
+        status.textContent='Article '+(again?'publié':'publié (sauvegarde de la liaison à vérifier)')+' sur le site de développement !';
+      }
+    }catch(error){
+      report('Publication impossible : '+String(error.message||error));
+      status.textContent='Échec de la publication. Votre brouillon reste privé.';
+    }finally{publishButton.disabled=false;}
+  });
   $('#editor-mode-edit').addEventListener('click',()=>showPreview(false));
   $('#editor-mode-preview').addEventListener('click',()=>{const d=current();if(d)d.doc=readEditor();store();showPreview(true);});
   $('#editor-delete').addEventListener('click',()=>{
@@ -644,5 +746,5 @@
   root.setAttribute('role','textbox');
   root.setAttribute('aria-multiline','true');
   root.classList.add('tiptap');
-  load();showDraft(selected);updateToolbar();
+  load();showDraft(selected);renderPublications();updateToolbar();
 })();
