@@ -49,6 +49,14 @@ Ne pas confondre : (a) cookie/traceur facultatif nécessitant potentiellement un
 
 **Encore en attente :** simulation/recette d'un vrai live après raccordement du serveur OVH, consentement accepté avec lecteur puis révocation, connexion réelle Crew'mong Us et tests de conformité/mentions définitives. **Aucun changement du site public ni du code fonctionnel dans cette mise à jour documentaire.**
 
+## Recette complémentaire Microsoft Edge — cookies tiers autorisés
+
+**Rapport utilisateur du 26 octobre 2026 :** nouveau profil Edge distinct, navigation normale (pas InPrivate / Invité), capture des paramètres confirmant « Autoriser les sites à enregistrer et à lire les données des cookies » **activé** et « Bloquer les cookies tiers » **désactivé**. Le site local `http://127.0.0.1:5500` a été parcouru anonymement avec **Refuser** pour Twitch : accueil, Phasmophobia, Crewmong Us, Pavillon Noir, TCG et pages légales.
+
+**Résultat observé :** utilisateur signale **zéro cookie** après parcours de toutes les rubriques et **aucune nouvelle entrée** en `localStorage` et `sessionStorage` par rapport au contrôle Chrome précédent (choix `deadelustv_twitch_consent_v1` et marqueur de Live Server). Les connexions tierces aux polices, miniatures et images ont été constatées séparément dans le réseau Chrome.
+
+**Portée :** ce résultat renforce les essais précédents, car Edge n'avait pas le blocage explicite des cookies tiers. D'autres mécanismes de prévention du suivi peuvent s'appliquer ; aucune garantie globale d'absence de cookies pour tous les navigateurs, toutes les versions ou toutes les situations. Le lecteur Twitch *avec consentement et véritable live*, la révocation pendant le live et les sessions Crew authentifiées restent **non testés en conditions réelles**. Pas de changement de code ni de serveur effectué.
+
 ## Suites suggérées (non décidées, non développées)
 
 - Étudier l'**hébergement local de Bungee Inline et Great Vibes**, licences vérifiées, pour éviter les contacts avec Google Fonts sur chaque page tout en conservant à l'identique notre néon.
