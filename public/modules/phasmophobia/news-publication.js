@@ -84,6 +84,12 @@
       }
       if(!doc||doc.type!=='doc'||!Array.isArray(doc.content)||!doc.content.length)
         throw new Error('L’article doit contenir un texte.');
+      function hasText(node,depth=0){
+        if(!node||depth>15)return false;
+        if(node.type==='text'&&typeof node.text==='string'&&node.text.trim())return true;
+        return Array.isArray(node.content)&&node.content.some(child=>hasText(child,depth+1));
+      }
+      if(!hasText(doc))throw new Error('Rédigez quelques lignes avant de publier.');
       return walk(doc,0);
     }
     function validate(draft){
