@@ -11,7 +11,7 @@
   let animationFrame = 0;
 
   const consented = () => window.DEADELUSTV_CONSENT?.hasTwitchConsent() === true;
-  const canFloat = () => window.innerWidth >= 780 && window.innerHeight >= 450;
+  const canFloat = () => window.innerWidth >= 901 && window.innerHeight >= 450;
 
   function isHomeVisible() {
     const home = anchor?.closest('[data-page]');
