@@ -19,7 +19,7 @@
   const MAX_DRAFTS = 40, MAX_IMAGE = 2 * 1024 * 1024;
   const MIME = ['image/png','image/jpeg','image/webp'];
   const tempUrls = new Set(), covers = new Map();
-  const pendingImages=new Map(), failedImages=new Set();
+  const pendingImages=new Map(), failedImages=new Map();
   const isPrivateImage=value=>!!BACKEND?.validImageRef?.(value);
   const today = () => new Date().toISOString().slice(0,10);
   let seq=0, drafts=[], selected=null, timer=null, savedRange=null;
@@ -286,11 +286,24 @@
       const pending=[...(pendingImages.get(d.id)||[])];
       status.textContent=pending.length?'Envoi des images puis sauvegarde…':'Sauvegarde du brouillon sur Supabase…';
       if(pending.length)await Promise.allSettled(pending);
-      if(failedImages.has(d.id)){
-        status.textContent='Image non envoyée : brouillon non sauvegardé, réinsérez l’image.';
-        return;
+      const doc=current()?.id===d.id?readEditor():d.doc;
+      const errors=failedImages.get(d.id);
+      if(errors?.size){
+        const present=new Set();
+        const collect=item=>{
+          if(!item||typeof item!=='object')return;
+          if(item.type==='image'&&item.attrs?.src)present.add(item.attrs.src);
+          for(const child of item.content||[])collect(child);
+        };
+        collect(doc);
+        if(covers.get(d.id))present.add(covers.get(d.id));
+        if([...errors].some(ref=>present.has(ref))){
+          status.textContent='Image non envoyée : supprimez et réinsérez cette image pour enregistrer.';
+          return;
+        }
+        failedImages.delete(d.id);
       }
-      if(current()?.id===d.id)d.doc=readEditor();
+      d.doc=doc;
       const payload={...d,doc:cleanDoc(d.doc,true)};
       try{
         await BACKEND.save(payload);
@@ -423,7 +436,6 @@
     }else insertImage(src);
     report('');
     if(!BACKEND){if(isCover)store();return;}
-    failedImages.delete(d.id);
     const job=BACKEND.uploadImage(file).then(ref=>{
       if(isCover){
         if(covers.get(d.id)===src){
@@ -451,7 +463,8 @@
       if(current()?.id===d.id)status.textContent='Image envoyée, enregistrement du brouillon…';
       return ref;
     }).catch(err=>{
-      failedImages.add(d.id);
+      if(!failedImages.has(d.id))failedImages.set(d.id,new Set());
+      failedImages.get(d.id).add(src);
       if(current()?.id===d.id){
         status.textContent='Image non enregistrée sur Supabase';
         report('Envoi de l’image impossible : '+String(err?.message||err));
@@ -591,9 +604,14 @@
     }
     showDraft(drafts[0].id);
   });
-  $('#editor-export').addEventListener('click',()=>{
+  $('#editor-export').addEventListener('click',async()=>{
     const d=current();if(!d)return;
-    d.doc=readEditor();store();
+    d.doc=readEditor();
+    if(BACKEND)await store();
+    else store();
+    if(BACKEND&&failedImages.get(d.id)?.size){
+      report('Export différé : une image a échoué à être envoyée. Supprimez-la et réinsérez-la.');return;
+    }
     const data={schemaVersion:2,status:'draft',localPrototype:!BACKEND,
       note:BACKEND
         ?'Brouillon privé, non publié. Les images privées sont référencées par chemin Supabase ; le fichier JSON ne contient pas leurs octets et ne permet pas une consultation hors connexion.'
