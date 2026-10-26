@@ -290,7 +290,14 @@
       const link=el('a','phasma-youtube-card-link','Voir sur YouTube');
       link.href='https://www.youtube.com/watch?v='+videoId;
       link.target='_blank';link.rel='noopener noreferrer';
-      panel.append(text,link);
+      const remove=el('button','phasma-youtube-remove','Retirer la vidéo');
+      remove.type='button';
+      remove.addEventListener('click',event=>{
+        event.preventDefault();
+        panel.remove();
+        changed();
+      });
+      panel.append(text,link,remove);
     }else{
       const button=el('button','phasma-youtube-play','▶  Lire la vidéo YouTube');
       button.type='button';
@@ -537,6 +544,29 @@
     if(!ok){report('Impossible d’insérer l’image dans le navigateur.');return;}
     changed();updateToolbar();
   }
+  function insertYoutube(videoId){
+    if(!validVideoId(videoId))return;
+    restoreSelection();
+    root.focus();
+    const selection=window.getSelection();
+    let target=selection?.rangeCount?selection.getRangeAt(0).startContainer:null;
+    if(target?.nodeType===Node.TEXT_NODE)target=target.parentNode;
+    while(target&&target!==root&&target.parentNode!==root)target=target.parentNode;
+    const card=youtubeCard(videoId,true);
+    const after=target&&target!==root?target.nextSibling:null;
+    root.insertBefore(card,after);
+    const next=el('p');
+    next.append(document.createElement('br'));
+    root.insertBefore(next,card.nextSibling);
+    if(selection){
+      const caret=document.createRange();
+      caret.selectNodeContents(next);caret.collapse(true);
+      selection.removeAllRanges();selection.addRange(caret);
+      savedRange=caret.cloneRange();
+    }
+    changed();
+    report('');
+  }
   function fileImage(file,isCover=false){
     if(!file)return;
     if(!MIME.includes(file.type)||file.size>MAX_IMAGE||file.size===0){
@@ -658,6 +688,17 @@
     restoreSelection();
     const val={'paragraph':'p','heading-2':'h2','heading-3':'h3'}[event.target.value]||'p';
     command('formatBlock',val);
+  });
+  const videoButton=$('#wys-video-youtube');
+  if(videoButton)videoButton.addEventListener('click',()=>{
+    const address=prompt('Collez le lien YouTube (vidéo, Shorts ou lien youtu.be) :','');
+    if(address===null)return;
+    const id=youtubeId(address);
+    if(!id){
+      report('Lien vidéo invalide : utilisez une URL YouTube ou youtu.be en HTTPS.',true);
+      return;
+    }
+    insertYoutube(id);
   });
   $('#wys-image-pc').addEventListener('click',()=>$('#wys-image-file').click());
   $('#wys-image-file').addEventListener('change',event=>{
