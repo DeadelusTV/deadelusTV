@@ -107,7 +107,7 @@
     const safe=clean(doc,0);
     return safe?.type==='doc'&&safe.content?.length?safe:blankDoc();
   }
-  function newDraft(){return{id:uid(),title:'',excerpt:'',publishedAt:today(),translator:'',sourceUrl:'',slug:'',slugCustomized:false,cover:'',updatedAt:Date.now(),doc:blankDoc()};}
+  function newDraft(){return{id:uid(),title:'',excerpt:'',publishedAt:today(),translator:'',sourceUrl:'',slug:'',slugCustomized:false,cover:'',publishedId:null,publishedSlug:null,updatedAt:Date.now(),doc:blankDoc()};}
   function readDraft(raw,legacy=false){
     if(!raw||typeof raw!=='object')return null;
     const d=newDraft();
@@ -115,6 +115,8 @@
     for(const key of ['title','excerpt','publishedAt','translator','sourceUrl','slug','cover'])
       if(typeof raw[key]==='string')d[key]=raw[key].slice(0,key==='excerpt'?350:2048);
     d.slugCustomized=raw.slugCustomized===true;
+    d.publishedId=typeof raw.publishedId==='string'?raw.publishedId:null;
+    d.publishedSlug=typeof raw.publishedSlug==='string'?raw.publishedSlug:null;
     d.updatedAt=Number.isFinite(raw.updatedAt)?raw.updatedAt:Date.now();
     d.doc=cleanDoc(legacy?convertLegacy(raw):raw.doc,true);
     return d;
@@ -299,7 +301,7 @@
         if(covers.get(d.id))present.add(covers.get(d.id));
         if([...errors].some(ref=>present.has(ref))){
           status.textContent='Image non envoyée : supprimez et réinsérez cette image pour enregistrer.';
-          return;
+          return false;
         }
         failedImages.delete(d.id);
       }
@@ -308,17 +310,18 @@
       try{
         await BACKEND.save(payload);
         if(current()?.id===payload.id)status.textContent='Brouillon et images enregistrés sur Supabase';
+        return true;
       }catch(err){
         status.textContent='ERREUR : brouillon non sauvegardé. Utilisez « Exporter le brouillon ».';
         report('Sauvegarde distante refusée : '+String(err?.message||err));
+        return false;
       }
-      return;
     }
     try{
       localStorage.setItem(KEY,JSON.stringify({selectedId:selected,drafts:drafts.map(d=>({...d,doc:cleanDoc(d.doc,true)}))}));
       status.textContent='Texte enregistré localement · images du PC temporaires';
     }catch{status.textContent='Stockage local impossible : exportez votre article.';}
-    return Promise.resolve();
+    return true;
   }
   function changed(){
     const d=current();if(!d)return;
@@ -334,7 +337,7 @@
       button.dataset.draftId=d.id;
       button.setAttribute('aria-current',String(d.id===selected));
       button.append(el('span','phasma-editor-draft-title',d.title.trim()||'Article sans titre'),
-        el('span','phasma-editor-draft-meta','Brouillon · '+new Date(d.updatedAt).toLocaleDateString('fr-FR')));
+        el('span','phasma-editor-draft-meta',(d.publishedId?'Révision · ':'Brouillon · ')+new Date(d.updatedAt).toLocaleDateString('fr-FR')));
       list.append(button);
     }
   }
@@ -361,7 +364,10 @@
     buildDoc(root,d.doc);
     for(const input of document.querySelectorAll('#editor-form [data-field]'))input.value=d[input.dataset.field]||'';
     $('#editor-cover-upload').value='';
-    coverPreview();listDrafts();showPreview(false);store();
+    coverPreview();listDrafts();showPreview(false);
+    const publishButton=$('#editor-publish');
+    if(publishButton)publishButton.textContent=d.publishedId?'Mettre à jour sur la démo':'Publier sur la démo';
+    store();
   }
   function showPreview(on){
     $('#editor-form').hidden=on;$('#editor-preview').hidden=!on;
