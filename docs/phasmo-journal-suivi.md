@@ -205,3 +205,12 @@ Décision : la rubrique **News devient un chantier prioritaire**, après validat
 - Connexion principale prévue avec Twitch, Discord associable ; accorder `phasmo_news_editor` **manuellement à un seul UUID utilisateur**, avec RLS et restrictions Storage/API côté serveur. Aucun privilège administrateur général ni sur le TCG.
 - Le blog public charge encore un JSON statique de test vide : prévoir une source dynamique des articles publiés ou un déploiement serveur à la publication, sans exposer les brouillons.
 - Auth commune à définir entre les projets Supabase existants avant attribution effective des droits. **Aucun déploiement, aucune table ni aucun compte nouveau créés à ce stade.**
+
+
+### Clarification connexion unique et droits indépendants (26/10/2026)
+
+- Crewmong Us utilise un **compte e-mail d'une personne différente** : il ne participe pas aux comptes visiteurs / rédacteur du site DeadelusTV ; ne plus l'introduire comme obstacle au blog.
+- Proposition préférée pour minimiser les connexions : **Twitch comme connexion principale DeadelusTV**, liaison **Discord facultative** pour les fonctionnalités utiles, sans connexion distincte obligatoire au blog.
+- Le rédacteur Phasmo est aussi modérateur Twitch et doit conserver **ses droits de modération TCG**, qui sont partagés avec d'autres comptes modérateurs ; **seul son compte** doit obtenir séparément `phasmo_news_editor`.
+- Protection côté API/RLS/Storage avec identifiant Auth exact ; ne jamais accorder l'édition News automatiquement en fonction des rôles Discord, Twitch ou TCG.
+- Principe enregistré dans `docs/phasmo-blog-spec.md` sans implémentation ni changement de base, ni déploiement sur `main`.
