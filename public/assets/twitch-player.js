@@ -110,6 +110,8 @@
         this.check();
       };
       window.addEventListener('deadelustv:consent-change', this.onConsentChange);
+      // Preparer l'ancre et le conteneur persistant AVANT toute creation d'iframe.
+      window.DEADELUSTV_TWITCH_FLOAT?.setup(root, controls, this);
       this.setState('loading');
       this.onVisibility = () => {
         if (!document.hidden && this.active && this.state !== 'live') this.check();
@@ -142,6 +144,7 @@
       }
       this.retry.hidden = ['loading', 'small', 'blocked'].includes(state);
       this.link.textContent = state === 'blocked' ? 'Regarder sur Twitch ↗' : 'Voir la chaîne Twitch ↗';
+      window.DEADELUSTV_TWITCH_FLOAT?.onState(state);
     }
 
     updateFlicker() {
@@ -323,17 +326,21 @@
     }
 
     sync() {
-      const visible = !this.root.closest('[data-page]').hidden;
+      const float = window.DEADELUSTV_TWITCH_FLOAT;
+      // La section Accueil peut etre masquee mais le lecteur rester flottant.
+      const visible = float ? float.isHomeVisible() : !this.root.closest('[data-page]').hidden;
+      const persist = !visible && float?.shouldPersist(this);
+      float?.refresh();
       const secure = location.protocol === 'https:' || ['localhost', '127.0.0.1'].includes(location.hostname);
       const largeEnough = this.root.clientWidth >= 400;
-      if (!visible || !secure || !largeEnough) {
+      if ((!visible && !persist) || !secure || !largeEnough) {
         this.active = false;
         this.stop();
         this.setState(!visible ? 'loading' : !largeEnough ? 'small' : 'unknown');
         this.retry.hidden = true;
         return;
       }
-      if (this.active) return;
+      if (this.active) { float?.refresh(); return; }
       this.active = true;
       this.check();
     }
