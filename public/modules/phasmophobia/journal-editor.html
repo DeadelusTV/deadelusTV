@@ -96,11 +96,11 @@ html.journal-viewer header,html.journal-viewer aside,html.journal-viewer .workba
 html.journal-viewer #delete-layer-dialog,html.journal-viewer #journal-editor-preview-notice{display:none!important}
 html.journal-viewer main{display:block;height:100%;min-height:0}
 html.journal-viewer .workspace{height:100%;min-height:0;background:transparent}
-html.journal-viewer #stage-viewport{height:100%;padding:0;overflow:auto;align-items:center;justify-content:center}
+html.journal-viewer #stage-viewport{height:100%;min-height:0;padding:0;overflow:hidden;align-items:center;justify-content:center}
 html.journal-viewer #stage-wrap{margin:auto}
 html.journal-viewer #book{box-shadow:none}
 html.journal-viewer #book .layer{cursor:default}
-@media(max-width:700px){html.journal-viewer #stage-viewport{justify-content:flex-start;align-items:center;padding:0}}
+@media(max-width:700px){html.journal-viewer #stage-viewport{justify-content:center;align-items:center;padding:0}}
 </style>
 </head>
 <body>
@@ -469,11 +469,19 @@ function renderEditor(){
  $('#el-text').disabled=e.kind==='list'&&!!e.source;
 }
 function fitStage(){
- const fit=Math.min(1,Math.max(.18,(viewport.clientWidth-48)/1536));
- currentScale=fit*state.zoom/100;
+ if(VIEWER_ONLY){
+  // La visionneuse adapte les DEUX dimensions : aucun scroll, aucune coupe.
+  // Le zoom de l'atelier ne s'applique pas au livre vu depuis le site.
+  const width=viewport.clientWidth,height=viewport.clientHeight;
+  if(width<=0||height<=0)return;
+  currentScale=Math.min(1,Math.max(0.01,Math.min((width-4)/1536,(height-4)/1024)));
+ }else{
+  const fit=Math.min(1,Math.max(.18,(viewport.clientWidth-48)/1536));
+  currentScale=fit*state.zoom/100;
+ }
  book.style.transform=`scale(${currentScale})`;
  wrap.style.width=1536*currentScale+'px';wrap.style.height=1024*currentScale+'px';
- $('#zoom-label').textContent=state.zoom+' %';
+ $('#zoom-label').textContent=VIEWER_ONLY?Math.round(currentScale*100)+' %':state.zoom+' %';
 }
 function updateInfo(){
  $('#view-info').textContent=(mode==='edit'?'Édition':'Test des clics')+' · '+(view.page==='sommaire'?'Sommaire':(view.name||state.groups[view.group].label));
@@ -886,6 +894,10 @@ function setup(){
  $('#import-image').addEventListener('click',()=>$('#asset-input').click());
  $('#asset-input').addEventListener('change',async ev=>{const f=ev.target.files[0];if(f)try{await attachImage(f);}catch(err){note('Image : '+err.message);}ev.target.value='';});
  window.addEventListener('resize',fitStage);
+ if(VIEWER_ONLY&&'ResizeObserver' in window){
+  const observer=new ResizeObserver(()=>fitStage());
+  observer.observe(viewport);
+ }
  document.addEventListener('keydown',ev=>{
    if(mode!=='edit')return;
    if(ev.target.closest('input,textarea,select,[contenteditable="true"]')||ev.target.isContentEditable)return;
