@@ -285,6 +285,16 @@
     panel.dataset.youtubeId=videoId;
     panel.contentEditable='false';
     panel.setAttribute('aria-label','Vidéo YouTube intégrée');
+    // Miniature publique YouTube. Aucune iframe/lecture avant un clic.
+    const thumbnail=el('img','phasma-youtube-thumbnail');
+    thumbnail.src='https://i.ytimg.com/vi/'+videoId+'/hqdefault.jpg';
+    thumbnail.alt='';
+    thumbnail.loading='lazy';
+    thumbnail.decoding='async';
+    thumbnail.referrerPolicy='no-referrer';
+    thumbnail.addEventListener('error',()=>{thumbnail.remove();panel.classList.remove('phasma-youtube-card--with-thumb');},{once:true});
+    panel.classList.add('phasma-youtube-card--with-thumb');
+    panel.append(thumbnail);
     if(editing){
       const text=el('span','phasma-youtube-card-text','Vidéo YouTube · '+videoId);
       const link=el('a','phasma-youtube-card-link','Voir sur YouTube');
@@ -312,7 +322,7 @@
         iframe.allowFullscreen=true;
         panel.replaceChildren(iframe);
       },{once:true});
-      panel.append(button,el('span','phasma-youtube-privacy','Lecteur chargé uniquement après votre clic.'));
+      panel.append(button,el('span','phasma-youtube-privacy','Miniature YouTube affichée ; lecteur chargé uniquement après votre clic.'));
     }
     return panel;
   }
