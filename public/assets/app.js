@@ -7,7 +7,7 @@ function closeMenu(){nav.classList.remove('is-open');menu.setAttribute('aria-exp
 menu.addEventListener('click',()=>{const open=menu.getAttribute('aria-expanded')!=='true';nav.classList.toggle('is-open',open);menu.setAttribute('aria-expanded',String(open));menu.setAttribute('aria-label',open?'Fermer le menu':'Ouvrir le menu');});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&menu.getAttribute('aria-expanded')==='true'){closeMenu();menu.focus();}});
 document.addEventListener('click',e=>{if(!e.target.closest('.site-header'))closeMenu();});
-const routeTitles={'accueil':'Le repaire de la communauté','jeux-de-role':'Pavillon Noir','crewmongus':'Crewmongus','tcg':'Trading Card Game','phasmophobia':'Phasmophobia','pavillon-noir':'Pavillon Noir'};
+const routeTitles={'accueil':'Le repaire de la communauté','jeux-de-role':'Pavillon Noir','crewmongus':'Crewmongus','tcg':'Trading Card Game','phasmophobia':'Phasmophobia','pavillon-noir':'Pavillon Noir','mentions-legales':'Mentions légales','confidentialite':'Politique de confidentialité','conditions-utilisation':'Conditions générales d’utilisation','conditions-vente':'Conditions générales de vente','politique-cookies':'Politique de cookies'};
 const player=$('#player-shell');
 let activeRoute='accueil';
 function route(focus=false){
@@ -19,9 +19,13 @@ function route(focus=false){
   const crewAuth=window.DEADELUSTV_CREW_AUTH===true||authQuery.get('crew_auth')==='1'||authHash.has('access_token')||['invite','recovery'].includes(authHash.get('type'));
   if(crewAuth)window.DEADELUSTV_CREW_AUTH=true;
   const isCrew=crewAuth||requested==='crewmongus'||requested.startsWith('crewmongus/');
-  const name=isCrew?'crewmongus':isCampaign?'pavillon-noir':Object.hasOwn(routeTitles,requested)?requested:'accueil';
+  const isPhasmoNews=requested==='phasmophobia/news'||requested.startsWith('phasmophobia/news/');
+  const name=isCrew?'crewmongus':isCampaign?'pavillon-noir':isPhasmoNews?'phasmophobia':Object.hasOwn(routeTitles,requested)?requested:'accueil';
   const navName=isCampaign&&!isCrew?'jeux-de-role':name;
   $$('[data-page]').forEach(section=>section.hidden=section.dataset.page!==name);
+  // Le bandeau Discord reste inchangé pour les pages existantes.
+  const communityBanner=$('.community');
+  if (communityBanner) communityBanner.hidden=(['tcg','phasmophobia','mentions-legales','confidentialite','conditions-utilisation','conditions-vente','politique-cookies'].includes(name));
   $$('[data-nav]').forEach(a=>{const current=a.dataset.nav===navName;if(current)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
   document.title='DeadelusTV — '+routeTitles[name];
 activeRoute=name;
@@ -51,16 +55,7 @@ function syncTwitchPlayer() {
 window.addEventListener('resize', () => {
   syncTwitchPlayer();
   if (window.innerWidth > 900) closeMenu();
-});const booster=$('#open-booster');let revealed=false,boosterTimer;
-booster.addEventListener('click',()=>{
-  clearTimeout(boosterTimer);revealed=!revealed;
-  $$('.trading-card').forEach(card=>{card.classList.toggle('revealed',revealed);card.querySelector('.card-front').setAttribute('aria-hidden',String(!revealed));});
-  booster.innerHTML=revealed?'Rejouer l’animation':'Ouvrir le booster de démo <svg class="icon stroke"><use href="#i-arrow"/></svg>';
-  $('#demo-result').textContent='';
-  if(revealed)boosterTimer=setTimeout(()=>{$('#demo-result').textContent='Le capitaine · Rare — Dans l’ombre · Épique — Le fidèle du Crew · Commune';},1100);
-});
-
-// Réseaux flottants, repris depuis le pied de page
+});// Réseaux flottants, repris depuis le pied de page
 (() => {
   const footerSocials = document.querySelector('.site-footer .socials');
   if (!footerSocials) return;

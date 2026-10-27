@@ -5,8 +5,11 @@
 .page-header,
 .breadcrumb,
 .tcg-demo,
+.tcg-awaiting__copy,
+.tcg-awaiting__after,
 .pn-heading,
-.faq-list {
+.faq-list,
+.phasma-resources {
   position: relative;
 }
 

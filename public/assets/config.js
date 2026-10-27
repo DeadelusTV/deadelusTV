@@ -3,10 +3,12 @@
    Ajouter les éventuels domaines parents Twitch ici si le portail est intégré ailleurs. */
 window.DEADELUSTV_CONFIG = Object.freeze({
   channel:'deadelustv',
+  twitchStatusUrl:'/api/twitch-status', // Endpoint même origine hébergé sur OVH (pas de secret côté client).
   twitch:'https://www.twitch.tv/deadelustv',
   youtube:'https://www.youtube.com/@deadelustv',
   youtubeVideos:'https://www.youtube.com/@deadelustv/videos',
   youtubeShorts:'https://www.youtube.com/@deadelustv/shorts',
+  phasmoShortsPlaylist:'https://www.youtube.com/playlist?list=PL-fyrrZ6KfGkn4a2bt07-HqyjIncP_X7g',
   tiktok:'https://www.tiktok.com/@deadelustv',
   discord:'https://discord.gg/eMhE3uSHQS',
   crewmongus:'#crewmongus',

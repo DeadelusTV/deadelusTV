@@ -9,12 +9,12 @@
       { cible: '.universes', position: 'haut', forme: 'yeux' }
     ],
     tcg: [
-      { cible: '.page-header', position: 'bas', forme: 'partielle' },
-      { cible: '.tcg-demo', position: 'haut', forme: 'entiere' }
+      { cible: '.page-header, .tcg-awaiting__copy', position: 'bas', forme: 'partielle' },
+      { cible: '.tcg-demo, .tcg-awaiting__after', position: 'haut', forme: 'entiere' }
     ],
     phasmophobia: [
       { cible: '.page-header', position: 'bas', forme: 'yeux' },
-      { cible: '.faq-list', position: 'haut', forme: 'partielle' }
+      { cible: '.faq-list, .phasma-resources', position: 'haut', forme: 'partielle' }
     ],
     crewmongus: [
       { cible: '.breadcrumb', position: 'haut', forme: 'partielle' }

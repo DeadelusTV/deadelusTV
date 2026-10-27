@@ -1,0 +1,120 @@
+name: Actualiser les Shorts Phasmophobia
+
+on:
+  # Sur changement de ce mécanisme, faire un premier contrôle automatique sur main.
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/refresh-phasmo-shorts.yml
+      - scripts/update-phasmo-shorts.py
+      - scripts/test_phasmo_shorts.py
+  schedule:
+    - cron: '13 1,7,13,19 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Même groupe que les déploiements OVH : ne jamais remplacer current pendant une bascule.
+concurrency:
+  group: ovh-deadelustv-accueil
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Lire les sources
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Vérifier le récupérateur sans réseau
+        run: python3 -m unittest discover -s scripts -p 'test_phasmo_shorts.py'
+
+      - name: Récupérer les métadonnées publiques de la playlist
+        env:
+          YOUTUBE_API_KEY: '${{ secrets.YOUTUBE_API_KEY }}'
+        run: |
+          set -euo pipefail
+          python3 scripts/update-phasmo-shorts.py --output "$RUNNER_TEMP/phasmo-shorts.json"
+          test -s "$RUNNER_TEMP/phasmo-shorts.json"
+
+      # Un test sur une branche ne doit surtout pas changer le site officiel.
+      - name: Produire le fichier test pour Live Server
+        if: github.ref != 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: phasmo-shorts-json-test
+          path: '${{ runner.temp }}/phasmo-shorts.json'
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Préparer SSH avec vérification de la clé OVH
+        if: github.ref == 'refs/heads/main'
+        env:
+          VPS_HOST: '${{ vars.VPS_HOST }}'
+          VPS_USER: '${{ vars.VPS_USER }}'
+          VPS_KNOWN_HOSTS: '${{ vars.VPS_KNOWN_HOSTS }}'
+          VPS_SSH_KEY: '${{ secrets.VPS_SSH_KEY }}'
+        run: |
+          set -euo pipefail
+          test -n "$VPS_HOST" && test -n "$VPS_USER" && test -n "$VPS_KNOWN_HOSTS" && test -n "$VPS_SSH_KEY"
+          [[ "$VPS_HOST" == '57.129.185.182' ]] || { echo 'Hôte OVH inattendu' >&2; exit 1; }
+          [[ "$VPS_USER" == 'deploy-web' ]] || { echo 'Utilisateur OVH inattendu' >&2; exit 1; }
+          ssh_dir="$RUNNER_TEMP/deadelustv-ssh"
+          install -d -m 700 "$ssh_dir"
+          umask 077
+          printf '%s\n' "$VPS_SSH_KEY" | tr -d '\r' > "$ssh_dir/key"
+          printf '%s\n' "$VPS_KNOWN_HOSTS" | tr -d '\r' > "$ssh_dir/known_hosts"
+          ssh-keygen -y -P '' -f "$ssh_dir/key" > /dev/null
+          ssh-keygen -F "$VPS_HOST" -f "$ssh_dir/known_hosts" > /dev/null
+          cat > "$ssh_dir/config" <<EOF
+          Host ovh-deadelustv
+              HostName $VPS_HOST
+              User $VPS_USER
+              Port 22
+              IdentityFile "$ssh_dir/key"
+              IdentitiesOnly yes
+              BatchMode yes
+              StrictHostKeyChecking yes
+              UserKnownHostsFile "$ssh_dir/known_hosts"
+              ConnectTimeout 15
+              ServerAliveInterval 15
+              ServerAliveCountMax 3
+          EOF
+          ssh -F "$ssh_dir/config" ovh-deadelustv 'test -L /var/www/deadelustv/accueil/current && test -w /var/www/deadelustv/accueil/current'
+
+      - name: Transférer le JSON sans reconstruire le site
+        if: github.ref == 'refs/heads/main'
+        run: |
+          set -euo pipefail
+          refresh_id="$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          [[ "$refresh_id" =~ ^[0-9]+-[0-9]+$ ]]
+          ssh_config="$RUNNER_TEMP/deadelustv-ssh/config"
+          rsync -rtp --chmod=F644 -e "ssh -F $ssh_config" \
+            "$RUNNER_TEMP/phasmo-shorts.json" \
+            "ovh-deadelustv:/var/www/deadelustv/accueil/.phasmo-shorts-$refresh_id.json"
+          ssh -F "$ssh_config" ovh-deadelustv bash -se -- "$refresh_id" <<'REMOTE'
+          set -euo pipefail
+          base=/var/www/deadelustv/accueil
+          incoming="$base/.phasmo-shorts-$1.json"
+          trap 'rm -f "$incoming"' EXIT
+          test -L "$base/current"
+          test -s "$incoming"
+          install -d -m 755 "$base/current/data"
+          if ! cmp -s "$incoming" "$base/current/data/phasmo-shorts.json"; then
+            chmod 644 "$incoming"
+            mv -f "$incoming" "$base/current/data/phasmo-shorts.json"
+          fi
+          REMOTE
+          echo 'Métadonnées Phasmo actualisées, aucun nouveau commit.' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Effacer la clé SSH temporaire
+        if: always()
+        run: rm -f "$RUNNER_TEMP/deadelustv-ssh/key"
