@@ -440,14 +440,14 @@
       const edit=el('button','phasma-editor-draft');
       edit.type='button';edit.dataset.publicationId=item.id;
       edit.append(el('span','phasma-editor-draft-title',item.payload?.title||item.slug),
-        el('span','phasma-editor-draft-meta',item.status==='published'?'Publié sur la démo':'Retiré de la démo'));
+        el('span','phasma-editor-draft-meta',item.status==='published'?'Publié sur le site':'Retiré du site'));
       wrapper.append(edit);
       if(item.status==='published'){
         const link=el('a','phasma-editor-published-link','Voir l’article');
         link.href='../../index.html#phasmophobia/news/'+encodeURIComponent(item.slug);
         link.target='_blank';link.rel='noopener noreferrer';
         wrapper.append(link);
-        const off=el('button','phasma-editor-unpublish','Retirer de la démo');
+        const off=el('button','phasma-editor-unpublish','Retirer du site');
         off.type='button';off.dataset.unpublishId=item.id;wrapper.append(off);
       }
       list.append(wrapper);
@@ -494,7 +494,7 @@
     $('#editor-cover-upload').value='';
     coverPreview();listDrafts();showPreview(false);
     const publishButton=$('#editor-publish');
-    if(publishButton)publishButton.textContent=d.publishedId?'Mettre à jour sur la démo':'Publier sur la démo';
+    if(publishButton)publishButton.textContent=d.publishedId?'Mettre à jour sur le site':'Publier sur le site';
     if(save)store();
   }
   function showPreview(on){
@@ -780,12 +780,12 @@
     if(off){
       const item=editablePublications().find(item=>item.id===off.dataset.unpublishId);
       if(!item||item.status!=='published')return;
-      if(!confirm('Retirer « '+(item.payload?.title||item.slug)+' » du blog de développement ?'))return;
+      if(!confirm('Retirer « '+(item.payload?.title||item.slug)+' » du blog officiel ?'))return;
       off.disabled=true;
       try{
         await BACKEND.unpublish(item.id);
         await refreshPublications();
-        report('Article retiré de la démo. Le brouillon et ses images privées sont conservés.');
+        report('Article retiré du site. Le brouillon et ses images privées sont conservés.');
       }catch(error){
         report('Retrait impossible : '+String(error.message||error));
       }finally{off.disabled=false;}
@@ -828,7 +828,7 @@
     d.doc=readEditor();
     if(!validateBeforePublishing(d))return;
     report('');
-    if(!d.publishedId&&!confirm('Publier cet article sur le SITE DE DÉVELOPPEMENT ? Il sera visible par tous les visiteurs de la démo.'))return;
+    if(!d.publishedId&&!confirm('Publier cet article sur le SITE OFFICIEL ? Il sera visible par tous les visiteurs du site.'))return;
     publishButton.disabled=true;
     try{
       const saved=await store();
@@ -841,8 +841,8 @@
       else report('');
       await refreshPublications();
       if(current()?.id===d.id){
-        publishButton.textContent='Mettre à jour sur la démo';
-        status.textContent='Article '+(again?'publié':'publié (sauvegarde de la liaison à vérifier)')+' sur le site de développement !';
+        publishButton.textContent='Mettre à jour sur le site';
+        status.textContent='Article '+(again?'publié':'publié (sauvegarde de la liaison à vérifier)')+' sur le site officiel !';
       }
     }catch(error){
       report('Publication impossible : '+String(error.message||error),true);
