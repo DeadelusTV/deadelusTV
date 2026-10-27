@@ -394,3 +394,18 @@ Décision : la rubrique **News devient un chantier prioritaire**, après validat
 5. Tester visiteur anonyme, connecté sans rôle, rédacteur News, administrateur carnet, double permission, session révoquée, mobile, retours OAuth et déploiements prévisualisés ; ensuite seulement proposer une intégration ciblée à `main` après validation.
 
 **Ce qui n'a pas été fait ici :** pas de déplacement du bouton actuel, pas de refonte de l'Auth ni de l'éditeur News, pas de nouvelle permission ou table Supabase, pas d'attribution de rôle, pas de code de carnet intégré, pas de changement sur `main` ni sur OVH.
+
+
+### Première livraison : menu Twitch commun du portail (27/10/2026)
+
+**Statut : première étape de code livrée uniquement sur `developpement/phasmo-v2`, tests navigateur réels encore nécessaires, sans déploiement `main` ou changement Supabase.**
+
+- Nouveau `public/assets/site-auth.js` : point d'entrée Supabase Auth Twitch commun au portail, initialisé à la demande, OAuth PKCE conservé, session persistante et gestion centralisée de la connexion/déconnexion. Le module réutilise **le même projet Supabase et la même clé publiable** que la rédaction News ; aucun secret ajouté dans le navigateur. Le retour OAuth conserve la route de départ et peut rouvrir le panneau News.
+- Nouveau `public/assets/site-auth.css` : petit menu « Compte » dans l'en-tête, utilisable sur les pages publiques, dont version mobile compacte ; statut, connexion, déconnexion, lien rédaction autorisée. Aucun lien d'administration carnet actif avant création de l'autorisation serveur.
+- `public/index.html` : chargement de ce CSS/JS partagé avant `news-access.js`, menu de compte en haut, **suppression des boutons Connexion Twitch et Se déconnecter de l'intérieur de l'accordéon News**. Le lien interne « Gérer les actualités » reste conditionné aux permissions déjà existantes.
+- `public/modules/phasmophobia/news-access.js` : désormais consommateur de `window.DEADELUSTV_AUTH`, **plus de deuxième code OAuth** ; contrôle d'affichage des rôles `phasmo_news_editors` / `phasmo_news_admins`. Les protections RLS et le fichier d'édition privée restent inchangés.
+- Vérifications de code : les deux JS modifiés/nouveaux compilent, chargement du service avant l'accès News, éléments du menu présents, anciens boutons retirés, aucune clé privée, même OAuth et permissions attendues. **Ce ne sont pas des tests de connexion Twitch en conditions réelles.**
+
+**Recette utilisateur avant toute suite** : sur l'aperçu de branche, tester Compte → Connexion Twitch → retour à la bonne rubrique ; compte sans autorisation News (aucun accès privé), compte autorisé (lien Gérer les actualités), déconnexion, état après F5 et mobile. Vérifier également le parcours de rédaction News existant. En cas d'échec de callback, contrôler la liste des URL autorisées dans Supabase sans modifier celle du TCG.
+
+**Étapes suivantes non encore codées** : intégration du rendu V4.3 Brun dans le site, modèle de contenus évolutif et gabarits du carnet, interface privée de gestion, création contrôlée de la permission `phasmo_journal_admin` et de RLS spécifiques, puis validation avec Deadelus. Le panneau de compte actuel ne prétend pas fournir ces fonctionnalités tant qu'elles n'existent pas.
