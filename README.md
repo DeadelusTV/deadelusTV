@@ -21,6 +21,16 @@ Les branches de développement sont indépendantes. La démo `preview/presentati
 
 Les pages Phasmo V2 et TCG d'attente ont été publiées sur `main` le **25 octobre 2026** (commit `8db665fbf9d4b966e815a7d580fbbb4991ca3e1a`). La correction de libellé « Pavillon Noir » déjà présente sur `main` a été conservée. Ne pas confondre cette publication avec le **prototype de livre interactif Phasmo** en cours sur `developpement/phasmo-v2`, non retenu pour cette publication.
 
+## Actualités Phasmophobia : News et éditeur privé (livrés)
+
+Le module **News Phasmophobia** et son éditeur réservé sont intégrés au site officiel ; ne pas les confondre avec le livre interactif, encore en travail. La section News affiche les articles publiés (et une carte fixe vers Kinetic Games avec son logo), tandis que le bureau de rédaction est accessible à l'adresse `/modules/phasmophobia/editor-private.html` après connexion Twitch via Supabase et contrôle des permissions RLS (`phasmo_news_editors` / `phasmo_news_admins`). Aucune permission n'est déduite du rôle TCG ou du pseudo Twitch.
+
+L'éditeur propose brouillons privés avec persistance F5, sauvegarde automatique/manuelle, aperçu WYSIWYG, import/export JSON, uploads ou URLs d'images PNG/JPEG/GIF/WebP (animés, 10 Mio max), intégration YouTube/Shorts, publication/mise à jour et retrait. Le bouton **Supprimer ce brouillon** est bien dans les actions supérieures. Les médias publiés sont copiés dans un bucket public ; les médias du brouillon restent privés.
+
+**Séparation impérative des données** : sur `developpement/phasmo-v2`, les brouillons sont dans `phasmo_news_drafts` et les articles dans `phasmo_news_articles.stage='preview'` ; sur `main`, les brouillons sont dans `phasmo_news_drafts_production` et les articles dans le canal `stage='production'`. Ne jamais migrer les brouillons de test automatiquement. Le lecteur n'affiche que les articles `status='published'` de son canal. Les intégrations YouTube du lecteur respectent le consentement global existant.
+
+Voir la [documentation technique du module](docs/phasmo-news-editor.md) et la [documentation complète sur Drive](https://docs.google.com/document/d/1vqHaregg5l-UjjADw3qtzpt79vX0nfxGjt9LFng2kvI/edit).
+
 ## Deux actualisations YouTube distinctes
 
 ### 1. Dernière vidéo principale de l'accueil
@@ -35,7 +45,7 @@ Les pages Phasmo V2 et TCG d'attente ont été publiées sur `main` le **25 octo
 - `scripts/update-phasmo-shorts.py` utilise YouTube Data API v3 pour récupérer les métadonnées publiques de la playlist, avec pagination. Il vérifie les identifiants, déduplique, conserve l'ordre de la playlist et écrit atomiquement le JSON. Il ne télécharge **aucune vidéo**.
 - Le secret GitHub Actions `YOUTUBE_API_KEY` est lu **uniquement par GitHub Actions**. La clé doit être limitée à l'API YouTube Data API v3 et jamais ajoutée au dépôt ni exposée dans le navigateur. Le test sur la branche de développement a réussi le 25/10/2026. Le premier workflow sur `main` a également réussi le 25/10/2026 : récupération YouTube, vérifications locales et transfert SSH OVH, exécution GitHub Actions `40218578291`. La fiabilité des prochains déclenchements programmés reste à surveiller via Actions.
 - `.github/workflows/refresh-phasmo-shorts.yml` vérifie **quatre fois par jour**, à **01:13, 07:13, 13:13 et 19:13 UTC**, avec lancement manuel possible sur `main`. La publication modifie uniquement `data/phasmo-shorts.json` sur le VPS, sans commit automatique.
-- La galerie affiche jusqu'à **12 cartes** et propose le lien vers la playlist. Son affichage dépend de la disponibilité des miniatures YouTube.
+- La galerie affiche jusqu'à **10 cartes** et propose le lien vers la playlist. Son affichage dépend de la disponibilité des miniatures YouTube.
 
 En cas d'échec ou de réponse vide de YouTube, ne pas écraser le dernier JSON valide. Le déploiement général OVH tente lui aussi l'actualisation et conserve les données du site précédent si la collecte échoue ou si la clé manque. Les deux workflows YouTube et le workflow de déploiement partagent un même groupe de concurrence pour éviter des écritures simultanées sur `current`.
 

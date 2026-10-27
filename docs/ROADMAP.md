@@ -1,6 +1,6 @@
 # DEADELUSTV — roadmap du site général
 
-Mise à jour : 25 octobre 2026. Les états ci-dessous sont ceux du site principal `DeadelusTV/deadelusTV`. Ils ne remplacent pas les suivis propres au TCG, à Crewmong Us, à Pavillon Noir ou à Bingophobia.
+Mise à jour : 27 octobre 2026. Les états ci-dessous sont ceux du site principal `DeadelusTV/deadelusTV`. Ils ne remplacent pas les suivis propres au TCG, à Crewmong Us, à Pavillon Noir ou à Bingophobia.
 
 | Sujet | État | Portée et limites |
 | --- | --- | --- |
@@ -8,6 +8,8 @@ Mise à jour : 25 octobre 2026. Les états ci-dessous sont ceux du site principa
 | Accueil : Twitch, YouTube, TikTok et navigation | Publié | Le lecteur Twitch et son écran hors ligne néon restent sur le code officiel actuel ; TikTok est un lien illustratif. |
 | Dernière vidéo YouTube | Automatisé | Workflow indépendant toutes les 15 minutes prévues ; seules les métadonnées JSON sont transférées. |
 | Phasmophobia V2 : présentation, galerie Shorts, visuel de carnet | Publié | Version validée par Deadelus, intégration ciblée du 25/10/2026. |
+| News Phasmophobia et éditeur privé | **Publié, testé** | Gestion des articles en français via Twitch OAuth + permissions RLS ; brouillons, images animées, YouTube/Shorts, aperçus, publication/retrait. [Documentation](phasmo-news-editor.md). |
+| Séparation éditoriale preview / production | **En place** | `phasmo_news_drafts` côté dev, `phasmo_news_drafts_production` côté main ; `phasmo_news_articles` filtré par `stage` et `status`. Aucun transfert de brouillons de test. |
 | TCG : page « À venir » | Publié | Univers TCG annoncé sans dévoiler les mécaniques ; site de jeu TCG distinct et encore en développement. |
 | Actualisation automatique des Shorts Phasmo | Publiée, première exécution réussie | YouTube Data API v3, secret `YOUTUBE_API_KEY`, quatre vérifications quotidiennes prévues ; premier transfert OVH réussi (run `40218578291`). Suivi des prochains déclenchements à poursuivre. |
 | Livre interactif Phasmo avancé | En développement, non validé | Prototype `developpement/phasmo-v2` : rendu, animation et données réelles des fiches restent à travailler. Aucun import du prototype dans `main`. |
@@ -29,3 +31,9 @@ Mise à jour : 25 octobre 2026. Les états ci-dessous sont ceux du site principa
 - [Intégration Crewmong Us](crewmongus-integration.md)
 - [Intégration Pavillon Noir](pavillon-noir-integration.md)
 - Document transversal Google Drive « DEADELUSTV - Banque d'idées et projets futurs » pour les pistes transversales et décisions datées.
+
+## Documentation News / éditeur privé
+
+- [Guide technique et décisionnel](phasmo-news-editor.md)
+- [Documentation complète sur Drive](https://docs.google.com/document/d/1vqHaregg5l-UjjADw3qtzpt79vX0nfxGjt9LFng2kvI/edit)
+- Le Livre de preuves interactif reste un chantier indépendant de la livraison du blog.
