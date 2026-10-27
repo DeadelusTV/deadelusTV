@@ -57,3 +57,18 @@ Voir [la roadmap](docs/ROADMAP.md) pour le statut, les limites et les prochaines
 ## Travaux propres à cette branche
 
 Le prototype du carnet interactif Phasmophobia et ses styles/scripts restent exclusivement dans `developpement/phasmo-v2` et ne sont pas déployés. Les notes d'interface, de navigation, les limites et les idées en suspens ont été préservées dans [docs/phasmo-journal-suivi.md](docs/phasmo-journal-suivi.md).
+
+
+### Journal Phasmophobia — administration évolutive des contenus (27/10/2026)
+
+**Demande utilisateur : à prévoir pour l'intégration future du carnet, non implémentée dans le prototype local.** Phasmophobia évolue régulièrement : la liste des entités, lieux/maps, équipements, objets maudits, médias et autres contenus, ainsi que les astuces et conseils, ne doit pas être figée dans le code.
+
+- **Administration en ligne pour Deadelus** : pouvoir **ajouter, consulter, modifier, réorganiser, publier, masquer/archiver et supprimer** des fiches sans intervention GitHub et sans devoir modifier le JavaScript, le HTML ou les fichiers JSON du dépôt.
+- **Toutes les rubriques sont concernées** : Entités, Maps, Équipements, Objets maudits, Divers, et tout autre sous-type de fiche ou de conseil nécessaire ; si la structure du jeu évolue, pouvoir également **ajouter ou renommer des catégories/sous-catégories** sans refonte du moteur du livre.
+- **Éditeur de fiches flexible** : titre, texte enrichi (gras, souligné, etc.), sections multiples, images multiples placées dans la page, images décoratives et ordre d'affichage/plan, liens, conseils, champs propres à certains types de fiche. Prévoir des gabarits réutilisables mais **non bloquants** : pas de limitation à trois preuves ou à un nombre fixe de sections.
+- **Le carnet s'actualise depuis les données publiées** : sommaire général, listes des rubriques, fiches cliquables, onglets, recherche éventuelle et flèches suivant/précédent doivent refléter les contenus et leur ordre réel, sans réécrire le code à chaque ajout.
+- **Publication maîtrisée** : distinguer brouillon et publication ; possibilité de corriger les conseils devenus obsolètes et, de préférence, de conserver un historique ou des sauvegardes pour éviter les pertes accidentelles. Les suppressions définitives nécessitent confirmation ; l'archivage est à privilégier selon la situation.
+- **Accès sécurisé** : Deadelus a le contrôle éditorial complet du carnet ; droits différenciés des comptes dédiés à d'autres fonctions (notamment futur traducteur/rédacteur du blog), sans octroyer des droits globaux par défaut.
+- **Implémentation future** : modèle de données extensible et stockage des médias approprié (ex. base et stockage du projet) à définir lors de la mise en place. Les prototypes HTML locaux servent à valider l'interface et les gabarits, **pas** à imposer des listes statiques dans l'application finale.
+
+**Périmètre de cette modification : documentation uniquement sur developpement/phasmo-v2 ; ne pas toucher à main ni aux fichiers du site.**
