@@ -177,7 +177,7 @@ html.journal-viewer #book .layer{cursor:default}
     <div class="field"><label for="el-scope">Sur quelles pages ?</label><select id="el-scope"><option value="page">Page actuellement choisie</option><option value="global">Toutes les pages (onglets, flèches…)</option></select></div>
     <div class="field" id="action-field"><label for="el-action">Action au clic (en mode Test)</label><select id="el-action"><option value="none">Aucune</option><option value="home">Accueil du journal</option><option value="category">Ouvrir une catégorie</option><option value="detail">Ouvrir une fiche</option><option value="prev">Fiche / page précédente</option><option value="next">Fiche / page suivante</option><option value="back">Retour à la liste courante</option></select></div>
     <div class="field" id="target-field"><label for="el-target">Catégorie ciblée</label><select id="el-target"><option value="entites">Entités</option><option value="cartes">Maps</option><option value="objets">Objets maudits</option><option value="equipements">Équipements</option><option value="divers">Divers</option></select></div>
-    <div class="field is-hidden" id="entry-field"><label for="el-entry">Fiche ciblée (nom exact)</label><input type="text" id="el-entry" placeholder="Ex. Obambo"></div>
+    <div class="field is-hidden" id="entry-field"><label for="el-entry">Fiche ciblée (nom ou identifiant)</label><input type="text" id="el-entry" placeholder="Ex. Obambo"></div>
     <div class="buttons"><button class="btn small" id="clone" type="button">Dupliquer</button><button class="btn small" id="remove" type="button">Supprimer</button></div>
     <p class="tip">Astuce : sélectionne une zone, puis utilise <b>Suppr</b> ou l'un des boutons <b>Supprimer</b> pour l'effacer. La touche Suppr ne s'active pas pendant la saisie d'un champ. Les flèches du clavier déplacent le calque sélectionné, Maj + flèche = déplacement plus grand. En V4, tu peux aussi <b>redimensionner visuellement</b> un élément grâce aux poignées bleues sur ses coins.</p>
   </div>
@@ -613,7 +613,12 @@ function manageRecord(action){
  try{
   let rec=RECORDS.find(state.records,group,id);
   if(action==='add')rec=RECORDS.create(state.records,group,title);
-  else if(action==='rename')rec=RECORDS.rename(state.records,group,id,title);
+  else if(action==='rename'){
+   const oldTitle=rec?.title;
+   rec=RECORDS.rename(state.records,group,id,title);
+   if(oldTitle)for(const layer of state.elements)
+    if(layer.action==='detail'&&layer.target===group&&layer.entry===oldTitle)layer.entry=rec.id;
+  }
   else if(action==='edit'){
    if(!rec||rec.status==='archived'){note('Restaure cette fiche avant édition.');return;}
    if(mode!=='edit')setMode('edit');
@@ -906,6 +911,7 @@ async function init(){
      const tmp=new Blob([JSON.stringify(data)],{type:'application/json'});
      // Restore inline to avoid requiring File-compatible features in older browsers.
      const parsed=JSON.parse(await tmp.text());
+     const migrated=parsed.version!==RECORD_SCHEMA||!Array.isArray(parsed.records);
      state={...buildDefault(),...parsed,version:RECORD_SCHEMA,fonts:[]};
       state.records=RECORDS.normalize(parsed.records,parsed.groups);
       syncRecordsToGroups();
@@ -913,6 +919,7 @@ async function init(){
      serial=Math.max(1,...state.elements.map(e=>Number(String(e.id).split('-')[1])||0))+1;
      for(const font of (parsed.fonts||[]).slice(0,8)){try{await registerFont(font);}catch(e){}}
      selected=state.elements[0]?.id;
+     if(migrated)save();
    }}
  }catch(err){}
  setup();
