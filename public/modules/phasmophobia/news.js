@@ -280,7 +280,7 @@
           iframe.allowFullscreen=true;
           panel.replaceChildren(iframe);
         },{once:true});
-        panel.append(button,el('span','phasma-youtube-privacy','Miniature YouTube affichée ; lecteur chargé après votre clic.'));
+        panel.append(button);
         return panel;
       }
       if(raw.type==='image'){
