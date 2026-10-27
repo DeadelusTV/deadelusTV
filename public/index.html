@@ -377,6 +377,12 @@
    <span>Le carnet des enquêteurs</span>
    <button type="button" class="phasma-book-close" data-phasma-close aria-label="Fermer le carnet">Fermer ×</button>
   </div>
+  <div class="phasma-journal-zoom-toolbar" role="group" aria-label="Zoom du carnet">
+   <button type="button" data-phasma-zoom-out aria-label="Dézoomer le carnet" title="Dézoomer" disabled>−</button>
+   <output data-phasma-zoom-label aria-label="Niveau de zoom du carnet" aria-live="polite">100 %</output>
+   <button type="button" data-phasma-zoom-in aria-label="Zoomer le carnet" title="Zoomer">+</button>
+   <button type="button" data-phasma-zoom-reset title="Afficher le carnet en entier" disabled>Ajuster à l’écran</button>
+  </div>
   <iframe class="phasma-journal-frame" id="phasma-book-frame" title="Carnet interactif Phasmophobia"
     data-src="modules/phasmophobia/journal-editor.html?viewer=1" loading="lazy"></iframe>
   <p class="phasma-journal-embed-note">Maquette V4.3 · fiches en préparation. Navigation et mise en page à valider.</p>
