@@ -77,3 +77,14 @@ Le prototype du carnet interactif Phasmophobia et ses styles/scripts restent exc
 ### Branche Phasmo V2 synchronisée le 27 octobre 2026
 
 Base officielle : `0edd2e07f66ff8f02f70fda503c171b5768cb179`. Chantier actif : livre de preuves / carnet interactif et son administration future. Les News sont déjà publiées sur main ; cette branche conserve uniquement leur canal de test et ses brouillons distincts. Voir le suivi pour le point de retour et les limites.
+
+
+### Carnet Phasmophobia — image de référence provisoire (27/10/2026)
+
+**Référence de travail provisoire, pas encore une validation définitive par Deadelus.** La personne pilote du projet a fourni dans la conversation Onglet Phasmo l'image « carnet brun(1).png » (27/10/2026) et demandé explicitement de s'en servir **comme base visuelle du journal**, dans le doute sur la préférence finale de Deadelus.
+
+- Livre ouvert brun, couverture en cuir brun foncé, pages beige clair légèrement vieillies, cinq onglets supérieurs et deux languettes de navigation latérales ; pages vierges sans texte imprimé.
+- Préserver cette image **à l'identique** comme référence et éviter de repartir d'un carnet inventé ou d'un des comparatifs générés ultérieurement. Les textes, preuves, images et zones cliquables seront ajoutés **en calques HTML** par-dessus dans l'atelier.
+- Ne pas confondre le choix du **fond graphique du carnet** avec les visuels de démonstration Aswang, qui ne sont pas les fonds à intégrer.
+- Le choix de Deadelus reste à confirmer. Ne pas remplacer le fond de l'éditeur V4.2, ni les médias du site, ni publier sur `main` avant validation explicite ou demande d'intégration.
+- Le fichier image original est joint à la conversation du projet, et **n'est pas encore copié dans le dépôt** : cette note documente la référence mais ne constitue pas à elle seule un actif présent dans GitHub.
