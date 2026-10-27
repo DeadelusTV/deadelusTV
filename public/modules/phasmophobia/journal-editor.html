@@ -903,7 +903,7 @@ function markSelection(token){
 }
 function addBackground(){
  if(mode!=='edit')setMode('edit');
- const e=layer(view.page,'image','Illustration en filigrane','',7,15,40,75,{opacity:25,z:1,blend:'multiply',imageFit:'contain'});
+ const e=layer(view.entryId?recordPage(view.entryId):view.page,'image','Illustration en filigrane','',7,15,40,75,{opacity:25,z:1,blend:'multiply',imageFit:'contain'});
  state.elements.push(e);selected=e.id;renderLayers();renderLayerList();renderEditor();save();
  note('Fond ajouté : importe une image (PNG/WebP transparent conseillé), puis règle son opacité et verrouille-le.');
 }
@@ -929,11 +929,12 @@ async function importManyImages(files){
  const candidates=files.slice(0,15);
  if(!candidates.length)return;
  if(mode!=='edit')setMode('edit');
- const usableSlots=state.elements.filter(e=>e.page===view.page&&e.kind==='image'&&!e.image&&e.role==='proof');
+ const page=view.entryId?recordPage(view.entryId):view.page;
+ const usableSlots=state.elements.filter(e=>e.page===page&&e.kind==='image'&&!e.image&&e.role==='proof');
  let count=0,last=null;
  for(const [i,file] of candidates.entries()){
   const data=await mediaData(file);
-  const e=usableSlots.shift()||layer(view.page,'image','Image '+file.name,'',8+((i%3)*13),44+Math.floor(i/3)*17,11,15,{z:55,opacity:100});
+  const e=usableSlots.shift()||layer(page,'image','Image '+file.name,'',8+((i%3)*13),44+Math.floor(i/3)*17,11,15,{z:55,opacity:100});
   e.image=data;e.name=file.name.slice(0,90);
   if(!state.elements.includes(e))state.elements.push(e);
   last=e;count++;
@@ -982,8 +983,12 @@ function setup(){
  $('#page-select').addEventListener('change',ev=>setView(ev.target.value));
  $('#group-edit').addEventListener('change',fillGroupEdit);
  $('#record-select').addEventListener('change',()=>renderRecordManager($('#record-select').value));
- for(const action of ['add','rename','edit','up','down','archive','delete'])
+ for(const action of ['add','rename','edit','up','down','archive','delete','move'])
    $('#record-'+action).addEventListener('click',()=>manageRecord(action));
+ $('#record-move-group').addEventListener('change',()=>fillMoveFolderOptions());
+ $('#folder-select').addEventListener('change',()=>renderFolderManager($('#folder-select').value));
+ for(const action of ['add','rename','open','move','up','down','archive','delete'])
+   $('#folder-'+action).addEventListener('click',()=>manageFolder(action));
  $('#record-delete-cancel').addEventListener('click',()=>$('#delete-record-dialog').close());
  $('#record-delete-confirm').addEventListener('click',confirmRecordDeletion);
  $('#delete-record-dialog').addEventListener('close',()=>{pendingRecordDelete=null;});
