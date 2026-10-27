@@ -433,3 +433,31 @@
   border-radius: 5px;
   cursor: pointer;
 }
+
+
+/* Vignette réelle YouTube derrière le bouton de lecture.
+   L'image i.ytimg.com est chargée à l'affichage du bloc ; l'iframe
+   youtube-nocookie reste créée uniquement au clic. */
+#page-phasmophobia .phasma-youtube-card .phasma-youtube-thumbnail {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  object-fit: cover;
+  filter: brightness(.52) saturate(.9);
+  pointer-events: none;
+}
+#page-phasmophobia .phasma-youtube-card--with-thumb > :not(.phasma-youtube-thumbnail):not(.phasma-youtube-iframe) {
+  position: relative;
+  z-index: 1;
+}
+#page-phasmophobia .phasma-youtube-card--with-thumb .phasma-youtube-play {
+  box-shadow: 0 5px 26px #0009;
+}
