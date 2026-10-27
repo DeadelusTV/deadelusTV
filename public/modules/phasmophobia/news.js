@@ -1,5 +1,5 @@
 'use strict';
-/* Lecture du blog Phasmophobia, données de publication prévisualisation Supabase.
+/* Lecture du blog Phasmophobia, canal de prévisualisation de la branche de développement.
    Seuls les articles au statut publié apparaissent aux visiteurs. DOM sans innerHTML. */
 (() => {
   const root = document.querySelector('#page-phasmophobia [data-phasma-section="news"]');
@@ -13,8 +13,7 @@
   const ORIGINAL_URL = 'https://www.kineticgames.co.uk/news';
   const SUPABASE_URL='https://eodtxlhnfzyapkyvvxdi.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY='sb_publishable_HwLsESqtQglS7FoSTxBX-Q_GzxyLX_Z';
-  // Ce fichier n'existe que sur la branche de développement tant que non validé.
-  // Toute intégration sur main devra passer au canal 'production' explicitement.
+  // Les essais restent isolés des publications officielles pendant le travail du carnet.
   const STAGE='preview';
   function mediaUrl(value){
     if(typeof value!=='string'||value.length>2048)return null;
@@ -132,7 +131,7 @@
       el('span', 'phasma-news-card-kicker', niceDate(item.publishedAt)),
       el('strong', 'phasma-news-card-title', item.title),
       el('span', 'phasma-news-card-excerpt', item.excerpt),
-      el('span', 'phasma-news-card-more', 'Lire la traduction →')
+      el('span', 'phasma-news-card-more', 'Lire la news →')
     );
     link.append(picture, content);
     return link;
@@ -262,7 +261,10 @@
         const panel=el('div','phasma-youtube-card phasma-youtube-card--with-thumb');
         // L'image YouTube est visible avant le clic, mais pas le lecteur tiers.
         const thumbnail=el('img','phasma-youtube-thumbnail');
-        thumbnail.src='https://i.ytimg.com/vi/'+id+'/hqdefault.jpg';
+        thumbnail.dataset.youtubeThumbnail='https://i.ytimg.com/vi/'+id+'/hqdefault.jpg';
+        // Le consentement existant du site officiel gouverne aussi la miniature.
+        thumbnail.hidden=window.DEADELUSTV_CONSENT?.hasConsent('youtube')!==true;
+        if(!thumbnail.hidden)thumbnail.src=thumbnail.dataset.youtubeThumbnail;
         thumbnail.alt='';
         thumbnail.loading='lazy';
         thumbnail.decoding='async';
@@ -276,15 +278,14 @@
         button.type='button';
         button.setAttribute('aria-label','Charger la vidéo YouTube intégrée');
         button.addEventListener('click',()=>{
-          const iframe=el('iframe','phasma-youtube-iframe');
-          iframe.src='https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&rel=0';
-          iframe.title='Vidéo YouTube';
-          iframe.loading='lazy';
-          iframe.referrerPolicy='strict-origin-when-cross-origin';
-          iframe.allow='accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share';
-          iframe.allowFullscreen=true;
-          panel.replaceChildren(iframe);
-        },{once:true});
+          // Ne créer aucun lecteur si l'accord YouTube n'est pas actif.
+          if(!window.DEADELUSTV_CONSENT?.hasConsent('youtube')){
+            window.DEADELUSTV_CONSENT?.open();
+            return;
+          }
+          // Ce gestionnaire retire le lecteur si l'accord est révoqué.
+          window.DEADELUSTV_EMBEDS?.mountYouTube(panel,id,'Vidéo YouTube');
+        });
         panel.append(button);
         return panel;
       }
@@ -380,6 +381,14 @@
   }
 
   window.addEventListener('hashchange', route);
+  window.addEventListener('deadelustv:consent-change',()=>{
+    const allowed=window.DEADELUSTV_CONSENT?.hasConsent('youtube')===true;
+    for(const image of document.querySelectorAll('#page-phasmophobia .phasma-youtube-thumbnail')){
+      image.hidden=!allowed;
+      if(allowed && !image.getAttribute('src'))image.src=image.dataset.youtubeThumbnail;
+      if(!allowed)image.removeAttribute('src');
+    }
+  });
   const live=new URL(SUPABASE_URL+'/rest/v1/phasmo_news_articles');
   live.searchParams.set('select','slug,payload,published_on');
   live.searchParams.set('stage','eq.'+STAGE);

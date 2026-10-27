@@ -349,3 +349,13 @@ Décision : la rubrique **News devient un chantier prioritaire**, après validat
 - **Déclaration de l'utilisatrice** : elle a intégré ce lecteur au mécanisme de consentement de lecture du site. Cette intégration n'a pas fait l'objet d'un contrôle technique indépendant dans ce tour.
 - **À contrôler côté consentement** : les miniatures `https://i.ytimg.com/vi/<videoId>/hqdefault.jpg` sont chargées automatiquement dans la version actuelle, avant le clic sur Play. Leur chargement tiers doit être pris en compte par le dispositif de consentement si le choix utilisateur est censé bloquer toute requête YouTube préalable. L'iframe `www.youtube-nocookie.com` reste créé au clic dans le code de l'éditeur/lecteur.
 - Aucun changement de code ni de réglage de consentement effectué lors de cette validation ; seule la documentation de suivi est mise à jour.
+
+
+## Synchronisation avec le site principal — 27 octobre 2026
+
+- Seul chantier fonctionnel actif confirmé par l'utilisatrice : le livre de preuves / carnet interactif, y compris la future administration des fiches décrite dans le README. Le prototype et ses contenus restent non validés pour publication.
+- Base officielle intégrée : `0edd2e07f66ff8f02f70fda503c171b5768cb179` ; point de retour avant synchronisation : `b4b6577fa0fe7b79cd7630f71812cf6baeccb7aa`, conservé comme premier parent du commit de fusion.
+- Accueil, autres univers, textes récents, routes légales, consentement global, mini-lecteur Twitch et corrections YouTube repris de main. Les sources `journal.js` et `journal.css`, le dialogue et les commandes du livre sont conservés sans modification.
+- Exception technique volontaire : l'éditeur et le lecteur News de cette branche utilisent toujours `stage=preview` et `phasmo_news_drafts`. Les publications et brouillons officiels restent isolés. Les contrôles du consentement du lecteur public sont ceux de main. Ces différences d'environnement ne constituent pas un nouveau chantier News.
+- Les anciens prototypes d'éditeur et documents de migrations sont conservés pour historique ; leur présence n'atteste ni de nouveaux travaux en cours ni de migrations à rejouer.
+- Aucune fusion vers main ni modification de Supabase/OVH. L'ancien point `sauvegarde/avant-refonte-phasmo` reste inchangé.

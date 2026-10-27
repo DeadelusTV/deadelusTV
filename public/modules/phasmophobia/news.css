@@ -477,3 +477,7 @@
 #page-phasmophobia .phasma-youtube-card--with-thumb .phasma-youtube-play {
   box-shadow: 0 5px 26px #0009;
 }
+
+/* Respecter le choix YouTube : la miniature ne doit pas être visible quand
+   son src est retiré et le consentement refusé. */
+#page-phasmophobia .phasma-youtube-thumbnail[hidden] { display: none !important; }

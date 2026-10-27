@@ -72,3 +72,8 @@ Le prototype du carnet interactif Phasmophobia et ses styles/scripts restent exc
 - **Implémentation future** : modèle de données extensible et stockage des médias approprié (ex. base et stockage du projet) à définir lors de la mise en place. Les prototypes HTML locaux servent à valider l'interface et les gabarits, **pas** à imposer des listes statiques dans l'application finale.
 
 **Périmètre de cette modification : documentation uniquement sur developpement/phasmo-v2 ; ne pas toucher à main ni aux fichiers du site.**
+
+
+### Branche Phasmo V2 synchronisée le 27 octobre 2026
+
+Base officielle : `0edd2e07f66ff8f02f70fda503c171b5768cb179`. Chantier actif : livre de preuves / carnet interactif et son administration future. Les News sont déjà publiées sur main ; cette branche conserve uniquement leur canal de test et ses brouillons distincts. Voir le suivi pour le point de retour et les limites.
