@@ -81,3 +81,8 @@ Le bucket `phasmo-news-draft-images` est **privé** ; `phasmo-news-published-ima
 - Les listes à puces ou numérotées peuvent être imbriquées jusqu’à cinq niveaux au total. Un élément parent doit exister au-dessus ; les retraits ne doivent pas dépasser la profondeur conservée par le document JSON.
 - Lecture des sous-listes que Chrome peut placer directement dans une autre liste, après l’élément parent. La sauvegarde les rattache au bon élément sans aplatir leur contenu.
 - Contrôles ciblés : structure Chrome, sous-listes mixtes, cinq niveaux, aperçu et reconstruction depuis JSON. Conserver la séparation preview/production et les permissions existantes.
+
+### Retour utilisateur et présentation des puces — 28 octobre 2026
+
+- Yekelle confirme les sous-listes à puces. Elle signale que les sous-listes numérotées ne fonctionnent pas dans son essai ; point non bloquant, à examiner séparément. Les tests sur le prototype ne valent donc pas validation de la numérotation dans le bureau privé.
+- Formes de puces selon la profondeur : disque plein, cercle vide, carré, puis disque plein et cercle vide pour les niveaux quatre et cinq. Styles communs à la rédaction, à l’aperçu et à l’article public ; aucun changement du contenu sauvegardé.

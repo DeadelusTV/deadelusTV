@@ -88,6 +88,11 @@
   margin: 9px 0 21px; padding-left: 26px;
 }
 .phasma-editor-demo .tiptap ul { list-style: disc; }
+/* Une forme de puce par profondeur, dans la rédaction et son aperçu. */
+.phasma-editor-demo .tiptap ul ul { list-style-type: circle; }
+.phasma-editor-demo .tiptap ul ul ul { list-style-type: square; }
+.phasma-editor-demo .tiptap ul ul ul ul { list-style-type: disc; }
+.phasma-editor-demo .tiptap ul ul ul ul ul { list-style-type: circle; }
 .phasma-editor-demo .tiptap ol { list-style: decimal; }
 .phasma-editor-demo .tiptap li { margin: 4px 0; }
 .phasma-editor-demo .tiptap li p { margin: 0; }
