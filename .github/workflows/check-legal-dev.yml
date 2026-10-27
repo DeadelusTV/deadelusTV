@@ -27,6 +27,7 @@ jobs:
       - name: Vérifier les scripts JavaScript
         run: |
           node --check public/assets/consent.js
+          node --check public/assets/external-embeds.js
           node --check public/assets/twitch-floating.js
           node --check public/assets/twitch-player.js
           node --check public/assets/app.js
