@@ -595,7 +595,53 @@ function confirmDeleteLayer(){
  save();
  note('Zone supprimée : '+e.name+'.');
 }
-function fillGroupEdit(){const id=$('#group-edit').value||GROUP_ORDER[0];$('#group-edit').value=id;$('#group-names').value=state.groups[id].names.join('\n');}
+
+function renderRecordManager(wanted){
+ if(VIEWER_ONLY)return;
+ const group=$('#group-edit').value||GROUP_ORDER[0],select=$('#record-select'),prior=wanted||select.value;
+ select.replaceChildren();
+ for(const rec of recordList(group,true))select.add(new Option('['+(rec.status==='archived'?'Archive':rec.status==='demo'?'Exemple':'Brouillon')+'] '+rec.title,rec.id));
+ select.value=prior;if(select.selectedIndex<0&&select.length)select.selectedIndex=0;
+ const rec=RECORDS.find(state.records,group,select.value);
+ $('#record-title').value=rec?.title||'';
+ $('#record-archive').textContent=rec?.status==='archived'?'Restaurer':'Archiver';
+ for(const op of ['rename','edit','up','down','archive','delete'])$('#record-'+op).disabled=!rec;
+}
+function fillGroupEdit(){if(!$('#group-edit').value)$('#group-edit').value=GROUP_ORDER[0];renderRecordManager();}
+function manageRecord(action){
+ const group=$('#group-edit').value,id=$('#record-select').value,title=$('#record-title').value.trim();
+ try{
+  let rec=RECORDS.find(state.records,group,id);
+  if(action==='add')rec=RECORDS.create(state.records,group,title);
+  else if(action==='rename')rec=RECORDS.rename(state.records,group,id,title);
+  else if(action==='edit'){
+   if(!rec||rec.status==='archived'){note('Restaure cette fiche avant édition.');return;}
+   if(mode!=='edit')setMode('edit');
+   setView('detail:'+group,rec.id);save();note('Fiche ouverte : '+rec.title+'.');return;
+  }else if(action==='archive')rec=RECORDS.archive(state.records,group,id);
+  else if(action==='up'||action==='down')RECORDS.reorder(state.records,group,id,action==='up'?-1:1);
+  else if(action==='delete'){
+   if(!rec)return;pendingRecordDelete=rec.id;
+   $('#delete-record-description').textContent='Supprimer « '+rec.title+' » et tous ses calques de ce navigateur ?';
+   $('#delete-record-dialog').showModal();return;
+  }
+  if(rec?.status==='archived'&&view.entryId===rec.id)setView('category:'+group);
+  if(view.entryId===rec?.id)view.name=rec.title;
+  syncRecordsToGroups();renderRecordManager(rec?.id||id);renderLayers();updateInfo();save();
+  if(action==='add'){setView('detail:'+group,rec.id);save();}
+  note('Changement local enregistré. Pour conserver tes essais, exporte le JSON.');
+ }catch(err){note(err.message);}
+}
+function confirmRecordDeletion(){
+ const rec=state.records.find(e=>e.id===pendingRecordDelete);
+ $('#delete-record-dialog').close();pendingRecordDelete=null;if(!rec)return;
+ RECORDS.remove(state.records,rec.group,rec.id);
+ state.elements=state.elements.filter(e=>e.page!==recordPage(rec.id));
+ syncRecordsToGroups();
+ if(view.entryId===rec.id)setView('category:'+rec.group);
+ renderRecordManager();renderLayers();renderLayerList();renderEditor();save();note('Fiche supprimée du prototype local.');
+}
+
 function refreshFontSelects(){const select=$('#el-font'),current=select.value;select.replaceChildren();for(const [f,label] of FONTS)select.add(new Option(label,f));for(const entry of state.fonts||[])select.add(new Option('Importée · '+entry.label,entry.family));select.value=current||'Kalam';}
 async function fileData(file,limit){
  if(file.size>limit)throw Error('Fichier trop volumineux.');
@@ -650,12 +696,14 @@ async function loadSettings(file){
  const raw=JSON.parse(await file.text());
  let incoming;
  if(raw.version===1&&raw.blocks&&raw.groups)incoming=importLegacy(raw);
- else if((raw.version===2||raw.version===3||raw.version===4)&&Array.isArray(raw.elements)&&raw.groups&&Array.isArray(raw.fonts))incoming=raw;
+ else if([2,3,4,RECORD_SCHEMA].includes(raw.version)&&Array.isArray(raw.elements)&&raw.groups&&Array.isArray(raw.fonts))incoming=raw;
  else throw Error('Format non reconnu. Le JSON attendu vient de cet atelier ou du premier sommaire.');
- if(incoming.elements.length>500)throw Error('Trop de calques dans le fichier.');
+ if(incoming.elements.length>5000)throw Error('Trop de calques (maximum 5 000).');
  const defaults=buildDefault();
+ const records=RECORDS.normalize(incoming.records,incoming.groups);
+ const recordPages=new Set(records.map(rec=>recordPage(rec.id)));
  const permitted=['heading','text','list','hotspot','tab','image','line'];
- const cleaned=incoming.elements.filter(e=>e&&permitted.includes(e.kind)&&typeof e.name==='string'&&typeof e.page==='string'&&(e.page==='*'||VIEWS.some(v=>v.id===e.page))).map(e=>({
+ const cleaned=incoming.elements.filter(e=>e&&permitted.includes(e.kind)&&typeof e.name==='string'&&typeof e.page==='string'&&(e.page==='*'||VIEWS.some(v=>v.id===e.page)||recordPages.has(e.page))).map(e=>({
    ...layer(e.page,e.kind,String(e.name).slice(0,100),String(e.text??'').slice(0,20000),0,0,12,8),
    ...e,
    name:String(e.name).slice(0,100),text:String(e.text??'').slice(0,20000),
@@ -666,16 +714,17 @@ async function loadSettings(file){
    image:typeof e.image==='string'&&e.image.length<5_000_000&&/^data:image\/(?:png|jpeg|webp|gif);base64,/.test(e.image)?e.image:''
  }));
  if(cleaned.length===0)throw Error('Ce fichier ne contient aucun calque utilisable.');
- state={...defaults,...incoming,version:4,elements:cleaned,fonts:[],groups:defaults.groups};
+ state={...defaults,...incoming,version:RECORD_SCHEMA,records,elements:cleaned,fonts:[],groups:defaults.groups};
  for(const id of GROUP_ORDER){
    const g=incoming.groups[id];if(!g)continue;
    state.groups[id]={label:String(g.label||GROUPS[id].label).slice(0,90),names:(Array.isArray(g.names)?g.names:[]).slice(0,180).map(x=>String(x).slice(0,100))};
  }
+ syncRecordsToGroups();
  const incomingFonts=Array.isArray(incoming._pendingFonts)?incoming._pendingFonts:incoming.fonts||[];
  for(const f of incomingFonts.slice(0,8)){try{await registerFont(f);}catch(e){note('Attention : une police n’a pas été chargée.');}}
  // Aucune confiance dans les identifiants de l'import : recréation stable.
  state.elements.forEach((e,i)=>e.id='element-'+(i+1));serial=state.elements.length+1;
- selected=state.elements[0]?.id;view={page:'sommaire',group:null,name:null};
+ selected=state.elements[0]?.id;view={page:'sommaire',group:null,name:null,entryId:null};
  $('#page-select').value=view.page;fillGroupEdit();renderLayers();renderLayerList();renderEditor();fitStage();save();note('Réglages chargés. Vérifie l’affichage, puis exporte ta version complète.');
 }
 
@@ -784,7 +833,12 @@ function setup(){
  refreshFontSelects();
  $('#page-select').addEventListener('change',ev=>setView(ev.target.value));
  $('#group-edit').addEventListener('change',fillGroupEdit);
- $('#group-names').addEventListener('input',ev=>{const id=$('#group-edit').value;state.groups[id].names=ev.target.value.split('\n').map(x=>x.trim()).filter(Boolean).slice(0,180);renderLayers();save();});
+ $('#record-select').addEventListener('change',()=>renderRecordManager($('#record-select').value));
+ for(const action of ['add','rename','edit','up','down','archive','delete'])
+   $('#record-'+action).addEventListener('click',()=>manageRecord(action));
+ $('#record-delete-cancel').addEventListener('click',()=>$('#delete-record-dialog').close());
+ $('#record-delete-confirm').addEventListener('click',confirmRecordDeletion);
+ $('#delete-record-dialog').addEventListener('close',()=>{pendingRecordDelete=null;});
  for(const key of ['name','text','x','y','w','h','size','font','color','align','columns','line','rotate','opacity','z','action','target','entry','imageFit','blend']){
    $('#el-'+(key==='imageFit'?'imagefit':key)).addEventListener('input',ev=>{if(ev.target.value===''&&ev.target.type==='number')return;handleChange(key,ev.target.value);});
  }
@@ -821,7 +875,7 @@ function setup(){
  $('#export').addEventListener('click',exportSettings);
  $('#import').addEventListener('click',()=>$('#json-input').click());
  $('#json-input').addEventListener('change',async ev=>{const file=ev.target.files[0];if(!file)return;try{await loadSettings(file);}catch(err){note('Import : '+err.message);}ev.target.value='';});
- $('#reset').addEventListener('click',()=>{if(!confirm('Réinitialiser l’atelier ? Exporte tes réglages avant si tu veux les conserver.'))return;state=buildDefault();selected=state.elements[0].id;setView('sommaire');fitStage();save();note('Atelier réinitialisé.');});
+ $('#reset').addEventListener('click',()=>{if(!confirm('Réinitialiser l’atelier ? Exporte tes réglages avant si tu veux les conserver.'))return;state=buildDefault();selected=state.elements[0].id;fillGroupEdit();setView('sommaire');fitStage();save();note('Atelier réinitialisé.');});
  $('#import-font').addEventListener('click',()=>$('#font-input').click());
  $('#font-input').addEventListener('change',async ev=>{const f=ev.target.files[0];if(f)try{await attachFont(f);}catch(err){note('Police : '+err.message);}ev.target.value='';});
  $('#import-image').addEventListener('click',()=>$('#asset-input').click());
@@ -848,11 +902,13 @@ function setup(){
 async function init(){
  try{
    const previous=localStorage.getItem(SAVE_KEY)||localStorage.getItem(OLD_SAVE_KEY)||localStorage.getItem(OLDER_SAVE_KEY)||localStorage.getItem(OLDEST_SAVE_KEY)||localStorage.getItem('deadelustv.phasmo.atelier.complet.v3');
-   if(previous){const data=JSON.parse(previous);if((data?.version===2||data?.version===3||data?.version===4)&&Array.isArray(data.elements)){
+   if(previous){const data=JSON.parse(previous);if([2,3,4,RECORD_SCHEMA].includes(data?.version)&&Array.isArray(data.elements)){
      const tmp=new Blob([JSON.stringify(data)],{type:'application/json'});
      // Restore inline to avoid requiring File-compatible features in older browsers.
      const parsed=JSON.parse(await tmp.text());
-     state={...buildDefault(),...parsed,version:4,fonts:[]};
+     state={...buildDefault(),...parsed,version:RECORD_SCHEMA,fonts:[]};
+      state.records=RECORDS.normalize(parsed.records,parsed.groups);
+      syncRecordsToGroups();
      state.elements=state.elements.map(e=>({...{z:e.page==='*'?800:30,locked:false,hidden:false,bold:false,italic:false,underline:false,imageFit:'contain',blend:'normal'},...e}));
      serial=Math.max(1,...state.elements.map(e=>Number(String(e.id).split('-')[1])||0))+1;
      for(const font of (parsed.fonts||[]).slice(0,8)){try{await registerFont(font);}catch(e){}}
