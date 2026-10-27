@@ -359,3 +359,38 @@ Décision : la rubrique **News devient un chantier prioritaire**, après validat
 - Exception technique volontaire : l'éditeur et le lecteur News de cette branche utilisent toujours `stage=preview` et `phasmo_news_drafts`. Les publications et brouillons officiels restent isolés. Les contrôles du consentement du lecteur public sont ceux de main. Ces différences d'environnement ne constituent pas un nouveau chantier News.
 - Les anciens prototypes d'éditeur et documents de migrations sont conservés pour historique ; leur présence n'atteste ni de nouveaux travaux en cours ni de migrations à rejouer.
 - Aucune fusion vers main ni modification de Supabase/OVH. L'ancien point `sauvegarde/avant-refonte-phasmo` reste inchangé.
+
+
+## Carnet V4.3 et connexion Twitch commune au portail — décision du 27/10/2026
+
+**Statut : intégration planifiée sur `developpement/phasmo-v2` ; non développée par cette note, non publiée sur `main`.** La conception du carnet a été validée comme base de travail dans l'atelier HTML autonome **V4.3 Carnet brun** (fond exact `carnet brun(1).png` fourni en conversation ; calques textes/images, zones cliquables, redimensionnement, suppression intégrée, export JSON). L'intégration au module Phasmophobia V2 du site est désormais à préparer, sans importer automatiquement le HTML de démonstration comme administration de production.
+
+### Carnet : souplesse éditoriale indispensable
+
+- Pouvoir gérer **depuis une interface privée en ligne** les entités, maps, équipements, objets maudits, divers, ainsi que les futures catégories, sous-catégories, champs, sections, conseils et médias ; aucun nom ou nombre de fiches fixé dans le code.
+- Gérer l'ajout, l'édition, le classement, les images et leurs plans, les gabarits de page, les brouillons, la publication, l'archivage et, sous confirmation, la suppression ; les sommaires et flèches se mettent à jour depuis les contenus publiés.
+- Permissions explicites : **Deadelus** pourra administrer le carnet ; la responsable du site pourra également y accéder **si le besoin est confirmé**. Les droits de rédaction News ne donnent **aucun** droit implicite au carnet, et inversement.
+- Prévoir une importation/normalisation des réglages visuels JSON de l'atelier V4.3, sans exposer à tout le monde le mode de conception ni figer la mise en page du prototype.
+
+### Authentification : mutualiser la connexion Twitch déjà présente
+
+**Constat vérifié dans le code de cette branche :** `public/index.html` affiche un bouton « Connexion Twitch » **au sein de l'accordéon News** ; `public/modules/phasmophobia/news-access.js` initialise Supabase Auth via OAuth Twitch PKCE (`signInWithOAuth`), recharge la session et vérifie `phasmo_news_editors` puis `phasmo_news_admins`. `editor-private.js` utilise également cette identité pour l'accès au blog. Le module News a donc déjà une authentification utilisable, **mais son déclencheur est placé dans une zone métier, pas dans l'interface générale du site**.
+
+**Évolution demandée :** un **seul accès discret « Compte / Connexion Twitch »**, dans un emplacement commun du site (préférence de conception : icône/texte compact dans l'en-tête avec adaptation mobile ; emplacement final à valider), sans gros bouton de connexion au milieu de News ou du carnet. Quand l'utilisateur est connecté, ce même emplacement peut afficher son état de session, une déconnexion et les seuls raccourcis auxquels il a droit : « Gestion des actualités », « Administration du carnet », puis éventuellement « DBD », « TCG » et autres espaces.
+
+**Architecture cible :**
+- Une **identité Twitch / compte DeadelusTV** réutilisable pour les fonctionnalités du portail : Phasmophobia, DBD futur, TCG et autres modules compatibles. Réutiliser le fournisseur Supabase Auth existant ; éviter la prolifération de comptes et de boutons OAuth indépendants.
+- Un **module Auth partagé** dans les assets communs du portail, chargé une fois, proposant état connecté/déconnecté, connexion, déconnexion et retour OAuth. Les modules métiers consomment ce service et n'instancient pas chacun une deuxième expérience de connexion. Vérifier la cohérence entre clients Supabase JS et les éventuels stockages de session existants avant refactorisation.
+- Des **permissions séparées côté serveur/base (RLS)** : `phasmo_news_editor`, `phasmo_news_admin`, `phasmo_journal_admin` ou équivalent, futures permissions DBD/TCG. Les identifiants/UUID habilités sont affectés explicitement ; ne jamais inférer un pouvoir d'administration du pseudonyme Twitch, d'un statut modérateur, du simple login, ni d'un bouton masqué côté navigateur.
+- **Rédacteur News :** conserver l'accès actuel au blog, indépendamment du carnet. **Deadelus et la responsable du site :** accès carnet selon habilitation nominative. Un viewer connecté n'obtient aucun accès administratif.
+- **Compatibilité des origines/déploiements :** l'état d'authentification fonctionne naturellement à l'intérieur d'une même origine Web qui utilise la même instance/projet Supabase ; ne **pas** supposer le partage automatique de session entre OVH, un aperçu Cloudflare ou un frontend TCG séparé. Réexaminer les redirections OAuth autorisées et les callbacks avant modification ; ne pas casser la connexion News actuelle ni les comptes/permissions TCG. L'Auth de Crew'mong Us reste une intégration distincte hors de ce chantier.
+- **Sécurité et ergonomie :** le point d'entrée doit être discret, mais facile à retrouver ; droits vérifiés par RLS/API, lien admin affiché seulement aux autorisés, retour vers la rubrique voulue après login, déconnexion depuis le même point, accessibilité clavier et mobile, aucune clé secrète dans le JavaScript public.
+
+**Ordre prudent d'implémentation (sur branche uniquement) :**
+1. Inventaire de la session News existante et des contraintes de redirection ; définir le point d'accès commun sans impact sur le live et les autres sections.
+2. Extraire/mutualiser le service d'authentification Twitch ; déplacer le contrôle de session dans l'en-tête/panneau de compte ; maintenir l'édition News fonctionnelle et ses RLS.
+3. Ajouter la permission `phasmo_journal_admin` et les contrôles réels d'accès pour Deadelus, puis éventuellement la responsable du site ; revue préalable des changements Supabase nécessaires, sans les appliquer sans validation.
+4. Intégrer progressivement le moteur de carnet V4.3 (visuel + interactions) et les données dynamiques/écrans de gestion, avec brouillons et médias protégés.
+5. Tester visiteur anonyme, connecté sans rôle, rédacteur News, administrateur carnet, double permission, session révoquée, mobile, retours OAuth et déploiements prévisualisés ; ensuite seulement proposer une intégration ciblée à `main` après validation.
+
+**Ce qui n'a pas été fait ici :** pas de déplacement du bouton actuel, pas de refonte de l'Auth ni de l'éditeur News, pas de nouvelle permission ou table Supabase, pas d'attribution de rôle, pas de code de carnet intégré, pas de changement sur `main` ni sur OVH.
