@@ -187,13 +187,16 @@ html.journal-viewer #book .layer{cursor:default}
     <input id="font-input" type="file" accept=".ttf,.otf,.woff,.woff2"><input id="asset-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
     <p class="tip">Polices TTF, OTF, WOFF, WOFF2 (max. 1,5 Mo). Images optimisées à l’import puis incluses dans le JSON (jusqu’à 7 Mo par fichier source). Les droits d'utilisation restent à vérifier avant publication.</p>
   </div>
-  <div class="block">
-    <h3>5 · Listes du carnet (démo)</h3>
+  <div class="block" id="journal-record-manager">
+    <h3>5 · Fiches dynamiques (prototype local)</h3>
     <div class="field"><label for="group-edit">Catégorie</label><select id="group-edit"></select></div>
-    <div class="field"><label for="group-names">Noms, un par ligne</label><textarea id="group-names" rows="6"></textarea></div>
-    <p class="tip">Les listes liées à une catégorie sont automatiquement cliquables en mode Test. Les fiches affichent pour le moment des exemples sans données de jeu.</p>
+    <div class="field"><label for="record-select">Fiches (archives incluses)</label><select id="record-select" size="7" style="width:100%" aria-label="Choisir une fiche"></select></div>
+    <div class="field"><label for="record-title">Nom à ajouter ou à modifier</label><input id="record-title" type="text" maxlength="100" placeholder="Nom de la fiche"></div>
+    <div class="buttons"><button type="button" class="btn small" id="record-add">+ Ajouter</button><button type="button" class="btn small" id="record-rename">Renommer</button><button type="button" class="btn small" id="record-edit">Ouvrir la fiche</button></div>
+    <div class="buttons"><button type="button" class="btn small" id="record-up">↑ Monter</button><button type="button" class="btn small" id="record-down">↓ Descendre</button><button type="button" class="btn small" id="record-archive">Archiver</button><button type="button" class="btn small" id="record-delete">Supprimer…</button></div>
+    <p class="tip">Chaque fiche a un identifiant stable et ses propres calques. Les archives disparaissent des listes. <b>Prototype local uniquement : exporte le JSON pour conserver tes essais. Aucune publication Supabase.</b></p>
   </div>
-  <div class="block">
+<div class="block">
     <h3>6 · Sauvegardes</h3>
     <div class="buttons"><button id="export" class="btn solid" type="button">↓ Télécharger mes réglages</button><button id="import" class="btn" type="button">↑ Charger un JSON</button><button id="reset" class="btn" type="button">Réinitialiser l'atelier</button></div>
     <input id="json-input" type="file" accept="application/json,.json"><p class="tip">Les images et polices peuvent remplir le stockage du navigateur : <b>exporte régulièrement ton JSON</b>. Les réglages se conservent aussi dans ce navigateur quand le stockage local est autorisé. <b>Le JSON est la sauvegarde fiable à transmettre ici.</b> Compatible avec les exports du premier Atelier Sommaire.</p>
@@ -217,6 +220,12 @@ html.journal-viewer #book .layer{cursor:default}
   <button id="confirm-delete-layer" type="button">Supprimer définitivement</button>
  </div>
 </dialog>
+<dialog id="delete-record-dialog" aria-labelledby="delete-record-title">
+<h2 id="delete-record-title">Supprimer cette fiche ?</h2>
+<p id="delete-record-description"></p>
+<div class="dialog-buttons"><button type="button" id="record-delete-cancel">Annuler</button><button type="button" id="record-delete-confirm">Supprimer définitivement</button></div>
+</dialog>
+<script src="journal-records.js"></script>
 <script>
 'use strict';
 (() => {
@@ -225,6 +234,8 @@ if (VIEWER_ONLY) document.documentElement.classList.add('journal-viewer');
 const $ = s => document.querySelector(s);
 const COPY = x => JSON.parse(JSON.stringify(x));
 const SAVE_KEY='deadelustv.phasmo.atelier.complet.v4_3';
+const RECORDS=window.PHASMO_JOURNAL_RECORDS;
+const RECORD_SCHEMA=5;
 const OLD_SAVE_KEY='deadelustv.phasmo.atelier.complet.v4_2';
 const OLDER_SAVE_KEY='deadelustv.phasmo.atelier.complet.v4_1';
 const OLDEST_SAVE_KEY='deadelustv.phasmo.atelier.complet.v4';
@@ -273,18 +284,31 @@ function buildDefault(){
    items.push(layer(detail,'heading','Titre section droite','Notes de terrain',54,13,35,8,{size:62,align:'center'}));
    items.push(layer(detail,'text','Contenu futur','Prototype de fiche.\n\nLes informations et illustrations réelles seront ajoutées plus tard depuis le formulaire d’administration en ligne.',54,25,34,39,{size:28}));
  }
- return {version:4,groups:COPY(GROUPS),elements:items,fonts:[],grid:false,zoom:100};
+ return {version:RECORD_SCHEMA,groups:COPY(GROUPS),records:RECORDS.normalize(null,GROUPS),elements:items,fonts:[],grid:false,zoom:100};
 }
 let state=buildDefault();
-let mode='edit',view={page:'sommaire',group:null,name:null},selected=state.elements[0]?.id,drag=null,resizeDrag=null,saveTimer=null,currentScale=1;
+let mode='edit',view={page:'sommaire',group:null,name:null,entryId:null},selected=state.elements[0]?.id,drag=null,resizeDrag=null,saveTimer=null,currentScale=1,pendingRecordDelete=null;
 const book=$('#book'),surface=$('#element-surface'),wrap=$('#stage-wrap'),viewport=$('#stage-viewport');
 function note(message){$('#message').textContent=message;}
 function safeNum(value,fallback,min,max){const n=Number(value);return Number.isFinite(n)?Math.max(min,Math.min(max,n)):fallback;}
 function getSelected(){return state.elements.find(e=>e.id===selected);}
 function currentGroup(){return view.group||'entites';}
 function pageForView(){return view.page;}
-function readable(s){return String(s??'').replaceAll('{{nom}}',view.name||state.groups[currentGroup()].names[0]||'Fiche').replaceAll('{{categorie}}',state.groups[currentGroup()].label);}
-function visibleLayers(){return state.elements.filter(e=>e.page==='*'||e.page===view.page).sort((a,b)=>(a.z??30)-(b.z??30));}
+function readable(s){return String(s??'').replaceAll('{{nom}}',view.name||'Fiche modèle').replaceAll('{{categorie}}',state.groups[currentGroup()].label);}
+function recordPage(id){return 'entry:'+id;}
+function recordList(group,archived=false){return RECORDS.list(state.records,group,archived);}
+function ensureRecordPage(entry) {
+ const page=recordPage(entry.id);
+ if(state.elements.some(e=>e.page===page))return;
+ state.elements.push(...state.elements.filter(e=>e.page==='detail:'+entry.group)
+   .map(e=>({...COPY(e),id:'element-'+serial++,page})));
+}
+function syncRecordsToGroups(){for(const group of GROUP_ORDER)state.groups[group].names=recordList(group).map(r=>r.title);}
+function visibleLayers(){
+ const personal=view.entryId?recordPage(view.entryId):'';
+ const page=personal&&state.elements.some(e=>e.page===personal)?personal:view.page;
+ return state.elements.filter(e=>e.page==='*'||e.page===page).sort((a,b)=>(a.z??30)-(b.z??30));
+}
 function orderedLayers(){return visibleLayers().filter(e=>!e.hidden);}
 function sanitizeRich(text){
  // Parser sûr : jamais d'insertion de HTML provenant de la saisie.
@@ -302,15 +326,17 @@ function sanitizeRich(text){
  return fragment;
 }
 function setView(page,name=null){
- const split=page.split(':'); const group=split[1];
- if(page!=='sommaire' && !state.groups[group])return;
- if(page.startsWith('detail:')){
-   const choices=state.groups[group].names;
-   name=(name&&choices.includes(name))?name:(choices[0]||'Fiche');
- }
- view={page,group:group||null,name};
- if(!visibleLayers().some(e=>e.id===selected)) selected=visibleLayers().find(e=>e.page===page)?.id||visibleLayers()[0]?.id||null;
+ const group=page.split(':')[1];
+ if(page!=='sommaire'&&!state.groups[group])return;
+ const entry=page.startsWith('detail:')&&name?RECORDS.find(state.records,group,name):null;
+ if(name&&page.startsWith('detail:')&&!entry)return;
+ if(entry&&mode==='edit')ensureRecordPage(entry);
+ view={page,group:group||null,name:entry?.title||null,entryId:entry?.id||null};
+ const visible=visibleLayers();
+ if(!visible.some(e=>e.id===selected))selected=visible.find(e=>e.page!=='*')?.id||visible[0]?.id||null;
  $('#page-select').value=page;
+ if(group&&$('#group-edit').value!==group){$('#group-edit').value=group;renderRecordManager(entry?.id);}
+ else if(group&&entry)renderRecordManager(entry.id);
  renderLayers();renderLayerList();renderEditor();updateInfo();
 }
 function performAction(action,target,entry){
@@ -321,9 +347,9 @@ function performAction(action,target,entry){
  if(action==='next'||action==='prev'){
   const direction=action==='next'?1:-1;
   if(view.page.startsWith('detail:')){
-    const list=state.groups[view.group].names;
-    const ix=list.indexOf(view.name)+direction;
-    if(ix>=0&&ix<list.length)setView(view.page,list[ix]);
+    const list=recordList(view.group);
+    const ix=list.findIndex(e=>e.id===view.entryId)+direction;
+    if(view.entryId&&ix>=0&&ix<list.length)setView(view.page,list[ix].id);
     else note(ix<0?'Début de cette catégorie.':'Fin de cette catégorie.');
     return;
   }
@@ -334,18 +360,20 @@ function performAction(action,target,entry){
  }
 }
 function drawList(node,e){
- const lines=e.source&&state.groups[e.source]?state.groups[e.source].names:e.text.split('\n').map(x=>x.trim()).filter(Boolean);
- const rows=Math.max(1,Math.ceil(lines.length/Math.max(1,e.columns)));
+ const linked=e.source&&state.groups[e.source];
+ const entries=linked?recordList(e.source).map(r=>({title:r.title,id:r.id})):
+  e.text.split('\n').map(x=>x.trim()).filter(Boolean).map(title=>({title,id:null}));
+ const rows=Math.max(1,Math.ceil(entries.length/Math.max(1,e.columns)));
  const list=document.createElement('div');list.className='words';
- list.style.gridTemplateRows=`repeat(${rows},auto)`;
- list.style.gridTemplateColumns=`repeat(${e.columns},minmax(0,1fr))`;
- lines.forEach(word=>{
-  const btn=document.createElement('button');btn.className='word';btn.type='button';btn.textContent=word;
+ list.style.gridTemplateRows='repeat('+rows+',auto)';
+ list.style.gridTemplateColumns='repeat('+e.columns+',minmax(0,1fr))';
+ entries.forEach(entry=>{
+  const btn=document.createElement('button');btn.className='word';btn.type='button';btn.textContent=entry.title;
   btn.tabIndex=mode==='test'?0:-1;
   btn.addEventListener('click',ev=>{
-    if(mode!=='test')return;ev.stopPropagation();
-    const group=e.source||view.group;
-    if(group&&state.groups[group])setView('detail:'+group,word);
+   if(mode!=='test')return;ev.stopPropagation();
+   const group=e.source||view.group;
+   if(group&&state.groups[group])setView('detail:'+group,entry.id||entry.title);
   });
   list.append(btn);
  });
@@ -531,12 +559,15 @@ function stopResize(ev){
  resizeDrag=null;save();
 }
 function setMode(next){mode=next;$('#edit-mode').classList.toggle('active',mode==='edit');$('#test-mode').classList.toggle('active',mode==='test');
- renderLayers();updateInfo();note(mode==='test'?'Mode Test : clique sur les onglets, listes et flèches. Les zones invisibles sont activées.':'Mode Édition : clique sur un élément puis déplace-le ou redimensionne-le avec les poignées bleues.');
+ if(mode==='edit'&&view.entryId){const entry=RECORDS.find(state.records,view.group,view.entryId);if(entry)ensureRecordPage(entry);}
+ if(!visibleLayers().some(e=>e.id===selected))selected=visibleLayers().find(e=>e.page!=='*')?.id||null;
+ renderLayers();renderLayerList();renderEditor();updateInfo();
+ note(mode==='test'?'Mode Test : clique sur les onglets, listes et flèches.':'Mode Édition : déplace ou redimensionne les calques sélectionnés.');
 }
 function add(kind){
  if(mode!=='edit')setMode('edit');
  const base={heading:['Nouveau titre',45,14,32,8],text:['Nouveau texte',45,26,32,10],list:['Nom 1\nNom 2\nNom 3',45,40,32,16],tab:['NOUVEL ONGLET',58,5,13,6],hotspot:['',60,55,15,10],image:['',55,35,25,25],line:['',22,62,22,1]}[kind];
- const e=layer(view.page,kind,(kind==='hotspot'?'Zone cliquable':kind==='tab'?'Onglet':kind==='image'?'Image':kind==='line'?'Trait':'Calque')+' '+serial,base[0],base[1],base[2],base[3],base[4],kind==='hotspot'?{action:'home'}:{});
+ const e=layer(view.entryId?recordPage(view.entryId):view.page,kind,(kind==='hotspot'?'Zone cliquable':kind==='tab'?'Onglet':kind==='image'?'Image':kind==='line'?'Trait':'Calque')+' '+serial,base[0],base[1],base[2],base[3],base[4],kind==='hotspot'?{action:'home'}:{});
  if(kind==='tab')e.action='category';
  state.elements.push(e);selected=e.id;renderLayers();renderLayerList();renderEditor();save();note('Calque ajouté. Glisse-le à l’endroit voulu.');
 }
@@ -718,10 +749,10 @@ function makeIllustratedTemplate(){
  if(!view.page.startsWith('detail:')){
    note('Choisis d’abord une vue « Fiche · … » dans le menu au-dessus du livre.');return;
  }
- const old=state.elements.filter(x=>x.page===view.page);
- if(old.length&&!confirm('Créer le modèle de fiche illustrée ? Les calques propres à cette fiche seront remplacés (les onglets et flèches globaux resteront). Exporte tes réglages avant si tu veux conserver la mise en page actuelle.'))return;
- state.elements=state.elements.filter(x=>x.page!==view.page);
- const page=view.page;
+ const page=view.entryId?recordPage(view.entryId):view.page;
+ const old=state.elements.filter(x=>x.page===page);
+ if(old.length&&!confirm('Remplacer les calques de cette vue par le modèle illustré ? Exporte d’abord ton JSON si nécessaire.'))return;
+ state.elements=state.elements.filter(x=>x.page!==page);
  const put=(kind,name,text,x,y,w,h,extra={})=>state.elements.push(layer(page,kind,name,text,x,y,w,h,extra));
  // Fond propre à une fiche. Son niveau est inférieur à tous les titres et icônes.
  put('image','01 · Fantôme en filigrane (importer image)','',6,9,42,80,{role:'background',z:1,opacity:27,blend:'multiply',imageFit:'contain',locked:true});
@@ -775,7 +806,7 @@ function setup(){
  $('#make-detail-template').addEventListener('click',makeIllustratedTemplate);
  for(const [id,key] of [['el-imageopacity','opacity'],['el-imagerotate','rotate']])$('#'+id).addEventListener('input',ev=>{if(ev.target.value!=='')handleChange(key,ev.target.value);});
  $('#el-scope').addEventListener('change',ev=>{
-   const e=getSelected();if(!e)return;e.page=ev.target.value==='global'?'*':view.page;renderLayers();renderLayerList();save();
+   const e=getSelected();if(!e)return;e.page=ev.target.value==='global'?'*':(view.entryId?recordPage(view.entryId):view.page);renderLayers();renderLayerList();save();
  });
  $('#edit-mode').addEventListener('click',()=>setMode('edit'));
  $('#test-mode').addEventListener('click',()=>setMode('test'));
