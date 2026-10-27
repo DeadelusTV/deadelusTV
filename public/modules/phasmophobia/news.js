@@ -95,7 +95,12 @@
     link.rel = 'noopener noreferrer';
     link.setAttribute('aria-label', 'Toutes les actualités officielles chez Kinetic Games, nouvel onglet');
     const picture = el('span', 'phasma-news-card-picture phasma-news-card-picture--official');
-    picture.append(el('span', 'phasma-news-card-monogram', 'KG'));
+    const logo = el('img', 'phasma-news-card-image');
+    logo.src = 'assets/kinetic-games-news.webp';
+    logo.alt = 'Logo Kinetic Games';
+    logo.loading = 'lazy';
+    logo.decoding = 'async';
+    picture.append(logo);
     const content = el('span', 'phasma-news-card-content');
     content.append(
       el('span', 'phasma-news-card-kicker', 'SOURCE OFFICIELLE'),
