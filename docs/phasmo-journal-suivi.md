@@ -332,3 +332,12 @@ Décision : la rubrique **News devient un chantier prioritaire**, après validat
 - Dans l'éditeur, un bloc vidéo non modifiable dans son contenu peut être retiré ou ouvrir YouTube. Dans l'aperçu et le lecteur News public, le panneau vidéo n'ajoute un iframe `youtube-nocookie.com` **qu'après clic**, afin d'éviter les requêtes tierces automatiques. CSS responsive et règles de sécurité inchangées pour la publication `preview`.
 - Tests techniques : 13/13 vérifications statiques de l'intégration + 6/6 simulations publication GIF, couverture et YouTube ; stockage et règles confirmés par SQL. **Essai en navigateur réel des deux nouveautés à réaliser**. Les vidéos MP4 uploadées/hébergées directement ne sont pas prises en charge à cette étape ; priorité donnée à YouTube.
 - Ce travail reste sur `developpement/phasmo-v2`. Accès `mattarix_` toujours en attente du passage sur `main`.
+
+
+### Vignettes YouTube visibles avant lecture (27/10/2026)
+
+- Retour test réel : la vidéo YouTube s'affiche sous forme de rectangle sombre avec bouton « Lire la vidéo YouTube » **mais sans miniature**. Comportement initial intentionnel pour ne déclencher aucune ressource YouTube avant clic, mais résultat visuel jugé insatisfaisant.
+- Correction sur `developpement/phasmo-v2` : vignette `https://i.ytimg.com/vi/<videoId>/hqdefault.jpg` affichée en arrière-plan du lecteur, dans **l'éditeur / aperçu** et **la page News publique**, `loading=lazy`, `referrerPolicy=no-referrer`, cadrage responsive 16:9 avec assombrissement pour lisibilité. Si image indisponible, retour au panneau neutre existant.
+- La vignette fait désormais une requête vers **i.ytimg.com** avant clic (à signaler clairement) ; l'iframe `youtube-nocookie.com` et la lecture restent créées **seulement lors du clic**.
+- 10/10 vérifications statiques de rendu/absence de chargement anticipé du lecteur. Attente de la recette réelle dans Chrome/Edge, en navigation normale et privée.
+- Aucun changement Supabase, TCG ou `main`.
