@@ -341,3 +341,11 @@ Décision : la rubrique **News devient un chantier prioritaire**, après validat
 - La vignette fait désormais une requête vers **i.ytimg.com** avant clic (à signaler clairement) ; l'iframe `youtube-nocookie.com` et la lecture restent créées **seulement lors du clic**.
 - 10/10 vérifications statiques de rendu/absence de chargement anticipé du lecteur. Attente de la recette réelle dans Chrome/Edge, en navigation normale et privée.
 - Aucun changement Supabase, TCG ou `main`.
+
+
+### Validation lecteur YouTube et consentement (27/10/2026)
+
+- **Validation en conditions réelles par l'utilisatrice** : affichage du triangle Play seul sur la vignette YouTube et lancement du lecteur fonctionnent.
+- **Déclaration de l'utilisatrice** : elle a intégré ce lecteur au mécanisme de consentement de lecture du site. Cette intégration n'a pas fait l'objet d'un contrôle technique indépendant dans ce tour.
+- **À contrôler côté consentement** : les miniatures `https://i.ytimg.com/vi/<videoId>/hqdefault.jpg` sont chargées automatiquement dans la version actuelle, avant le clic sur Play. Leur chargement tiers doit être pris en compte par le dispositif de consentement si le choix utilisateur est censé bloquer toute requête YouTube préalable. L'iframe `www.youtube-nocookie.com` reste créé au clic dans le code de l'éditeur/lecteur.
+- Aucun changement de code ni de réglage de consentement effectué lors de cette validation ; seule la documentation de suivi est mise à jour.
