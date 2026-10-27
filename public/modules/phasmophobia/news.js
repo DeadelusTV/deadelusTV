@@ -267,7 +267,7 @@
           panel.classList.remove('phasma-youtube-card--with-thumb');
         },{once:true});
         panel.append(thumbnail);
-        const button=el('button','phasma-youtube-play','▶  Lire la vidéo YouTube');
+        const button=el('button','phasma-youtube-play');
         button.type='button';
         button.setAttribute('aria-label','Charger la vidéo YouTube intégrée');
         button.addEventListener('click',()=>{
