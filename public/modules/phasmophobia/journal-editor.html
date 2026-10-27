@@ -353,6 +353,7 @@ function setView(page,name=null,requestedFolder=null){
  if(page!=='sommaire'&&!state.groups[group])return;
  const entry=page.startsWith('detail:')&&name?RECORDS.find(state.records,group,name):null;
  if(name&&page.startsWith('detail:')&&!entry)return;
+ if(entry&&(entry.status==='archived'||!FOLDERS.available(state.folders,group,entry.folderId)))return;
  if(entry&&mode==='edit')ensureRecordPage(entry);
  const folderId=entry?.folderId||((page.startsWith('category:')&&
    FOLDERS.available(state.folders,group,requestedFolder))?requestedFolder:null);
