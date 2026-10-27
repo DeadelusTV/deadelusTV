@@ -17,6 +17,7 @@
   const KEY = 'deadelustv.phasmo.editor.wysiwyg.v1';
   const LEGACY = 'deadelustv.phasmo.editor.demo.v1';
   const MAX_DRAFTS = 40, MAX_IMAGE = 10 * 1024 * 1024;
+  const MAX_LIST_LEVEL = 5;
   const MIME = ['image/png','image/jpeg','image/webp','image/gif'];
   const tempUrls = new Set(), covers = new Map();
   const pendingImages=new Map(), failedImages=new Map();
@@ -205,6 +206,12 @@
   function parseList(list,type,depth){
     const items=[];
     for(const li of list.children){
+      // Chrome peut placer la sous-liste après son élément parent, dans ul/ol.
+      if(li.tagName==='UL'||li.tagName==='OL'){
+        if(!items.length)items.push({type:'listItem',content:[para('')]});
+        items[items.length-1].content.push(parseList(li,li.tagName==='UL'?'bulletList':'orderedList',depth+1));
+        continue;
+      }
       if(li.tagName!=='LI')continue;
       const blocks=readBlocks(li,'paragraph',depth+1);
       items.push({type:'listItem',content:blocks.length?blocks:[para('')]});
@@ -526,6 +533,41 @@
     const selection=window.getSelection();
     return selection?.rangeCount&&root.contains(selection.anchorNode);
   }
+  function listLevel(item){
+    let level=0;
+    for(let node=item.parentElement;node&&node!==root;node=node.parentElement)
+      if(node.tagName==='UL'||node.tagName==='OL')level++;
+    return level;
+  }
+  function listContext(){
+    if(!selectionInside())return null;
+    const range=window.getSelection().getRangeAt(0);
+    const itemAt=node=>{
+      const element=node.nodeType===Node.ELEMENT_NODE?node:node.parentElement;
+      const item=element?.closest('li');
+      return item&&root.contains(item)?item:null;
+    };
+    const first=itemAt(range.startContainer),last=itemAt(range.endContainer);
+    if(!first||!last||first.parentElement!==last.parentElement)return null;
+    const siblings=Array.from(first.parentElement.children).filter(node=>node.tagName==='LI');
+    const items=siblings.slice(siblings.indexOf(first),siblings.indexOf(last)+1);
+    if(!items.length)return null;
+    const deepest=Math.max(...items.flatMap(item=>[item,...item.querySelectorAll('li')]).map(listLevel));
+    return{canIndent:first.previousElementSibling!==null&&deepest<MAX_LIST_LEVEL,
+      canOutdent:listLevel(first)>1,deepest};
+  }
+  function changeListLevel(outdent=false){
+    const context=listContext();
+    if(!context){report('Placez le curseur dans une liste, ou sélectionnez des éléments du même niveau.');return;}
+    if(outdent&&!context.canOutdent){report('Cet élément est déjà au niveau principal de la liste.');return;}
+    if(!outdent&&!context.canIndent){
+      report(context.deepest>=MAX_LIST_LEVEL
+        ?'Les listes sont limitées à cinq niveaux pour conserver leur contenu.'
+        :'Ajoutez un élément parent au-dessus avant de créer une sous-liste.');
+      return;
+    }
+    command(outdent?'outdent':'indent');
+  }
   function updateToolbar(){
     const map={bold:'bold',italic:'italic',underline:'underline','align-left':'justifyLeft',
       'align-center':'justifyCenter','align-right':'justifyRight',
@@ -537,6 +579,11 @@
       if(selectionInside())try{enabled=document.queryCommandState(key);}catch{}
       button.setAttribute('aria-pressed',String(enabled));
     }
+    const context=listContext();
+    const indentButton=toolbar.querySelector('[data-format="indent-list"]');
+    const outdentButton=toolbar.querySelector('[data-format="outdent-list"]');
+    if(indentButton)indentButton.disabled=!context?.canIndent;
+    if(outdentButton)outdentButton.disabled=!context?.canOutdent;
     const s=$('#wys-block-style');
     if(!s||!selectionInside())return;
     try{
@@ -641,6 +688,13 @@
     selection.removeAllRanges();selection.addRange(range);
     savedRange=range.cloneRange();
   });
+  root.addEventListener('keydown',event=>{
+    if(event.key!=='Tab'||event.ctrlKey||event.altKey||event.metaKey)return;
+    const context=listContext();
+    if(!context||(event.shiftKey?!context.canOutdent:!context.canIndent))return;
+    event.preventDefault();
+    changeListLevel(event.shiftKey);
+  });
   root.addEventListener('input',changed);
   root.addEventListener('keyup',updateToolbar);
   document.addEventListener('selectionchange',()=>{
@@ -663,6 +717,7 @@
     if(!button)return;
     restoreSelection();
     const key=button.dataset.format;
+    if(key==='indent-list'||key==='outdent-list'){changeListLevel(key==='outdent-list');return;}
     const methods={bold:'bold',italic:'italic',underline:'underline',
       'align-left':'justifyLeft','align-center':'justifyCenter','align-right':'justifyRight',
       'bullet-list':'insertUnorderedList','ordered-list':'insertOrderedList',

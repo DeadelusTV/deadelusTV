@@ -120,6 +120,8 @@
             <span class="phasma-wysiwyg-toolbar-divider" aria-hidden="true"></span>
             <button type="button" data-format="bullet-list" title="Liste à puces" aria-label="Liste à puces" aria-pressed="false">• Liste</button>
             <button type="button" data-format="ordered-list" title="Liste numérotée" aria-label="Liste numérotée" aria-pressed="false">1. Liste</button>
+            <button type="button" data-format="indent-list" title="Créer une sous-liste (Tab)" aria-label="Créer une sous-liste" disabled>→ Sous-liste</button>
+            <button type="button" data-format="outdent-list" title="Remonter d’un niveau (Maj+Tab)" aria-label="Remonter d’un niveau" disabled>← Remonter</button>
             <button type="button" data-format="link" title="Insérer ou modifier un lien" aria-label="Insérer un lien" aria-pressed="false">Lien</button>
             <span class="phasma-wysiwyg-toolbar-divider" aria-hidden="true"></span>
             <button type="button" id="wys-image-pc" title="Insérer une image depuis le PC">+ Image PC</button>
@@ -132,7 +134,7 @@
           <input id="wys-image-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden aria-label="Sélectionner une image à insérer">
           <div id="wys-editor" class="phasma-wysiwyg-editor" aria-label="Zone de rédaction de l'article"></div>
         </div>
-        <p class="phasma-wysiwyg-hint">Astuce : collez du texte Discord et insérez des images GIF/WebP animées depuis leur fichier original ou leur URL. Le presse-papiers peut figer une animation. Vous pouvez aussi intégrer des liens YouTube.</p>
+        <p class="phasma-wysiwyg-hint">Astuce : collez du texte Discord et insérez des images GIF/WebP animées depuis leur fichier original ou leur URL. Le presse-papiers peut figer une animation. Dans une liste : Tab crée une sous-liste, Maj+Tab remonte d’un niveau (cinq niveaux maximum). Vous pouvez aussi intégrer des liens YouTube.</p>
         <p id="wys-editor-error" class="phasma-editor-image-error" role="alert" hidden></p>
       </div>
       <div class="phasma-editor-bottom">
