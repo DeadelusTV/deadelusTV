@@ -356,6 +356,11 @@
   list-style: disc;
   padding-left: 1.7rem;
 }
+/* Même hiérarchie de puces que dans le bureau de rédaction. */
+#page-phasmophobia .phasma-news-article ul.phasma-news-article-list ul { list-style-type: circle; }
+#page-phasmophobia .phasma-news-article ul.phasma-news-article-list ul ul { list-style-type: square; }
+#page-phasmophobia .phasma-news-article ul.phasma-news-article-list ul ul ul { list-style-type: disc; }
+#page-phasmophobia .phasma-news-article ul.phasma-news-article-list ul ul ul ul { list-style-type: circle; }
 #page-phasmophobia .phasma-news-article-figure img {
   max-width: 100%;
   height: auto;
