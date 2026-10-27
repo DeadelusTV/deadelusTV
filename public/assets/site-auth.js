@@ -12,7 +12,8 @@
   const status = document.getElementById('site-account-status');
   const note = document.getElementById('site-account-note');
   const newsLink = document.getElementById('site-account-news-link');
-  if (!root || !toggle || !menu || !signin || !signout || !status || !note || !newsLink) return;
+  const journalLink = document.getElementById('site-account-journal-link');
+  if (!root || !toggle || !menu || !signin || !signout || !status || !note || !newsLink || !journalLink) return;
 
   // Clé publiable uniquement. Le même projet Auth est déjà utilisé par les News.
   const PROJECT_URL = 'https://eodtxlhnfzyapkyvvxdi.supabase.co';
@@ -34,6 +35,7 @@
     signin.hidden = false;
     signout.hidden = true;
     newsLink.hidden = true;
+    journalLink.hidden = true;
     toggle.title = 'Compte · non connecté';
   }
   function notifyAuth(userId) {
@@ -97,6 +99,13 @@
     if (admins.error) throw admins.error;
     return admins.data?.enabled === true;
   }
+  async function canManageJournal(auth, userId) {
+    // Table dédiée à créer via migration validée ; en son absence, aucun droit accordé.
+    const {data,error} = await auth.from('phasmo_journal_admins')
+      .select('enabled').eq('user_id',userId).maybeSingle();
+    if (error) return false;
+    return data?.enabled === true;
+  }
   async function refresh() {
     const currentRequest = ++requestNumber;
     status.textContent = 'Vérification de la connexion…';
@@ -118,6 +127,7 @@
       signout.hidden = false;
       toggle.title = 'Compte · connecté';
       newsLink.hidden = true;
+      journalLink.hidden = true;
       notifyAuth(user.id);
       try {
         const allowed = await canManageNews(auth, user.id);
@@ -125,6 +135,13 @@
         newsLink.hidden = !allowed;
       } catch {
         if (currentRequest === requestNumber) showNote('Vérification des droits News indisponible.');
+      }
+      // Permission du carnet indépendante du rôle de rédaction News.
+      try {
+        const journalAllowed = await canManageJournal(auth, user.id);
+        if (currentRequest === requestNumber) journalLink.hidden = !journalAllowed;
+      } catch {
+        journalLink.hidden = true;
       }
     } catch {
       if (currentRequest !== requestNumber) return;
@@ -212,5 +229,5 @@
   // Ne charge pas le fournisseur chez un visiteur anonyme tant qu'il n'ouvre pas
   // le compte/News, sauf au retour d'une redirection OAuth.
   if (returning || new URLSearchParams(window.location.search).has('code')) refresh();
-  window.DEADELUSTV_AUTH = Object.freeze({ getClient, refresh, canManageNews });
+  window.DEADELUSTV_AUTH = Object.freeze({ getClient, refresh, canManageNews, canManageJournal });
 })();
