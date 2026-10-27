@@ -1,0 +1,847 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Atelier du carnet Phasmophobia · DeadelusTV (prototype)</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Caveat:wght@400;600;700&family=Gloria+Hallelujah&family=Indie+Flower&family=Kalam:wght@400;700&family=Patrick+Hand&display=swap');
+:root{font-family:Arial,Helvetica,sans-serif;--bg:#0e0f10;--surface:#19191a;--surface2:#242322;--line:#3c372f;--gold:#dec089;--muted:#b9ae9c;--text:#f3e7d7;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-size:13px}button,input,textarea,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.35;cursor:default}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,.item:focus-visible{outline:2px solid #deb56e;outline-offset:2px}
+header{min-height:69px;padding:12px 23px;border-bottom:1px solid #3c352c;display:flex;justify-content:space-between;align-items:center;gap:14px;background:#121313}
+.brand{display:flex;align-items:center;gap:13px}.sigil{height:39px;width:39px;display:grid;place-items:center;border:1px solid #9f8658;color:#e7c587;border-radius:8px;font:25px Georgia,serif}
+header h1{margin:0;font:600 19px Georgia,serif}header p{margin:5px 0 0;color:#ad9e88;font-size:11px}.header-right{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.pill{padding:6px 11px;border:1px solid #6b5537;border-radius:20px;color:#d8bb88;font-size:11px;white-space:nowrap}
+main{display:grid;grid-template-columns:362px minmax(0,1fr);height:calc(100dvh - 69px);min-height:580px}
+aside{background:#1a1a1a;border-right:1px solid #39342e;padding:18px 17px 28px;overflow-y:auto;scrollbar-color:#6f5a39 #1a1a1a}
+aside h2{font-size:12px;color:#e4c48c;text-transform:uppercase;letter-spacing:1.8px;margin:0 0 12px}
+aside p.lead{font-size:12px;color:#afa69b;line-height:1.6;margin:0 0 16px}
+.block{border-top:1px solid #3a352e;padding:14px 0}.block h3{font-size:12px;color:#e6d0ac;margin:0 0 12px;font-weight:700}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:11px}.field label{color:#cabba5;font-size:11px}.field input:not([type="color"]):not([type="checkbox"]):not([type="file"]),.field select,.field textarea{width:100%;min-height:35px;padding:8px;background:#101112;border:1px solid #5d513f;border-radius:5px;color:#f5e8d8}
+.field textarea{min-height:90px;resize:vertical;line-height:1.4}.field input[type="color"]{width:100%;height:34px;border-radius:5px;background:#151515;border:1px solid #5d513f;padding:2px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.inline{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.inline label{font-size:11px;color:#c7bba8}.buttons{display:flex;flex-wrap:wrap;gap:7px}.btn{border:1px solid #725938;background:#2c261e;color:#ead6b5;border-radius:5px;padding:9px 11px;font-size:12px}.btn:hover{background:#433424}.btn.solid{background:#bda071;color:#1f180e;font-weight:700}.btn.solid:hover{background:#d0b480}.btn.active{background:#e4c48c;color:#1e160d;font-weight:700;border-color:#eacb97}.btn.small{padding:6px 8px;font-size:11px}
+.tip{font-size:11px;line-height:1.55;color:#aea193;margin:7px 0}.warn{color:#e9c780}
+.item-list{display:flex;flex-direction:column;gap:5px;max-height:195px;overflow-y:auto;padding-right:4px}
+.item{display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid #41392f;border-radius:4px;background:#24221f;color:#d9c7ae;padding:8px;text-align:left;font-size:11px}.item:hover{border-color:#9d8056}.item.selected{border-color:#d4ac6e;background:#51412a;color:#f4e5c8}.item small{opacity:.62}
+.is-hidden{display:none!important}
+.workspace{display:flex;flex-direction:column;min-width:0;background:radial-gradient(ellipse at 50% 22%,#292423 0%,#0c0d0e 66%)}
+.workbar{border-bottom:1px solid #35302b;display:flex;align-items:center;gap:10px;padding:10px 18px;flex-wrap:wrap;min-height:58px}.workbar label{color:#bfb19d;font-size:11px}
+.workbar select{padding:7px;background:#171717;border:1px solid #63513c;color:#eee1ca;border-radius:5px;max-width:235px}.workbar .push{margin-left:auto}
+.stage-viewport{flex:1;min-height:0;overflow:auto;display:flex;align-items:flex-start;justify-content:flex-start;padding:32px 20px 40px}
+#stage-wrap{position:relative;margin:auto;flex:none}#book{width:1536px;height:1024px;position:absolute;left:0;top:0;transform-origin:top left;user-select:none;-webkit-user-select:none}
+#book .book-image{position:absolute;inset:0;display:block;width:100%;height:100%;pointer-events:none}
+#book .layer{position:absolute;z-index:3;margin:0;padding:2px;min-width:0;transform-origin:50% 50%;color:#26190c;font-family:'Kalam',cursive;white-space:pre-wrap;overflow-wrap:anywhere;touch-action:none}
+#book.edit-mode .layer.selected{outline:2px dashed #6fb0ff;outline-offset:3px}
+#book.edit-mode .layer.selected[data-kind="line"]{outline-offset:4px}
+#book .resize-handle{position:absolute;width:16px;height:16px;border-radius:50%;background:#78b7ff;border:2px solid #ffffff;box-shadow:0 1px 6px rgba(0,0,0,.4);pointer-events:auto;display:none;z-index:20}
+#book.edit-mode .layer.selected .resize-handle{display:block}
+#book .resize-handle[data-dir="nw"]{left:-10px;top:-10px;cursor:nwse-resize}
+#book .resize-handle[data-dir="ne"]{right:-10px;top:-10px;cursor:nesw-resize}
+#book .resize-handle[data-dir="sw"]{left:-10px;bottom:-10px;cursor:nesw-resize}
+#book .resize-handle[data-dir="se"]{right:-10px;bottom:-10px;cursor:nwse-resize}
+#book .layer[data-kind="heading"]{font-family:'Caveat',cursive;font-weight:700;line-height:1}
+#book .layer[data-kind="text"]{line-height:1.28}
+#book .layer[data-kind="list"]{line-height:1.18}
+#book .layer[data-kind="image"]{display:grid;place-items:center;overflow:hidden;border-radius:2px}
+#book .layer[data-kind="image"] img{height:100%;width:100%;object-fit:contain;pointer-events:none}
+#book.edit-mode .layer.selected[data-kind="image"]{overflow:visible}
+#book.edit-mode .layer[data-locked="true"]{pointer-events:none}
+#book.edit-mode .layer[data-kind="image"][data-locked="true"]{outline:1px dotted #a18860}
+#book .layer[data-kind="text"] .formatted, #book .layer[data-kind="heading"] .formatted{white-space:pre-wrap}
+#book .layer u{text-decoration:underline;text-decoration-thickness:.055em;text-underline-offset:.09em}
+#book .layer strong{font-weight:700}
+#book .layer em{font-style:italic}
+#book .layer[data-kind="hotspot"]{border:1px dashed transparent}
+#book .layer[data-kind="hotspot"] .hit-caption{position:absolute;left:0;top:0;background:#ac8155;color:#1b1004;font:600 19px Arial,sans-serif;border-radius:0 0 4px 0;padding:3px 7px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;pointer-events:none}
+#book .layer[data-kind="tab"]{display:flex;align-items:center;justify-content:center;font-family:'Caveat',cursive;font-weight:700;color:#2a1c0e;text-shadow:0 1px 1px #ffedce;white-space:nowrap}
+#book .layer[data-kind="line"]{border-top:3px solid #2b2119;height:4px!important;min-height:0!important}
+#book .layer[data-kind="list"] .words{display:grid;gap:0 12px;grid-auto-flow:column;align-items:start}
+#book .layer[data-kind="list"] .words .word{display:block;color:inherit;text-decoration:none;text-align:inherit;border:0;background:transparent;padding:0 2px;font:inherit;white-space:normal;overflow-wrap:anywhere;cursor:inherit}
+#book .layer[data-kind="list"] .words .word:hover{color:#76431c;text-decoration:underline}
+#book.edit-mode .layer{cursor:grab}#book.edit-mode .layer:hover{outline:2px dashed #9b6935a8;outline-offset:1px}
+#book.edit-mode .layer.selected{outline:3px dashed #68380f;outline-offset:2px;background:#e4a84021}
+#book.edit-mode .layer[data-kind="hotspot"]{background:#4fbad04a;border:2px dashed #0c7489}
+#book.edit-mode .layer[data-kind="hotspot"].selected{background:#4fbad074;border-color:#064e5b}
+#book.edit-mode .layer .word{pointer-events:none}
+#book.edit-mode .layer:active{cursor:grabbing}
+#book.test-mode .layer.interactive{cursor:pointer}
+#book.test-mode .layer.interactive:hover{outline:2px solid #7a4c23aa;border-radius:2px}
+#book.test-mode .layer[data-kind="hotspot"]{background:transparent!important;border-color:transparent!important}
+#book.test-mode .layer[data-kind="hotspot"]:hover{outline:2px solid #bb8d51a8}
+#book.test-mode .layer[data-kind="hotspot"] .hit-caption{display:none}
+#book.test-mode .layer[data-kind="list"] .word{cursor:pointer}
+#book.test-mode .layer[data-kind="list"] .word:focus-visible{outline:3px solid #85541d}
+#book.show-grid:after{position:absolute;inset:0;z-index:20;pointer-events:none;content:'';background-image:linear-gradient(to right,#966b3d32 1px,transparent 1px),linear-gradient(to bottom,#966b3d32 1px,transparent 1px);background-size:5% 5%}
+#book.show-grid:before{position:absolute;content:'';top:0;bottom:0;left:50%;border-left:1px dashed #90643789;z-index:21;pointer-events:none}
+.status{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;border-top:1px solid #36302a;padding:11px 18px;color:#a99b86;font-size:11px;min-height:43px}#message{color:#ebc990}
+#asset-input,#json-input,#font-input{display:none}
+@media(max-width:1050px){main{grid-template-columns:310px minmax(0,1fr)}aside{padding:14px 12px}.stage-viewport{padding:18px 10px}}
+@media(max-width:760px){header{padding:10px 14px}header h1{font-size:15px}header .pill{display:none}main{display:flex;flex-direction:column;height:auto;min-height:0}aside{order:2;overflow:visible}.workspace{order:1;height:65dvh;min-height:380px}.workbar{padding:8px}.stage-viewport{padding:12px}.status{padding:8px}}
+
+/* Fenêtre de confirmation interne, indépendante des confirm() de Chrome. */
+#delete-layer-dialog{background:#211b17;color:#f4e8d8;border:1px solid #b8965d;border-radius:12px;max-width:min(440px,calc(100vw - 32px));padding:24px;box-shadow:0 24px 90px #000d;font:14px/1.5 Arial,sans-serif}
+#delete-layer-dialog::backdrop{background:#0009;backdrop-filter:blur(2px)}
+#delete-layer-dialog h2{font:700 22px Georgia,serif;margin:0 0 12px;color:#ecd2a9}
+#delete-layer-dialog p{margin:0 0 22px;overflow-wrap:anywhere}
+#delete-layer-dialog .dialog-buttons{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+#delete-layer-dialog button{border-radius:5px;padding:9px 14px;border:1px solid #806b4b;background:#31281f;color:#f4e8d8;cursor:pointer}
+#delete-layer-dialog #confirm-delete-layer{background:#803528;border-color:#bf695b;color:#fff7f0}
+#delete-layer-dialog button:focus-visible{outline:2px solid #edc388;outline-offset:3px}
+</style>
+
+<style id="journal-viewer-rules">
+html.journal-viewer,html.journal-viewer body{width:100%;height:100%;margin:0;overflow:hidden;background:transparent}
+html.journal-viewer header,html.journal-viewer aside,html.journal-viewer .workbar,html.journal-viewer .status,
+html.journal-viewer #delete-layer-dialog,html.journal-viewer #journal-editor-preview-notice{display:none!important}
+html.journal-viewer main{display:block;height:100%;min-height:0}
+html.journal-viewer .workspace{height:100%;min-height:0;background:transparent}
+html.journal-viewer #stage-viewport{height:100%;padding:0;overflow:auto;align-items:center;justify-content:center}
+html.journal-viewer #stage-wrap{margin:auto}
+html.journal-viewer #book{box-shadow:none}
+html.journal-viewer #book .layer{cursor:default}
+@media(max-width:700px){html.journal-viewer #stage-viewport{justify-content:flex-start;align-items:center;padding:0}}
+</style>
+</head>
+<body>
+<header><div class="brand"><div class="sigil">✦</div><div><h1>Atelier V4.3 du journal Phasmophobia</h1><p>DeadelusTV · Mise en page, images superposées, typographie et zones cliquables</p></div></div><div class="header-right"><span class="pill">Prototype local · Aucun changement sur GitHub</span></div><div id="journal-editor-preview-notice" role="note" style="width:100%;padding:5px 12px;border:1px solid #7c623b;border-radius:5px;background:#32281f;color:#f0d9b0;font:12px Arial,sans-serif">Atelier de prévisualisation : sauvegarde locale dans ce navigateur et export JSON. Les changements ne sont pas encore publiés pour les visiteurs.</div></header>
+<main>
+<aside>
+  <h2>Atelier de mise en page</h2>
+  <p class="lead">En <b>Édition</b>, clique puis déplace un élément sur le livre. En <b>Test</b>, les onglets, flèches, noms et zones cliquables fonctionnent. Les coordonnées sont communes à toutes les tailles d'écran.</p>
+  <div class="block" style="padding-top:5px;border:0">
+    <h3>1 · Mode de travail</h3>
+    <div class="buttons"><button id="edit-mode" class="btn active" type="button">✎ Édition</button><button id="test-mode" class="btn" type="button">▶ Tester les clics</button><button class="btn" type="button" id="grid">Afficher la grille</button></div>
+  </div>
+  <div class="block">
+    <h3>2 · Calques de cette page</h3>
+    <div class="field"><label for="layers">Sélectionner un élément</label><div id="layers" class="item-list" role="listbox" aria-label="Éléments de la page"></div></div>
+    <div class="buttons" style="margin:8px 0 11px"><button id="remove-quick" class="btn small" type="button" title="Supprimer le calque sélectionné">🗑 Supprimer la sélection</button></div>
+    <div class="buttons"><button id="add-heading" class="btn small" type="button">+ Titre</button><button id="add-text" class="btn small" type="button">+ Texte</button><button id="add-list" class="btn small" type="button">+ Liste</button><button id="add-tab" class="btn small" type="button">+ Onglet</button><button id="add-hotspot" class="btn small" type="button">+ Zone cliquable</button><button id="add-image" class="btn small" type="button">+ Image</button><button id="add-line" class="btn small" type="button">+ Trait</button></div>
+    <p class="tip">Les zones cliquables sont <b>bleues en édition</b> et <b>invisibles en test</b>. Les textes et les onglets peuvent aussi avoir leur propre action.</p>
+  </div>
+  <div class="block">
+    <h3>Calques d'images et fiche illustrée</h3>
+    <div class="buttons"><button id="add-background" class="btn small" type="button">+ Image de fond</button><button id="add-multi-image" class="btn small" type="button">+ Plusieurs images</button><button id="make-detail-template" class="btn small" type="button">＋ Modèle fiche illustrée</button></div>
+    <p class="tip">Pour une fiche comme Aswang : image fantomatique <b>derrière</b>, trois preuves <b>devant</b>, puis autant de titres et paragraphes que nécessaire. Sélectionne <b>Fiche · Les Entités</b> dans « Vue à travailler » avant de créer le modèle.</p>
+    <input id="multi-image-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden>
+  </div>
+  <div class="block" id="editor-panel">
+    <h3>3 · Réglages de l'élément sélectionné</h3>
+    <div class="field"><label for="el-name">Nom du calque (atelier)</label><input id="el-name" type="text" maxlength="100"></div>
+    <div class="field" id="text-field"><label for="el-text">Texte à afficher (ou liste : un élément par ligne)</label><textarea id="el-text" rows="4"></textarea></div>
+    <div class="two">
+      <div class="field"><label for="el-x">Position X (%)</label><input id="el-x" type="number" step="0.1" min="0" max="99"></div>
+      <div class="field"><label for="el-y">Position Y (%)</label><input id="el-y" type="number" step="0.1" min="0" max="99"></div>
+      <div class="field"><label for="el-w">Largeur (%)</label><input id="el-w" type="number" step="0.1" min="0.5" max="100"></div>
+      <div class="field"><label for="el-h">Hauteur (%)</label><input id="el-h" type="number" step="0.1" min="0.5" max="100"></div>
+    </div>
+    <div class="two" id="text-controls">
+      <div class="field"><label for="el-size">Taille (px)</label><input id="el-size" type="number" min="8" max="120" step="1"></div>
+      <div class="field"><label for="el-font">Police</label><select id="el-font"></select></div>
+      <div class="field"><label for="el-color">Couleur</label><input id="el-color" type="color"></div>
+      <div class="field"><label for="el-align">Alignement</label><select id="el-align"><option value="left">Gauche</option><option value="center">Centré</option><option value="right">Droite</option></select></div>
+      <div class="field"><label for="el-columns">Colonnes (liste)</label><input id="el-columns" type="number" min="1" max="6" step="1"></div>
+      <div class="field"><label for="el-line">Interligne</label><input id="el-line" type="number" min="0.75" max="2.6" step="0.05"></div>
+      <div class="field"><label for="el-rotate">Inclinaison (°)</label><input id="el-rotate" type="number" min="-40" max="40" step="0.5"></div>
+      <div class="field"><label for="el-opacity">Opacité (%)</label><input id="el-opacity" type="number" min="0" max="100" step="1"></div>
+    </div>
+    <div class="block" style="border-top:1px solid #42392e;margin-top:9px">
+      <h3>Ordre et visibilité des calques</h3>
+      <div class="field"><label for="el-z">Profondeur (niveau du calque)</label><input id="el-z" type="number" step="1" min="-100" max="2000"></div>
+      <div class="buttons">
+        <button id="layer-bottom" class="btn small" type="button" title="Derrière les autres éléments de cette vue">Tout derrière</button>
+        <button id="layer-down" class="btn small" type="button">↓ Reculer</button>
+        <button id="layer-up" class="btn small" type="button">↑ Avancer</button>
+        <button id="layer-top" class="btn small" type="button">Tout devant</button>
+      </div>
+      <div class="inline" style="margin-top:12px"><label><input id="el-locked" type="checkbox"> Verrouiller le déplacement</label><label><input id="el-hidden" type="checkbox"> Masquer ce calque</label></div>
+      <p class="tip">Un fond peut être au niveau 1, les textes au niveau 20, les images des preuves au niveau 30. Même si un fond masque tout, son calque reste sélectionnable dans la liste.</p>
+    </div>
+    <div class="block" id="image-settings" style="border-top:1px solid #42392e;margin-top:9px">
+      <h3>Réglages d'image</h3>
+      <div class="two">
+        <div class="field"><label for="el-imagefit">Remplissage</label><select id="el-imagefit"><option value="contain">Image entière</option><option value="cover">Remplir / rogner</option><option value="fill">Étendre</option></select></div>
+        <div class="field"><label for="el-blend">Fusion avec le papier</label><select id="el-blend"><option value="normal">Normal</option><option value="multiply">Produit / encre</option><option value="screen">Écran</option><option value="darken">Assombrir</option></select></div>
+      </div>
+      <div class="two"><div class="field"><label for="el-imageopacity">Opacité de l'image (%)</label><input id="el-imageopacity" type="number" min="0" max="100" step="1"></div><div class="field"><label for="el-imagerotate">Inclinaison de l'image (°)</label><input id="el-imagerotate" type="number" min="-40" max="40" step="0.5"></div></div>
+      <p class="tip">Pour une silhouette spectrale en filigrane : <b>Produit / encre</b>, opacité 15 à 30 %, et calque derrière les textes. Les images transparentes PNG/WebP sont idéales.</p>
+    </div>
+    <div class="block" id="format-controls" style="border-top:1px solid #42392e;margin-top:9px">
+      <h3>Mise en forme du texte</h3>
+      <div class="inline"><label><input id="el-bold" type="checkbox"> Gras</label><label><input id="el-italic" type="checkbox"> Italique</label><label><input id="el-underline" type="checkbox"> Souligné</label></div>
+      <p class="tip">Ces cases agissent sur <b>tout le bloc</b>. Pour ne souligner que quelques mots : sélectionne-les dans « Texte à afficher », puis utilise les boutons ci-dessous.</p>
+      <div class="buttons"><button id="mark-bold" class="btn small" type="button">** Gras</button><button id="mark-italic" class="btn small" type="button">* Italique</button><button id="mark-underline" class="btn small" type="button"><u>Souligner</u></button></div>
+    </div>
+    <div class="field"><label for="el-scope">Sur quelles pages ?</label><select id="el-scope"><option value="page">Page actuellement choisie</option><option value="global">Toutes les pages (onglets, flèches…)</option></select></div>
+    <div class="field" id="action-field"><label for="el-action">Action au clic (en mode Test)</label><select id="el-action"><option value="none">Aucune</option><option value="home">Accueil du journal</option><option value="category">Ouvrir une catégorie</option><option value="detail">Ouvrir une fiche</option><option value="prev">Fiche / page précédente</option><option value="next">Fiche / page suivante</option><option value="back">Retour à la liste courante</option></select></div>
+    <div class="field" id="target-field"><label for="el-target">Catégorie ciblée</label><select id="el-target"><option value="entites">Entités</option><option value="cartes">Maps</option><option value="objets">Objets maudits</option><option value="equipements">Équipements</option><option value="divers">Divers</option></select></div>
+    <div class="field is-hidden" id="entry-field"><label for="el-entry">Fiche ciblée (nom exact)</label><input type="text" id="el-entry" placeholder="Ex. Obambo"></div>
+    <div class="buttons"><button class="btn small" id="clone" type="button">Dupliquer</button><button class="btn small" id="remove" type="button">Supprimer</button></div>
+    <p class="tip">Astuce : sélectionne une zone, puis utilise <b>Suppr</b> ou l'un des boutons <b>Supprimer</b> pour l'effacer. La touche Suppr ne s'active pas pendant la saisie d'un champ. Les flèches du clavier déplacent le calque sélectionné, Maj + flèche = déplacement plus grand. En V4, tu peux aussi <b>redimensionner visuellement</b> un élément grâce aux poignées bleues sur ses coins.</p>
+  </div>
+  <div class="block">
+    <h3>4 · Polices et images</h3>
+    <div class="buttons"><button id="import-font" class="btn small" type="button">Importer une police</button><button id="import-image" class="btn small" type="button">Image du calque sélectionné</button></div>
+    <input id="font-input" type="file" accept=".ttf,.otf,.woff,.woff2"><input id="asset-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+    <p class="tip">Polices TTF, OTF, WOFF, WOFF2 (max. 1,5 Mo). Images optimisées à l’import puis incluses dans le JSON (jusqu’à 7 Mo par fichier source). Les droits d'utilisation restent à vérifier avant publication.</p>
+  </div>
+  <div class="block">
+    <h3>5 · Listes du carnet (démo)</h3>
+    <div class="field"><label for="group-edit">Catégorie</label><select id="group-edit"></select></div>
+    <div class="field"><label for="group-names">Noms, un par ligne</label><textarea id="group-names" rows="6"></textarea></div>
+    <p class="tip">Les listes liées à une catégorie sont automatiquement cliquables en mode Test. Les fiches affichent pour le moment des exemples sans données de jeu.</p>
+  </div>
+  <div class="block">
+    <h3>6 · Sauvegardes</h3>
+    <div class="buttons"><button id="export" class="btn solid" type="button">↓ Télécharger mes réglages</button><button id="import" class="btn" type="button">↑ Charger un JSON</button><button id="reset" class="btn" type="button">Réinitialiser l'atelier</button></div>
+    <input id="json-input" type="file" accept="application/json,.json"><p class="tip">Les images et polices peuvent remplir le stockage du navigateur : <b>exporte régulièrement ton JSON</b>. Les réglages se conservent aussi dans ce navigateur quand le stockage local est autorisé. <b>Le JSON est la sauvegarde fiable à transmettre ici.</b> Compatible avec les exports du premier Atelier Sommaire.</p>
+  </div>
+</aside>
+<section class="workspace" aria-label="Prévisualisation du livre">
+  <div class="workbar">
+    <label for="page-select">Vue à travailler :</label><select id="page-select"></select>
+    <button class="btn small" type="button" id="zoom-out">−</button><span id="zoom-label">100 %</span><button class="btn small" type="button" id="zoom-in">+</button>
+    <span class="push" style="font-size:11px;color:#ada28f" id="view-info">Édition des calques</span>
+  </div>
+  <div class="stage-viewport" id="stage-viewport"><div id="stage-wrap"><div id="book" class="edit-mode"><img class="book-image" alt="Carnet brun, pages vierges, cinq onglets et deux languettes latérales" src="../../assets/phasmo-carnet-brun.webp"><div id="element-surface"></div></div></div></div>
+  <div class="status"><span id="message" role="status" aria-live="polite">Prêt : sélectionne un bloc ou crée une zone cliquable.</span><span>Fond brun validé pour prototypage · 1536 × 1024 px · édition 100 % locale</span></div>
+</section>
+</main>
+<dialog id="delete-layer-dialog" aria-labelledby="delete-layer-heading" aria-describedby="delete-layer-description">
+ <h2 id="delete-layer-heading">Supprimer ce calque ?</h2>
+ <p id="delete-layer-description">Cette zone sera supprimée de ton prototype.</p>
+ <div class="dialog-buttons">
+  <button id="cancel-delete-layer" type="button">Annuler</button>
+  <button id="confirm-delete-layer" type="button">Supprimer définitivement</button>
+ </div>
+</dialog>
+<script>
+'use strict';
+(() => {
+const VIEWER_ONLY = new URLSearchParams(location.search).get('viewer') === '1';
+if (VIEWER_ONLY) document.documentElement.classList.add('journal-viewer');
+const $ = s => document.querySelector(s);
+const COPY = x => JSON.parse(JSON.stringify(x));
+const SAVE_KEY='deadelustv.phasmo.atelier.complet.v4_3';
+const OLD_SAVE_KEY='deadelustv.phasmo.atelier.complet.v4_2';
+const OLDER_SAVE_KEY='deadelustv.phasmo.atelier.complet.v4_1';
+const OLDEST_SAVE_KEY='deadelustv.phasmo.atelier.complet.v4';
+const GROUP_ORDER=['entites','cartes','objets','equipements','divers'];
+const GROUPS={
+ entites:{label:'Les Entités',names:['Aswang','Deildegast','Gallu','Djinn','Moroi','Obambo','Fantôme','Revenant','Thaye','Spectre','Banshee','Démon','Goryo','Kormos','Myling','Oni','Poltergeist','Ombre','Mimic','Yokai','Dayan','Deogen','Hantu','Cauchemar','Obake','Onryo','Raiju','Esprit','Jumeaux','Yurei']},
+ cartes:{label:'Les Maps',names:['Asile','Grafton','Point Hope','Willow','Bleasdale','Grandcamp','Prison','École','Nellsdiner','Ridgeview','Edgefield','Petitcamp','Tanglewood']},
+ objets:{label:'Les Objets Maudits',names:['Boîte à musique','Patte de singe','Miroir','Pentacle','Ouija','Tarot','Vaudou']},
+ equipements:{label:'Les Équipements',names:['Briquet','Casque','Livre','Parabolique','Thermomètre','UV','Bougie','Crucifix','Enregistreur','Photo','Sel','Caméra','Détecteur','Encens','Pilule','Torche','Capteur sonore','DOTS','EMF','Spirit','Trépied']},
+ divers:{label:'Divers',names:['Média photo','Moniteur activité','Chasse','Média sons','Moniteur santé','Média vidéo','Pense-bête']}
+};
+const FONTS=[['Caveat','Caveat (manuscrite)'],['Kalam','Kalam (lisible)'],['Patrick Hand','Patrick Hand'],['Gloria Hallelujah','Gloria Hallelujah'],['Indie Flower','Indie Flower'],['Architects Daughter','Architects Daughter'],['Comic Sans MS','Comic Sans MS (locale)'],['Segoe Print','Segoe Print (locale)'],['Georgia','Georgia']];
+const VIEWS=[{id:'sommaire',label:'Accueil · Sommaire'}];
+for (const id of GROUP_ORDER) VIEWS.push({id:'category:'+id,label:'Liste · '+GROUPS[id].label});
+for (const id of GROUP_ORDER) VIEWS.push({id:'detail:'+id,label:'Fiche · '+GROUPS[id].label});
+let serial=1;
+function layer(page,kind,name,text,x,y,w,h,more={}){
+ return {id:'element-'+serial++,page,kind,name,text,x,y,w,h,size:kind==='heading'?57:kind==='list'?28:24,font:kind==='heading'?'Caveat':'Kalam',color:'#291d10',align:'left',columns:3,line:1.16,rotate:0,opacity:100,action:'none',target:'entites',entry:'',image:'',z:page==='*'?800:30,locked:false,hidden:false,bold:false,italic:false,underline:false,imageFit:'contain',blend:'normal',...more};
+}
+function buildDefault(){
+ const items=[];
+ const title=(key,x,y,w,size)=>items.push(layer('sommaire','heading','Titre '+GROUPS[key].label,GROUPS[key].label,x,y,w,7,{size,align:'center',action:'category',target:key}));
+ const list=(key,x,y,w,h,size,cols)=>items.push(layer('sommaire','list','Liste '+GROUPS[key].label,'',x,y,w,h,{size,columns:cols,source:key}));
+ title('entites',9.0,7.8,38.8,56);list('entites',9.5,15.0,38.0,35.5,27,3);
+ title('equipements',9,52,38.8,55);list('equipements',9.5,60,38,29,26,4);
+ title('cartes',52.0,7.8,39,56);list('cartes',52.5,15,38.3,17,27,4);
+ title('objets',52.0,33,39,56);list('objets',52.5,41,38.3,13,27,3);
+ title('divers',52.0,57,39,56);list('divers',52.5,65,38.3,17,27,3);
+ const pos={entites:[9.2,2.7,12.9],cartes:[22.8,1.5,13.4],objets:[36.7,3.1,9.7],equipements:[54.7,3.1,15.2],divers:[70.5,1.8,17.9]};
+ const labels={entites:'ENTITÉS',cartes:'MAPS',objets:'MAUDITS',equipements:'ÉQUIPEMENTS',divers:'DIVERS'};
+ for(const id of GROUP_ORDER){const [x,y,w]=pos[id];items.push(layer('*','tab','Onglet '+GROUPS[id].label,labels[id],x,y,w,5.9,{size:24,align:'center',font:'Caveat',action:'category',target:id}));}
+ items.push(layer('*','tab','Flèche précédente','‹',1.9,44,4.5,11,{size:80,action:'prev',align:'center'}));
+ items.push(layer('*','tab','Flèche suivante','›',93.5,44,4.5,11,{size:80,action:'next',align:'center'}));
+ items.push(layer('*','tab','Accueil du carnet','⌂',87,10,3.7,5,{size:45,action:'home',align:'center'}));
+ for(const group of GROUP_ORDER){
+   const page='category:'+group;
+   items.push(layer(page,'heading','Titre de la catégorie',GROUPS[group].label,11,12,35,8,{size:72,align:'center'}));
+   items.push(layer(page,'list','Liste cliquable des fiches','',10,23,38,63,{size:32,columns:3,source:group}));
+   items.push(layer(page,'heading','Notes / informations','Carnet de terrain',54,13,35,8,{size:62,align:'center'}));
+   items.push(layer(page,'text','Aide pour la liste','Choisis une fiche dans la liste à gauche.\n\nLes textes de ce modèle seront à remplir en ligne après validation du journal.',55,25,34,30,{size:28}));
+   items.push(layer(page,'text','Retour au sommaire','← Sommaire général',55,65,33,7,{size:33,font:'Caveat',action:'home'}));
+   const detail='detail:'+group;
+   items.push(layer(detail,'heading','Nom de la fiche','{{nom}}',11,12,35,8,{size:72,align:'center'}));
+   items.push(layer(detail,'text','Espace illustration','[ Illustration à ajouter ]',16,34,28,18,{size:30,align:'center',opacity:65}));
+   items.push(layer(detail,'text','Retour à la liste','← '+GROUPS[group].label,11,78,35,7,{size:32,font:'Caveat',action:'back'}));
+   items.push(layer(detail,'heading','Titre section droite','Notes de terrain',54,13,35,8,{size:62,align:'center'}));
+   items.push(layer(detail,'text','Contenu futur','Prototype de fiche.\n\nLes informations et illustrations réelles seront ajoutées plus tard depuis le formulaire d’administration en ligne.',54,25,34,39,{size:28}));
+ }
+ return {version:4,groups:COPY(GROUPS),elements:items,fonts:[],grid:false,zoom:100};
+}
+let state=buildDefault();
+let mode='edit',view={page:'sommaire',group:null,name:null},selected=state.elements[0]?.id,drag=null,resizeDrag=null,saveTimer=null,currentScale=1;
+const book=$('#book'),surface=$('#element-surface'),wrap=$('#stage-wrap'),viewport=$('#stage-viewport');
+function note(message){$('#message').textContent=message;}
+function safeNum(value,fallback,min,max){const n=Number(value);return Number.isFinite(n)?Math.max(min,Math.min(max,n)):fallback;}
+function getSelected(){return state.elements.find(e=>e.id===selected);}
+function currentGroup(){return view.group||'entites';}
+function pageForView(){return view.page;}
+function readable(s){return String(s??'').replaceAll('{{nom}}',view.name||state.groups[currentGroup()].names[0]||'Fiche').replaceAll('{{categorie}}',state.groups[currentGroup()].label);}
+function visibleLayers(){return state.elements.filter(e=>e.page==='*'||e.page===view.page).sort((a,b)=>(a.z??30)-(b.z??30));}
+function orderedLayers(){return visibleLayers().filter(e=>!e.hidden);}
+function sanitizeRich(text){
+ // Parser sûr : jamais d'insertion de HTML provenant de la saisie.
+ // Marqueurs accessibles aux champs : **gras**, __souligné__, *italique*.
+ const fragment=document.createDocumentFragment();
+ const regex=/(\*\*([^*\n]+)\*\*|__([^_\n]+)__|\*([^*\n]+)\*)/g;
+ let start=0, match;
+ while((match=regex.exec(text))){
+  if(match.index>start)fragment.append(document.createTextNode(text.slice(start,match.index)));
+  const tag=match[2]!==undefined?'strong':match[3]!==undefined?'u':'em';
+  const node=document.createElement(tag);node.textContent=match[2]??match[3]??match[4];fragment.append(node);
+  start=regex.lastIndex;
+ }
+ if(start<text.length)fragment.append(document.createTextNode(text.slice(start)));
+ return fragment;
+}
+function setView(page,name=null){
+ const split=page.split(':'); const group=split[1];
+ if(page!=='sommaire' && !state.groups[group])return;
+ if(page.startsWith('detail:')){
+   const choices=state.groups[group].names;
+   name=(name&&choices.includes(name))?name:(choices[0]||'Fiche');
+ }
+ view={page,group:group||null,name};
+ if(!visibleLayers().some(e=>e.id===selected)) selected=visibleLayers().find(e=>e.page===page)?.id||visibleLayers()[0]?.id||null;
+ $('#page-select').value=page;
+ renderLayers();renderLayerList();renderEditor();updateInfo();
+}
+function performAction(action,target,entry){
+ if(action==='home')return setView('sommaire');
+ if(action==='category')return setView('category:'+target);
+ if(action==='detail')return setView('detail:'+target,entry);
+ if(action==='back')return setView(view.group?'category:'+view.group:'sommaire');
+ if(action==='next'||action==='prev'){
+  const direction=action==='next'?1:-1;
+  if(view.page.startsWith('detail:')){
+    const list=state.groups[view.group].names;
+    const ix=list.indexOf(view.name)+direction;
+    if(ix>=0&&ix<list.length)setView(view.page,list[ix]);
+    else note(ix<0?'Début de cette catégorie.':'Fin de cette catégorie.');
+    return;
+  }
+  const i=view.page==='sommaire'?-1:GROUP_ORDER.indexOf(view.group);
+  const n=i+direction;
+  if(n===-1){setView('sommaire');return;}
+  if(n>=0&&n<GROUP_ORDER.length)setView('category:'+GROUP_ORDER[n]);
+ }
+}
+function drawList(node,e){
+ const lines=e.source&&state.groups[e.source]?state.groups[e.source].names:e.text.split('\n').map(x=>x.trim()).filter(Boolean);
+ const rows=Math.max(1,Math.ceil(lines.length/Math.max(1,e.columns)));
+ const list=document.createElement('div');list.className='words';
+ list.style.gridTemplateRows=`repeat(${rows},auto)`;
+ list.style.gridTemplateColumns=`repeat(${e.columns},minmax(0,1fr))`;
+ lines.forEach(word=>{
+  const btn=document.createElement('button');btn.className='word';btn.type='button';btn.textContent=word;
+  btn.tabIndex=mode==='test'?0:-1;
+  btn.addEventListener('click',ev=>{
+    if(mode!=='test')return;ev.stopPropagation();
+    const group=e.source||view.group;
+    if(group&&state.groups[group])setView('detail:'+group,word);
+  });
+  list.append(btn);
+ });
+ node.append(list);
+}
+function applyLayerStyles(node,e){
+ node.style.left=e.x+'%';node.style.top=e.y+'%';node.style.width=e.w+'%';
+ node.style.zIndex=String(safeNum(e.z,30,-100,2000));
+ node.style.visibility=e.hidden?'hidden':'visible';
+ node.style.mixBlendMode=e.kind==='image'?(e.blend||'normal'):'normal';
+ node.style.minHeight=e.kind==='line'?'0':e.h+'%';
+ node.style.height=['image','hotspot','tab','line'].includes(e.kind)?e.h+'%':'auto';
+ node.style.fontSize=e.size+'px';node.style.lineHeight=String(e.line);
+ node.style.color=e.color;node.style.opacity=e.opacity/100;
+ node.style.textAlign=e.align;
+ node.style.transform=`rotate(${e.rotate}deg)`;
+ node.style.fontFamily=`'${e.font.replaceAll("'",'')}', cursive`;
+ node.style.fontWeight=e.bold||e.kind==='heading'||e.kind==='tab'?'700':'400';
+ node.style.fontStyle=e.italic?'italic':'normal';
+ node.style.textDecoration=e.underline?'underline':'none';
+ node.dataset.locked=String(!!e.locked);
+ if(e.kind==='hotspot')node.style.fontFamily='Arial,sans-serif';
+}
+function makeLayer(e){
+ const el=document.createElement('div');el.className='layer';el.dataset.id=e.id;el.dataset.kind=e.kind;el.tabIndex=mode==='edit'?0:(e.action!=='none'&&e.kind!=='list'?0:-1);
+ if(e.id===selected&&mode==='edit')el.classList.add('selected');
+ if(e.action!=='none'||e.kind==='list')el.classList.add('interactive');
+ el.setAttribute('aria-label',e.name+(e.action!=='none'?' · zone interactive':''));
+ applyLayerStyles(el,e);
+ if(e.kind==='list')drawList(el,e);
+ else if(e.kind==='hotspot'){
+    const caption=document.createElement('span');caption.className='hit-caption';caption.textContent=e.name;el.append(caption);
+ }else if(e.kind==='image'){
+    if(e.image){const pic=document.createElement('img');pic.src=e.image;pic.alt=e.name;pic.style.objectFit=e.imageFit||'contain';el.append(pic);}else if(mode==='edit')el.textContent='[ Importer une image ]';
+ }else if(['text','heading'].includes(e.kind)){el.classList.add('rich-block');el.append(sanitizeRich(readable(e.text)));}
+ else if(e.kind!=='line')el.textContent=readable(e.text);
+ if(mode==='edit'){
+   if(!e.locked)el.addEventListener('pointerdown',ev=>startDrag(ev,e.id));
+   el.addEventListener('click',()=>selectLayer(e.id));
+   if(!e.locked&&e.kind!=='line'){
+     for(const dir of ['nw','ne','sw','se']){
+       const h=document.createElement('span');
+       h.className='resize-handle';
+       h.dataset.dir=dir;
+       h.title='Redimensionner';
+       h.addEventListener('pointerdown',ev=>startResize(ev,e.id,dir));
+       h.addEventListener('click',ev=>ev.stopPropagation());
+       el.append(h);
+     }
+   }
+ }else if(e.action!=='none'){
+   el.addEventListener('click',()=>performAction(e.action,e.target,e.entry));
+   el.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();performAction(e.action,e.target,e.entry);}});
+ }
+ return el;
+}
+function renderLayers(){
+ surface.replaceChildren();book.classList.toggle('edit-mode',mode==='edit');book.classList.toggle('test-mode',mode==='test');book.classList.toggle('show-grid',state.grid);
+ for(const e of visibleLayers()) surface.append(makeLayer(e));
+}
+function renderLayerList(){
+ const list=$('#layers');list.replaceChildren();
+ const layers=visibleLayers().slice().reverse();
+ for(const e of layers){
+   const b=document.createElement('button');b.type='button';b.className='item'+(selected===e.id?' selected':'');b.setAttribute('role','option');b.setAttribute('aria-selected',String(selected===e.id));
+   const text=document.createElement('span');text.textContent=(e.hidden?'◌ ':e.locked?'🔒 ':'')+e.name;
+   const small=document.createElement('small');small.textContent='Niv. '+(e.z??30)+(e.page==='*'?' · global':' · '+e.kind);
+   b.append(text,small);b.addEventListener('click',()=>selectLayer(e.id));list.append(b);
+ }
+}
+function selectLayer(id){selected=id;renderLayerList();renderEditor();
+ for(const el of surface.querySelectorAll('.layer'))el.classList.toggle('selected',el.dataset.id===id&&mode==='edit');
+}
+function syncInput(id,val){const node=$('#'+id);if(node)node.value=val;}
+function renderEditor(){
+ const e=getSelected(), enabled=!!e;
+ $('#editor-panel').classList.toggle('is-hidden',!enabled);
+ if(!e)return;
+ const ids={name:'el-name',text:'el-text',x:'el-x',y:'el-y',w:'el-w',h:'el-h',size:'el-size',font:'el-font',color:'el-color',align:'el-align',columns:'el-columns',line:'el-line',rotate:'el-rotate',opacity:'el-opacity',z:'el-z',action:'el-action',target:'el-target',entry:'el-entry',imageFit:'el-imagefit',blend:'el-blend'};
+ for(const [key,id] of Object.entries(ids))syncInput(id,e[key]);
+ syncInput('el-scope',e.page==='*'?'global':'page');
+ for(const p of ['locked','hidden','bold','italic','underline'])$('#el-'+p).checked=!!e[p];
+ syncInput('el-imageopacity',e.opacity);syncInput('el-imagerotate',e.rotate);
+ $('#image-settings').classList.toggle('is-hidden',e.kind!=='image');
+ $('#format-controls').classList.toggle('is-hidden',!['heading','text','tab'].includes(e.kind));
+ $('#text-field').classList.toggle('is-hidden',['hotspot','image','line'].includes(e.kind));
+ $('#text-controls').classList.toggle('is-hidden',e.kind==='hotspot'||e.kind==='image'||e.kind==='line');
+ $('#action-field').classList.toggle('is-hidden',e.kind==='image'||e.kind==='line'||e.kind==='list');
+ $('#target-field').classList.toggle('is-hidden',!['category','detail'].includes(e.action));
+ $('#entry-field').classList.toggle('is-hidden',e.action!=='detail');
+ $('#import-image').disabled=e.kind!=='image';
+ $('#el-text').placeholder=e.kind==='list'?'Un nom par ligne. Les listes liées sont éditées plus bas.':'Texte de ton choix';
+ $('#el-text').disabled=e.kind==='list'&&!!e.source;
+}
+function fitStage(){
+ const fit=Math.min(1,Math.max(.18,(viewport.clientWidth-48)/1536));
+ currentScale=fit*state.zoom/100;
+ book.style.transform=`scale(${currentScale})`;
+ wrap.style.width=1536*currentScale+'px';wrap.style.height=1024*currentScale+'px';
+ $('#zoom-label').textContent=state.zoom+' %';
+}
+function updateInfo(){
+ $('#view-info').textContent=(mode==='edit'?'Édition':'Test des clics')+' · '+(view.page==='sommaire'?'Sommaire':(view.name||state.groups[view.group].label));
+}
+function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));}catch(e){/* Certains navigateurs bloquent le stockage local : exporter le JSON. */}},350);}
+function updateCurrentElement(){
+ const e=getSelected();if(!e)return;const old=surface.querySelector(`[data-id="${e.id}"]`);
+ if(old)old.replaceWith(makeLayer(e));renderLayerList();save();
+}
+function handleChange(key,value){
+ const e=getSelected();if(!e)return;
+ if(['x','y','w','h','size','columns','line','rotate','opacity','z'].includes(key)){
+    const [min,max]=({x:[0,99],y:[0,99],w:[.5,100],h:[.5,100],size:[8,120],columns:[1,6],line:[.75,2.6],rotate:[-40,40],opacity:[0,100],z:[-100,2000]})[key];
+    e[key]=safeNum(value,e[key],min,max);
+ }else e[key]=String(value);
+ if(key==='action')renderEditor();
+ updateCurrentElement();
+}
+function startDrag(event,id){
+ if(mode!=='edit'||event.button!==0||state.elements.find(e=>e.id===id)?.locked)return;
+ selectLayer(id);
+ const el=event.currentTarget,bookRect=book.getBoundingClientRect(),e=getSelected();
+ el.focus({preventScroll:true});
+ drag={pointer:event.pointerId,id,node:el,startX:event.clientX,startY:event.clientY,x:e.x,y:e.y,w:bookRect.width,h:bookRect.height};
+ el.setPointerCapture(event.pointerId);
+ el.addEventListener('pointermove',moveDrag);el.addEventListener('pointerup',stopDrag);el.addEventListener('pointercancel',stopDrag);
+ event.preventDefault();
+}
+function moveDrag(ev){
+ if(!drag||ev.pointerId!==drag.pointer)return;
+ const e=getSelected();if(!e||e.id!==drag.id)return;
+ e.x=Math.round(safeNum(drag.x+(ev.clientX-drag.startX)/drag.w*100,drag.x,0,99)*10)/10;
+ e.y=Math.round(safeNum(drag.y+(ev.clientY-drag.startY)/drag.h*100,drag.y,0,99)*10)/10;
+ applyLayerStyles(drag.node,e);
+ syncInput('el-x',e.x);syncInput('el-y',e.y);
+}
+function stopDrag(ev){
+ if(!drag||ev.pointerId!==drag.pointer)return;
+ const node=drag.node;node.removeEventListener('pointermove',moveDrag);node.removeEventListener('pointerup',stopDrag);node.removeEventListener('pointercancel',stopDrag);drag=null;save();
+}
+function clampBox(box){
+ const minW=.5,minH=.5;
+ box.x=safeNum(box.x,0,0,99);
+ box.y=safeNum(box.y,0,0,99);
+ box.w=safeNum(box.w,minW,minW,100-box.x);
+ box.h=safeNum(box.h,minH,minH,100-box.y);
+ box.w=Math.min(box.w,100-box.x);
+ box.h=Math.min(box.h,100-box.y);
+ return box;
+}
+function startResize(event,id,dir){
+ if(mode!=='edit'||event.button!==0||state.elements.find(e=>e.id===id)?.locked)return;
+ event.stopPropagation();event.preventDefault();
+ selectLayer(id);
+ const el=event.currentTarget.closest('.layer'),bookRect=book.getBoundingClientRect(),e=getSelected();
+ resizeDrag={pointer:event.pointerId,id,dir,node:el,handle:event.currentTarget,startX:event.clientX,startY:event.clientY,x:e.x,y:e.y,w:e.w,h:e.h,bookW:bookRect.width,bookH:bookRect.height};
+ event.currentTarget.setPointerCapture(event.pointerId);
+ event.currentTarget.addEventListener('pointermove',moveResize);
+ event.currentTarget.addEventListener('pointerup',stopResize);
+ event.currentTarget.addEventListener('pointercancel',stopResize);
+}
+function moveResize(ev){
+ if(!resizeDrag||ev.pointerId!==resizeDrag.pointer)return;
+ const e=getSelected();if(!e||e.id!==resizeDrag.id)return;
+ const dx=(ev.clientX-resizeDrag.startX)/resizeDrag.bookW*100;
+ const dy=(ev.clientY-resizeDrag.startY)/resizeDrag.bookH*100;
+ let box={x:resizeDrag.x,y:resizeDrag.y,w:resizeDrag.w,h:resizeDrag.h};
+ if(resizeDrag.dir.includes('e')) box.w=resizeDrag.w+dx;
+ if(resizeDrag.dir.includes('s')) box.h=resizeDrag.h+dy;
+ if(resizeDrag.dir.includes('w')){ box.x=resizeDrag.x+dx; box.w=resizeDrag.w-dx; }
+ if(resizeDrag.dir.includes('n')){ box.y=resizeDrag.y+dy; box.h=resizeDrag.h-dy; }
+ box=clampBox(box);
+ e.x=Math.round(box.x*10)/10; e.y=Math.round(box.y*10)/10; e.w=Math.round(box.w*10)/10; e.h=Math.round(box.h*10)/10;
+ applyLayerStyles(resizeDrag.node,e);
+ syncInput('el-x',e.x);syncInput('el-y',e.y);syncInput('el-w',e.w);syncInput('el-h',e.h);
+}
+function stopResize(ev){
+ if(!resizeDrag||ev.pointerId!==resizeDrag.pointer)return;
+ const handle=resizeDrag.handle;
+ handle.removeEventListener('pointermove',moveResize);
+ handle.removeEventListener('pointerup',stopResize);
+ handle.removeEventListener('pointercancel',stopResize);
+ resizeDrag=null;save();
+}
+function setMode(next){mode=next;$('#edit-mode').classList.toggle('active',mode==='edit');$('#test-mode').classList.toggle('active',mode==='test');
+ renderLayers();updateInfo();note(mode==='test'?'Mode Test : clique sur les onglets, listes et flèches. Les zones invisibles sont activées.':'Mode Édition : clique sur un élément puis déplace-le ou redimensionne-le avec les poignées bleues.');
+}
+function add(kind){
+ if(mode!=='edit')setMode('edit');
+ const base={heading:['Nouveau titre',45,14,32,8],text:['Nouveau texte',45,26,32,10],list:['Nom 1\nNom 2\nNom 3',45,40,32,16],tab:['NOUVEL ONGLET',58,5,13,6],hotspot:['',60,55,15,10],image:['',55,35,25,25],line:['',22,62,22,1]}[kind];
+ const e=layer(view.page,kind,(kind==='hotspot'?'Zone cliquable':kind==='tab'?'Onglet':kind==='image'?'Image':kind==='line'?'Trait':'Calque')+' '+serial,base[0],base[1],base[2],base[3],base[4],kind==='hotspot'?{action:'home'}:{});
+ if(kind==='tab')e.action='category';
+ state.elements.push(e);selected=e.id;renderLayers();renderLayerList();renderEditor();save();note('Calque ajouté. Glisse-le à l’endroit voulu.');
+}
+function cloneLayer(){const e=getSelected();if(!e)return;const newEl=COPY(e);newEl.id='element-'+serial++;newEl.name=e.name+' (copie)';newEl.x=Math.min(96,e.x+1.5);newEl.y=Math.min(96,e.y+1.5);state.elements.push(newEl);selectLayer(newEl.id);renderLayers();save();}
+let pendingDeleteId=null;
+function removeLayer(){
+ if(mode!=='edit'){note('Passe en mode Édition pour supprimer une zone.');return;}
+ const e=getSelected();
+ if(!e){note('Sélectionne d’abord une zone à supprimer.');return;}
+ pendingDeleteId=e.id;
+ $('#delete-layer-description').textContent='Supprimer « '+e.name+' » du prototype ?';
+ const modal=$('#delete-layer-dialog');
+ if(!modal.open)modal.showModal();
+ $('#confirm-delete-layer').focus();
+}
+function confirmDeleteLayer(){
+ const modal=$('#delete-layer-dialog');
+ const e=state.elements.find(item=>item.id===pendingDeleteId);
+ pendingDeleteId=null;
+ modal.close();
+ if(!e){note('Ce calque n’existe plus.');return;}
+ state.elements=state.elements.filter(item=>item.id!==e.id);
+ selected=visibleLayers().slice().reverse()[0]?.id||null;
+ renderLayers();renderLayerList();renderEditor();
+ save();
+ note('Zone supprimée : '+e.name+'.');
+}
+function fillGroupEdit(){const id=$('#group-edit').value||GROUP_ORDER[0];$('#group-edit').value=id;$('#group-names').value=state.groups[id].names.join('\n');}
+function refreshFontSelects(){const select=$('#el-font'),current=select.value;select.replaceChildren();for(const [f,label] of FONTS)select.add(new Option(label,f));for(const entry of state.fonts||[])select.add(new Option('Importée · '+entry.label,entry.family));select.value=current||'Kalam';}
+async function fileData(file,limit){
+ if(file.size>limit)throw Error('Fichier trop volumineux.');
+ return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('Lecture du fichier impossible.'));reader.readAsDataURL(file);});
+}
+async function attachFont(file){
+ if(!/\.(ttf|otf|woff2?)$/i.test(file.name))throw Error('Police attendue : TTF, OTF, WOFF ou WOFF2.');
+ const data=await fileData(file,1_500_000);
+ const family='Atelier_'+Date.now().toString(36)+'_'+Math.floor(Math.random()*1e5).toString(36);
+ await registerFont({family,label:file.name.replace(/\.[^.]+$/,''),data});
+ const e=getSelected();if(e){e.font=family;renderLayers();renderEditor();}
+ save();note('Police importée : '+file.name+'.');
+}
+async function registerFont(spec){
+ if(!spec||typeof spec.family!=='string'||!/^Atelier(?:Font)?_[\w-]{1,90}$/.test(spec.family)||typeof spec.data!=='string'||!/^data:[^,]*;base64,[A-Za-z0-9+/=]+$/.test(spec.data)||spec.data.length>2_200_000)throw Error('Police non valide.');
+ if(state.fonts.some(f=>f.family===spec.family))return;
+ if(state.fonts.length>=8)throw Error('Maximum huit polices importées.');
+ const face=new FontFace(spec.family,`url("${spec.data}")`);await face.load();document.fonts.add(face);
+ state.fonts.push({family:spec.family,label:String(spec.label||'Police').slice(0,100),data:spec.data});refreshFontSelects();
+}
+async function attachImage(file){
+ const e=getSelected();if(!e||e.kind!=='image'){note('Sélectionne d’abord un calque « Image ».');return;}
+ if(!/^image\/(?:png|jpeg|webp|gif)$/.test(file.type))throw Error('Format accepté : PNG, JPG, WebP ou GIF.');
+ e.image=await mediaData(file);updateCurrentElement();note('Image optimisée et ajoutée. Tu peux déplacer, changer son ordre et redimensionner son calque.');
+}
+function exportSettings(){
+ const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);
+ const a=document.createElement('a');a.href=url;a.download='deadelustv-journal-reglages-complets.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);note('Réglages JSON exportés. À m’envoyer pour intégrer les valeurs au site.');
+}
+function importLegacy(data){
+ const s=buildDefault();s.grid=!!data.showGrid;s.zoom=safeNum(data.zoom,100,60,170);
+ const aliases={entites:'entites',equipements:'equipements',maps:'cartes',objets:'objets',divers:'divers'};
+ for(const [old,key] of Object.entries(aliases)){
+   if(data.groups[old])s.groups[key]={label:String(data.groups[old].label||s.groups[key].label).slice(0,90),names:(data.groups[old].names||[]).map(x=>String(x).slice(0,100)).slice(0,180)};
+   for(const mode of ['title','list']){
+     const p=data.blocks[old+':'+mode];if(!p)continue;
+     const e=s.elements.find(item=>item.page==='sommaire'&&item.name===(mode==='title'?'Titre ':'Liste ')+GROUPS[key].label);
+     if(!e)continue;
+     for(const f of ['x','y','w'])e[f]=safeNum(p[f],e[f],0,100);
+     e.size=safeNum(p.size,e.size,8,120);e.rotate=safeNum(p.rotate,e.rotate,-40,40);e.line=safeNum(p.line,e.line,.75,2.6);
+     if(mode==='list')e.columns=safeNum(data.groups[old]?.count,e.columns,1,6);
+     e.font=mode==='title'?data.titleFont||'Caveat':data.listFont||'Kalam';
+     if(mode==='title')e.text=s.groups[key].label;
+   }
+ }
+ if(/^#[0-9a-f]{6}$/i.test(data.inkColor))s.elements.filter(el=>el.page==='sommaire').forEach(el=>el.color=data.inkColor);
+ s._pendingFonts=Array.isArray(data.customFonts)?data.customFonts:[];
+ return s;
+}
+async function loadSettings(file){
+ if(file.size>17_000_000)throw Error('JSON trop volumineux (17 Mo maximum).');
+ const raw=JSON.parse(await file.text());
+ let incoming;
+ if(raw.version===1&&raw.blocks&&raw.groups)incoming=importLegacy(raw);
+ else if((raw.version===2||raw.version===3||raw.version===4)&&Array.isArray(raw.elements)&&raw.groups&&Array.isArray(raw.fonts))incoming=raw;
+ else throw Error('Format non reconnu. Le JSON attendu vient de cet atelier ou du premier sommaire.');
+ if(incoming.elements.length>500)throw Error('Trop de calques dans le fichier.');
+ const defaults=buildDefault();
+ const permitted=['heading','text','list','hotspot','tab','image','line'];
+ const cleaned=incoming.elements.filter(e=>e&&permitted.includes(e.kind)&&typeof e.name==='string'&&typeof e.page==='string'&&(e.page==='*'||VIEWS.some(v=>v.id===e.page))).map(e=>({
+   ...layer(e.page,e.kind,String(e.name).slice(0,100),String(e.text??'').slice(0,20000),0,0,12,8),
+   ...e,
+   name:String(e.name).slice(0,100),text:String(e.text??'').slice(0,20000),
+   x:safeNum(e.x,10,0,99),y:safeNum(e.y,10,0,99),w:safeNum(e.w,15,.5,100),h:safeNum(e.h,7,.5,100),
+   z:safeNum(e.z,e.page==='*'?800:30,-100,2000),locked:!!e.locked,hidden:!!e.hidden,bold:!!e.bold,italic:!!e.italic,underline:!!e.underline,
+   imageFit:['contain','cover','fill'].includes(e.imageFit)?e.imageFit:'contain',blend:['normal','multiply','screen','darken'].includes(e.blend)?e.blend:'normal',
+   size:safeNum(e.size,24,8,120),columns:safeNum(e.columns,3,1,6),line:safeNum(e.line,1.16,.75,2.6),rotate:safeNum(e.rotate,0,-40,40),opacity:safeNum(e.opacity,100,0,100),
+   image:typeof e.image==='string'&&e.image.length<5_000_000&&/^data:image\/(?:png|jpeg|webp|gif);base64,/.test(e.image)?e.image:''
+ }));
+ if(cleaned.length===0)throw Error('Ce fichier ne contient aucun calque utilisable.');
+ state={...defaults,...incoming,version:4,elements:cleaned,fonts:[],groups:defaults.groups};
+ for(const id of GROUP_ORDER){
+   const g=incoming.groups[id];if(!g)continue;
+   state.groups[id]={label:String(g.label||GROUPS[id].label).slice(0,90),names:(Array.isArray(g.names)?g.names:[]).slice(0,180).map(x=>String(x).slice(0,100))};
+ }
+ const incomingFonts=Array.isArray(incoming._pendingFonts)?incoming._pendingFonts:incoming.fonts||[];
+ for(const f of incomingFonts.slice(0,8)){try{await registerFont(f);}catch(e){note('Attention : une police n’a pas été chargée.');}}
+ // Aucune confiance dans les identifiants de l'import : recréation stable.
+ state.elements.forEach((e,i)=>e.id='element-'+(i+1));serial=state.elements.length+1;
+ selected=state.elements[0]?.id;view={page:'sommaire',group:null,name:null};
+ $('#page-select').value=view.page;fillGroupEdit();renderLayers();renderLayerList();renderEditor();fitStage();save();note('Réglages chargés. Vérifie l’affichage, puis exporte ta version complète.');
+}
+
+function shiftLayer(direction){
+ const e=getSelected();if(!e)return;
+ const siblings=visibleLayers().filter(x=>x.id!==e.id&&x.page===e.page);
+ if(direction===-999)e.z=Math.max(-100,Math.min(0,...siblings.map(x=>Number(x.z??30)))-1);
+ else if(direction===999)e.z=Math.min(2000,Math.max(0,...siblings.map(x=>Number(x.z??30)))+1);
+ else{
+  const peers=siblings.map(x=>Number(x.z??30)).sort((a,b)=>a-b);
+  if(direction>0)e.z=Math.min(2000,peers.find(z=>z>(e.z??30))??(e.z??30))+1;
+  else e.z=Math.max(-100,peers.slice().reverse().find(z=>z<(e.z??30))??(e.z??30))-1;
+ }
+ renderLayers();renderLayerList();renderEditor();save();
+ note('Ordre modifié : '+e.name+' au niveau '+e.z+'.');
+}
+function markSelection(token){
+ const e=getSelected(),area=$('#el-text');
+ if(!e||!['text','heading','tab'].includes(e.kind))return;
+ const a=area.selectionStart,b=area.selectionEnd;
+ if(a===b){note('Sélectionne d’abord les mots à mettre en forme dans « Texte à afficher ».');area.focus();return;}
+ const selectedText=area.value.slice(a,b);
+ const next=area.value.slice(0,a)+token+selectedText+token+area.value.slice(b);
+ e.text=next;area.value=next;
+ area.focus();area.setSelectionRange(a+token.length,b+token.length);
+ updateCurrentElement();
+ note('Mise en forme ajoutée. Les marqueurs sont visibles dans le champ, mais pas sur le livre.');
+}
+function addBackground(){
+ if(mode!=='edit')setMode('edit');
+ const e=layer(view.page,'image','Illustration en filigrane','',7,15,40,75,{opacity:25,z:1,blend:'multiply',imageFit:'contain'});
+ state.elements.push(e);selected=e.id;renderLayers();renderLayerList();renderEditor();save();
+ note('Fond ajouté : importe une image (PNG/WebP transparent conseillé), puis règle son opacité et verrouille-le.');
+}
+function mediaData(file){
+ if(!/^image\/(?:png|jpeg|webp|gif)$/.test(file.type))return Promise.reject(Error('Format accepté : PNG, JPG, WebP ou GIF.'));
+ if(file.size>7_000_000)return Promise.reject(Error('Image trop lourde (maximum 7 Mo avant optimisation).'));
+ return new Promise((resolve,reject)=>{
+  const blobUrl=URL.createObjectURL(file),img=new Image();
+  img.onload=()=>{
+    const maxDim=1600,scale=Math.min(1,maxDim/Math.max(img.naturalWidth,img.naturalHeight));
+    const cvs=document.createElement('canvas');
+    cvs.width=Math.max(1,Math.round(img.naturalWidth*scale));cvs.height=Math.max(1,Math.round(img.naturalHeight*scale));
+    const ctx=cvs.getContext('2d');ctx.drawImage(img,0,0,cvs.width,cvs.height);
+    const data=cvs.toDataURL('image/webp',.89);
+    URL.revokeObjectURL(blobUrl);
+    resolve(data.length<=4_000_000?data:cvs.toDataURL('image/webp',.75));
+  };
+  img.onerror=()=>{URL.revokeObjectURL(blobUrl);reject(Error('Image illisible.'));};
+  img.src=blobUrl;
+ });
+}
+async function importManyImages(files){
+ const candidates=files.slice(0,15);
+ if(!candidates.length)return;
+ if(mode!=='edit')setMode('edit');
+ const usableSlots=state.elements.filter(e=>e.page===view.page&&e.kind==='image'&&!e.image&&e.role==='proof');
+ let count=0,last=null;
+ for(const [i,file] of candidates.entries()){
+  const data=await mediaData(file);
+  const e=usableSlots.shift()||layer(view.page,'image','Image '+file.name,'',8+((i%3)*13),44+Math.floor(i/3)*17,11,15,{z:55,opacity:100});
+  e.image=data;e.name=file.name.slice(0,90);
+  if(!state.elements.includes(e))state.elements.push(e);
+  last=e;count++;
+ }
+ selected=last.id;renderLayers();renderLayerList();renderEditor();save();
+ note(count+' images importées en calques indépendants, avec ordre et dimensions modifiables.');
+}
+function makeIllustratedTemplate(){
+ const group=(view.page.split(':')[1]||'entites');
+ if(!view.page.startsWith('detail:')){
+   note('Choisis d’abord une vue « Fiche · … » dans le menu au-dessus du livre.');return;
+ }
+ const old=state.elements.filter(x=>x.page===view.page);
+ if(old.length&&!confirm('Créer le modèle de fiche illustrée ? Les calques propres à cette fiche seront remplacés (les onglets et flèches globaux resteront). Exporte tes réglages avant si tu veux conserver la mise en page actuelle.'))return;
+ state.elements=state.elements.filter(x=>x.page!==view.page);
+ const page=view.page;
+ const put=(kind,name,text,x,y,w,h,extra={})=>state.elements.push(layer(page,kind,name,text,x,y,w,h,extra));
+ // Fond propre à une fiche. Son niveau est inférieur à tous les titres et icônes.
+ put('image','01 · Fantôme en filigrane (importer image)','',6,9,42,80,{role:'background',z:1,opacity:27,blend:'multiply',imageFit:'contain',locked:true});
+ put('heading','02 · Nom de l’entité','{{nom}}',7,5,40,11,{size:91,align:'center',z:31});
+ put('line','03 · Ligne après le nom','',5.4,17.3,41,1,{z:32});
+ put('text','04 · Seuil de chasse','Seuil de chasse :',5,22,29,8,{size:46,z:35});
+ put('text','05 · Pourcentage (à remplacer)','50 %',35,22,12,8,{size:56,z:35});
+ put('line','06 · Séparateur des preuves','',5.4,33,41,1,{z:32});
+ put('heading','07 · Preuves :','Preuves :',5,37,26,7,{size:52,align:'left',z:35});
+ for(let n=0;n<3;n++)put('image','Preuve '+(n+1)+' · importer image','',7.5+n*13.6,45,11,17,{role:'proof',z:55,opacity:100});
+ put('line','11 · Séparateur du pouvoir','',5.4,64.5,41,1,{z:32});
+ put('heading','12 · Pouvoir :','Pouvoir :',5,68,29,9,{size:52,align:'left',z:35});
+ put('text','13 · Description du pouvoir','Rédiger ici le pouvoir particulier de cette entité.',10,79,32,13,{size:38,align:'center',z:35});
+ put('heading','14 · Comportement hors chasse','Comportement Hors Chasse',52,6,41,8,{size:65,align:'center',z:35,underline:true});
+ put('text','15 · Texte hors chasse','Rédiger ici les observations hors chasse.\nAjoute ou duplique des zones si nécessaire.',52,16,40,15,{size:28,z:35,line:1.13});
+ put('heading','16 · Vitesse de chasse','Vitesse de Chasse',54,30,37,7,{size:61,align:'center',z:35,underline:true});
+ put('text','17 · Texte vitesse','Rédiger ici les informations sur la vitesse.',52,39,40,11,{size:28,z:35});
+ put('heading','18 · Comportement en chasse','Comportement en Chasse',52,51,41,7,{size:60,align:'center',z:35,underline:true});
+ put('text','19 · Texte en chasse','Rédiger ici le comportement pendant une chasse.',52,60,40,12,{size:28,z:35});
+ put('heading','20 · Astuces','Astuces',60,73,25,7,{size:65,align:'center',z:35,underline:true});
+ put('text','21 · Texte astuces','Rédiger ici les astuces utiles.',52,81,40,11,{size:27,z:35});
+ selected=state.elements.find(e=>e.name.startsWith('01 ·'))?.id;
+ renderLayers();renderLayerList();renderEditor();save();
+ note('Modèle illustré prêt : fond niveau 1, textes niveau 35 et preuves niveau 55. Sélectionne chaque calque pour importer tes images et rédiger.');
+}
+function setup(){
+ for(const v of VIEWS)$('#page-select').add(new Option(v.label,v.id));
+ for(const id of GROUP_ORDER)$('#group-edit').add(new Option(GROUPS[id].label,id));
+ refreshFontSelects();
+ $('#page-select').addEventListener('change',ev=>setView(ev.target.value));
+ $('#group-edit').addEventListener('change',fillGroupEdit);
+ $('#group-names').addEventListener('input',ev=>{const id=$('#group-edit').value;state.groups[id].names=ev.target.value.split('\n').map(x=>x.trim()).filter(Boolean).slice(0,180);renderLayers();save();});
+ for(const key of ['name','text','x','y','w','h','size','font','color','align','columns','line','rotate','opacity','z','action','target','entry','imageFit','blend']){
+   $('#el-'+(key==='imageFit'?'imagefit':key)).addEventListener('input',ev=>{if(ev.target.value===''&&ev.target.type==='number')return;handleChange(key,ev.target.value);});
+ }
+ for(const field of ['locked','hidden','bold','italic','underline']){
+   $('#el-'+field).addEventListener('change',ev=>{const e=getSelected();if(!e)return;e[field]=ev.target.checked;renderLayers();renderLayerList();save();});
+ }
+ for(const [id,delta] of [['layer-down',-1],['layer-up',1],['layer-bottom',-999],['layer-top',999]]){
+   $('#'+id).addEventListener('click',()=>shiftLayer(delta));
+ }
+ for(const [id,token] of [['mark-bold','**'],['mark-italic','*'],['mark-underline','__']]){
+   $('#'+id).addEventListener('click',()=>markSelection(token));
+ }
+ $('#add-background').addEventListener('click',addBackground);
+ $('#add-multi-image').addEventListener('click',()=>$('#multi-image-input').click());
+ $('#multi-image-input').addEventListener('change',async ev=>{
+   try{await importManyImages(Array.from(ev.target.files));}catch(e){note('Images : '+e.message);}
+   ev.target.value='';
+ });
+ $('#make-detail-template').addEventListener('click',makeIllustratedTemplate);
+ for(const [id,key] of [['el-imageopacity','opacity'],['el-imagerotate','rotate']])$('#'+id).addEventListener('input',ev=>{if(ev.target.value!=='')handleChange(key,ev.target.value);});
+ $('#el-scope').addEventListener('change',ev=>{
+   const e=getSelected();if(!e)return;e.page=ev.target.value==='global'?'*':view.page;renderLayers();renderLayerList();save();
+ });
+ $('#edit-mode').addEventListener('click',()=>setMode('edit'));
+ $('#test-mode').addEventListener('click',()=>setMode('test'));
+ $('#grid').addEventListener('click',()=>{state.grid=!state.grid;renderLayers();save();$('#grid').classList.toggle('active',state.grid);});
+ for(const kind of ['heading','text','list','tab','hotspot','image','line'])$('#add-'+kind).addEventListener('click',()=>add(kind));
+ $('#clone').addEventListener('click',cloneLayer);$('#remove').addEventListener('click',removeLayer);$('#remove-quick').addEventListener('click',removeLayer);
+ $('#cancel-delete-layer').addEventListener('click',()=>$('#delete-layer-dialog').close());
+ $('#confirm-delete-layer').addEventListener('click',confirmDeleteLayer);
+ $('#delete-layer-dialog').addEventListener('close',()=>{pendingDeleteId=null;});
+ $('#zoom-in').addEventListener('click',()=>{state.zoom=safeNum(state.zoom+10,100,60,170);fitStage();save();});
+ $('#zoom-out').addEventListener('click',()=>{state.zoom=safeNum(state.zoom-10,100,60,170);fitStage();save();});
+ $('#export').addEventListener('click',exportSettings);
+ $('#import').addEventListener('click',()=>$('#json-input').click());
+ $('#json-input').addEventListener('change',async ev=>{const file=ev.target.files[0];if(!file)return;try{await loadSettings(file);}catch(err){note('Import : '+err.message);}ev.target.value='';});
+ $('#reset').addEventListener('click',()=>{if(!confirm('Réinitialiser l’atelier ? Exporte tes réglages avant si tu veux les conserver.'))return;state=buildDefault();selected=state.elements[0].id;setView('sommaire');fitStage();save();note('Atelier réinitialisé.');});
+ $('#import-font').addEventListener('click',()=>$('#font-input').click());
+ $('#font-input').addEventListener('change',async ev=>{const f=ev.target.files[0];if(f)try{await attachFont(f);}catch(err){note('Police : '+err.message);}ev.target.value='';});
+ $('#import-image').addEventListener('click',()=>$('#asset-input').click());
+ $('#asset-input').addEventListener('change',async ev=>{const f=ev.target.files[0];if(f)try{await attachImage(f);}catch(err){note('Image : '+err.message);}ev.target.value='';});
+ window.addEventListener('resize',fitStage);
+ document.addEventListener('keydown',ev=>{
+   if(mode!=='edit')return;
+   if(ev.target.closest('input,textarea,select,[contenteditable="true"]')||ev.target.isContentEditable)return;
+   const e=getSelected();if(!e)return;
+   if(['Delete','Backspace','Del'].includes(ev.key)&&!ev.ctrlKey&&!ev.metaKey&&!ev.altKey){
+     ev.preventDefault();
+     removeLayer();
+     return;
+   }
+   if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(ev.key))return;
+   ev.preventDefault();
+   const n=ev.shiftKey?1:.1;const field=ev.key==='ArrowLeft'||ev.key==='ArrowRight'?'x':'y';
+   const sign=ev.key==='ArrowLeft'||ev.key==='ArrowUp'?-1:1;
+   e[field]=Math.round(safeNum(e[field]+n*sign,e[field],0,99)*10)/10;
+   updateCurrentElement();renderEditor();
+ });
+ renderLayers();renderLayerList();renderEditor();fitStage();fillGroupEdit();updateInfo();
+}
+async function init(){
+ try{
+   const previous=localStorage.getItem(SAVE_KEY)||localStorage.getItem(OLD_SAVE_KEY)||localStorage.getItem(OLDER_SAVE_KEY)||localStorage.getItem(OLDEST_SAVE_KEY)||localStorage.getItem('deadelustv.phasmo.atelier.complet.v3');
+   if(previous){const data=JSON.parse(previous);if((data?.version===2||data?.version===3||data?.version===4)&&Array.isArray(data.elements)){
+     const tmp=new Blob([JSON.stringify(data)],{type:'application/json'});
+     // Restore inline to avoid requiring File-compatible features in older browsers.
+     const parsed=JSON.parse(await tmp.text());
+     state={...buildDefault(),...parsed,version:4,fonts:[]};
+     state.elements=state.elements.map(e=>({...{z:e.page==='*'?800:30,locked:false,hidden:false,bold:false,italic:false,underline:false,imageFit:'contain',blend:'normal'},...e}));
+     serial=Math.max(1,...state.elements.map(e=>Number(String(e.id).split('-')[1])||0))+1;
+     for(const font of (parsed.fonts||[]).slice(0,8)){try{await registerFont(font);}catch(e){}}
+     selected=state.elements[0]?.id;
+   }}
+ }catch(err){}
+ setup();
+ if (VIEWER_ONLY) {
+   setMode('test');
+   setView('sommaire');
+   window.addEventListener('message', event => {
+     if (event.origin !== window.location.origin || event.source !== window.parent) return;
+     const command = event.data;
+     if (!command || command.type !== 'deadelustv:journal-nav') return;
+     if (command.category === 'sommaire') setView('sommaire');
+     else if (GROUP_ORDER.includes(command.category)) setView('category:' + command.category);
+   });
+   try { window.parent.postMessage({type:'deadelustv:journal-ready'}, window.location.origin); } catch {}
+ }
+}
+init();
+})();
+</script>
+</body></html>
