@@ -355,8 +355,11 @@ function setView(page,name=null,requestedFolder=null){
  if(name&&page.startsWith('detail:')&&!entry)return;
  if(entry&&(entry.status==='archived'||!FOLDERS.available(state.folders,group,entry.folderId)))return;
  if(entry&&mode==='edit')ensureRecordPage(entry);
- const folderId=entry?.folderId||((page.startsWith('category:')&&
-   FOLDERS.available(state.folders,group,requestedFolder))?requestedFolder:null);
+ // Conserver le niveau depuis lequel la fiche est ouverte :
+ // la liste générale doit pouvoir ouvrir directement les fiches classées.
+ const contextFolder=entry?(arguments.length>=3?requestedFolder:entry.folderId):requestedFolder;
+ const folderId=(entry||page.startsWith('category:'))&&
+   FOLDERS.available(state.folders,group,contextFolder)?contextFolder:null;
  view={page,group:group||null,name:entry?.title||null,entryId:entry?.id||null,folderId:folderId||null};
  const visible=visibleLayers();
  if(!visible.some(e=>e.id===selected))selected=visible.find(e=>e.page!=='*')?.id||visible[0]?.id||null;
@@ -377,9 +380,9 @@ function performAction(action,target,entry){
  if(action==='next'||action==='prev'){
   const direction=action==='next'?1:-1;
   if(view.page.startsWith('detail:')){
-    const list=folderRecords(view.group,view.folderId);
+    const list=view.folderId?folderRecords(view.group,view.folderId):recordList(view.group);
     const ix=list.findIndex(e=>e.id===view.entryId)+direction;
-    if(view.entryId&&ix>=0&&ix<list.length)setView(view.page,list[ix].id);
+    if(view.entryId&&ix>=0&&ix<list.length)setView(view.page,list[ix].id,view.folderId);
     else note(ix<0?'Début de cette catégorie.':'Fin de cette catégorie.');
     return;
   }
@@ -395,7 +398,8 @@ function drawList(node,e){
  const entries=inCategory?[
   ...(view.folderId?[{title:'← Retour',kind:'back'}]:[]),
   ...FOLDERS.list(state.folders,e.source,view.folderId).map(f=>({title:'▸ '+f.title,id:f.id,kind:'folder'})),
-  ...folderRecords(e.source,view.folderId).map(r=>({title:r.title,id:r.id,kind:'record'}))
+  ...(view.folderId?folderRecords(e.source,view.folderId):recordList(e.source))
+    .map(r=>({title:r.title,id:r.id,kind:'record'}))
  ]:linked?recordList(e.source).map(r=>({title:r.title,id:r.id,kind:'record'})):
    e.text.split('\n').map(x=>x.trim()).filter(Boolean).map(title=>({title,id:null,kind:'record'}));
  const rows=Math.max(1,Math.ceil(entries.length/Math.max(1,e.columns)));
@@ -411,7 +415,7 @@ function drawList(node,e){
    if(!group||!state.groups[group])return;
    if(entry.kind==='back')return performAction('back');
    if(entry.kind==='folder')return setView('category:'+group,null,entry.id);
-   setView('detail:'+group,entry.id||entry.title);
+   setView('detail:'+group,entry.id||entry.title,view.folderId);
   });
   list.append(btn);
  });
