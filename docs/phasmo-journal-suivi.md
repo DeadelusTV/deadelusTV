@@ -463,3 +463,17 @@ Décision : la rubrique **News devient un chantier prioritaire**, après validat
 - Le prototype conserve les cinq onglets de catégories existants. Gestion de catégories/sous-catégories arbitraires, publication côté serveur, rôles RLS, médias Storage, historique de versions et lecture partagée sont des étapes **distinctes et non réalisées**. L'atelier statique reste accessible par URL et ne constitue pas une interface d'administration sécurisée. Le mode visiteur peut afficher les exemples locaux ; il n'a aucune donnée commune publiée par Supabase.
 
 **Recette à faire** : créer une fiche de test, l'ouvrir, ajouter un texte et une image ; créer une seconde fiche et vérifier que la première conserve ses calques ; tester flèches, renommage, archive/restauration, suppression, export JSON puis import et F5 sur la démo. Vérifier le comportement mobile. Ne jamais confondre cette démonstration locale avec la publication définitive.
+
+
+### 27/10/2026 — Visionneuse adaptative et ergonomie future de l'atelier
+
+**Retours de recette** : l'utilisatrice confirme que la création d'une fiche dans l'atelier et sa présence dans la liste « Entités » fonctionnent. Elle signale que l'importation d'une image nécessite trop d'étapes et que l'atelier est chargé, ainsi que des barres de défilement dans le livre ouvert depuis le site sur des écrans plus petits.
+
+**Correctif appliqué uniquement sur `developpement/phasmo-v2`** :
+- Dans `journal-editor.html?viewer=1`, adapter le rendu des 1536×1024 px à **la largeur ET à la hauteur de l'espace disponible** de l'iframe, en préservant les proportions et sans imposer le zoom de l'atelier. Centrer le carnet, supprimer le défilement interne de la visionneuse, recalculer au redimensionnement de l'écran ou du conteneur (ResizeObserver).
+- Dans `journal-embed.css`, masquer uniquement le titre central de la barre du dialogue sur les très petits écrans pour conserver les commandes « Sommaire » et « Fermer » accessibles.
+- Ne pas modifier la disposition de l'atelier de conception ni les calques propres au livre. Le livre reste lisible uniquement dans la limite physique de la taille d'écran : sur téléphone très étroit, les inscriptions sont forcément petites. Une solution d'accessibilité/agrandissement séparée pourra être évaluée sans réintroduire de scrollbars permanentes.
+
+**À tester en conditions réelles** : fenêtres petites/basses, ordinateur portable, changement d'orientation mobile, zoom navigateur, tableau/ordinateur, onglets et flèches, ouverture/fermeture du dialogue, absence des barres de défilement internes, préservation du clic sur les couches interactives. Ne pas confondre contrôles statiques du code avec recette en navigateur réel.
+
+**À conserver pour APRÈS la finalisation des fonctions du carnet** : reprise ergonomique globale de l'atelier pour simplifier au maximum les manipulations, en particulier l'import d'image directement depuis le calque (« sélectionner le cadre → importer ou remplacer » avec bouton de proximité / glisser-déposer à étudier), raccourcir les parcours de la navigation et revoir l'organisation des panneaux. C'est une décision de planification, non une demande de refonte immédiate.
