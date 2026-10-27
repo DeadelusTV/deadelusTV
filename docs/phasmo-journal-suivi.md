@@ -409,3 +409,12 @@ Décision : la rubrique **News devient un chantier prioritaire**, après validat
 **Recette utilisateur avant toute suite** : sur l'aperçu de branche, tester Compte → Connexion Twitch → retour à la bonne rubrique ; compte sans autorisation News (aucun accès privé), compte autorisé (lien Gérer les actualités), déconnexion, état après F5 et mobile. Vérifier également le parcours de rédaction News existant. En cas d'échec de callback, contrôler la liste des URL autorisées dans Supabase sans modifier celle du TCG.
 
 **Étapes suivantes non encore codées** : intégration du rendu V4.3 Brun dans le site, modèle de contenus évolutif et gabarits du carnet, interface privée de gestion, création contrôlée de la permission `phasmo_journal_admin` et de RLS spécifiques, puis validation avec Deadelus. Le panneau de compte actuel ne prétend pas fournir ces fonctionnalités tant qu'elles n'existent pas.
+
+
+### Validation réelle : connexion Twitch et accès News depuis le menu Compte (27/10/2026)
+
+- **Essai utilisateur réussi dans le navigateur, sur la branche Phasmo V2 :** connexion via le nouveau menu « Compte » ; immédiatement après la connexion Twitch, le compte de l'utilisatrice a vu apparaître son accès autorisé aux actualités dans le profil/menu Compte.
+- Cela valide le **chemin connexion Twitch → reconnaissance du compte → affichage conditionnel de l'accès News** pour ce compte. L'utilisatrice confirme que cela fonctionne (« nickel »).
+- **Ne pas extrapoler :** déconnexion, persistance après F5, compte non autorisé, menu mobile, ouverture et édition des articles depuis ce nouveau parcours, retour OAuth d'autres rubriques et révocation des droits n'ont pas été explicitement revalidés dans ce retour.
+- **Étape suivante :** conserver cette base d'authentification commune et préparer les rôles spécifiques au carnet ainsi que l'intégration du gabarit brun V4.3 et la gestion évolutive des fiches. Ne pas attribuer automatiquement les permissions carnet à tous les détenteurs de droits News.
+- **Périmètre :** constat de recette documenté uniquement, aucune modification Supabase / `main` / déploiement public.
