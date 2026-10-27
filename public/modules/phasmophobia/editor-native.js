@@ -309,7 +309,7 @@
       });
       panel.append(text,link,remove);
     }else{
-      const button=el('button','phasma-youtube-play','▶  Lire la vidéo YouTube');
+      const button=el('button','phasma-youtube-play');
       button.type='button';
       button.setAttribute('aria-label','Charger la vidéo YouTube');
       button.addEventListener('click',()=>{
