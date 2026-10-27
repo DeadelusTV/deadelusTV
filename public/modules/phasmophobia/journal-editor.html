@@ -96,11 +96,11 @@ html.journal-viewer header,html.journal-viewer aside,html.journal-viewer .workba
 html.journal-viewer #delete-layer-dialog,html.journal-viewer #journal-editor-preview-notice{display:none!important}
 html.journal-viewer main{display:block;height:100%;min-height:0}
 html.journal-viewer .workspace{height:100%;min-height:0;background:transparent}
-html.journal-viewer #stage-viewport{height:100%;min-height:0;padding:0;overflow:hidden;align-items:center;justify-content:center}
-html.journal-viewer #stage-wrap{margin:auto}
+html.journal-viewer #stage-viewport{height:100%;min-height:0;padding:0;overflow:hidden;display:block;position:relative;touch-action:none}
+html.journal-viewer #stage-wrap{position:absolute;left:50%;top:50%;margin:0;will-change:transform}
 html.journal-viewer #book{box-shadow:none}
 html.journal-viewer #book .layer{cursor:default}
-@media(max-width:700px){html.journal-viewer #stage-viewport{justify-content:center;align-items:center;padding:0}}
+@media(max-width:700px){html.journal-viewer #stage-viewport{padding:0}}
 </style>
 </head>
 <body>
@@ -226,6 +226,7 @@ html.journal-viewer #book .layer{cursor:default}
 <div class="dialog-buttons"><button type="button" id="record-delete-cancel">Annuler</button><button type="button" id="record-delete-confirm">Supprimer définitivement</button></div>
 </dialog>
 <script src="journal-records.js"></script>
+<script src="journal-viewer-zoom.js"></script>
 <script>
 'use strict';
 (() => {
@@ -470,18 +471,15 @@ function renderEditor(){
 }
 function fitStage(){
  if(VIEWER_ONLY){
-  // La visionneuse adapte les DEUX dimensions : aucun scroll, aucune coupe.
-  // Le zoom de l'atelier ne s'applique pas au livre vu depuis le site.
-  const width=viewport.clientWidth,height=viewport.clientHeight;
-  if(width<=0||height<=0)return;
-  currentScale=Math.min(1,Math.max(0.01,Math.min((width-4)/1536,(height-4)/1024)));
- }else{
-  const fit=Math.min(1,Math.max(.18,(viewport.clientWidth-48)/1536));
-  currentScale=fit*state.zoom/100;
+  window.PHASMO_JOURNAL_VIEWER_ZOOM?.fit();
+  return;
  }
+ // L'atelier conserve son zoom V4.3 indépendant.
+ const fit=Math.min(1,Math.max(.18,(viewport.clientWidth-48)/1536));
+ currentScale=fit*state.zoom/100;
  book.style.transform=`scale(${currentScale})`;
  wrap.style.width=1536*currentScale+'px';wrap.style.height=1024*currentScale+'px';
- $('#zoom-label').textContent=VIEWER_ONLY?Math.round(currentScale*100)+' %':state.zoom+' %';
+ $('#zoom-label').textContent=state.zoom+' %';
 }
 function updateInfo(){
  $('#view-info').textContent=(mode==='edit'?'Édition':'Test des clics')+' · '+(view.page==='sommaire'?'Sommaire':(view.name||state.groups[view.group].label));
@@ -938,10 +936,15 @@ async function init(){
  if (VIEWER_ONLY) {
    setMode('test');
    setView('sommaire');
+   window.PHASMO_JOURNAL_VIEWER_ZOOM?.init();
    window.addEventListener('message', event => {
      if (event.origin !== window.location.origin || event.source !== window.parent) return;
      const command = event.data;
-     if (!command || command.type !== 'deadelustv:journal-nav') return;
+     if (!command || !['deadelustv:journal-nav','deadelustv:journal-zoom'].includes(command.type)) return;
+     if (command.type === 'deadelustv:journal-zoom') {
+       window.PHASMO_JOURNAL_VIEWER_ZOOM?.setZoom(command.scale);
+       return;
+     }
      if (command.category === 'sommaire') setView('sommaire');
      else if (GROUP_ORDER.includes(command.category)) setView('category:' + command.category);
    });
