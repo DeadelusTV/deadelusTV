@@ -104,8 +104,11 @@
       root.after(controls);
       Object.assign(this, {panel, mount, controls, badge, title, description, retry, neon, copy, link});
       // Retirer immédiatement toute iframe si le visiteur retire son accord.
-      this.onConsentChange = () => {
+      this.onConsentChange = event => {
         if (!this.active) return;
+        // Changer YouTube ne doit pas couper le direct Twitch.
+        const changed = event.detail?.changedServices;
+        if (Array.isArray(changed) && !changed.includes('twitch')) return;
         this.stop();
         this.check();
       };
