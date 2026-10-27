@@ -50,6 +50,7 @@
       neonTitle.className = 'twitch-neon-title';
       const neonText = String(config.offlineTitle || 'HORS LIGNE');
       neonTitle.setAttribute('aria-label', neonText);
+      neonTitle.dataset.text = neonText; // double de halo bleu derrière les lettres
       for (const character of neonText) {
         const letter = document.createElement('span');
         letter.className = 'letter';
@@ -101,7 +102,19 @@
       controls.append(play);
       root.append(panel, mount);
       root.after(controls);
-      Object.assign(this, {panel, mount, controls, badge, title, description, retry, neon, copy});
+      Object.assign(this, {panel, mount, controls, badge, title, description, retry, neon, copy, link});
+      // Retirer immédiatement toute iframe si le visiteur retire son accord.
+      this.onConsentChange = event => {
+        if (!this.active) return;
+        // Changer YouTube ne doit pas couper le direct Twitch.
+        const changed = event.detail?.changedServices;
+        if (Array.isArray(changed) && !changed.includes('twitch')) return;
+        this.stop();
+        this.check();
+      };
+      window.addEventListener('deadelustv:consent-change', this.onConsentChange);
+      // Preparer l'ancre et le conteneur persistant AVANT toute creation d'iframe.
+      window.DEADELUSTV_TWITCH_FLOAT?.setup(root, controls, this);
       this.setState('loading');
       this.onVisibility = () => {
         if (!document.hidden && this.active && this.state !== 'live') this.check();
@@ -126,12 +139,15 @@
         loading: ['TWITCH', 'Le live DeadelusTV', 'Vérification du direct…'],
         offline: ['HORS LIVE', 'On se retrouve au prochain live.', 'Le direct démarrera ici dès son retour.'],
         unknown: ['TWITCH', 'Retrouvons-nous sur Twitch.', 'Le statut du direct est momentanément indisponible.'],
-        small: ['TWITCH', 'Le live vous attend sur Twitch.', 'Ouvre la chaîne pour regarder le direct ou les rediffusions.']
+        small: ['TWITCH', 'Le live vous attend sur Twitch.', 'Ouvre la chaîne pour regarder le direct ou les rediffusions.'],
+        blocked: ['EN DIRECT', 'Regarde le live sur Twitch.', 'Le lecteur intégré reste désactivé puisque tu as refusé ses cookies.']
       };
       if (messages[state]) {
         [this.badge.textContent, this.title.textContent, this.description.textContent] = messages[state];
       }
-      this.retry.hidden = ['loading', 'small'].includes(state);
+      this.retry.hidden = ['loading', 'small', 'blocked'].includes(state);
+      this.link.textContent = state === 'blocked' ? 'Regarder sur Twitch ↗' : 'Voir la chaîne Twitch ↗';
+      window.DEADELUSTV_TWITCH_FLOAT?.onState(state);
     }
 
     updateFlicker() {
@@ -164,6 +180,8 @@
       this.generation++;
       clearTimeout(this.watchdog);
       clearTimeout(this.poll);
+      clearTimeout(this.startupTimer);
+      cancelAnimationFrame(this.startupFrame);
       try { this.instance?.destroy(); } catch { /* Supprimer l'iframe suffit au repli. */ }
       this.instance = null;
       this.mount.replaceChildren();
@@ -179,47 +197,119 @@
       }, 60000);
     }
 
-    async check() {
+    async check(showLive = false) {
       if (!this.active) return;
       this.stop();
       const generation = this.generation;
       const current = () => this.active && generation === this.generation;
       this.setState('loading');
       try {
-        const Twitch = await loadSDK();
+        // Aucune ressource Twitch ne doit être chargée pour interroger le statut.
+        // L'endpoint même origine est fourni par le serveur OVH, avec clé API secrète.
+        const abort = new AbortController();
+        const timer = setTimeout(() => abort.abort(), 8000);
+        let status;
+        try {
+          const response = await fetch(this.config.twitchStatusUrl || '/api/twitch-status', {
+            method: 'GET', credentials: 'same-origin',
+            cache: 'no-store', signal: abort.signal
+          });
+          if (!response.ok) throw new Error('Statut Twitch indisponible');
+          status = await response.json();
+        } finally {
+          clearTimeout(timer);
+        }
         if (!current()) return;
+        if (!status || typeof status.live !== 'boolean') throw new Error('Statut Twitch invalide');
+        if (!status.live) {
+          this.setState('offline');
+          this.scheduleCheck();
+          return;
+        }
+        // Consentement absent ou refusé : aucun SDK, iframe ou cookie Twitch.
+        if (!window.DEADELUSTV_CONSENT?.hasTwitchConsent()) {
+          this.setState('blocked');
+          this.scheduleCheck();
+          return;
+        }
+        showLive = true;
+        this.setState('live');
+        const Twitch = await loadSDK();
+        if (!current() || !window.DEADELUSTV_CONSENT?.hasTwitchConsent()) return;
+        if (showLive) {
+          // Twitch vérifie la visibilité au chargement de l'iframe : créer un
+          // nouveau lecteur après affichage du cadre, plutôt que réutiliser la sonde masquée.
+          await new Promise(resolve => requestAnimationFrame(resolve));
+          if (!current()) return;
+        }
         const parents = [location.hostname, ...(this.config.twitchExtraParents || [])];
         this.instance = new Twitch.Player(this.mount.id, {
           channel: this.config.channel,
           width: '100%', height: '100%',
-          parent: [...new Set(parents)], autoplay: true, muted: true
+          parent: [...new Set(parents)], autoplay: showLive, muted: true
         });
         const instance = this.instance;
         const listen = (event, callback) => instance.addEventListener(event, () => {
           if (current()) callback();
         });
-        listen(Twitch.Player.READY, () => instance.setMuted(true));
+        let ready = false;
+        let online = false;
+        let startupQueued = false;
+        const beginPlayback = () => {
+          if (!showLive || !ready || !online || startupQueued) return;
+          startupQueued = true;
+          this.startupFrame = requestAnimationFrame(() => {
+            if (!current() || this.state !== 'live') return;
+            this.startupTimer = setTimeout(() => {
+              if (current() && this.state === 'live') this.controls.hidden = false;
+            }, 8000);
+            try {
+              instance.setMuted(true);
+              instance.play();
+            } catch {
+              clearTimeout(this.startupTimer);
+              this.controls.hidden = false;
+            }
+          });
+        };
+        listen(Twitch.Player.READY, () => {
+          ready = true;
+          instance.setMuted(true);
+          beginPlayback();
+        });
         listen(Twitch.Player.OFFLINE, () => {
-          clearTimeout(this.watchdog);
+          online = false;
+          this.stop();
           this.setState('offline');
           this.scheduleCheck();
         });
         listen(Twitch.Player.ONLINE, () => {
+          if (!showLive || this.state !== 'live') {
+            this.check(true);
+            return;
+          }
           clearTimeout(this.watchdog);
           clearTimeout(this.poll);
-          this.setState('live');
-          instance.setMuted(true);
-          instance.play();
+          online = true;
+          beginPlayback();
         });
         // PLAYING peut également concerner une rediffusion : seul ONLINE confirme le direct.
         listen(Twitch.Player.PLAYING, () => {
-          if (this.state === 'live') this.controls.hidden = true;
+          if (this.state === 'live') {
+            clearTimeout(this.startupTimer);
+            this.controls.hidden = true;
+          }
         });
         listen(Twitch.Player.PLAYBACK_BLOCKED, () => {
-          if (this.state === 'live') this.controls.hidden = false;
+          if (this.state === 'live') {
+            clearTimeout(this.startupTimer);
+            this.controls.hidden = false;
+          }
         });
         // Une fin de lecture ne prouve pas que la chaîne est hors ligne.
         listen(Twitch.Player.ENDED, () => {
+          clearTimeout(this.startupTimer);
+          cancelAnimationFrame(this.startupFrame);
           if (this.state === 'live') this.setState('unknown');
           this.scheduleCheck();
         });
@@ -227,6 +317,8 @@
           if (current() && this.state === 'loading') {
             this.setState('unknown');
             this.scheduleCheck();
+          } else if (current() && showLive && this.state === 'live') {
+            this.controls.hidden = false;
           }
         }, 20000);
       } catch {
@@ -237,17 +329,22 @@
     }
 
     sync() {
-      const visible = !this.root.closest('[data-page]').hidden;
+      const float = window.DEADELUSTV_TWITCH_FLOAT;
+      // La section Accueil peut etre masquee mais le lecteur rester flottant.
+      const visible = float ? float.isHomeVisible() : !this.root.closest('[data-page]').hidden;
+      const persist = !visible && float?.shouldPersist(this);
+      float?.refresh();
       const secure = location.protocol === 'https:' || ['localhost', '127.0.0.1'].includes(location.hostname);
-      const largeEnough = this.root.clientWidth >= 400;
-      if (!visible || !secure || !largeEnough) {
+      // Un dock volontairement masque mesure 0px pendant une reprise sur un autre onglet.
+      const largeEnough = persist || this.root.clientWidth >= 400;
+      if ((!visible && !persist) || !secure || !largeEnough) {
         this.active = false;
         this.stop();
         this.setState(!visible ? 'loading' : !largeEnough ? 'small' : 'unknown');
         this.retry.hidden = true;
         return;
       }
-      if (this.active) return;
+      if (this.active) { float?.refresh(); return; }
       this.active = true;
       this.check();
     }

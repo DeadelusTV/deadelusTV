@@ -1,0 +1,46 @@
+name: Valider integration consentement global
+
+on:
+  pull_request:
+    paths:
+      - 'public/assets/consent.js'
+      - 'public/assets/external-embeds.js'
+      - 'public/assets/twitch-player.js'
+      - 'public/assets/legal.css'
+      - 'public/index.html'
+      - 'scripts/test_frontend_consent.cjs'
+      - '.github/workflows/check-consent-global.yml'
+  push:
+    branches:
+      - integration/consentement-global-20261027
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Recuperer le code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Verifier les fichiers statiques
+        run: python3 scripts/verify-static.py --allow-legal-pending
+      - name: Verifier la syntaxe JavaScript
+        run: |
+          node --check public/assets/consent.js
+          node --check public/assets/external-embeds.js
+          node --check public/assets/twitch-player.js
+          node --check public/assets/app.js
+      - name: Tester consentement, lecteurs et mini-player
+        run: node --test scripts/test_frontend_consent.cjs scripts/test_twitch_floating.cjs
+      - name: Verifier que la nouvelle livraison ne touche pas les autres univers
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -q 'src="https://www.youtube-nocookie.com/embed/' public/index.html
+          test -f public/modules/crewmongus/module.js
+          test -f public/modules/phasmophobia/module.js
+          test -f public/modules/pavillon-noir/module.js

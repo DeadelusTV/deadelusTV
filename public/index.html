@@ -9,18 +9,24 @@
 <title>DeadelusTV — Le repaire de la communauté</title>
 <link rel="icon" href="assets/logo-chaine.png" type="image/png">
 <link rel="stylesheet" href="assets/styles.css">
+<link rel="stylesheet" href="assets/legal.css">
 <link rel="stylesheet" href="modules/phasmophobia/style.css">
+<link rel="stylesheet" href="modules/phasmophobia/news.css">
 <script src="modules/phasmophobia/module.js" defer></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bungee+Inline&family=Great+Vibes&display=swap" rel="stylesheet">
+<script src="modules/phasmophobia/news.js" defer></script>
+<script src="modules/phasmophobia/news-access.js" defer></script>
+<link rel="stylesheet" href="assets/local-fonts.css">
 <link rel="stylesheet" href="assets/twitch-neon.css">
+<link rel="stylesheet" href="assets/twitch-floating.css">
 <link rel="stylesheet" href="assets/tcg-attente.css">
 <script src="assets/config.js" defer></script>
 <link rel="stylesheet" href="modules/pavillon-noir/style.css">
 <script src="modules/pavillon-noir/module.js" defer></script>
 <link rel="stylesheet" href="modules/crewmongus/style.css">
 <script src="modules/crewmongus/module.js" defer></script>
+<script src="assets/consent.js" defer></script>
+<script src="assets/external-embeds.js" defer></script>
+<script src="assets/twitch-floating.js" defer></script>
 <script src="assets/twitch-player.js" defer></script>
 <script src="assets/app.js" defer></script>
 </head>
@@ -84,14 +90,21 @@
   <div class="player-shell twitch-player" id="player-shell"></div>
 </section>
   <section class="latest" aria-labelledby="videos-title">
-   <div class="section-heading"><h2 id="videos-title">À retrouver en vidéo</h2><a class="all-link" data-link="youtubeVideos" href="https://www.youtube.com/@deadelustv/videos" target="_blank" rel="noopener noreferrer">Tout voir ↗</a></div>
+   <div class="section-heading"><h2 id="videos-title">Les dernières vidéos</h2><a class="all-link" data-link="youtubeVideos" href="https://www.youtube.com/@deadelustv/videos" target="_blank" rel="noopener noreferrer">Tout voir ↗</a></div>
    <div class="latest-content">
     <article class="video-main">
      <a class="video-thumbnail" id="latest-youtube-video" href="https://www.youtube.com/watch?v=rdxo3Rcuyzk" target="_blank" rel="noopener noreferrer" aria-label="Voir la dernière vidéo de DeadelusTV sur YouTube (nouvel onglet)">
-      <img id="latest-youtube-thumbnail" src="https://i.ytimg.com/vi/rdxo3Rcuyzk/hq720.jpg?sqp=-oaymwEXCNAFEJQDSFryq4qpAwkIARUAAIhCGAE=&amp;rs=AOn4CLBCRG_-A3mWWkioQBHTBrvxaRCIMw" alt="" width="720" height="404" loading="lazy" decoding="async">
+      <img
+  id="latest-youtube-thumbnail"
+  alt=""
+  width="720"
+  height="404"
+  loading="lazy"
+  decoding="async"
+>
       <span class="video-badge"><svg class="icon" aria-hidden="true"><use href="#i-youtube"/></svg></span>
      </a>
-     <h3><a id="latest-youtube-title" data-link="youtube" href="https://www.youtube.com/@deadelustv" target="_blank" rel="noopener noreferrer" aria-label="Ouvrir la chaîne YouTube de DeadelusTV (nouvel onglet)">Ep 01 - DES MAINS QUI S&#x27;ACCOUPLENT AVEC MA TETE - Découverte END OF ABYSS</a></h3>
+     <h3><a id="latest-youtube-title" data-link="youtube" href="https://www.youtube.com/@deadelustv" target="_blank" rel="noopener noreferrer" aria-label="Ouvrir la chaîne YouTube de DeadelusTV (nouvel onglet)">Dernière vidéo de DeadelusTV</a></h3>
     </article>
     <div class="shorts-grid tiktok-only">
      <a class="short-card" data-link="tiktok" href="https://www.tiktok.com/@deadelustv" target="_blank" rel="noopener noreferrer">
@@ -102,11 +115,11 @@
    </div>
   </section>
  </div>
- <section class="universes" aria-labelledby="universes-title"><div class="section-heading"><h2 id="universes-title">Explore les univers de la chaîne</h2></div>
+ <section class="universes" aria-labelledby="universes-title"><div class="section-heading"><h2 id="universes-title">Explorer notre univers</h2></div>
  <div class="universe-grid">
   <article class="universe-card">
    <a class="universe-art-link" href="#phasmophobia" aria-label="Découvrir l’espace Phasmophobia"><div class="art art-phasmo" aria-hidden="true"></div></a>
-   <div class="universe-body"><span class="universe-category">Les enquêtes & les tutos</span><h3><a href="#phasmophobia">Phasmophobia</a></h3><p>Un peu de méthode pour les enquêtes. Pour le courage, on vous laisse gérer.</p><a class="arrow-link" data-link="phasmoVideos" href="https://www.youtube.com/@deadelustv/search?query=phasmophobia" target="_blank" rel="noopener noreferrer">Voir les vidéos <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
+   <div class="universe-body"><span class="universe-category">Les news & les tutos</span><h3><a href="#phasmophobia">Phasmophobia</a></h3><p>Retrouver toutes les actualistés Kinetic Games, ainsi que les trucs et astuces. Pour le courage, on vous laisse gérer.</p><a class="arrow-link" data-link="phasmoVideos" href="https://www.youtube.com/@deadelustv/search?query=phasmophobia" target="_blank" rel="noopener noreferrer">Voir les vidéos <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
   </article>
   <article class="universe-card">
    <a class="universe-art-link" href="#tcg" aria-label="Découvrir le projet de cartes à collectionner"><div class="art art-tcg" aria-hidden="true"></div></a>
@@ -114,20 +127,13 @@
   </article>
   <article class="universe-card">
    <a class="universe-art-link" data-link="crewmongus" href="#crewmongus" aria-label="Ouvrir les statistiques Crewmong Us"><div class="art art-crew" aria-hidden="true"></div></a>
-   <div class="universe-body"><span class="universe-category">Among Us · Statistiques</span><h3><a href="#crewmongus">Crewmong Us</a></h3><p>Les parties du Crew, les soupçons et les trahisons. Cette fois, on a les chiffres.</p><a class="arrow-link" data-link="crewmongus" href="#crewmongus">Voir les statistiques <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
+   <div class="universe-body"><span class="universe-category">Among Us · Statistiques</span><h3><a href="#crewmongus">Crewmong Us</a></h3><p>Les parties du Crew, les soupçons et les trahisons. Cette fois, on a les chiffres, Deadelus est toujours suspect, c'est prouvé.</p><a class="arrow-link" data-link="crewmongus" href="#crewmongus">Voir les statistiques <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
   </article>
   <article class="universe-card">
    <a class="universe-art-link" href="#jeux-de-role" aria-label="Découvrir Pavillon noir"><div class="art art-jdr" aria-hidden="true"></div></a>
-   <div class="universe-body"><span class="universe-category">Les carnets de campagne</span><h3><a href="#jeux-de-role">Pavillon Noir</a></h3><p>Des équipages, des personnages et des histoires qui continuent entre deux lives.</p><a class="arrow-link" data-link="pavillonNoir" href="#pavillon-noir">Ouvrir Pavillon Noir <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
+   <div class="universe-body"><span class="universe-category">Les carnets de campagne</span><h3><a href="#jeux-de-role">Pavillon Noir</a></h3><p>Retrouver votre équipage préféré et le résumé de leurs aventures.</p><a class="arrow-link" data-link="pavillonNoir" href="#pavillon-noir">Ouvrir Pavillon Noir <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
   </article>
  </div></section>
-</section>
-
-<section class="page" id="page-jeux-de-role" data-page="jeux-de-role" hidden aria-labelledby="jdr-title">
- <div class="breadcrumb"><a href="#accueil">Accueil</a><span>/</span><span>Pavillon noir</span></div>
- <div class="page-header"><div class="eyebrow">Les aventures de la communauté</div><h1 id="jdr-title" tabindex="-1">Une table. Des dés.<br>Des histoires à vivre.</h1><p>Retrouve nos campagnes, rencontre les personnages et replonge dans les séances. L’aventure continue aussi entre deux lives.</p></div>
- <article class="feature"><div class="art art-jdr feature-art" aria-hidden="true"></div><div class="feature-copy"><span class="pill pill-gold">CARNET DE CAMPAGNE</span><h2>Pavillon Noir</h2><p>Retrouve les récits des séances, les personnages et les cartes de notre campagne. Le carnet de l’équipage t’attend sur le site Pavillon Noir.</p><a class="btn btn-gold" data-link="pavillonNoir" href="#pavillon-noir">Ouvrir le carnet <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></div></article>
- <div class="section-label"><h2>Tout pour suivre l’histoire</h2></div><div class="info-grid"><article class="info-card"><span class="info-no">01 / LES SÉANCES</span><h3>Le récit de nos aventures</h3><p>Un résumé par séance et les liens vers les replays pour retrouver les moments clés.</p></article><article class="info-card"><span class="info-no">02 / LES PERSONNAGES</span><h3>Ceux qui font l’histoire</h3><p>Les membres de l’équipage, leurs fiches et les rencontres qui jalonnent leur voyage.</p></article><article class="info-card"><span class="info-no">03 / LES CAMPAGNES</span><h3>D’autres horizons</h3><p>Un espace qui pourra accueillir nos prochains jeux de rôle, chacun avec son propre carnet.</p></article></div>
 </section>
 
 <section class="page" id="page-pavillon-noir" data-page="pavillon-noir" hidden aria-label="Pavillon Noir — Carnet de campagne">
@@ -196,13 +202,61 @@
 
 <section class="page" id="page-phasmophobia" data-page="phasmophobia" hidden aria-labelledby="phasmo-title">
  <div class="breadcrumb"><a href="#accueil">Accueil</a><span>/</span><span>Phasmophobia</span></div><div class="page-header phasma-hero"><div class="eyebrow">Le coin des enquêteurs</div><h1 id="phasmo-title" tabindex="-1">Phasmophobia</h1><p>Astuces, tutoriels et ressources pour mieux comprendre Phasmophobia, avec la communauté DeadelusTV.</p></div>
+ <section class="phasma-resources" aria-labelledby="phasma-resources-title">
+  <header class="phasma-resources-header">
+   <span class="eyebrow">LE BUREAU DES ENQUÊTEURS</span>
+   <h2 id="phasma-resources-title">Les ressources</h2>
+   <p>Choisis une rubrique pour consulter les actualités, parcourir les tips ou retrouver les tutoriels de DeadelusTV.</p>
+  </header>
+  <div class="phasma-resources-list">
+   <details class="phasma-resource" data-phasma-section="news">
+    <summary><span class="phasma-resource-number">01 / LES ACTUALITÉS</span><span class="phasma-resource-summary"><strong>News</strong><small>Les dernières annonces du jeu</small></span><svg class="icon stroke phasma-resource-chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary>
+    <div class="phasma-resource-body">
+     <div class="phasma-news-intro">
+      <div class="phasma-news-copy">
+       <span class="eyebrow">LE FIL D'ACTUALITÉ · EN PRÉPARATION</span>
+       <h3>Les nouvelles de Phasmophobia</h3>
+       <p>Les annonces de Kinetic Games et les archives seront regroupées ici.</p>
+      </div>
+      <a class="btn btn-outline phasma-news-official" href="https://www.kineticgames.co.uk/news" target="_blank" rel="noopener noreferrer">Actualités officielles <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+     </div>
+     <div class="phasma-news-editor-access" id="phasma-news-editor-access" hidden aria-live="polite">
+       <a class="btn btn-outline" id="phasma-news-editor-link"
+          href="modules/phasmophobia/editor-private.html" hidden>Gérer les actualités</a>
+       <button class="phasma-news-editor-login" id="phasma-news-editor-login"
+          type="button" hidden>Connexion Twitch <span aria-hidden="true">↗</span></button>
+       <button class="phasma-news-editor-logout" id="phasma-news-editor-logout" type="button" hidden>Se déconnecter</button>
+       <p class="phasma-news-editor-note" id="phasma-news-editor-note" hidden></p>
+      </div>
+      <div id="phasma-news-feed" class="phasma-news-feed" hidden aria-label="Futures actualités traduites"></div>
+    </div>
+   </details>
+   <details class="phasma-resource" data-phasma-section="livre">
+     <summary><span class="phasma-resource-number">02 / LE CARNET</span><span class="phasma-resource-summary"><strong>Les Tips</strong><small>A venir</small></span><svg class="icon stroke phasma-resource-chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary>
+     <div class="phasma-resource-body">
+<section class="phasma-journal-section" aria-labelledby="phasma-journal-title">
+  <div class="phasma-journal-copy">
+   <span class="eyebrow">LE JOURNAL DES ENQUÊTEURS</span>
+   <h2 id="phasma-journal-title">Le carnet des enquêteurs</h2>
+   <p>Les informations et astuces partagées sur le Discord pourront bientôt se retrouver ici, dans un carnet à feuilleter directement sur le site.</p>
+   <div class="phasma-journal-topics" aria-label="Rubriques prévues du carnet">
+    <span>Entités</span><span>Maps</span><span>Équipements</span><span>Conseils</span>
+   </div>
+   <p class="phasma-journal-note">Les pages interactives sont encore à construire.</p>
+  </div>
+  <div class="phasma-journal-art" role="img" aria-label="Carnet noir Phasmophobia posé sur un bureau sombre, éclairé par une lampe, avec des onglets Entités, Cartes, Équipements et Conseils."></div>
+ </section>
+     </div>
+    </details>
+    <details class="phasma-resource" data-phasma-section="tutos">
+    <summary><span class="phasma-resource-number">03 / LES VIDÉOS</span><span class="phasma-resource-summary"><strong>Tutos</strong><small>Les Shorts de DeadelusTV</small></span><svg class="icon stroke phasma-resource-chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary>
+    <div class="phasma-resource-body">
  <section class="phasma-shorts-section" aria-labelledby="phasmo-shorts-title">
   <div class="phasma-shorts-heading">
    <div class="phasma-shorts-heading-main">
-    <span class="eyebrow">LES RESSOURCES VIDÉO</span>
-    <h2 id="phasmo-shorts-title">Tutoriels Phasmophobia</h2>
+    <span class="eyebrow">LES SHORTS</span>
+    <h2 id="phasmo-shorts-title">Deadelus va vous causer</h2>
    </div>
-   <p>Les tutoriels Phasmophobia de Deadelus, regroupés dans leur playlist YouTube.</p>
    <a class="btn btn-outline phasma-shorts-link" data-link="phasmoShortsPlaylist" href="https://www.youtube.com/playlist?list=PL-fyrrZ6KfGkn4a2bt07-HqyjIncP_X7g" target="_blank" rel="noopener noreferrer"><svg class="icon" aria-hidden="true"><use href="#i-youtube"/></svg>Ouvrir la playlist Phasmo</a>
   </div>
   <div class="phasma-shorts-gallery">
@@ -214,23 +268,75 @@
    </div>
   </div>
  </section>
- <section class="phasma-journal-section" aria-labelledby="phasma-journal-title">
-  <div class="phasma-journal-copy">
-   <span class="eyebrow">LE JOURNAL DES ENQUÊTEURS</span>
-   <h2 id="phasma-journal-title">Le carnet des enquêteurs</h2>
-   <p>Les informations et astuces partagées sur le Discord pourront bientôt se retrouver ici, dans un carnet à feuilleter directement sur le site.</p>
-   <div class="phasma-journal-topics" aria-label="Rubriques prévues du carnet">
-    <span>Entités</span><span>Cartes</span><span>Équipements</span><span>Conseils</span>
-   </div>
-   <p class="phasma-journal-note">Aperçu visuel : les pages interactives sont encore à construire.</p>
+    </div>
+   </details>
   </div>
-  <div class="phasma-journal-art" role="img" aria-label="Carnet noir Phasmophobia posé sur un bureau sombre, éclairé par une lampe, avec des onglets Entités, Cartes, Équipements et Conseils."></div>
  </section>
+</section>
+
+<section class="page legal-page" id="page-mentions-legales" data-page="mentions-legales" hidden aria-labelledby="legal-title">
+ <div class="breadcrumb"><a href="#accueil">Accueil</a><span>/</span><span>Mentions légales</span></div>
+ <div class="legal-heading"><span class="eyebrow">INFORMATIONS LÉGALES</span><h1 id="legal-title" tabindex="-1">Mentions légales</h1></div>
+ <!-- DÉBUT DU CONTENU À FOURNIR PAR DEADELUS : remplacer le bloc ci-dessous, puis enlever data-legal-pending -->
+ <!-- À traiter dans le texte officiel : éditeur et hébergeur, propriété intellectuelle, créations originales, marques/illustrations/vidéos de tiers et autorisations correspondantes. -->
+ <article class="legal-document" data-legal-pending="true">
+  <h2>Mentions légales en cours de publication</h2>
+  <p>Cette rubrique est en préparation. Les mentions légales complètes seront ajoutées après validation par l’éditeur du site.</p>
+ </article>
+ <!-- FIN DU CONTENU À FOURNIR PAR DEADELUS -->
+</section>
+<section class="page legal-page" id="page-confidentialite" data-page="confidentialite" hidden aria-labelledby="privacy-title">
+ <div class="breadcrumb"><a href="#accueil">Accueil</a><span>/</span><span>Confidentialité</span></div>
+ <div class="legal-heading"><span class="eyebrow">PROTECTION DES DONNÉES</span><h1 id="privacy-title" tabindex="-1">Politique de confidentialité</h1></div>
+ <!-- DÉBUT DU CONTENU À FOURNIR PAR DEADELUS : remplacer le bloc ci-dessous, puis enlever data-legal-pending -->
+ <article class="legal-document" data-legal-pending="true">
+  <h2>Politique de confidentialité en cours de publication</h2>
+  <p>Les lecteurs intégrés Twitch et YouTube nécessitent votre accord, modifiable à tout moment dans « Gestion des cookies ». Les informations de confidentialité complètes seront publiées après validation.</p>
+ </article>
+ <!-- FIN DU CONTENU À FOURNIR PAR DEADELUS -->
+</section>
+
+<section class="page legal-page" id="page-conditions-utilisation" data-page="conditions-utilisation" hidden aria-labelledby="cgu-title">
+ <div class="breadcrumb"><a href="#accueil">Accueil</a><span>/</span><span>Conditions générales d'utilisation</span></div>
+ <div class="legal-heading"><span class="eyebrow">RÈGLES D'UTILISATION</span><h1 id="cgu-title" tabindex="-1">Conditions générales d'utilisation (CGU)</h1></div>
+ <!-- CGU À FOURNIR ET À VALIDER : remplacer ce bloc, puis enlever data-legal-pending. -->
+ <article class="legal-document" data-legal-pending="true">
+  <h2>CGU en cours de préparation</h2>
+  <p>Cette rubrique accueillera les règles d'utilisation des services et fonctionnalités du site après leur validation. Aucun contenu contractuel n'est présenté comme accepté ou applicable à ce stade.</p>
+ </article>
+</section>
+<section class="page legal-page" id="page-conditions-vente" data-page="conditions-vente" hidden aria-labelledby="cgv-title">
+ <div class="breadcrumb"><a href="#accueil">Accueil</a><span>/</span><span>Conditions générales de vente</span></div>
+ <div class="legal-heading"><span class="eyebrow">CONDITIONS COMMERCIALES</span><h1 id="cgv-title" tabindex="-1">Conditions générales de vente (CGV)</h1></div>
+ <!-- CGV À PRÉPARER SI VENTE : adapter aux activités réellement commercialisées, puis enlever data-legal-pending. -->
+ <article class="legal-document" data-legal-pending="true">
+  <h2>CGV en cours de préparation</h2>
+  <p>Cette page est réservée aux éventuelles conditions de vente de produits ou de services. Aucun fonctionnement marchand ni vente n'est annoncé par cette rubrique.</p>
+ </article>
+</section>
+<section class="page legal-page" id="page-politique-cookies" data-page="politique-cookies" hidden aria-labelledby="cookies-title">
+ <div class="breadcrumb"><a href="#accueil">Accueil</a><span>/</span><span>Politique de cookies</span></div>
+ <div class="legal-heading"><span class="eyebrow">TRACEURS ET CONFIDENTIALITÉ</span><h1 id="cookies-title" tabindex="-1">Politique de cookies</h1></div>
+ <!-- NOTICE COOKIES À COMPLÉTER APRÈS INVENTAIRE DES TRACEURS, puis enlever data-legal-pending. -->
+ <article class="legal-document" data-legal-pending="true">
+  <h2>Politique de cookies en préparation</h2>
+  <p>Les lecteurs intégrés Twitch et YouTube sont chargés uniquement avec votre accord. Vous pouvez refuser ou modifier les choix par service à tout moment grâce à « Gestion des cookies » dans le pied de page. Les miniatures et les autres ressources externes restent à décrire dans la notice définitive.</p>
+  <p>Pour connaître le traitement de vos données par le lecteur externe, consultez la <a href="https://legal.twitch.com/fr-fr/legal/privacy-notice/" target="_blank" rel="noopener noreferrer">notice de confidentialité de Twitch</a>.</p>
+ </article>
 </section>
 
 <aside class="community" aria-labelledby="community-title"><div class="art art-library community-art" aria-hidden="true"></div><svg class="icon" aria-hidden="true"><use href="#i-discord"/></svg><div class="community-text"><h2 id="community-title">On continue sur Discord ?</h2><p><span>Rejoins la communauté</span> pour échanger, partager et suivre les prochains projets.</p></div><a class="btn btn-gold" data-link="discord" href="https://discord.gg/eMhE3uSHQS" target="_blank" rel="noopener noreferrer">Rejoindre la communauté <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></aside>
 </main>
-<footer class="container site-footer"><div class="footer-top"><a href="#accueil" class="brand" aria-label="Retour à l’accueil"><img class="brand-avatar" src="assets/logo-chaine.png" alt="" width="42" height="42"><span class="brand-name">Deadelus<span>TV</span></span></a><nav class="socials" aria-label="Réseaux sociaux"><a data-link="twitch" href="https://www.twitch.tv/deadelustv" target="_blank" rel="noopener noreferrer"><svg class="icon tw" aria-hidden="true"><use href="#i-twitch"/></svg>Twitch</a><a data-link="youtube" href="https://www.youtube.com/@deadelustv" target="_blank" rel="noopener noreferrer"><svg class="icon youtube" aria-hidden="true"><use href="#i-youtube"/></svg>YouTube</a><a data-link="tiktok" href="https://www.tiktok.com/@deadelustv" target="_blank" rel="noopener noreferrer"><svg class="icon tiktok" aria-hidden="true"><use href="#i-tiktok"/></svg>TikTok</a><a data-link="discord" href="https://discord.gg/eMhE3uSHQS" target="_blank" rel="noopener noreferrer"><svg class="icon dc" aria-hidden="true"><use href="#i-discord"/></svg>Discord</a></nav></div><div class="footer-bottom"><p>DeadelusTV · Le repaire de la communauté</p><button class="btn-quiet back-top" id="back-top" type="button">Retour en haut <svg class="icon stroke" aria-hidden="true"><use href="#i-up"/></svg></button></div></footer>
+<footer class="container site-footer"><div class="footer-top"><a href="#accueil" class="brand" aria-label="Retour à l’accueil"><img class="brand-avatar" src="assets/logo-chaine.png" alt="" width="42" height="42"><span class="brand-name">Deadelus<span>TV</span></span></a><nav class="socials" aria-label="Réseaux sociaux"><a data-link="twitch" href="https://www.twitch.tv/deadelustv" target="_blank" rel="noopener noreferrer"><svg class="icon tw" aria-hidden="true"><use href="#i-twitch"/></svg>Twitch</a><a data-link="youtube" href="https://www.youtube.com/@deadelustv" target="_blank" rel="noopener noreferrer"><svg class="icon youtube" aria-hidden="true"><use href="#i-youtube"/></svg>YouTube</a><a data-link="tiktok" href="https://www.tiktok.com/@deadelustv" target="_blank" rel="noopener noreferrer"><svg class="icon tiktok" aria-hidden="true"><use href="#i-tiktok"/></svg>TikTok</a><a data-link="discord" href="https://discord.gg/eMhE3uSHQS" target="_blank" rel="noopener noreferrer"><svg class="icon dc" aria-hidden="true"><use href="#i-discord"/></svg>Discord</a></nav></div><nav class="legal-links" aria-label="Informations légales">
+ <!-- Liens réservés : enlever hidden lorsque les contenus correspondants sont validés. -->
+ <a href="#mentions-legales" hidden>Mentions légales</a>
+ <a href="#confidentialite" hidden>Politique de confidentialité</a>
+ <a href="#conditions-utilisation" hidden>CGU</a>
+ <a href="#conditions-vente" hidden>CGV</a>
+ <a href="#politique-cookies" hidden>Politique de cookies</a>
+ <!-- Doit rester visible en permanence pour pouvoir retirer son consentement. -->
+ <button type="button" class="btn-quiet" data-consent-manage>Gestion des cookies</button>
+</nav><div class="footer-bottom"><p>DeadelusTV · Le repaire de la communauté</p><button class="btn-quiet back-top" id="back-top" type="button">Retour en haut <svg class="icon stroke" aria-hidden="true"><use href="#i-up"/></svg></button></div></footer>
 
 <dialog id="live-dialog" aria-labelledby="live-dialog-title"><button class="close-dialog" aria-label="Fermer" data-close><svg class="icon stroke" aria-hidden="true"><use href="#i-close"/></svg></button><span class="pill"><svg class="icon" aria-hidden="true"><use href="#i-twitch"/></svg>DEADELUSTV</span><h2 id="live-dialog-title">La suite se passe sur Twitch.</h2><p id="live-dialog-copy">Retrouve le live, le chat et les replays sur la chaîne DeadelusTV.</p><div class="dialog-actions"><a class="btn btn-gold" data-link="twitch" href="https://www.twitch.tv/deadelustv" target="_blank" rel="noopener noreferrer">Rejoindre la chaîne <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a><button class="btn btn-outline" data-close>Continuer la visite</button></div></dialog>
 
