@@ -456,12 +456,17 @@ dialog{color:var(--text);background:#19191a;border:1px solid #59513e;border-radi
   background-size: 100% 100%;
 }
 .tiktok-only .tiktok-motion__halo {
-  background-image: radial-gradient(ellipse 43% 24% at 50% 66%,
-    rgba(211, 166, 83, .36) 0%, rgba(176, 118, 40, .18) 37%,
-    rgba(150, 90, 30, .06) 66%, transparent 100%);
+  /* Lumière diffuse derrière le blason, indépendante du glitch TikTok. */
+  background-image: radial-gradient(ellipse 54% 31% at 50% 64%,
+    rgba(229, 174, 81, .72) 0%, rgba(205, 133, 35, .46) 38%,
+    rgba(166, 90, 20, .20) 66%, transparent 100%);
   animation: tiktok-deadelus-halo 5.2s ease-in-out infinite;
 }
-.tiktok-only .tiktok-motion__deadelus { background-image: url('tiktok-deadelus.webp'); }
+.tiktok-only .tiktok-motion__deadelus {
+  background-image: url('tiktok-deadelus.webp');
+  /* Le contour lumineux reste visible même si le blason masque le halo de fond. */
+  animation: tiktok-deadelus-glow 5.2s ease-in-out infinite;
+}
 .tiktok-only .tiktok-motion__logo {
   background-image: url('tiktok-logo.webp');
   animation: tiktok-logo-glitch 8s linear infinite;
@@ -473,8 +478,18 @@ dialog{color:var(--text);background:#19191a;border:1px solid #59513e;border-radi
   animation: tiktok-logo-echo 8s linear infinite;
 }
 @keyframes tiktok-deadelus-halo {
-  0%, 100% { opacity: .64; transform: scale(.98); }
-  50% { opacity: 1; transform: scale(1.04); }
+  0%, 100% { opacity: .68; transform: scale(.98); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+@keyframes tiktok-deadelus-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 3px rgba(246, 190, 83, .40))
+            drop-shadow(0 0 7px rgba(209, 133, 27, .22));
+  }
+  50% {
+    filter: drop-shadow(0 0 5px rgba(255, 207, 104, .90))
+            drop-shadow(0 0 13px rgba(224, 144, 26, .62));
+  }
 }
 @keyframes tiktok-logo-glitch {
   0%, 86%, 88%, 90%, 100% { transform: translate(0,0); }
@@ -488,8 +503,13 @@ dialog{color:var(--text);background:#19191a;border:1px solid #59513e;border-radi
 }
 @media (prefers-reduced-motion: reduce) {
   .tiktok-only .tiktok-motion__halo,
+  .tiktok-only .tiktok-motion__deadelus,
   .tiktok-only .tiktok-motion__logo,
   .tiktok-only .tiktok-motion__echo { animation: none; }
   .tiktok-only .tiktok-motion__halo { opacity: .85; transform: none; }
+  .tiktok-only .tiktok-motion__deadelus {
+    filter: drop-shadow(0 0 4px rgba(246, 190, 83, .65))
+            drop-shadow(0 0 9px rgba(209, 133, 27, .38));
+  }
   .tiktok-only .tiktok-motion__echo { opacity: 0; }
 }
