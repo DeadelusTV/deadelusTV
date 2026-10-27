@@ -30,7 +30,7 @@
   <strong>Espace de rédaction privé.</strong>
   Vos brouillons et les images collées ou importées depuis le PC sont enregistrés sur Supabase.
   Attendez le message de confirmation de l'enregistrement avant de fermer ou actualiser la page.
-  Les brouillons et leurs images restent privés. Une publication en <strong>mode test</strong> est visible sur le site de développement, jamais sur le site officiel.
+  Les brouillons et leurs images restent privés. Les articles publiés sont visibles sur le site officiel. Les brouillons restent privés.
 </div>
 <section id="editor-private-gate" class="phasma-editor-private-gate" aria-label="Accès à la rédaction">
   <h1>Accès au bureau de rédaction</h1>
@@ -52,8 +52,8 @@
     </div>
     <div id="editor-draft-list" class="phasma-editor-draft-list"></div>
     <p class="phasma-editor-sidebar-note">Brouillons privés · sauvegarde automatique sur Supabase.</p>
-    <div class="phasma-editor-published-header"><h3>Publications de test</h3><small>Visibles sur la démo uniquement</small></div>
-    <div id="editor-published-list" class="phasma-editor-draft-list" aria-label="Articles publiés sur le site de développement"></div>
+    <div class="phasma-editor-published-header"><h3>Publications officielles</h3><small>Visibles sur le site uniquement</small></div>
+    <div id="editor-published-list" class="phasma-editor-draft-list" aria-label="Articles publiés sur le site officiel"></div>
   </aside>
   <main id="editor-main" class="phasma-editor-main" tabindex="-1">
     <div class="phasma-editor-toolbar">
@@ -69,7 +69,7 @@
         <button type="button" id="editor-export" class="phasma-editor-btn">Exporter le brouillon</button>
         <button type="button" id="editor-import" class="phasma-editor-btn">Importer un JSON</button>
         <input type="file" id="editor-import-file" accept=".json,application/json" hidden aria-label="Choisir un brouillon JSON à importer">
-        <button type="button" id="editor-publish" class="phasma-editor-btn phasma-editor-btn--gold">Publier sur la démo</button>
+        <button type="button" id="editor-publish" class="phasma-editor-btn phasma-editor-btn--gold">Publier sur le site</button>
       </div>
     </div>
     <p id="wys-editor-error" class="phasma-editor-image-error phasma-editor-alert-top" role="alert" hidden tabindex="-1"></p>
@@ -158,7 +158,7 @@
       </div>
       <div class="phasma-editor-bottom">
         <button type="button" id="editor-delete" class="phasma-editor-btn phasma-editor-btn--danger">Supprimer ce brouillon</button>
-        <p>Les brouillons sont privés. Les articles publiés en mode test sont visibles par les visiteurs de cette démo uniquement.</p>
+        <p>Les brouillons sont privés. Les articles publiés sont visibles par les visiteurs du site officiel.</p>
       </div>
     </section>
 
