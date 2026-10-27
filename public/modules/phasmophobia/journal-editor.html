@@ -190,14 +190,29 @@ html.journal-viewer #book .layer{cursor:default}
   <div class="block" id="journal-record-manager">
     <h3>5 · Fiches dynamiques (prototype local)</h3>
     <div class="field"><label for="group-edit">Catégorie</label><select id="group-edit"></select></div>
+    <div class="field"><label for="record-folder">Sous-catégorie pour une nouvelle fiche</label><select id="record-folder"></select></div>
     <div class="field"><label for="record-select">Fiches (archives incluses)</label><select id="record-select" size="7" style="width:100%" aria-label="Choisir une fiche"></select></div>
     <div class="field"><label for="record-title">Nom à ajouter ou à modifier</label><input id="record-title" type="text" maxlength="100" placeholder="Nom de la fiche"></div>
     <div class="buttons"><button type="button" class="btn small" id="record-add">+ Ajouter</button><button type="button" class="btn small" id="record-rename">Renommer</button><button type="button" class="btn small" id="record-edit">Ouvrir la fiche</button></div>
+    <p class="tip" id="record-location">Emplacement : catégorie principale</p>
     <div class="buttons"><button type="button" class="btn small" id="record-up">↑ Monter</button><button type="button" class="btn small" id="record-down">↓ Descendre</button><button type="button" class="btn small" id="record-archive">Archiver</button><button type="button" class="btn small" id="record-delete">Supprimer…</button></div>
+    <div class="field"><label for="record-move-group">Déplacer la fiche vers</label><select id="record-move-group"></select></div>
+    <div class="field"><label for="record-move-folder">Sous-catégorie de destination</label><select id="record-move-folder"></select></div>
+    <div class="buttons"><button type="button" class="btn small" id="record-move">Déplacer la fiche</button></div>
     <p class="tip">Chaque fiche a un identifiant stable et ses propres calques. Les archives disparaissent des listes. <b>Prototype local uniquement : exporte le JSON pour conserver tes essais. Aucune publication Supabase.</b></p>
   </div>
-<div class="block">
-    <h3>6 · Sauvegardes</h3>
+<div class="block" id="journal-folder-manager">
+    <h3>6 · Sous-catégories dynamiques</h3>
+    <p class="tip">Crée des rubriques à l'intérieur des cinq onglets du carnet, avec des sous-catégories imbriquées.</p>
+    <div class="field"><label for="folder-select">Rubriques (archives incluses)</label><select id="folder-select" size="6" style="width:100%"></select></div>
+    <div class="field"><label for="folder-parent">Emplacement de création ou destination</label><select id="folder-parent"></select></div>
+    <div class="field"><label for="folder-title">Nom de la sous-catégorie</label><input id="folder-title" type="text" maxlength="100" placeholder="Ex. Petites cartes"></div>
+    <div class="buttons"><button type="button" class="btn small" id="folder-add">+ Créer</button><button type="button" class="btn small" id="folder-rename">Renommer</button><button type="button" class="btn small" id="folder-open">Ouvrir</button><button type="button" class="btn small" id="folder-move">Déplacer</button></div>
+    <div class="buttons"><button type="button" class="btn small" id="folder-up">↑ Monter</button><button type="button" class="btn small" id="folder-down">↓ Descendre</button><button type="button" class="btn small" id="folder-archive">Archiver</button><button type="button" class="btn small" id="folder-delete">Supprimer si vide</button></div>
+    <p class="tip">Archiver masque le contenu sans l'effacer. Les dossiers non vides ne peuvent pas être supprimés.</p>
+  </div>
+  <div class="block">
+    <h3>7 · Sauvegardes</h3>
     <div class="buttons"><button id="export" class="btn solid" type="button">↓ Télécharger mes réglages</button><button id="import" class="btn" type="button">↑ Charger un JSON</button><button id="reset" class="btn" type="button">Réinitialiser l'atelier</button></div>
     <input id="json-input" type="file" accept="application/json,.json"><p class="tip">Les images et polices peuvent remplir le stockage du navigateur : <b>exporte régulièrement ton JSON</b>. Les réglages se conservent aussi dans ce navigateur quand le stockage local est autorisé. <b>Le JSON est la sauvegarde fiable à transmettre ici.</b> Compatible avec les exports du premier Atelier Sommaire.</p>
   </div>
@@ -226,6 +241,7 @@ html.journal-viewer #book .layer{cursor:default}
 <div class="dialog-buttons"><button type="button" id="record-delete-cancel">Annuler</button><button type="button" id="record-delete-confirm">Supprimer définitivement</button></div>
 </dialog>
 <script src="journal-records.js"></script>
+<script src="journal-folders.js"></script>
 <script src="journal-viewer-zoom.js"></script>
 <script>
 'use strict';
@@ -236,7 +252,8 @@ const $ = s => document.querySelector(s);
 const COPY = x => JSON.parse(JSON.stringify(x));
 const SAVE_KEY='deadelustv.phasmo.atelier.complet.v4_3';
 const RECORDS=window.PHASMO_JOURNAL_RECORDS;
-const RECORD_SCHEMA=5;
+const FOLDERS=window.PHASMO_JOURNAL_FOLDERS;
+const RECORD_SCHEMA=6;
 const OLD_SAVE_KEY='deadelustv.phasmo.atelier.complet.v4_2';
 const OLDER_SAVE_KEY='deadelustv.phasmo.atelier.complet.v4_1';
 const OLDEST_SAVE_KEY='deadelustv.phasmo.atelier.complet.v4';
@@ -285,10 +302,10 @@ function buildDefault(){
    items.push(layer(detail,'heading','Titre section droite','Notes de terrain',54,13,35,8,{size:62,align:'center'}));
    items.push(layer(detail,'text','Contenu futur','Prototype de fiche.\n\nLes informations et illustrations réelles seront ajoutées plus tard depuis le formulaire d’administration en ligne.',54,25,34,39,{size:28}));
  }
- return {version:RECORD_SCHEMA,groups:COPY(GROUPS),records:RECORDS.normalize(null,GROUPS),elements:items,fonts:[],grid:false,zoom:100};
+ return {version:RECORD_SCHEMA,groups:COPY(GROUPS),folders:[],records:RECORDS.normalize(null,GROUPS,[]),elements:items,fonts:[],grid:false,zoom:100};
 }
 let state=buildDefault();
-let mode='edit',view={page:'sommaire',group:null,name:null,entryId:null},selected=state.elements[0]?.id,drag=null,resizeDrag=null,saveTimer=null,currentScale=1,pendingRecordDelete=null;
+let mode='edit',view={page:'sommaire',group:null,name:null,entryId:null,folderId:null},selected=state.elements[0]?.id,drag=null,resizeDrag=null,saveTimer=null,currentScale=1,pendingRecordDelete=null;
 const book=$('#book'),surface=$('#element-surface'),wrap=$('#stage-wrap'),viewport=$('#stage-viewport');
 function note(message){$('#message').textContent=message;}
 function safeNum(value,fallback,min,max){const n=Number(value);return Number.isFinite(n)?Math.max(min,Math.min(max,n)):fallback;}
@@ -298,6 +315,9 @@ function pageForView(){return view.page;}
 function readable(s){return String(s??'').replaceAll('{{nom}}',view.name||'Fiche modèle').replaceAll('{{categorie}}',state.groups[currentGroup()].label);}
 function recordPage(id){return 'entry:'+id;}
 function recordList(group,archived=false){return RECORDS.list(state.records,group,archived);}
+function folderRecords(group,folderId=null){return recordList(group).filter(r=>(r.folderId||null)===(folderId||null));}
+function folderLabel(group,folderId){const f=FOLDERS.find(state.folders,folderId);return f&&f.group===group?f.title:state.groups[group].label;}
+function folderPath(group,folderId){return FOLDERS.lineage(state.folders,folderId).filter(f=>f.group===group).map(f=>f.title).join(' / ');}
 function ensureRecordPage(entry) {
  const page=recordPage(entry.id);
  if(state.elements.some(e=>e.page===page))return;
@@ -707,11 +727,12 @@ async function loadSettings(file){
  const raw=JSON.parse(await file.text());
  let incoming;
  if(raw.version===1&&raw.blocks&&raw.groups)incoming=importLegacy(raw);
- else if([2,3,4,RECORD_SCHEMA].includes(raw.version)&&Array.isArray(raw.elements)&&raw.groups&&Array.isArray(raw.fonts))incoming=raw;
+ else if([2,3,4,5,RECORD_SCHEMA].includes(raw.version)&&Array.isArray(raw.elements)&&raw.groups&&Array.isArray(raw.fonts))incoming=raw;
  else throw Error('Format non reconnu. Le JSON attendu vient de cet atelier ou du premier sommaire.');
  if(incoming.elements.length>5000)throw Error('Trop de calques (maximum 5 000).');
  const defaults=buildDefault();
- const records=RECORDS.normalize(incoming.records,incoming.groups);
+ const folders=FOLDERS.normalize(incoming.folders);
+ const records=RECORDS.normalize(incoming.records,incoming.groups,folders);
  const recordPages=new Set(records.map(rec=>recordPage(rec.id)));
  const permitted=['heading','text','list','hotspot','tab','image','line'];
  const cleaned=incoming.elements.filter(e=>e&&permitted.includes(e.kind)&&typeof e.name==='string'&&typeof e.page==='string'&&(e.page==='*'||VIEWS.some(v=>v.id===e.page)||recordPages.has(e.page))).map(e=>({
@@ -725,7 +746,7 @@ async function loadSettings(file){
    image:typeof e.image==='string'&&e.image.length<5_000_000&&/^data:image\/(?:png|jpeg|webp|gif);base64,/.test(e.image)?e.image:''
  }));
  if(cleaned.length===0)throw Error('Ce fichier ne contient aucun calque utilisable.');
- state={...defaults,...incoming,version:RECORD_SCHEMA,records,elements:cleaned,fonts:[],groups:defaults.groups};
+ state={...defaults,...incoming,version:RECORD_SCHEMA,folders,records,elements:cleaned,fonts:[],groups:defaults.groups};
  for(const id of GROUP_ORDER){
    const g=incoming.groups[id];if(!g)continue;
    state.groups[id]={label:String(g.label||GROUPS[id].label).slice(0,90),names:(Array.isArray(g.names)?g.names:[]).slice(0,180).map(x=>String(x).slice(0,100))};
@@ -735,7 +756,7 @@ async function loadSettings(file){
  for(const f of incomingFonts.slice(0,8)){try{await registerFont(f);}catch(e){note('Attention : une police n’a pas été chargée.');}}
  // Aucune confiance dans les identifiants de l'import : recréation stable.
  state.elements.forEach((e,i)=>e.id='element-'+(i+1));serial=state.elements.length+1;
- selected=state.elements[0]?.id;view={page:'sommaire',group:null,name:null,entryId:null};
+ selected=state.elements[0]?.id;view={page:'sommaire',group:null,name:null,entryId:null,folderId:null};
  $('#page-select').value=view.page;fillGroupEdit();renderLayers();renderLayerList();renderEditor();fitStage();save();note('Réglages chargés. Vérifie l’affichage, puis exporte ta version complète.');
 }
 
@@ -840,7 +861,7 @@ function makeIllustratedTemplate(){
 }
 function setup(){
  for(const v of VIEWS)$('#page-select').add(new Option(v.label,v.id));
- for(const id of GROUP_ORDER)$('#group-edit').add(new Option(GROUPS[id].label,id));
+ for(const id of GROUP_ORDER){$('#group-edit').add(new Option(GROUPS[id].label,id));$('#record-move-group').add(new Option(GROUPS[id].label,id));}
  refreshFontSelects();
  $('#page-select').addEventListener('change',ev=>setView(ev.target.value));
  $('#group-edit').addEventListener('change',fillGroupEdit);
@@ -917,13 +938,14 @@ function setup(){
 async function init(){
  try{
    const previous=localStorage.getItem(SAVE_KEY)||localStorage.getItem(OLD_SAVE_KEY)||localStorage.getItem(OLDER_SAVE_KEY)||localStorage.getItem(OLDEST_SAVE_KEY)||localStorage.getItem('deadelustv.phasmo.atelier.complet.v3');
-   if(previous){const data=JSON.parse(previous);if([2,3,4,RECORD_SCHEMA].includes(data?.version)&&Array.isArray(data.elements)){
+   if(previous){const data=JSON.parse(previous);if([2,3,4,5,RECORD_SCHEMA].includes(data?.version)&&Array.isArray(data.elements)){
      const tmp=new Blob([JSON.stringify(data)],{type:'application/json'});
      // Restore inline to avoid requiring File-compatible features in older browsers.
      const parsed=JSON.parse(await tmp.text());
-     const migrated=parsed.version!==RECORD_SCHEMA||!Array.isArray(parsed.records);
+     const migrated=parsed.version!==RECORD_SCHEMA||!Array.isArray(parsed.records)||!Array.isArray(parsed.folders);
      state={...buildDefault(),...parsed,version:RECORD_SCHEMA,fonts:[]};
-      state.records=RECORDS.normalize(parsed.records,parsed.groups);
+      state.folders=FOLDERS.normalize(parsed.folders);
+      state.records=RECORDS.normalize(parsed.records,parsed.groups,state.folders);
       syncRecordsToGroups();
      state.elements=state.elements.map(e=>({...{z:e.page==='*'?800:30,locked:false,hidden:false,bold:false,italic:false,underline:false,imageFit:'contain',blend:'normal'},...e}));
      serial=Math.max(1,...state.elements.map(e=>Number(String(e.id).split('-')[1])||0))+1;
