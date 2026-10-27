@@ -106,7 +106,7 @@
       // Retirer immédiatement toute iframe si le visiteur retire son accord.
       this.onConsentChange = event => {
         if (!this.active) return;
-        // Modifier YouTube n'interrompt pas un live Twitch deja autorise.
+        // Changer YouTube ne doit pas couper le direct Twitch.
         const changed = event.detail?.changedServices;
         if (Array.isArray(changed) && !changed.includes('twitch')) return;
         this.stop();

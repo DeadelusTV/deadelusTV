@@ -1,5 +1,15 @@
 # Préparation légale, consentement Twitch et mise en ligne
 
+## État actuel après synchronisation du 27 octobre 2026
+
+- Main intégré : `0edd2e07f66ff8f02f70fda503c171b5768cb179`. Point de retour : `17e8d167f5b27c8be316674d64a4fa4aced760df`, conservé comme premier parent du commit de fusion.
+- Le consentement global Twitch/YouTube, le mini-lecteur, le néon Graduate et le contrôle du statut live sont déjà publiés. Le raccordement des News et leurs corrections actuelles sont repris depuis main ; le livre Phasmo en développement reste dans sa branche propre.
+- Les deux maquettes Mentions légales / Confidentialité et leurs liens visibles en développement sont conservés. Les pages CGU, CGV et Cookies préparées sur main sont également disponibles par leurs routes ; leurs liens du footer restent masqués. Aucun texte juridique définitif ajouté ou présenté comme validé.
+- `scripts/verify-static.py` et l'appel strict dans le déploiement restent bloquants tant que `data-legal-pending="true"` existe. Seuls les contrôles de branche autorisent explicitement les textes en attente avec `--allow-legal-pending`.
+- Les outils de prévisualisation OVH, le service de statut, les tests et les documents de travail sont conservés. Les descriptions plus anciennes ci-dessous sont des étapes historiques, pas l'état actuel de publication.
+- Aucune modification de main, du serveur OVH ou d'une base. Les futurs textes de Deadelus, leur intégration et leur validation restent à terminer.
+
+
 **Branche de développement :** `developpement/legal-et-consentement` (pas de modification de `main`).
 
 ## Textes légaux
@@ -67,3 +77,7 @@ Ne pas fusionner cette branche sur `main` tant que les textes officiels, le serv
 Pour tester le nouveau lecteur **sans déployer `main` ni toucher à Caddy**, utiliser `scripts/tester-twitch-local.bat` sous Windows (Python 3 requis) ou `py -3 scripts/preview-twitch-ovh.py`. Ouvrir `http://127.0.0.1:8766/` : le serveur local sert le dossier `public/` et relaie uniquement `GET /api/twitch-status` vers la vraie API publique OVH. Voir `docs/test-lecteur-twitch-local.md` pour le protocole. Ne pas utiliser le port 5500 de Live Server pour ce test : son API locale est absente.
 
 Le néon Graduate validé a été intégré sur cette même branche, et devra être testé sur le vrai fond. Les mentions légales et la politique de confidentialité contiennent encore `data-legal-pending="true"` : **elles restent un blocage explicite au déploiement, même si le live fonctionne parfaitement**. Ne pas désactiver le contrôle de publication.
+
+## Périmètre technique de la synchronisation
+
+Les fichiers publics sont identiques à main, hormis les deux maquettes légales historiques et leurs liens de test dans index.html. Les protections de publication, outils et tests de branche restent présents. Le point avant refonte historique et les autres branches restent inchangés.

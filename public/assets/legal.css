@@ -1,6 +1,6 @@
 
 /* Pages légales et interface de consentement, coordonnées aux couleurs du site. */
-.legal-links{display:flex;align-items:center;flex-wrap:wrap;gap:10px 22px;margin-top:20px;padding-top:15px;border-top:1px solid #353431}
+.legal-links{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px 22px;margin-top:20px;padding-top:15px;border-top:1px solid #353431;text-align:center}
 .legal-links a,.legal-links button{display:inline-flex;align-items:center;min-height:42px;font-size:12px;color:#c9c3b9}
 .legal-links a:hover,.legal-links button:hover{color:var(--gold-bright)}
 .legal-page{min-height:66vh;max-width:950px;margin-inline:auto}
@@ -21,6 +21,8 @@
 .cookie-panel a{color:var(--gold-bright);text-decoration:underline}
 .cookie-panel button:focus-visible{outline-offset:3px}
 @media(max-width:600px){.legal-links{gap:0 18px}.cookie-panel{inset:auto 8px 8px;padding:18px}.cookie-panel .cookie-actions{flex-direction:column}.cookie-panel .cookie-actions .btn{width:100%}}
+/* Les liens réservés ne doivent pas réapparaître à cause du display:inline-flex des liens du footer. */
+.legal-links [hidden]{display:none!important}
 
 /* Preferences communes du portail ; pas de re-demande pour chaque rubrique. */
 .cookie-global{width:min(900px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow-y:auto;overscroll-behavior:contain}
