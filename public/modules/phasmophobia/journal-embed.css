@@ -40,3 +40,10 @@
   #phasma-book-dialog .phasma-journal-embed-toolbar{font-size:11px}
   #phasma-book-dialog .phasma-journal-embed-toolbar button{padding:7px 8px}
 }
+
+/* Sur un écran étroit, les commandes essentielles priment sur le titre.
+   La fenêtre iframe conserve ainsi toute sa largeur pour le livre ajusté. */
+@media(max-width:480px){
+  #phasma-book-dialog .phasma-journal-embed-toolbar{gap:6px}
+  #phasma-book-dialog .phasma-journal-embed-toolbar > span{display:none}
+}
