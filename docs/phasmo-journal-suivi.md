@@ -502,3 +502,30 @@ Décision : la rubrique **News devient un chantier prioritaire**, après validat
 
 
 **Validation utilisateur du zoom visiteur (27/10/2026)** : l'utilisatrice confirme explicitement « ça fonctionne parfaitement » après test sur la prévisualisation Phasmo V2. Le zoom de lecture est donc **validé côté utilisation**. Aucune modification de la production ou de Supabase. Prochaine étape prévue : catégories et sous-catégories dynamiques. La recette exhaustive multi-appareils et d'accessibilité n'est pas revendiquée par ce retour.
+
+
+### 27/10/2026 — Sous-catégories hiérarchiques dynamiques : première livraison
+
+**Périmètre** : prototype en local sur `developpement/phasmo-v2` seulement. Aucune migration Supabase, aucune modification de `main` et aucune retouche de l'illustration ou des cinq onglets physiques du livre.
+
+#### Modèle / sauvegarde
+
+- Nouveau `public/modules/phasmophobia/journal-folders.js` : rubriques hiérarchiques par catégorie racine parmi `entites`, `cartes`, `objets`, `equipements`, `divers`. Chaque rubrique est identifiée par un `rubrique-UUID` indépendant de son titre. Champs : `id`, `group`, `parentId`, `title`, `order`, `status` (`active` ou `archived`).
+- `journal-records.js` : les fiches gardent leur identifiant `fiche-UUID` et leur page de calques `entry:<id>`. Nouveau champ `folderId` nullable : `null` signifie « directement à la racine de l'onglet ». Création dans un dossier, classement, déplacement dans un autre dossier ou un autre onglet, ordre limité au dossier courant, détection des noms de fiches dupliqués par onglet.
+- JSON atelier **version 6**, avec `folders` et `records[].folderId` ; importations V2/V3/V4/V5 toujours reconnues, sauvegarde locale V5 migrée automatiquement et anciens identifiants de fiches/calques conservés. Les anciennes fiches sans `folderId` restent à la racine.
+- Aucun contenu n'est enregistré côté serveur ni partagé entre utilisateurs, même depuis le domaine de prévisualisation. **Exporter le JSON avant les tests d'archivage ou de déplacement importants.**
+
+#### Interface de gestion / navigation
+
+- Dans `journal-editor.html`, section « 5 · Fiches dynamiques » : choix de la sous-catégorie pour créer une fiche ; emplacement courant visible ; destination « catégorie + sous-catégorie » et bouton « Déplacer la fiche ». Le déplacement préserve l'UUID et les calques de la fiche. Les hotspots existants ciblant cette fiche par identifiant ou nom sont remis à jour lors d'un déplacement vers un autre onglet.
+- Nouvelle section « 6 · Sous-catégories dynamiques » : choisir une sous-catégorie et son emplacement, créer, renommer, ouvrir, déplacer sous une autre rubrique du même onglet, réordonner parmi les rubriques sœurs, archiver/restaurer et supprimer si vide. Une rubrique non vide ne peut pas être supprimée : ni fiches directes ni sous-rubriques, y compris archivées. Les cycles de parenté et les sous-catégories parentes archivées sont refusés.
+- Dans le carnet, sur une page « Liste » de catégorie : affichage des sous-catégories du niveau courant (préfixe `▸`), des fiches directement rangées à ce niveau et, dans une sous-catégorie, d'un retour « ← Retour ». Le titre de catégorie générique reflète le nom du dossier courant, sans modifier le calque enregistré. Les onglets physiques continuent d'ouvrir les cinq catégories racines ; le sommaire conserve ses listes globales de fiches pour compatibilité.
+- En mode Test, cliquer dans une rubrique descend d'un niveau, cliquer sur une fiche l'ouvre, « Retour à la liste » remonte au dossier de la fiche et les flèches précédent/suivant parcourent seulement les fiches du dossier courant. Les sous-catégories archivées et leurs descendants sont masqués, y compris dans le sommaire ; les entrées archivées ne s'ouvrent pas même par un lien interne.
+- Correction liée aux calques d'images : « + Image de fond » et import de plusieurs images utilisent maintenant la page personnelle `entry:<id>` quand une fiche est ouverte, et non le gabarit de catégorie. Cela évite qu'une image ajoutée à une fiche se perde dans la page modèle.
+- Section « 7 · Sauvegardes » inchangée fonctionnellement ; seulement renumérotée.
+
+#### Vérifications et limites
+
+- Analyse syntaxique des scripts modifiés ; correspondance de toutes les références de contrôles HTML ; **30 vérifications unitaires/statiques** sur les modèles et la structure : création/renommage/mouvement, UUID stables, archive et descendants invisibles, refus suppression dossier non vide, prévention cycles et doublons, ordre par dossier, migration V5 et roundtrip JSON v6, modèle d'image inchangé.
+- **Recette réelle navigateur NON encore validée**. Scénario à faire : exporter JSON ; créer une sous-catégorie dans « Entités », y déplacer la fiche de test ; créer une sous-catégorie enfant et une nouvelle fiche ; passer en mode Test puis vérifier onglet Entités → dossier → sous-dossier → fiche → flèches → retour ; archiver puis restaurer un dossier ; vérifier F5 et export/import JSON V6 ; tester les liens et calques/images de la fiche après déplacement entre onglets.
+- Limites assumées : catégories racines physiques encore fixes (cinq), mise en page et capacité visuelle de la liste inchangées ; pagination, recherche, fil d'Ariane explicite dans les pages, édition collaborative, rôles RLS, publication Supabase et refonte simplifiée de l'atelier sont des étapes ultérieures. Une arborescence profonde ou de très nombreuses fiches nécessitera des améliorations de lecture avant publication.
