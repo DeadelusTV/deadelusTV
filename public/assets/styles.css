@@ -435,3 +435,61 @@ dialog{color:var(--text);background:#19191a;border:1px solid #59513e;border-radi
   .twitch-offline-copy { position:relative; inset:auto; padding:21px 20px; gap:12px; }
   .twitch-offline-title { font-size:26px; }
 }
+
+
+/* Vignette TikTok de l'accueil uniquement. Les autres illustrations restent intactes. */
+.tiktok-only .tiktok-motion {
+  isolation: isolate;
+  background-image: url('tiktok-fond.webp');
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: center;
+}
+.tiktok-only .tiktok-motion::after { display: none; }
+.tiktok-only .tiktok-motion > span {
+  position: absolute;
+  inset: 0;
+  display: block;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+}
+.tiktok-only .tiktok-motion__halo {
+  background-image: radial-gradient(ellipse 43% 24% at 50% 66%,
+    rgba(211, 166, 83, .36) 0%, rgba(176, 118, 40, .18) 37%,
+    rgba(150, 90, 30, .06) 66%, transparent 100%);
+  animation: tiktok-deadelus-halo 5.2s ease-in-out infinite;
+}
+.tiktok-only .tiktok-motion__deadelus { background-image: url('tiktok-deadelus.webp'); }
+.tiktok-only .tiktok-motion__logo {
+  background-image: url('tiktok-logo.webp');
+  animation: tiktok-logo-glitch 8s linear infinite;
+}
+.tiktok-only .tiktok-motion__echo {
+  background-image: url('tiktok-logo.webp');
+  opacity: 0;
+  filter: drop-shadow(1px 0 #27f4ee) drop-shadow(-1px 0 #fe2c55);
+  animation: tiktok-logo-echo 8s linear infinite;
+}
+@keyframes tiktok-deadelus-halo {
+  0%, 100% { opacity: .64; transform: scale(.98); }
+  50% { opacity: 1; transform: scale(1.04); }
+}
+@keyframes tiktok-logo-glitch {
+  0%, 86%, 88%, 90%, 100% { transform: translate(0,0); }
+  87% { transform: translate(1px,-.5px); }
+  89% { transform: translate(-1px,.5px); }
+}
+@keyframes tiktok-logo-echo {
+  0%, 85%, 90%, 100% { opacity: 0; transform: translate(0,0); }
+  86%, 88% { opacity: .24; transform: translate(-1.5px,.5px); }
+  87%, 89% { opacity: .12; transform: translate(1.5px,-.5px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tiktok-only .tiktok-motion__halo,
+  .tiktok-only .tiktok-motion__logo,
+  .tiktok-only .tiktok-motion__echo { animation: none; }
+  .tiktok-only .tiktok-motion__halo { opacity: .85; transform: none; }
+  .tiktok-only .tiktok-motion__echo { opacity: 0; }
+}
