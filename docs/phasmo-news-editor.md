@@ -74,3 +74,10 @@ Le bucket `phasmo-news-draft-images` est **privé** ; `phasmo-news-published-ima
 - Listes à puces et numérotées : le navigateur pouvait insérer `ul`/`ol` dans un paragraphe. La conversion vers le document JSON ne lisait que les listes à la racine et supprimait ainsi leur structure dans l’aperçu et les sauvegardes. La lecture parcourt désormais les blocs imbriqués ; la reconstruction conserve aussi les sous-listes et tous les paragraphes d’un élément.
 - Régression ciblée : puces et numéros à la racine, dans un paragraphe ou un conteneur ; aperçu et aller-retour JSON/reconstruction ; sous-listes, texte autour, mises en forme et médias. Aucun changement des tables, permissions ou canaux de publication.
 - Une liste déjà enregistrée sans sa structure doit être remise en forme avec le bouton correspondant : le correctif ne peut pas déduire les anciennes listes à partir du seul texte.
+
+## Sous-listes — 28 octobre 2026
+
+- Commandes « Sous-liste » et « Remonter » dans la barre de mise en forme ; raccourcis Tab et Maj+Tab uniquement quand le curseur est dans une liste. Ailleurs, Tab conserve sa navigation habituelle.
+- Les listes à puces ou numérotées peuvent être imbriquées jusqu’à cinq niveaux au total. Un élément parent doit exister au-dessus ; les retraits ne doivent pas dépasser la profondeur conservée par le document JSON.
+- Lecture des sous-listes que Chrome peut placer directement dans une autre liste, après l’élément parent. La sauvegarde les rattache au bon élément sans aplatir leur contenu.
+- Contrôles ciblés : structure Chrome, sous-listes mixtes, cinq niveaux, aperçu et reconstruction depuis JSON. Conserver la séparation preview/production et les permissions existantes.
