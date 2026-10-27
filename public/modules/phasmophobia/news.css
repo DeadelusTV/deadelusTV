@@ -388,20 +388,36 @@
   text-align: center;
 }
 #page-phasmophobia .phasma-youtube-play {
-  padding: 13px 24px;
-  border: 1px solid #b58b54;
-  border-radius: 8px;
-  background: #422c23;
-  color: #fbe3be;
-  font-weight: 700;
-  font-size: clamp(13px, 2vw, 17px);
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 53px;
+  padding: 0;
+  border: 0;
+  border-radius: 15px;
+  background: #f00;
+  color: white;
   cursor: pointer;
+  box-shadow: 0 5px 26px #0009;
+  transition: background .15s ease, transform .15s ease;
 }
-#page-phasmophobia .phasma-youtube-play:hover,
+#page-phasmophobia .phasma-youtube-play::before {
+  content: '';
+  display: block;
+  width: 0;
+  height: 0;
+  margin-left: 5px;
+  border-top: 11px solid transparent;
+  border-bottom: 11px solid transparent;
+  border-left: 19px solid currentColor;
+}
+#page-phasmophobia .phasma-youtube-play:hover {
+  background: #cc0000;
+  transform: scale(1.05);
+}
 #page-phasmophobia .phasma-youtube-play:focus-visible {
-  background: #5c382a;
-  outline: 2px solid #cfaf7b;
-  outline-offset: 2px;
+  outline: 3px solid #fff;
+  outline-offset: 4px;
 }
 #page-phasmophobia .phasma-youtube-privacy,
 #page-phasmophobia .phasma-youtube-card-text {
