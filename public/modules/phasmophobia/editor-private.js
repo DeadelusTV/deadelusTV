@@ -89,13 +89,13 @@
           if(existing.has(draft.id)){
             // Ne pas modifier id ni owner_id : seuls les champs éditoriaux
             // sont modifiables par le client (privilèges SQL par colonne).
-            const {data,error}=await client.from('phasmo_news_drafts')
+            const {data,error}=await client.from('phasmo_news_drafts_production')
               .update({payload:draft,updated_at}).eq('id',draft.id)
               .select('id').maybeSingle();
             if(error)throw error;
             if(!data)throw new Error('Le brouillon est devenu inaccessible ou son accès a été révoqué.');
           }else{
-            const {error}=await client.from('phasmo_news_drafts')
+            const {error}=await client.from('phasmo_news_drafts_production')
               .insert({id:draft.id,payload:draft,updated_at});
             if(error)throw error;
             existing.add(draft.id);
@@ -104,7 +104,7 @@
       },
       remove(id){
         return enqueue(async()=>{
-          const {error}=await client.from('phasmo_news_drafts').delete().eq('id',id);
+          const {error}=await client.from('phasmo_news_drafts_production').delete().eq('id',id);
           if(error)throw error;
           existing.delete(id);
         });
@@ -156,7 +156,7 @@
         }
       }
       update('Chargement des brouillons privés…');
-      const {data:rows,error:listError}=await client.from('phasmo_news_drafts')
+      const {data:rows,error:listError}=await client.from('phasmo_news_drafts_production')
         .select('id,payload,updated_at').order('updated_at',{ascending:false}).limit(40);
       if(seq!==requestId)return;
       if(listError)throw listError;
