@@ -19,7 +19,8 @@ function route(focus=false){
   const crewAuth=window.DEADELUSTV_CREW_AUTH===true||authQuery.get('crew_auth')==='1'||authHash.has('access_token')||['invite','recovery'].includes(authHash.get('type'));
   if(crewAuth)window.DEADELUSTV_CREW_AUTH=true;
   const isCrew=crewAuth||requested==='crewmongus'||requested.startsWith('crewmongus/');
-  const name=isCrew?'crewmongus':isCampaign?'pavillon-noir':Object.hasOwn(routeTitles,requested)?requested:'accueil';
+  const isPhasmoNews=requested==='phasmophobia/news'||requested.startsWith('phasmophobia/news/');
+  const name=isCrew?'crewmongus':isCampaign?'pavillon-noir':isPhasmoNews?'phasmophobia':Object.hasOwn(routeTitles,requested)?requested:'accueil';
   const navName=isCampaign&&!isCrew?'jeux-de-role':name;
   $$('[data-page]').forEach(section=>section.hidden=section.dataset.page!==name);
   // Le bandeau Discord reste inchangé pour les pages existantes.
