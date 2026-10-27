@@ -14,9 +14,10 @@
 <link rel="stylesheet" href="modules/phasmophobia/style.css">
 <link rel="stylesheet" href="modules/phasmophobia/news.css">
 <link rel="stylesheet" href="modules/phasmophobia/journal.css">
+<link rel="stylesheet" href="modules/phasmophobia/journal-embed.css">
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&amp;family=Kalam:wght@400;700&amp;display=swap" rel="stylesheet">
 <script src="modules/phasmophobia/module.js" defer></script>
-<script src="modules/phasmophobia/journal.js" defer></script>
+<script src="modules/phasmophobia/journal-bridge.js" defer></script>
 <script src="modules/phasmophobia/news.js" defer></script>
 <script src="assets/site-auth.js" defer></script>
 <script src="modules/phasmophobia/news-access.js" defer></script>
@@ -366,29 +367,17 @@
 </nav><div class="footer-bottom"><p>DeadelusTV · Le repaire de la communauté</p><button class="btn-quiet back-top" id="back-top" type="button">Retour en haut <svg class="icon stroke" aria-hidden="true"><use href="#i-up"/></svg></button></div></footer>
 
 <dialog id="phasma-book-dialog" aria-labelledby="phasma-book-title" aria-describedby="phasma-book-description">
- <h2 class="sr-only" id="phasma-book-title">Journal des enquêteurs</h2>
- <p class="sr-only" id="phasma-book-description">Feuillette les pages et sélectionne un nom pour consulter sa fiche. Les fiches sont en préparation.</p>
- <div class="phasma-book-stage">
-  <button type="button" class="phasma-book-close" data-phasma-close aria-label="Fermer le carnet">×</button>
-  <button type="button" class="phasma-book-edge phasma-book-edge--left" data-phasma-page-prev aria-label="Page précédente">‹</button>
-  <div class="phasma-book-book" data-mobile-side="left">
-   <section class="phasma-book-page phasma-book-page--left" aria-label="Page de gauche">
-    <div class="phasma-book-watermark" aria-hidden="true"></div>
-    <div class="phasma-page-inner" id="phasma-book-left"></div>
-    <span class="phasma-book-folio" id="phasma-book-folio-left">01</span>
-   </section>
-   <section class="phasma-book-page phasma-book-page--right" aria-label="Page de droite">
-    <div class="phasma-book-watermark" aria-hidden="true"></div>
-    <div class="phasma-page-inner" id="phasma-book-right"></div>
-    <span class="phasma-book-folio" id="phasma-book-folio-right">02</span>
-   </section>
+ <div class="phasma-journal-embed">
+  <h2 class="sr-only" id="phasma-book-title">Journal interactif des enquêteurs</h2>
+  <p class="sr-only" id="phasma-book-description">Carnet brun avec cinq onglets et pages cliquables.</p>
+  <div class="phasma-journal-embed-toolbar">
+   <button type="button" data-phasma-home>⌂ Sommaire</button>
+   <span>Le carnet des enquêteurs</span>
+   <button type="button" class="phasma-book-close" data-phasma-close aria-label="Fermer le carnet">Fermer ×</button>
   </div>
-  <button type="button" class="phasma-book-edge phasma-book-edge--right" data-phasma-page-next aria-label="Page suivante">›</button>
- </div>
- <div class="phasma-book-footer">
-  <button type="button" data-phasma-home>Retour au sommaire</button>
-  <span id="phasma-book-status" role="status" aria-live="polite">Sommaire</span>
-  <span>Échap pour fermer</span>
+  <iframe class="phasma-journal-frame" id="phasma-book-frame" title="Carnet interactif Phasmophobia"
+    data-src="modules/phasmophobia/journal-editor.html?viewer=1" loading="lazy"></iframe>
+  <p class="phasma-journal-embed-note">Maquette V4.3 · fiches en préparation. Navigation et mise en page à valider.</p>
  </div>
 </dialog>
 
