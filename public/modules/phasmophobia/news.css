@@ -1,0 +1,479 @@
+/* Blog Phasmophobia : styles isolés dans la rubrique News.
+   Les cartes restent invisibles sans publication réelle. */
+#page-phasmophobia .phasma-news-intro[hidden],
+#page-phasmophobia .phasma-news-feed[hidden],
+#page-phasmophobia .phasma-news-reader[hidden] {
+  display: none;
+}
+#page-phasmophobia .phasma-news-feed,
+#page-phasmophobia .phasma-news-reader {
+  min-width: 0;
+  color: #ebe4d8;
+}
+#page-phasmophobia .phasma-news-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin: 3px 0 24px;
+}
+#page-phasmophobia .phasma-news-head .eyebrow,
+#page-phasmophobia .phasma-news-reader > .eyebrow {
+  display: block;
+  margin-bottom: 10px;
+  color: #d2af70;
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+#page-phasmophobia .phasma-news-head h3 {
+  margin: 0;
+  color: #f4ece0;
+  font-size: clamp(24px, 2.8vw, 34px);
+}
+#page-phasmophobia .phasma-news-archives-link,
+#page-phasmophobia .phasma-news-back {
+  color: #e0c48f;
+  font-size: 13px;
+  line-height: 1.5;
+  text-decoration: underline;
+  text-underline-offset: 5px;
+}
+#page-phasmophobia .phasma-news-track {
+  display: flex;
+  align-items: stretch;
+  gap: 17px;
+  min-width: 0;
+  padding: 2px 2px 16px;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  scrollbar-color: #62513b #171819;
+  scrollbar-width: thin;
+}
+#page-phasmophobia .phasma-news-card {
+  display: flex;
+  flex: 0 0 clamp(255px, 28vw, 335px);
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #474035;
+  border-radius: 9px;
+  background: linear-gradient(145deg, #252322 0%, #171819 85%);
+  color: #f1e7d8;
+  text-decoration: none;
+  scroll-snap-align: start;
+  box-shadow: 0 14px 28px #0004;
+  transition: border-color .18s ease, transform .18s ease;
+}
+#page-phasmophobia .phasma-news-card:hover,
+#page-phasmophobia .phasma-news-card:focus-visible {
+  border-color: #d4b273;
+  transform: translateY(-3px);
+}
+#page-phasmophobia .phasma-news-card:focus-visible {
+  outline: 2px solid #dfc28d;
+  outline-offset: 3px;
+}
+#page-phasmophobia .phasma-news-card-picture {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-bottom: 1px solid #473c2f;
+  background:
+    radial-gradient(ellipse at 67% 38%, #73604170, transparent 47%),
+    linear-gradient(135deg, #3a352e, #14191b 82%);
+  overflow: hidden;
+}
+#page-phasmophobia .phasma-news-card-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+#page-phasmophobia .phasma-news-card-monogram {
+  color: #dbc193;
+  font: 700 clamp(28px, 4vw, 46px)/1 Georgia, serif;
+  letter-spacing: 5px;
+  text-shadow: 0 3px 18px #090b0b;
+}
+#page-phasmophobia .phasma-news-card-picture--official {
+  background:
+    radial-gradient(ellipse at 51% 45%, #b2915055, transparent 50%),
+    repeating-linear-gradient(-24deg, transparent 0 30px, #be9f6010 31px 32px),
+    linear-gradient(135deg, #353025, #191d20 83%);
+}
+#page-phasmophobia .phasma-news-card--official {
+  border-color: #85704b;
+}
+#page-phasmophobia .phasma-news-card-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 11px;
+  padding: 21px 21px 24px;
+}
+#page-phasmophobia .phasma-news-card-kicker {
+  color: #bda57c;
+  font-size: 10px;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+}
+#page-phasmophobia .phasma-news-card-title {
+  display: -webkit-box;
+  overflow: hidden;
+  color: #f1e9dd;
+  font: 600 24px/1.2 Georgia, serif;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+#page-phasmophobia .phasma-news-card-excerpt {
+  display: -webkit-box;
+  overflow: hidden;
+  color: #bdb9b2;
+  font-size: 12px;
+  line-height: 1.65;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+#page-phasmophobia .phasma-news-card-more {
+  margin-top: auto;
+  padding-top: 8px;
+  color: #e0c18a;
+  font-size: 12px;
+}
+#page-phasmophobia .phasma-news-controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 13px;
+}
+#page-phasmophobia .phasma-news-controls[hidden] { display: none; }
+#page-phasmophobia .phasma-news-arrow {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid #66573e;
+  border-radius: 50%;
+  background: #1d1d1c;
+  color: #e2c891;
+  font: 26px/1 Georgia, serif;
+  cursor: pointer;
+}
+#page-phasmophobia .phasma-news-arrow:hover:not(:disabled) {
+  border-color: #e2c891;
+  background: #28241d;
+}
+#page-phasmophobia .phasma-news-arrow:disabled {
+  opacity: .35;
+  cursor: default;
+}
+#page-phasmophobia .phasma-news-reader {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 18px clamp(2px, 2vw, 25px) 32px;
+}
+#page-phasmophobia .phasma-news-back {
+  display: inline-block;
+  margin-bottom: 35px;
+}
+#page-phasmophobia .phasma-news-reader-title {
+  margin: 0 0 19px;
+  color: #f0e7d7;
+  font: 600 clamp(30px, 4.1vw, 48px)/1.16 Georgia, serif;
+}
+#page-phasmophobia .phasma-news-article-date {
+  margin: 0 0 24px;
+  color: #bba780;
+  font-size: 12px;
+}
+#page-phasmophobia .phasma-news-article-cover {
+  display: block;
+  width: 100%;
+  max-height: 500px;
+  object-fit: cover;
+  border: 1px solid #494137;
+  border-radius: 8px;
+  margin: 20px 0 31px;
+}
+#page-phasmophobia .phasma-news-article {
+  max-width: 800px;
+  margin: 0 auto;
+  color: #dfd9d0;
+  font-size: clamp(14px, 1.7vw, 16px);
+  line-height: 1.95;
+  overflow-wrap: break-word;
+}
+#page-phasmophobia .phasma-news-article-paragraph {
+  margin: 0 0 23px;
+  white-space: pre-line;
+}
+#page-phasmophobia .phasma-news-article-heading {
+  margin: 32px 0 13px;
+  color: #e4c993;
+  font: 600 clamp(22px, 2.6vw, 29px)/1.3 Georgia, serif;
+}
+#page-phasmophobia .phasma-news-article-list {
+  margin: 9px 0 29px;
+  padding-left: 23px;
+}
+#page-phasmophobia .phasma-news-article-list li { margin-bottom: 8px; }
+#page-phasmophobia .phasma-news-article-figure {
+  margin: 28px 0;
+}
+#page-phasmophobia .phasma-news-article-figure img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+  border-radius: 5px;
+}
+#page-phasmophobia .phasma-news-article-figure figcaption {
+  margin-top: 10px;
+  color: #aaa196;
+  font-size: 12px;
+  text-align: center;
+}
+#page-phasmophobia .phasma-news-credits {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: 32px;
+  padding: 19px 0 0;
+  border-top: 1px solid #4a4336;
+  color: #afa99e;
+  font-size: 12px;
+  line-height: 1.8;
+}
+#page-phasmophobia .phasma-news-credits a {
+  color: #e2c58e;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+#page-phasmophobia .phasma-news-archive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 245px), 1fr));
+  gap: 18px;
+}
+#page-phasmophobia .phasma-news-archive-grid .phasma-news-card {
+  flex-basis: auto;
+}
+#page-phasmophobia .phasma-news-empty {
+  padding: 24px 0;
+  color: #bdb6aa;
+  font-size: 14px;
+  line-height: 1.8;
+}
+@media (max-width: 760px) {
+  #page-phasmophobia .phasma-news-card {
+    flex-basis: clamp(240px, 76vw, 320px);
+  }
+  #page-phasmophobia .phasma-news-head { align-items: flex-start; }
+  #page-phasmophobia .phasma-news-card-content { padding: 18px; }
+  #page-phasmophobia .phasma-news-card-title { font-size: 21px; }
+  #page-phasmophobia .phasma-news-reader { padding-inline: 2px; }
+  #page-phasmophobia .phasma-news-archive-grid { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #page-phasmophobia .phasma-news-track { scroll-behavior: auto; }
+  #page-phasmophobia .phasma-news-card,
+  #page-phasmophobia .phasma-news-arrow { transition: none; }
+}
+
+
+/* Accès rédaction conditionnel : discret et séparé du fil public. */
+#page-phasmophobia .phasma-news-editor-access[hidden],
+#page-phasmophobia .phasma-news-editor-access [hidden] {
+  display: none !important;
+}
+#page-phasmophobia .phasma-news-editor-access {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin: 14px 0 20px;
+  min-width: 0;
+}
+#page-phasmophobia .phasma-news-editor-access #phasma-news-editor-link {
+  font-size: 12px;
+  min-height: 38px;
+  border-color: #907044;
+}
+#page-phasmophobia .phasma-news-editor-login,
+#page-phasmophobia .phasma-news-editor-logout {
+  border: 0;
+  border-bottom: 1px solid #8e754e;
+  border-radius: 0;
+  background: transparent;
+  padding: 7px 2px;
+  color: #e4c992;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+#page-phasmophobia .phasma-news-editor-login:hover,
+#page-phasmophobia .phasma-news-editor-logout:hover {
+  color: #f8e5bb;
+  border-color: currentColor;
+}
+#page-phasmophobia .phasma-news-editor-login:focus-visible,
+#page-phasmophobia .phasma-news-editor-logout:focus-visible {
+  outline: 2px solid #e4c992;
+  outline-offset: 4px;
+}
+#page-phasmophobia .phasma-news-editor-note {
+  margin: 0;
+  color: #a9a397;
+  font-size: 12px;
+}
+@media (max-width: 550px) {
+  #page-phasmophobia .phasma-news-editor-access {
+    justify-content: flex-start;
+  }
+}
+
+/* Documents riches issus de l'éditeur de rédaction : titres, citations,
+   listes et images sans interprétation de HTML fourni par l'utilisateur. */
+#page-phasmophobia .phasma-news-article-quote {
+  border-left: 3px solid #ba955c;
+  margin: 1.5rem 0;
+  padding: 0.45rem 1.25rem;
+  color: #dec8a7;
+  background: rgba(151,112,70,.09);
+}
+#page-phasmophobia .phasma-news-article ol.phasma-news-article-list {
+  list-style: decimal;
+  padding-left: 1.7rem;
+}
+#page-phasmophobia .phasma-news-article ul.phasma-news-article-list {
+  list-style: disc;
+  padding-left: 1.7rem;
+}
+#page-phasmophobia .phasma-news-article-figure img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 7px;
+}
+#page-phasmophobia .phasma-news-article a {
+  color: #efc98f;
+  overflow-wrap: anywhere;
+}
+
+
+/* Vidéos YouTube : aucune requête au lecteur avant un clic explicite.
+   La même carte existe dans l'éditeur privé, son aperçu et les News. */
+#page-phasmophobia .phasma-youtube-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 24px auto;
+  width: min(100%, 900px);
+  aspect-ratio: 16 / 9;
+  min-height: 180px;
+  overflow: hidden;
+  border: 1px solid #65553e;
+  border-radius: 9px;
+  background: radial-gradient(ellipse at 50% 35%, #34302b, #111317 80%);
+  color: #e7d6ba;
+  text-align: center;
+}
+#page-phasmophobia .phasma-youtube-play {
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 53px;
+  padding: 0;
+  border: 0;
+  border-radius: 15px;
+  background: #f00;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 5px 26px #0009;
+  transition: background .15s ease, transform .15s ease;
+}
+#page-phasmophobia .phasma-youtube-play::before {
+  content: '';
+  display: block;
+  width: 0;
+  height: 0;
+  margin-left: 5px;
+  border-top: 11px solid transparent;
+  border-bottom: 11px solid transparent;
+  border-left: 19px solid currentColor;
+}
+#page-phasmophobia .phasma-youtube-play:hover {
+  background: #cc0000;
+  transform: scale(1.05);
+}
+#page-phasmophobia .phasma-youtube-play:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 4px;
+}
+#page-phasmophobia .phasma-youtube-privacy,
+#page-phasmophobia .phasma-youtube-card-text {
+  color: #c8b9a2;
+  font-size: 12px;
+}
+#page-phasmophobia .phasma-youtube-iframe {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+#page-phasmophobia .phasma-youtube-card[contenteditable="false"] {
+  padding: 22px;
+  border-style: dashed;
+}
+#page-phasmophobia .phasma-youtube-card-link {
+  color: #f0c98a;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+#page-phasmophobia .phasma-youtube-remove {
+  padding: 8px 12px;
+  border: 1px solid #a46f66;
+  background: #402421;
+  color: #f5c1b9;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+
+/* Vignette réelle YouTube derrière le bouton de lecture.
+   L'image i.ytimg.com est chargée à l'affichage du bloc ; l'iframe
+   youtube-nocookie reste créée uniquement au clic. */
+#page-phasmophobia .phasma-youtube-card .phasma-youtube-thumbnail {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  object-fit: cover;
+  filter: brightness(.52) saturate(.9);
+  pointer-events: none;
+}
+#page-phasmophobia .phasma-youtube-card--with-thumb > :not(.phasma-youtube-thumbnail):not(.phasma-youtube-iframe) {
+  position: relative;
+  z-index: 1;
+}
+#page-phasmophobia .phasma-youtube-card--with-thumb .phasma-youtube-play {
+  box-shadow: 0 5px 26px #0009;
+}

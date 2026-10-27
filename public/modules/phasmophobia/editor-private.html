@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex,nofollow">
+<title>Rédaction privée Phasmophobia · DeadelusTV</title>
+<link rel="icon" href="../../assets/logo-chaine.png" type="image/png">
+<link rel="stylesheet" href="../../assets/styles.css">
+<link rel="stylesheet" href="news.css">
+<link rel="stylesheet" href="editor-preview.css">
+<link rel="stylesheet" href="editor-wysiwyg.css">
+<!-- L'éditeur de test se charge localement, sans bibliothèques CDN. -->
+<link rel="stylesheet" href="editor-private.css">
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.76.1"></script>
+<script defer src="news-publication.js"></script>
+<script defer src="editor-private.js"></script>
+</head>
+<body class="phasma-editor-demo" id="page-phasmophobia">
+<a class="phasma-editor-skip" href="#editor-main">Aller à la rédaction</a>
+<header class="phasma-editor-topbar">
+  <a href="../../index.html#phasmophobia" class="phasma-editor-home">
+    <img src="../../assets/logo-chaine.png" alt="" width="40" height="40">
+    <span>DEADELUS<span class="gold">TV</span> <small>· NEWS PHASMOPHOBIA</small></span>
+  </a>
+  <span class="phasma-editor-mode">ESPACE DE RÉDACTION · ACCÈS RÉSERVÉ</span>
+</header>
+<div class="phasma-editor-warning" role="note">
+  <strong>Espace de rédaction privé.</strong>
+  Vos brouillons et les images collées ou importées depuis le PC sont enregistrés sur Supabase.
+  Attendez le message de confirmation de l'enregistrement avant de fermer ou actualiser la page.
+  Les brouillons et leurs images restent privés. Une publication en <strong>mode test</strong> est visible sur le site de développement, jamais sur le site officiel.
+</div>
+<section id="editor-private-gate" class="phasma-editor-private-gate" aria-label="Accès à la rédaction">
+  <h1>Accès au bureau de rédaction</h1>
+  <p id="editor-private-message" role="status" aria-live="polite">Vérification de la session Twitch et des autorisations…</p>
+  <div class="phasma-editor-private-actions">
+    <button type="button" id="editor-private-login" class="phasma-editor-btn phasma-editor-btn--gold" hidden>Se connecter avec Twitch</button>
+    <button type="button" id="editor-private-retry" class="phasma-editor-btn" hidden>Réessayer</button>
+  </div>
+</section>
+<div id="editor-private-account" class="phasma-editor-private-account" hidden>
+  <span id="editor-private-name">Compte connecté</span>
+  <button type="button" id="editor-private-logout" class="phasma-editor-btn">Se déconnecter</button>
+</div>
+<div class="phasma-editor-shell" id="editor-private-content" hidden>
+  <aside class="phasma-editor-sidebar" aria-label="Mes brouillons privés">
+    <div class="phasma-editor-sidebar-head">
+      <h2>Mes brouillons</h2>
+      <button id="editor-new" class="phasma-editor-btn phasma-editor-btn--gold" type="button">+ Nouvel article</button>
+    </div>
+    <div id="editor-draft-list" class="phasma-editor-draft-list"></div>
+    <p class="phasma-editor-sidebar-note">Brouillons privés · sauvegarde automatique sur Supabase.</p>
+    <div class="phasma-editor-published-header"><h3>Publications de test</h3><small>Visibles sur la démo uniquement</small></div>
+    <div id="editor-published-list" class="phasma-editor-draft-list" aria-label="Articles publiés sur le site de développement"></div>
+  </aside>
+  <main id="editor-main" class="phasma-editor-main" tabindex="-1">
+    <div class="phasma-editor-toolbar">
+      <div>
+        <p class="phasma-editor-kicker">LE BUREAU DE RÉDACTION</p>
+        <h1>Écrire une actualité</h1>
+        <p id="editor-save-status" role="status" aria-live="polite">Vérification de la sauvegarde…</p>
+      </div>
+      <div class="phasma-editor-actions">
+        <button type="button" id="editor-mode-edit" class="phasma-editor-btn phasma-editor-btn--selected" aria-pressed="true">Rédaction</button>
+        <button type="button" id="editor-mode-preview" class="phasma-editor-btn" aria-pressed="false">Aperçu</button>
+        <button type="button" id="editor-save-now" class="phasma-editor-btn phasma-editor-btn--gold">Enregistrer</button>
+        <button type="button" id="editor-export" class="phasma-editor-btn">Exporter le brouillon</button>
+        <button type="button" id="editor-import" class="phasma-editor-btn">Importer un JSON</button>
+        <input type="file" id="editor-import-file" accept=".json,application/json" hidden aria-label="Choisir un brouillon JSON à importer">
+        <button type="button" id="editor-publish" class="phasma-editor-btn phasma-editor-btn--gold">Publier sur la démo</button>
+      </div>
+    </div>
+    <p id="wys-editor-error" class="phasma-editor-image-error phasma-editor-alert-top" role="alert" hidden tabindex="-1"></p>
+
+    <section id="editor-form" aria-label="Rédiger l'article">
+      <div class="phasma-editor-panel">
+        <h2>Informations de l'article</h2>
+        <div class="phasma-editor-fields">
+          <label class="phasma-editor-field phasma-editor-field--wide">Titre français *
+            <input name="title" data-field="title" maxlength="160" placeholder="Titre de l'actualité">
+          </label>
+          <label class="phasma-editor-field phasma-editor-field--wide">Résumé pour la vignette *
+            <textarea name="excerpt" data-field="excerpt" maxlength="350" rows="3" placeholder="Deux ou trois phrases pour présenter la publication"></textarea>
+          </label>
+          <label class="phasma-editor-field">Date de publication
+            <input type="date" name="publishedAt" data-field="publishedAt">
+          </label>
+          <label class="phasma-editor-field">Crédit de traduction
+            <input name="translator" data-field="translator" maxlength="120" placeholder="Nom du traducteur">
+          </label>
+          <label class="phasma-editor-field phasma-editor-field--wide">Lien vers l'article original Kinetic Games *
+            <input type="url" name="sourceUrl" data-field="sourceUrl" placeholder="https://www.kineticgames.co.uk/news/...">
+          </label>
+          <label class="phasma-editor-field phasma-editor-field--wide">Identifiant pour l'adresse de l'article
+            <input name="slug" data-field="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" placeholder="nom-de-l-article">
+            <span class="phasma-editor-hint">L'identifiant est proposé automatiquement à partir du titre. Modifiable avant publication.</span>
+          </label>
+          <div class="phasma-editor-media-group phasma-editor-field--wide">
+            <h3>Image de couverture <small>(facultatif)</small></h3>
+            <p>Deux possibilités : coller l'adresse d'une image ou choisir un fichier sur votre PC.</p>
+            <label class="phasma-editor-field">Coller l'URL d'une image
+              <input name="cover" data-field="cover" placeholder="https://exemple.com/image.webp" spellcheck="false">
+              <span class="phasma-editor-hint">Lien direct HTTPS, sans téléchargement manuel. Les anciens chemins <code>assets/phasmo-news/...</code> restent utilisables.</span>
+            </label>
+            <div class="phasma-editor-media-or" aria-hidden="true">ou</div>
+            <label class="phasma-editor-field">Choisir une image sur votre ordinateur
+              <input id="editor-cover-upload" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+              <span class="phasma-editor-hint">PNG, JPEG, GIF animé ou WebP animé, maximum 10 Mo. Le fichier original est conservé dans le stockage privé.</span>
+            </label>
+            <div id="editor-cover-preview" class="phasma-editor-cover-preview" role="status" aria-live="polite"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="phasma-editor-panel phasma-wysiwyg-panel">
+        <div class="phasma-editor-section-heading">
+          <div>
+            <h2>Contenu de l'article</h2>
+            <p>Écrivez comme dans un document : mettez en forme le texte, insérez une image et reprenez votre rédaction juste en dessous.</p>
+          </div>
+        </div>
+        <div class="phasma-wysiwyg-wrapper">
+          <div id="wys-toolbar" class="phasma-wysiwyg-toolbar" role="toolbar" aria-label="Mise en forme de l'article">
+            <label class="phasma-wysiwyg-format-label">Style
+              <select id="wys-block-style" aria-label="Style du paragraphe">
+                <option value="paragraph">Texte normal</option>
+                <option value="heading-2">Titre de section</option>
+                <option value="heading-3">Sous-titre</option>
+              </select>
+            </label>
+            <span class="phasma-wysiwyg-toolbar-divider" aria-hidden="true"></span>
+            <button type="button" data-format="bold" title="Gras (Ctrl+B)" aria-label="Gras" aria-pressed="false"><strong>G</strong></button>
+            <button type="button" data-format="italic" title="Italique (Ctrl+I)" aria-label="Italique" aria-pressed="false"><em>I</em></button>
+            <button type="button" data-format="underline" title="Souligné (Ctrl+U)" aria-label="Souligné" aria-pressed="false"><u>S</u></button>
+            <span class="phasma-wysiwyg-toolbar-divider" aria-hidden="true"></span>
+            <button type="button" data-format="align-left" title="Aligner à gauche" aria-label="Aligner à gauche" aria-pressed="false">☰</button>
+            <button type="button" data-format="align-center" title="Centrer" aria-label="Centrer" aria-pressed="false">≡</button>
+            <button type="button" data-format="align-right" title="Aligner à droite" aria-label="Aligner à droite" aria-pressed="false">☷</button>
+            <span class="phasma-wysiwyg-toolbar-divider" aria-hidden="true"></span>
+            <button type="button" data-format="bullet-list" title="Liste à puces" aria-label="Liste à puces" aria-pressed="false">• Liste</button>
+            <button type="button" data-format="ordered-list" title="Liste numérotée" aria-label="Liste numérotée" aria-pressed="false">1. Liste</button>
+            <button type="button" data-format="link" title="Insérer ou modifier un lien" aria-label="Insérer un lien" aria-pressed="false">Lien</button>
+            <span class="phasma-wysiwyg-toolbar-divider" aria-hidden="true"></span>
+            <button type="button" id="wys-image-pc" title="Insérer une image depuis le PC">+ Image PC</button>
+            <button type="button" id="wys-image-url" title="Insérer une image via URL HTTPS">+ Image URL</button>
+            <button type="button" id="wys-video-youtube" title="Insérer une vidéo YouTube ou un Short">+ Vidéo YouTube</button>
+            <span class="phasma-wysiwyg-toolbar-divider" aria-hidden="true"></span>
+            <button type="button" data-format="undo" aria-label="Annuler" title="Annuler (Ctrl+Z)">↶</button>
+            <button type="button" data-format="redo" aria-label="Rétablir" title="Rétablir (Ctrl+Y)">↷</button>
+          </div>
+          <input id="wys-image-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden aria-label="Sélectionner une image à insérer">
+          <div id="wys-editor" class="phasma-wysiwyg-editor" aria-label="Zone de rédaction de l'article"></div>
+        </div>
+        <p class="phasma-wysiwyg-hint">Astuce : collez directement le texte depuis Discord. Pour garder les animations, insérez le fichier GIF/WebP original ou utilisez « Image URL » avec le lien direct : une image copiée peut être transformée en capture fixe par le presse-papiers. « Vidéo YouTube » permet d'intégrer un lien vidéo ou Shorts.</p>
+
+      </div>
+      <div class="phasma-editor-bottom">
+        <button type="button" id="editor-delete" class="phasma-editor-btn phasma-editor-btn--danger">Supprimer ce brouillon</button>
+        <p>Les brouillons sont privés. Les articles publiés en mode test sont visibles par les visiteurs de cette démo uniquement.</p>
+      </div>
+    </section>
+
+    <section id="editor-preview" aria-label="Aperçu de l'article" hidden>
+      <p class="phasma-editor-preview-hint">Aperçu privé, non publié. Les GIF/WebP animés restent animés lorsque leur fichier d'origine est conservé. Les vidéos YouTube ne se chargent qu'après clic. Les images externes restent des liens.</p>
+      <div id="editor-preview-article" class="phasma-news-reader">
+        <div id="wys-preview-heading"></div>
+        <div id="wys-preview-body" class="phasma-wysiwyg-preview-body"></div>
+        <div id="wys-preview-source"></div>
+      </div>
+    </section>
+  </main>
+</div>
+</body>
+</html>

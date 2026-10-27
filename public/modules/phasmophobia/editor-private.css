@@ -1,0 +1,99 @@
+
+/* Accès Twitch réservé à l'espace de rédaction Phasmo.
+   Ne pas appliquer cette présentation à la démo publique. */
+.phasma-editor-private-gate {
+  max-width: 760px;
+  margin: clamp(28px, 5vw, 65px) auto;
+  padding: clamp(26px, 4vw, 45px);
+  border: 1px solid #745d3b;
+  border-radius: 12px;
+  background: linear-gradient(150deg, #29241d, #181a1b 65%);
+  box-shadow: 0 22px 65px #0007;
+  color: #efe7d7;
+}
+.phasma-editor-private-gate h1 {
+  margin: 0 0 18px;
+  color: #eed8b5;
+  font: 600 clamp(25px, 4vw, 36px)/1.2 Georgia, serif;
+}
+.phasma-editor-private-gate p {
+  margin: 0 0 22px;
+  line-height: 1.7;
+  color: #e1d5c2;
+}
+.phasma-editor-private-actions { display: flex; flex-wrap: wrap; gap: 11px; }
+.phasma-editor-private-account {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  max-width: 1540px;
+  margin: 14px auto 0;
+  padding: 0 clamp(15px, 2vw, 32px);
+  font-size: 12px;
+  color: #dcc59e;
+}
+.phasma-editor-private-account .phasma-editor-btn { min-height: 34px; }
+.phasma-editor-demo [hidden] { display: none !important; }
+
+/* Publications de la branche de développement. */
+.phasma-editor-published-header {
+  margin: 24px 0 8px;
+  padding-top: 16px;
+  border-top: 1px solid #66513d;
+}
+.phasma-editor-published-header h3 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  color: #e4c992;
+}
+.phasma-editor-published-header small {
+  font-size: 11px;
+  color: #beb2a1;
+}
+.phasma-editor-publication {
+  padding: 7px 0 11px;
+  border-bottom: 1px solid #4b4035;
+}
+.phasma-editor-publication .phasma-editor-draft {
+  width: 100%;
+}
+.phasma-editor-published-link,
+.phasma-editor-unpublish {
+  display: inline-block;
+  margin: 7px 10px 0 2px;
+  padding: 3px;
+  font-size: 11px;
+  color: #ddc69e;
+}
+.phasma-editor-unpublish {
+  border: none;
+  border-bottom: 1px solid #ca9686;
+  background: transparent;
+  color: #e1a698;
+  cursor: pointer;
+}
+.phasma-editor-unpublish:hover { color: #ffcec1; }
+
+
+/* Une erreur de publication doit être visible avant les champs de rédaction,
+   au lieu d'être cachée sous l'éditeur. */
+.phasma-editor-demo .phasma-editor-alert-top {
+  display: block;
+  margin: 0 0 18px;
+  padding: 13px 16px;
+  border: 1px solid #9d6058;
+  border-left: 4px solid #df9686;
+  border-radius: 8px;
+  background: #392522;
+  color: #ffe1db;
+  font-size: 13px;
+  line-height: 1.6;
+  scroll-margin-top: 16px;
+}
+.phasma-editor-demo .phasma-editor-field [aria-invalid="true"] {
+  outline: 2px solid #df9686;
+  outline-offset: 2px;
+  border-color: #df9686;
+}
