@@ -9,6 +9,7 @@
   let closed = false;
   let remoteStarting = false;
   let animationFrame = 0;
+  let inline = null;
 
   const consented = () => window.DEADELUSTV_CONSENT?.hasTwitchConsent() === true;
   const canFloat = () => window.innerWidth >= 901 && window.innerHeight >= 450;
@@ -28,8 +29,23 @@
 
   function refresh() {
     if (!dock || !controller || !anchor) return;
+    // Sur mobile/tablette, le panneau suit le flux de la page, sans rattrapage JS.
+    const nextInline = window.innerWidth <= 900;
+    if (inline !== nextInline) {
+      const restart = inline !== null && controller.active;
+      // Un changement de format peut deplacer le dock : retirer l'iframe avant.
+      if (restart) {
+        controller.active = false;
+        controller.stop();
+      }
+      inline = nextInline;
+      anchor.dataset.inline = String(inline);
+      anchor.setAttribute('aria-hidden', String(!inline));
+      (inline ? anchor : document.body).append(dock);
+      if (restart) requestAnimationFrame(() => controller.sync());
+    }
     const home = isHomeVisible();
-    const rect = home ? anchor.getBoundingClientRect() : null;
+    const rect = home && !inline ? anchor.getBoundingClientRect() : null;
     const live = controller.active && controller.state === 'live' && consented();
     const floating = !closed && live && canFloat() && (!home || !fullyVisible(rect));
 
@@ -42,7 +58,12 @@
     }
     dock.hidden = false;
     dock.classList.toggle('is-floating', floating);
-    if (floating) {
+    if (inline) {
+      dock.style.top = '';
+      dock.style.left = '';
+      dock.style.bottom = '';
+      dock.style.width = '';
+    } else if (floating) {
       dock.style.left = EDGE + 'px';
       dock.style.top = 'auto';
       dock.style.bottom = EDGE + 'px';

@@ -31,3 +31,11 @@ Les cinq liens du pied de page `Mentions légales`, `Politique de confidentialit
 ## Déploiement
 
 La fusion de la PR de publication vers `main` déclenche le workflow de déploiement OVH déjà existant. Vérifier qu'il réussit, puis tester sur https://www.deadelustv.com pendant un direct en conditions réelles. Ne pas confondre `main` fusionnée avec le résultat effectif du déploiement. Aucune modification à Supabase, aux scripts OVH, ni aux modules spécialisés.
+
+## Correctif mobile — 27 octobre 2026
+
+L'utilisatrice signale un léger décalage du panneau Twitch pendant le défilement sur iPhone et Samsung. Le dock utilisait `position: fixed` et des coordonnées recalculées au scroll, même quand seul le panneau/image était affiché.
+
+À 900 px de largeur et moins, le dock est désormais placé dans son emplacement sur l'accueil, avec `position: static` et une hauteur naturelle incluant les textes et boutons. Il n'utilise plus de mesures ni de coordonnées de défilement. Le lien Twitch reste accessible aux technologies d'assistance. Au-delà de 900 px, le dock permanent et les règles du mini-lecteur sont conservés. Si un redimensionnement franchit ce seuil pendant une lecture, celle-ci est arrêtée avant de déplacer son conteneur, puis réévaluée dans le nouveau format ; les transitions normales/flottantes sur ordinateur conservent l'iframe.
+
+Vérifications : 17 tests Node du mini-lecteur et du consentement réussis, dont flux mobile, navigation, absence de calcul de position mobile et changement de format ; contrôle des fichiers statiques et de la syntaxe. La confirmation visuelle du défilement sur iPhone et Samsung réels reste attendue après déploiement. Le seuil minimal du lecteur Twitch, le consentement et les autres rubriques restent inchangés.

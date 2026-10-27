@@ -97,9 +97,9 @@ function createEnv({consent = true, width = 1400, height = 800, state = 'live'} 
     sync() { syncCount++; }
   };
   window.DEADELUSTV_TWITCH_FLOAT.setup(root, controls, player);
-  const dock = body.children.find(node => node.className.includes('twitch-player-dock'));
-  const reopen = body.children.find(node => node.className.includes('twitch-float-reopen'));
   const anchor = home.children[0];
+  const dock = [...body.children, ...anchor.children].find(node => node.className.includes('twitch-player-dock'));
+  const reopen = body.children.find(node => node.className.includes('twitch-float-reopen'));
   return {
     window, home, root, controls, player, dock, reopen, anchor,
     counts: () => ({stops: stopCount, syncs: syncCount}),
@@ -153,6 +153,32 @@ test('petit ecran : pas de lecteur flottant', () => {
   const e = createEnv({width: 850, height: 600});
   assert.equal(e.dock.classList.contains('is-floating'), false);
   assert.equal(e.window.DEADELUSTV_TWITCH_FLOAT.shouldPersist(e.player), false);
+  assert.equal(e.dock.parent, e.anchor, 'le panneau reste dans le flux de l accueil');
+  assert.equal(e.anchor.attributes['aria-hidden'], 'false', 'les liens restent accessibles');
+  e.anchor.getBoundingClientRect = () => { throw new Error('aucune mesure de position mobile'); };
+  e.window.DEADELUSTV_TWITCH_FLOAT.refresh();
+  assert.equal(e.dock.style.top, '');
+  assert.equal(e.dock.style.left, '');
+  e.home.hidden = true;
+  e.window.DEADELUSTV_TWITCH_FLOAT.refresh();
+  assert.equal(e.dock.hidden, true);
+});
+test('changement de format : arret avant deplacement, puis reprise dans le nouveau format', () => {
+  const e = createEnv();
+  const append = e.anchor.append.bind(e.anchor);
+  e.anchor.append = (...nodes) => {
+    assert.equal(e.counts().stops, 1, 'le lecteur est arrete avant de deplacer son conteneur');
+    append(...nodes);
+  };
+  e.window.innerWidth = 390;
+  e.window.DEADELUSTV_TWITCH_FLOAT.refresh();
+  assert.equal(e.dock.parent, e.anchor);
+  assert.equal(e.dock.classList.contains('is-floating'), false);
+  assert.equal(e.counts().syncs, 1);
+  e.window.innerWidth = 1400;
+  e.window.DEADELUSTV_TWITCH_FLOAT.refresh();
+  assert.equal(e.dock.parent, e.home.parent);
+  assert.equal(e.anchor.attributes['aria-hidden'], 'true');
 });
 test('retrait de consentement apres fermeture : la reprise est masquee', () => {
   const e = createEnv();

@@ -30,6 +30,14 @@
   box-sizing: border-box;
 }
 .twitch-player-dock[hidden], .twitch-float-reopen[hidden] { display: none !important; }
+/* Le panneau mobile occupe sa hauteur reelle, image et texte compris. */
+.twitch-player-placeholder[data-inline="true"] {
+  min-height: 0;
+  aspect-ratio: auto;
+}
+.twitch-player-placeholder[data-inline="true"] > .twitch-player-dock {
+  position: static;
+}
 .twitch-player-dock .player-shell.twitch-player { width: 100%; }
 .twitch-float-bar { display: none; }
 .twitch-player-dock.is-floating {
