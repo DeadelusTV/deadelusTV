@@ -756,7 +756,7 @@ function manageRecord(action){
    rec=RECORDS.move(state.records,state.folders,rec.id,destination,folderId);
    if(previous!==rec.group){
     for(const layer of state.elements)
-     if(layer.action==='detail'&&layer.target===previous&&layer.entry===rec.id)layer.target=rec.group;
+     if(layer.action==='detail'&&layer.target===previous&&(layer.entry===rec.id||layer.entry===rec.title)){layer.target=rec.group;layer.entry=rec.id;}
    }
    syncRecordsToGroups();
    $('#group-edit').value=rec.group;
