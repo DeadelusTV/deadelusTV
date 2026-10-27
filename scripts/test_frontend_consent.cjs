@@ -108,7 +108,7 @@ test('première visite : accepter et refuser sont accessibles de même niveau',(
   assert.equal(value.choices.youtube,false);
   assert.equal(env.window.DEADELUSTV_CONSENT.hasTwitchConsent(),false);
   env.manager.click();
-  const second=find(env.body,n=>n.className==='cookie-panel');
+  const second=find(env.body,n=>n.className?.startsWith('cookie-panel'));
   assert.ok(second,'panneau réouvert depuis le footer');
   find(second,n=>n.className==='cookie-actions').children[2].click();
   assert.equal(env.window.DEADELUSTV_CONSENT.hasTwitchConsent(),true);
@@ -121,7 +121,7 @@ test('consentement expiré : une nouvelle décision est demandée',()=>{
   const env=makeEnv({storage});
   env.run('consent.js');
   env.document.dispatchEvent({type:'DOMContentLoaded'});
-  assert.ok(find(env.body,n=>n.className==='cookie-panel'));
+  assert.ok(find(env.body,n=>n.className?.startsWith('cookie-panel')));
   assert.equal(env.window.DEADELUSTV_CONSENT.hasTwitchConsent(),false);
 });
 test('hors ligne : aucun SDK Twitch même avec accord',async()=>{
