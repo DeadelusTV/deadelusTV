@@ -67,3 +67,10 @@ Le bucket `phasmo-news-draft-images` est **privé** ; `phasmo-news-published-ima
 - **Livre de preuves interactif** : encore en cours sur la branche Phasmo V2, non déployé comme produit final.
 - **Webhook Discord des News** : piste future, pas implémentée.
 - **Visuel TikTok animé / halo** : chantier séparé de l'éditeur News.
+
+## Retours d’utilisation — 27 octobre 2026
+
+- Yekelle confirme la connexion de Mattarix à l’éditeur ; les corrections suivantes concernent ses premiers retours d’utilisation.
+- Listes à puces et numérotées : le navigateur pouvait insérer `ul`/`ol` dans un paragraphe. La conversion vers le document JSON ne lisait que les listes à la racine et supprimait ainsi leur structure dans l’aperçu et les sauvegardes. La lecture parcourt désormais les blocs imbriqués ; la reconstruction conserve aussi les sous-listes et tous les paragraphes d’un élément.
+- Régression ciblée : puces et numéros à la racine, dans un paragraphe ou un conteneur ; aperçu et aller-retour JSON/reconstruction ; sous-listes, texte autour, mises en forme et médias. Aucun changement des tables, permissions ou canaux de publication.
+- Une liste déjà enregistrée sans sa structure doit être remise en forme avec le bouton correspondant : le correctif ne peut pas déduire les anciennes listes à partir du seul texte.

@@ -202,54 +202,55 @@
     const value=element.style?.textAlign||element.getAttribute?.('align');
     return ['left','center','right'].includes(value)?{textAlign:value}:{};
   }
-  function parseList(list,type){
+  function parseList(list,type,depth){
     const items=[];
     for(const li of list.children){
       if(li.tagName!=='LI')continue;
-      const inline=inlineNodes(li);
-      items.push({type:'listItem',content:[{type:'paragraph',...(inline.length?{content:inline}:{})}]});
+      const blocks=readBlocks(li,'paragraph',depth+1);
+      items.push({type:'listItem',content:blocks.length?blocks:[para('')]});
     }
     return{type,content:items};
   }
-  function readEditor(){
-    const content=[];
-    const flushText=(tag,element)=>{
-      const pending=[];
-      const flush=()=>{if(pending.length){
-        content.push({type:tag,...(tag==='heading'?{attrs:{level:element.tagName==='H3'?3:2,...alignOf(element)}}:
-          Object.keys(alignOf(element)).length?{attrs:alignOf(element)}:{}),content:pending.splice(0)});
-      }};
-      for(const child of element.childNodes){
-        if(child.nodeType===Node.ELEMENT_NODE&&child.tagName==='IMG'){
-          flush();
-          const src=url(child.dataset.remoteImage||child.getAttribute('src'),'image');
-          if(src)content.push({type:'image',attrs:{src,alt:child.alt||''}});
-        }else if(child.nodeType===Node.ELEMENT_NODE&&child.tagName==='BR'){
-          pending.push({type:'hardBreak'});
-        }else if(child.nodeType===Node.TEXT_NODE&&child.nodeValue){
-          pending.push({type:'text',text:child.nodeValue});
-        }else if(child.nodeType===Node.ELEMENT_NODE){
-          pending.push(...inlineNodes(child,marks(child)));
-        }
-      }
-      flush();
-      if(!content.length||content[content.length-1]?.type==='image'||!pending.length)
-        if(element.childNodes.length===0)content.push({type:tag,...(tag==='heading'?{attrs:{level:2}}:{})});
+  // execCommand peut produire <p><ul>…</ul></p> ou des listes dans un div.
+  // Lire les blocs à chaque profondeur sans modifier le DOM ni l'annulation.
+  function readBlocks(element,tag='paragraph',depth=0){
+    if(depth>15)return [];
+    const content=[],pending=[];
+    const attrs=tag==='heading'?{level:element.tagName==='H3'?3:2,...alignOf(element)}:alignOf(element);
+    const flush=()=>{
+      if(!pending.length)return;
+      content.push({type:tag,...(Object.keys(attrs).length?{attrs}:{}),content:pending.splice(0)});
     };
-    for(const child of root.childNodes){
-      if(child.nodeType===Node.TEXT_NODE){if(child.nodeValue.trim())content.push(para(child.nodeValue));continue;}
+    for(const child of element.childNodes){
+      if(child.nodeType===Node.TEXT_NODE){
+        if(child.nodeValue)pending.push({type:'text',text:child.nodeValue});
+        continue;
+      }
       if(child.nodeType!==Node.ELEMENT_NODE)continue;
       const name=child.tagName;
       if(child.dataset.youtubeId){
+        flush();
         if(validVideoId(child.dataset.youtubeId))
           content.push({type:'youtube',attrs:{videoId:child.dataset.youtubeId}});
       }else if(name==='IMG'){
+        flush();
         const src=url(child.dataset.remoteImage||child.getAttribute('src'),'image');
         if(src)content.push({type:'image',attrs:{src,alt:child.alt||''}});
-      }else if(name==='UL'||name==='OL')content.push(parseList(child,name==='UL'?'bulletList':'orderedList'));
-      else if(name==='H2'||name==='H3')flushText('heading',child);
-      else if(name==='P'||name==='DIV'||name==='BLOCKQUOTE')flushText('paragraph',child);
+      }else if(name==='UL'||name==='OL'){
+        flush();
+        content.push(parseList(child,name==='UL'?'bulletList':'orderedList',depth+1));
+      }else if(['P','DIV','BLOCKQUOTE','H2','H3'].includes(name)){
+        flush();
+        content.push(...readBlocks(child,name==='H2'||name==='H3'?'heading':'paragraph',depth+1));
+      }else if(name==='BR')pending.push({type:'hardBreak'});
+      else pending.push(...inlineNodes(child,marks(child)));
     }
+    flush();
+    if(!element.childNodes.length)content.push({type:tag,...(Object.keys(attrs).length?{attrs}:{})});
+    return content;
+  }
+  function readEditor(){
+    const content=readBlocks(root);
     return cleanDoc({type:'doc',content:content.length?content:blankDoc().content},false);
   }
   function renderInline(parent,parts){
@@ -349,10 +350,7 @@
       const node=el(tag);
       if(['paragraph','heading'].includes(item.type)&&['left','center','right'].includes(item.attrs?.textAlign))
         node.style.textAlign=item.attrs.textAlign;
-      if(item.type==='listItem'){
-        const paragraph=item.content?.find(entry=>entry.type==='paragraph');
-        if(paragraph)renderInline(node,paragraph.content);
-      }else if(['paragraph','heading'].includes(item.type)){
+      if(['paragraph','heading'].includes(item.type)){
         renderInline(node,item.content);
         if(!node.childNodes.length)node.append(document.createElement('br'));
       }else for(const sub of item.content||[])walk(node,sub);
