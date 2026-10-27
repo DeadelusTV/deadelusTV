@@ -114,7 +114,7 @@
   function loadEditor(){
     return new Promise((resolve,reject)=>{
       const script=document.createElement('script');
-      script.src='editor-native.js';
+      script.src='editor-native.js?v=20261028.5';
       script.onload=resolve;
       script.onerror=()=>reject(new Error('Fichier de rédaction indisponible.'));
       document.body.append(script);

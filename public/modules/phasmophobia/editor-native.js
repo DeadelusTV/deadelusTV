@@ -128,7 +128,19 @@
         out.attrs={...(out.attrs||{}),textAlign:raw.attrs.textAlign};
       if(Array.isArray(raw.content)){
         const children=raw.content.map(child=>clean(child,level+1)).filter(Boolean);
-        if(children.length)out.content=children;
+        // D'anciens brouillons ont une liste séparée pour chaque ligne : le
+        // premier élément de chacune ne pouvait pas devenir une sous-liste.
+        // Fusionner uniquement les listes à puces contiguës, sans séparateur.
+        const blocks=[];
+        for(const child of children){
+          const previous=blocks[blocks.length-1];
+          if(['doc','listItem'].includes(raw.type)&&child.type==='bulletList'&&
+            previous?.type==='bulletList'&&
+            (previous.content?.length||0)+(child.content?.length||0)<=200){
+            previous.content=[...(previous.content||[]),...(child.content||[])];
+          }else blocks.push(child);
+        }
+        if(blocks.length)out.content=blocks;
       }
       return out;
     }
@@ -528,7 +540,7 @@
     foot.append(el('p','','Source : '+(d.sourceUrl||'à compléter')));
   }
   function command(command,value){
-    root.focus();
+    root.focus({preventScroll:true});
     try{
       const ok=document.execCommand(command,false,value||undefined);
       if(!ok)report('Commande non disponible dans ce navigateur : '+command+'.');
@@ -1000,6 +1012,7 @@
     try{await store();}finally{saveButton.disabled=false;}
   });
   window.addEventListener('pagehide',()=>{const d=current();if(d)d.doc=readEditor();if(timer)store();});
+  root.dataset.editorRelease='20261028.5';
   root.setAttribute('contenteditable','true');
   root.setAttribute('spellcheck','true');
   root.setAttribute('role','textbox');
