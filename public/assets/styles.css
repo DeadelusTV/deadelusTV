@@ -440,9 +440,11 @@ dialog{color:var(--text);background:#19191a;border:1px solid #59513e;border-radi
 /* Vignette TikTok de l'accueil uniquement. Les autres illustrations restent intactes. */
 .tiktok-only .tiktok-motion {
   isolation: isolate;
+  /* Le fond cuir conserve son format vertical : le noir complète les côtés. */
+  background-color: #050505;
   background-image: url('tiktok-fond.webp');
   background-repeat: no-repeat;
-  background-size: 100% 100%;
+  background-size: auto 100%;
   background-position: center;
 }
 .tiktok-only .tiktok-motion::after { display: none; }
@@ -454,6 +456,19 @@ dialog{color:var(--text);background:#19191a;border:1px solid #59513e;border-radi
   background-repeat: no-repeat;
   background-position: center;
   background-size: 100% 100%;
+}
+/* Le panneau s'élargit, mais chaque logo reste centré et à son échelle d'origine. */
+.tiktok-only .tiktok-motion__deadelus,
+.tiktok-only .tiktok-motion__logo,
+.tiktok-only .tiktok-motion__echo {
+  background-size: auto 100%;
+}
+@media (min-width: 1101px) {
+  /* Ne pas agrandir la carte ni rogner la zone de texte sur les écrans étroits. */
+  .latest .tiktok-only .short-card .art {
+    width: min(170px, 39%);
+    aspect-ratio: auto;
+  }
 }
 .tiktok-only .tiktok-motion__halo {
   /* Lumière diffuse derrière le blason, indépendante du glitch TikTok. */
