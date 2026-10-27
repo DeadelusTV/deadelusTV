@@ -23,3 +23,24 @@
 @media(max-width:600px){.legal-links{gap:0 18px}.cookie-panel{inset:auto 8px 8px;padding:18px}.cookie-panel .cookie-actions{flex-direction:column}.cookie-panel .cookie-actions .btn{width:100%}}
 /* Les liens réservés ne doivent pas réapparaître à cause du display:inline-flex des liens du footer. */
 .legal-links [hidden]{display:none!important}
+
+/* Preferences communes du portail ; pas de re-demande pour chaque rubrique. */
+.cookie-global{width:min(900px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow-y:auto;overscroll-behavior:contain}
+.cookie-global .cookie-actions .btn{flex:1 1 145px;min-width:145px}
+.cookie-global .cookie-actions .btn-gold{background:#a98036;color:#141211;border-color:#c9a559}
+.cookie-service-list{margin-top:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+.cookie-service-list[hidden]{display:none}
+.cookie-service{border:1px solid #63523a;border-radius:9px;background:#242222;padding:12px;min-width:0}
+.cookie-service-label{display:flex;gap:9px;align-items:center;cursor:pointer;font-size:14px;font-weight:700}
+.cookie-service-label input{width:17px;height:17px;accent-color:#d1aa61;flex-shrink:0}
+.cookie-service-label input:disabled{cursor:not-allowed;opacity:.6}
+.cookie-service-label:has(input:disabled){cursor:default;color:#b9b1a5}
+.cookie-service .cookie-service-name{line-height:1.4}
+.cookie-global .cookie-service p{margin:7px 0;font-size:12px;line-height:1.55}
+.cookie-service a{font-size:12px;line-height:1.5}
+.cookie-global .cookie-actions button[hidden]{display:none}
+@media(max-width:600px){.cookie-global{width:calc(100vw - 16px);max-height:calc(100dvh - 16px)}.cookie-service-list{grid-template-columns:1fr}.cookie-global .cookie-actions .btn{min-width:0}}
+
+/* Lecteur optionnel partage avec les news Phasmo et les univers futurs. */
+.youtube-embed-frame{display:block;width:100%;aspect-ratio:16/9;max-width:100%;border:0;border-radius:10px;background:#08090b}
+.youtube-embed-placeholder{padding:15px;border:1px solid #6c6048;border-radius:9px;background:#211f1c;color:#d8d0c0}
