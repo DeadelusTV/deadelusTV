@@ -205,16 +205,23 @@
   }
   function parseList(list,type,depth){
     const items=[];
-    for(const li of list.children){
-      // Chrome peut placer la sous-liste après son élément parent, dans ul/ol.
-      if(li.tagName==='UL'||li.tagName==='OL'){
-        if(!items.length)items.push({type:'listItem',content:[para('')]});
-        items[items.length-1].content.push(parseList(li,li.tagName==='UL'?'bulletList':'orderedList',depth+1));
-        continue;
-      }
-      if(li.tagName!=='LI')continue;
-      const blocks=readBlocks(li,'paragraph',depth+1);
+    const appendItem=li=>{
+      // Après un retrait, Chrome peut laisser le nouveau frère dans l'ancien li.
+      // Normaliser une copie pour conserver les deux éléments et l'annulation.
+      const siblings=Array.from(li.children).filter(child=>child.tagName==='LI');
+      const source=siblings.length?li.cloneNode(true):li;
+      if(siblings.length)
+        for(const child of Array.from(source.children))if(child.tagName==='LI')child.remove();
+      const blocks=readBlocks(source,'paragraph',depth+1);
       items.push({type:'listItem',content:blocks.length?blocks:[para('')]});
+      for(const sibling of siblings)appendItem(sibling);
+    };
+    for(const child of list.children){
+      // Chrome peut placer la sous-liste après son élément parent, dans ul/ol.
+      if(child.tagName==='UL'||child.tagName==='OL'){
+        if(!items.length)items.push({type:'listItem',content:[para('')]});
+        items[items.length-1].content.push(parseList(child,child.tagName==='UL'?'bulletList':'orderedList',depth+1));
+      }else if(child.tagName==='LI')appendItem(child);
     }
     return{type,content:items};
   }
