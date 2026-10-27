@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" role="img" aria-label="La petite ombre curieuse">
+<defs>
+  <radialGradient id="body" cx=".43" cy=".48" r=".72"><stop stop-color="#202334"/><stop offset=".55" stop-color="#0c101a"/><stop offset="1" stop-color="#03050a"/></radialGradient>
+  <linearGradient id="edge" x1="0" y1="0" x2=".9" y2="1"><stop stop-color="#c99b5c" stop-opacity=".65"/><stop offset=".4" stop-color="#596078" stop-opacity=".13"/><stop offset="1" stop-color="#04060c" stop-opacity="0"/></linearGradient>
+  <radialGradient id="eye" cx=".35" cy=".23" r=".79"><stop stop-color="#fff1b8"/><stop offset=".34" stop-color="#f4c46c"/><stop offset=".73" stop-color="#bd7931"/><stop offset="1" stop-color="#59311a"/></radialGradient>
+  <linearGradient id="metal" x1="0" x2="1" y2="1"><stop stop-color="#fff0b8"/><stop offset=".4" stop-color="#d29b48"/><stop offset="1" stop-color="#74502a"/></linearGradient>
+  <filter id="soft"><feGaussianBlur stdDeviation="1.9"/></filter>
+  <filter id="glow"><feGaussianBlur stdDeviation="4"/></filter>
+</defs>
+<style>
+  #eyes{transform-box:fill-box;transform-origin:center;animation:blink 8.1s infinite}
+  @keyframes blink {0%,43%,45%,100%{transform:scaleY(1)}44%{transform:scaleY(.12)}}
+  @media(prefers-reduced-motion:reduce){#eyes{animation:none}}
+</style>
+<!-- une traîne d'ombre, puis une petite silhouette féline abstraite -->
+<path d="M40 113C19 119 18 103 26 96c9-8 19 0 14 9 21-10 24 23 3 30-19 6-33-9-29-23" fill="none" stroke="#080b13" stroke-width="13" stroke-linecap="round"/>
+<path d="M40 113C19 119 18 103 26 96" fill="none" stroke="#7c674a" stroke-opacity=".35" stroke-width="1.9" stroke-linecap="round"/>
+<ellipse cx="83" cy="126" rx="50" ry="24" fill="#050710" opacity=".65" filter="url(#soft)"/>
+<path d="M42 125c-13-16-10-42 0-57 6-10 13-15 17-27-2 3-14 5-15-6 13 8 20-12 34-14-8-1-13-8-7-14 1 10 15 12 19 23C99 21 91 6 102 6c-6 9 13 19 7 38 11-11 10-21 5-27 18 4 19 28 8 42 22 15 28 42 15 65-19 28-75 32-95 1z" fill="url(#body)" stroke="#3c3f4e" stroke-width="1.6" stroke-linejoin="round"/>
+<path d="M49 58c12-15 17-26 32-25 8-4 13 2 20 8 8-12 2-23 2-23" fill="none" stroke="url(#edge)" stroke-width="2" stroke-linecap="round"/>
+<path d="M44 90c-6 28 2 42 18 50M123 74c17 20 15 42 4 55" stroke="#8a7052" stroke-opacity=".22" stroke-width="1.7" fill="none"/>
+<!-- yeux ambrés, très lisibles quand on ne voit que la tête -->
+<g id="eyes">
+<ellipse cx="62" cy="92" rx="15.6" ry="19.3" fill="#09080d"/>
+<ellipse cx="99" cy="92" rx="15.6" ry="19.3" fill="#09080d"/>
+<ellipse cx="62" cy="92" rx="11.4" ry="15.4" fill="#a5672d" opacity=".43" filter="url(#glow)"/>
+<ellipse cx="99" cy="92" rx="11.4" ry="15.4" fill="#a5672d" opacity=".43" filter="url(#glow)"/>
+<ellipse cx="62" cy="92" rx="11.1" ry="15.2" fill="url(#eye)"/>
+<ellipse cx="99" cy="92" rx="11.1" ry="15.2" fill="url(#eye)"/>
+<ellipse cx="65" cy="94" rx="4.1" ry="9" fill="#151018"/>
+<ellipse cx="96" cy="94" rx="4.1" ry="9" fill="#151018"/>
+<circle cx="57" cy="84" r="3.1" fill="#fff8e9" opacity=".9"/>
+<circle cx="104" cy="84" r="3.1" fill="#fff8e9" opacity=".9"/>
+</g>
+<path d="M78 111q3-2 6 0" stroke="#b89a72" stroke-width="1.2" stroke-linecap="round" opacity=".6" fill="none"/>
+<!-- petites pattes -->
+<ellipse cx="52" cy="133" rx="14" ry="11" fill="#090c14" stroke="#333344" stroke-width="1"/>
+<ellipse cx="111" cy="133" rx="14" ry="11" fill="#090c14" stroke="#333344" stroke-width="1"/>
+<path d="M45 134v3m7-3v3m52-3v3m7-3v3" stroke="#747287" opacity=".35" stroke-width="1" stroke-linecap="round"/>
+<!-- amulette originale, inspirée d'un symbole de protection dans Supernatural -->
+<path d="M72 125q8 7 16 0" fill="none" stroke="#b78a52" stroke-width="1.8"/>
+<circle cx="80" cy="138" r="12.3" fill="#100e0f" stroke="url(#metal)" stroke-width="2"/>
+<circle cx="80" cy="138" r="9.5" fill="none" stroke="#cf9950" stroke-width=".8" opacity=".8"/>
+<path d="M80 130l7.2 13h-14.4zM80 146l-7.2-13h14.4z" fill="none" stroke="#e2bb74" stroke-width="1.15" stroke-linejoin="round"/>
+<circle cx="80" cy="138" r="2" fill="#e7c98c"/>
+</svg>
