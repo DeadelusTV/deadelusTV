@@ -38,3 +38,7 @@
 .cookie-service a{font-size:12px;line-height:1.5}
 .cookie-global .cookie-actions button[hidden]{display:none}
 @media(max-width:600px){.cookie-global{width:calc(100vw - 16px);max-height:calc(100dvh - 16px)}.cookie-service-list{grid-template-columns:1fr}.cookie-global .cookie-actions .btn{min-width:0}}
+
+/* Lecteur optionnel partage avec les news Phasmo et les univers futurs. */
+.youtube-embed-frame{display:block;width:100%;aspect-ratio:16/9;max-width:100%;border:0;border-radius:10px;background:#08090b}
+.youtube-embed-placeholder{padding:15px;border:1px solid #6c6048;border-radius:9px;background:#211f1c;color:#d8d0c0}
