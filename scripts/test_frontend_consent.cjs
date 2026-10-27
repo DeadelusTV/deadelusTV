@@ -61,7 +61,8 @@ function makeEnv({live=false,consent=false,storage,playerMock}={}) {
   const backing=storage||new Map();
   const localStorage={
     getItem:key=>backing.has(key)?backing.get(key):null,
-    setItem:(key,value)=>backing.set(key,String(value))
+    setItem:(key,value)=>backing.set(key,String(value)),
+    removeItem:key=>backing.delete(key)
   };
   const window={
     matchMedia:()=>({matches:true}),
@@ -97,23 +98,26 @@ test('première visite : accepter et refuser sont accessibles de même niveau',(
   const env=makeEnv();
   env.run('consent.js');
   env.document.dispatchEvent({type:'DOMContentLoaded'});
-  const panel=find(env.body,n=>n.className==='cookie-panel');
+  const panel=find(env.body,n=>n.className?.startsWith('cookie-panel'));
   assert.ok(panel);
   const actions=find(panel,n=>n.className==='cookie-actions');
-  assert.deepEqual(actions.children.map(c=>c.textContent),['Refuser','Accepter']);
+  assert.deepEqual(actions.children.map(c=>c.textContent),['Tout refuser','Personnaliser','Tout accepter','Enregistrer mes choix']);
   actions.children[0].click();
-  const value=JSON.parse(env.storage.get('deadelustv_twitch_consent_v1'));
-  assert.equal(value.choice,'refuse');
+  const value=JSON.parse(env.storage.get('deadelustv_external_consent_v1'));
+  assert.equal(value.choices.twitch,false);
+  assert.equal(value.choices.youtube,false);
   assert.equal(env.window.DEADELUSTV_CONSENT.hasTwitchConsent(),false);
   env.manager.click();
   const second=find(env.body,n=>n.className==='cookie-panel');
   assert.ok(second,'panneau réouvert depuis le footer');
-  find(second,n=>n.className==='cookie-actions').children[1].click();
+  find(second,n=>n.className==='cookie-actions').children[2].click();
   assert.equal(env.window.DEADELUSTV_CONSENT.hasTwitchConsent(),true);
+  assert.equal(env.window.DEADELUSTV_CONSENT.hasConsent('youtube'),true);
+  assert.equal(env.window.DEADELUSTV_CONSENT.hasConsent('tiktok'),false);
 });
 test('consentement expiré : une nouvelle décision est demandée',()=>{
   const old=Date.now()-181*24*60*60*1000;
-  const storage=new Map([['deadelustv_twitch_consent_v1',JSON.stringify({choice:'accept',savedAt:old,version:1})]]);
+  const storage=new Map([['deadelustv_external_consent_v1',JSON.stringify({version:1,savedAt:old,choices:{twitch:true,youtube:true,tiktok:false}})]]);
   const env=makeEnv({storage});
   env.run('consent.js');
   env.document.dispatchEvent({type:'DOMContentLoaded'});
@@ -174,4 +178,82 @@ test('révocation pendant la lecture : le lecteur est détruit',async()=>{
   await flush();
   assert.equal(destroyCount,1);
   assert.equal(env.root.dataset.mode,'blocked');
+});
+
+test('personnalisation par service et refus TikTok non actif',()=>{
+  const env=makeEnv();
+  env.run('consent.js');
+  env.document.dispatchEvent({type:'DOMContentLoaded'});
+  const panel=find(env.body,n=>n.className?.startsWith('cookie-panel'));
+  const actions=find(panel,n=>n.className==='cookie-actions');
+  actions.children[1].click();
+  const form=find(panel,n=>n.className==='cookie-service-list');
+  assert.equal(form.hidden,false);
+  const twitch=find(form,n=>n.dataset?.consentService==='twitch');
+  const youtube=find(form,n=>n.dataset?.consentService==='youtube');
+  const tiktok=find(form,n=>n.dataset?.consentService==='tiktok');
+  assert.ok(tiktok.disabled);
+  twitch.checked=false;
+  youtube.checked=true;
+  tiktok.checked=true;
+  actions.children[3].click();
+  const saved=JSON.parse(env.storage.get('deadelustv_external_consent_v1'));
+  assert.equal(saved.choices.twitch,false);
+  assert.equal(saved.choices.youtube,true);
+  assert.equal(saved.choices.tiktok,false);
+  assert.equal(env.window.DEADELUSTV_CONSENT.hasConsent('youtube'),true);
+  assert.equal(env.window.DEADELUSTV_CONSENT.hasTwitchConsent(),false);
+});
+
+test('ancienne décision Twitch ne vaut pas consentement YouTube automatique',()=>{
+  const map=new Map([['deadelustv_twitch_consent_v1',
+    JSON.stringify({choice:'accept',savedAt:Date.now(),version:1})]]);
+  const env=makeEnv({storage:map});
+  env.run('consent.js');
+  assert.equal(env.window.DEADELUSTV_CONSENT.hasTwitchConsent(),false);
+  assert.equal(env.window.DEADELUSTV_CONSENT.hasConsent('youtube'),false);
+  env.document.dispatchEvent({type:'DOMContentLoaded'});
+  const panel=find(env.body,n=>n.className?.startsWith('cookie-panel'));
+  find(panel,n=>n.className==='cookie-actions').children[1].click();
+  assert.equal(find(panel,n=>n.dataset?.consentService==='twitch').checked,true);
+  assert.equal(find(panel,n=>n.dataset?.consentService==='youtube').checked,false);
+});
+
+test('un lecteur YouTube reste inactif sans accord, puis est retiré au refus',()=>{
+  const env=makeEnv();
+  env.run('consent.js');
+  env.run('external-embeds.js');
+  const area=new FakeNode('div');
+  const api=env.window.DEADELUSTV_EMBEDS;
+  assert.equal(api.mountYouTube(area,'7C1fZaoE_Us','Vidéo officielle'),true);
+  assert.ok(find(area,n=>n.textContent.includes('désactivé')));
+  assert.equal(find(area,n=>n.tagName==='iframe'),null);
+  assert.equal(api.mountYouTube(area,'https://evil.example', 'Défense'),false);
+  env.document.dispatchEvent({type:'DOMContentLoaded'});
+  const panel=find(env.body,n=>n.className?.startsWith('cookie-panel'));
+  find(panel,n=>n.className==='cookie-actions').children[2].click();
+  const iframe=find(area,n=>n.tagName==='iframe');
+  assert.ok(iframe);
+  assert.equal(iframe.src,'https://www.youtube-nocookie.com/embed/7C1fZaoE_Us');
+  env.manager.click();
+  const panel2=find(env.body,n=>n.className?.startsWith('cookie-panel'));
+  find(panel2,n=>n.className==='cookie-actions').children[0].click();
+  assert.equal(find(area,n=>n.tagName==='iframe'),null);
+  assert.ok(find(area,n=>n.textContent.includes('désactivé')));
+});
+
+test('nouvelle visite même site : les préférences sont conservées',()=>{
+  const storage=new Map();
+  const env=makeEnv({storage});
+  env.run('consent.js');
+  env.document.dispatchEvent({type:'DOMContentLoaded'});
+  const panel=find(env.body,n=>n.className?.startsWith('cookie-panel'));
+  find(panel,n=>n.className==='cookie-actions').children[2].click();
+  const revisit=makeEnv({storage});
+  revisit.run('consent.js');
+  revisit.document.dispatchEvent({type:'DOMContentLoaded'});
+  assert.equal(find(revisit.body,n=>n.className?.startsWith('cookie-panel')),null);
+  assert.equal(revisit.window.DEADELUSTV_CONSENT.hasTwitchConsent(),true);
+  assert.equal(revisit.window.DEADELUSTV_CONSENT.hasConsent('youtube'),true);
+  assert.equal(revisit.window.DEADELUSTV_CONSENT.hasConsent('tiktok'),false);
 });
