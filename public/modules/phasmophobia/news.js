@@ -131,7 +131,7 @@
       el('span', 'phasma-news-card-kicker', niceDate(item.publishedAt)),
       el('strong', 'phasma-news-card-title', item.title),
       el('span', 'phasma-news-card-excerpt', item.excerpt),
-      el('span', 'phasma-news-card-more', 'Lire la traduction →')
+      el('span', 'phasma-news-card-more', 'Lire la news →')
     );
     link.append(picture, content);
     return link;
