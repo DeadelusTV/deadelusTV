@@ -254,7 +254,19 @@
       if(raw.type==='youtube'){
         const id=String(raw.attrs?.videoId||'');
         if(!/^[A-Za-z0-9_-]{11}$/.test(id))return null;
-        const panel=el('div','phasma-youtube-card');
+        const panel=el('div','phasma-youtube-card phasma-youtube-card--with-thumb');
+        // L'image YouTube est visible avant le clic, mais pas le lecteur tiers.
+        const thumbnail=el('img','phasma-youtube-thumbnail');
+        thumbnail.src='https://i.ytimg.com/vi/'+id+'/hqdefault.jpg';
+        thumbnail.alt='';
+        thumbnail.loading='lazy';
+        thumbnail.decoding='async';
+        thumbnail.referrerPolicy='no-referrer';
+        thumbnail.addEventListener('error',()=>{
+          thumbnail.remove();
+          panel.classList.remove('phasma-youtube-card--with-thumb');
+        },{once:true});
+        panel.append(thumbnail);
         const button=el('button','phasma-youtube-play','▶  Lire la vidéo YouTube');
         button.type='button';
         button.setAttribute('aria-label','Charger la vidéo YouTube intégrée');
@@ -268,7 +280,7 @@
           iframe.allowFullscreen=true;
           panel.replaceChildren(iframe);
         },{once:true});
-        panel.append(button,el('span','phasma-youtube-privacy','La vidéo ne se charge qu’après votre clic.'));
+        panel.append(button,el('span','phasma-youtube-privacy','Miniature YouTube affichée ; lecteur chargé après votre clic.'));
         return panel;
       }
       if(raw.type==='image'){
