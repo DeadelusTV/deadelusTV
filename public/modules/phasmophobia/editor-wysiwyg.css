@@ -1,0 +1,149 @@
+/* Prototype WYSIWYG Tiptap : l'espace de rédaction respecte la DA du site.
+   Aucun de ces styles ne s'applique aux pages publiques hors prototype. */
+.phasma-editor-demo .phasma-wysiwyg-panel { padding: clamp(15px, 2.5vw, 28px); }
+.phasma-editor-demo .phasma-wysiwyg-wrapper {
+  overflow: hidden;
+  border: 1px solid #62523b;
+  border-radius: 9px;
+  background: #1a1b1b;
+  box-shadow: 0 20px 55px #0003, inset 0 1px #ffffff0b;
+}
+.phasma-editor-demo .phasma-wysiwyg-toolbar {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: 5px;
+  position: sticky; top: 0; z-index: 3;
+  padding: 11px 12px;
+  border-bottom: 1px solid #5b4e3c;
+  background: #24231f;
+}
+.phasma-editor-demo .phasma-wysiwyg-toolbar :is(button,select) {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 34px; min-height: 34px; padding: 5px 9px;
+  border: 1px solid transparent; border-radius: 5px;
+  background: transparent; color: #e7dece;
+  font-size: 12px; line-height: 1.25; cursor: pointer;
+}
+.phasma-editor-demo .phasma-wysiwyg-toolbar button:hover,
+.phasma-editor-demo .phasma-wysiwyg-toolbar button[aria-pressed="true"] {
+  border-color: #ad8952; background: #493923; color: #ffe2a2;
+}
+.phasma-editor-demo .phasma-wysiwyg-toolbar button:disabled {
+  opacity: .3; cursor: not-allowed;
+}
+.phasma-editor-demo .phasma-wysiwyg-toolbar button:focus-visible,
+.phasma-editor-demo .phasma-wysiwyg-toolbar select:focus-visible {
+  outline: 2px solid #e4bf81; outline-offset: 2px;
+}
+.phasma-editor-demo .phasma-wysiwyg-toolbar select {
+  min-width: 139px; border-color: #534738; background: #191918;
+}
+.phasma-editor-demo .phasma-wysiwyg-toolbar .phasma-wysiwyg-format-label {
+  display: flex; align-items: center; gap: 8px;
+  color: #cfb991; font-size: 11px;
+}
+.phasma-editor-demo .phasma-wysiwyg-toolbar-divider {
+  width: 1px; height: 25px; margin: 0 5px;
+  background: #625542;
+}
+.phasma-editor-demo .phasma-wysiwyg-editor {
+  min-height: 395px;
+  padding: clamp(21px, 3vw, 39px) clamp(21px, 5vw, 70px);
+  background: linear-gradient(180deg, #1d1f1f 0%, #191b1b 100%);
+}
+.phasma-editor-demo .phasma-wysiwyg-editor.tiptap,
+.phasma-editor-demo .phasma-wysiwyg-editor .tiptap,
+.phasma-editor-demo .phasma-wysiwyg-preview-body .tiptap {
+  display: block;
+  width: 100%;
+  min-height: 340px;
+  outline: 0;
+  color: #e8e2d8;
+  font: 15px/1.95 system-ui, -apple-system, "Segoe UI", sans-serif;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.phasma-editor-demo .phasma-wysiwyg-editor.tiptap {
+  cursor: text;
+  caret-color: #f4d49b;
+  border: 0;
+}
+.phasma-editor-demo .phasma-wysiwyg-editor.tiptap:focus,
+.phasma-editor-demo .phasma-wysiwyg-editor.tiptap:focus-visible,
+.phasma-editor-demo .phasma-wysiwyg-editor .tiptap:focus-visible { outline: 0; }
+.phasma-editor-demo .phasma-wysiwyg-editor.tiptap :is(p,div,h2,h3,ul,ol):focus-visible { outline: 0; }
+.phasma-editor-demo .phasma-wysiwyg-editor.tiptap > p:first-child { margin-top: 0; }
+.phasma-editor-demo .tiptap p { margin: 0 0 18px; }
+.phasma-editor-demo .tiptap :is(h2,h3) {
+  color: #ecd2a3;
+  font-family: Georgia, serif;
+  font-weight: 600;
+}
+.phasma-editor-demo .tiptap h2 {
+  margin: 27px 0 13px; font-size: clamp(23px, 2.4vw, 29px); line-height: 1.35;
+}
+.phasma-editor-demo .tiptap h3 {
+  margin: 23px 0 12px; font-size: clamp(18px, 2.2vw, 23px); line-height: 1.4;
+}
+.phasma-editor-demo .tiptap :is(ul,ol) {
+  margin: 9px 0 21px; padding-left: 26px;
+}
+.phasma-editor-demo .tiptap ul { list-style: disc; }
+.phasma-editor-demo .tiptap ol { list-style: decimal; }
+.phasma-editor-demo .tiptap li { margin: 4px 0; }
+.phasma-editor-demo .tiptap li p { margin: 0; }
+.phasma-editor-demo .tiptap a {
+  color: #f2ca80; text-decoration: underline; text-underline-offset: 4px;
+}
+.phasma-editor-demo .tiptap img {
+  display: block;
+  max-width: 100%;
+  width: auto;
+  height: auto;
+  max-height: 680px;
+  margin: 20px auto;
+  border: 1px solid #746348;
+  border-radius: 7px;
+  object-fit: contain;
+}
+.phasma-editor-demo .tiptap img.ProseMirror-selectednode { outline: 2px solid #e7bc76; outline-offset: 3px; }
+.phasma-editor-demo .tiptap blockquote {
+  margin: 22px 0; padding: 3px 18px; border-left: 3px solid #c5a46e;
+  color: #d4c6ad; background: #ffffff08;
+}
+.phasma-editor-demo .tiptap hr { margin: 25px 0; border: 0; border-top: 1px solid #746344; }
+.phasma-editor-demo .phasma-wysiwyg-hint {
+  margin: 12px 0 0; color: #b6aea2; font-size: 12px; line-height: 1.7;
+}
+.phasma-editor-demo #wys-editor-error {
+  margin: 12px 0 0; padding: 10px 13px;
+  border: 1px solid #8b4e45; border-radius: 5px;
+  background: #361e1b; color: #f0b5a7; font-size: 12px;
+}
+.phasma-editor-demo .phasma-wysiwyg-preview-body .tiptap {
+  min-height: 120px;
+}
+.phasma-editor-demo #wys-preview-heading .phasma-news-reader-title { margin-top: 9px; }
+.phasma-editor-demo #wys-preview-heading .phasma-news-article-date { margin-bottom: 25px; }
+.phasma-editor-demo #wys-preview-heading .phasma-news-article-cover {
+  max-width: 100%; height: auto; margin: 0 auto 30px;
+}
+.phasma-editor-demo #wys-preview-source {
+  display: grid; gap: 7px;
+  margin-top: 25px; padding-top: 20px; border-top: 1px solid #50493b;
+  color: #bcb09c; font-size: 12px; overflow-wrap: anywhere;
+}
+.phasma-editor-demo #wys-preview-source a { color: #e9c58b; }
+.phasma-editor-demo .phasma-wysiwyg-library-error {
+  padding: 18px 20px; border: 1px solid #89534a; border-radius: 8px;
+  color: #f1bfaa; background: #321f1b; font-size: 13px;
+}
+@media (max-width: 750px) {
+  .phasma-editor-demo .phasma-wysiwyg-editor { padding: 20px 16px; }
+  .phasma-editor-demo .phasma-wysiwyg-toolbar-divider { margin: 0 2px; }
+  .phasma-editor-demo .phasma-wysiwyg-toolbar .phasma-wysiwyg-format-label {
+    width: 100%; justify-content: space-between;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .phasma-editor-demo .tiptap { scroll-behavior: auto; }
+}

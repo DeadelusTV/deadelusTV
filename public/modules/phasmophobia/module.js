@@ -41,7 +41,56 @@
 
   // La playlist peut contenir des centaines de Shorts : limiter la galerie.
   // L'ordre affiché reste celui choisi dans la playlist YouTube.
-  const MAX_VISIBLE_SHORTS = 12;
+  const MAX_VISIBLE_SHORTS = 10;
+
+  // Carte permanente indépendante de la synchronisation YouTube.
+  function createPlaylistCard() {
+    const playlistLink = document.querySelector('#page-phasmophobia [data-link="phasmoShortsPlaylist"]');
+    if (!playlistLink) return null;
+
+    const link = document.createElement('a');
+    link.className = 'phasma-short-card phasma-short-link phasma-short-playlist';
+    link.setAttribute('role', 'listitem');
+    link.setAttribute('aria-label', 'Voir la playlist complète des Shorts Phasmophobia sur YouTube');
+    link.href = playlistLink.href;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+
+    const visual = document.createElement('span');
+    visual.className = 'phasma-short-placeholder';
+
+    const body = document.createElement('span');
+    body.className = 'phasma-short-playlist-content';
+
+    const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    icon.setAttribute('class', 'icon phasma-short-playlist-icon');
+    icon.setAttribute('aria-hidden', 'true');
+    const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+    use.setAttribute('href', '#i-youtube');
+    icon.appendChild(use);
+
+    const label = document.createElement('span');
+    label.className = 'phasma-short-playlist-label';
+    label.textContent = 'LA PLAYLIST';
+
+    const title = document.createElement('span');
+    title.className = 'phasma-short-playlist-title';
+    title.textContent = 'Tous les Shorts';
+
+    const arrow = document.createElement('span');
+    arrow.className = 'phasma-short-playlist-arrow';
+    arrow.setAttribute('aria-hidden', 'true');
+    arrow.textContent = '↗';
+
+    body.append(icon, label, title, arrow);
+    visual.appendChild(body);
+
+    const caption = document.createElement('span');
+    caption.className = 'phasma-short-caption';
+    caption.textContent = 'Voir la playlist complète sur YouTube';
+    link.append(visual, caption);
+    return link;
+  }
 
   function render(videos) {
     const fragment = document.createDocumentFragment();
@@ -80,11 +129,14 @@
       a.append(imageWrap, title);
       fragment.appendChild(a);
     }
+    // Après dix vidéos au maximum : la carte de playlist reste toujours en dernier.
+    const playlistCard = createPlaylistCard();
+    if (playlistCard) fragment.appendChild(playlistCard);
     track.replaceChildren(fragment);
-    status.textContent = track.childElementCount
+    status.textContent = displayed
       ? ''
       : 'Les miniatures apparaîtront après la première synchronisation YouTube.';
-    status.hidden = track.childElementCount > 0;
+    status.hidden = displayed > 0;
     track.hidden = track.childElementCount === 0;
     syncButtons();
   }
@@ -92,7 +144,17 @@
   prev.addEventListener('click', () => step(-1));
   next.addEventListener('click', () => step(1));
   track.addEventListener('scroll', syncButtons, { passive: true });
+  // En ouvrant les tutos, recalculer les flèches du carrousel.
+  const tutorialsPanel = track.closest('details');
+  if (tutorialsPanel) {
+    tutorialsPanel.addEventListener('toggle', () => {
+      if (tutorialsPanel.open) requestAnimationFrame(syncButtons);
+    });
+  }
   window.addEventListener('resize', syncButtons);
+  // Le routeur SPA affiche Phasmophobia après l'initialisation de ce module.
+  window.addEventListener('hashchange', () => requestAnimationFrame(syncButtons));
+  requestAnimationFrame(syncButtons);
   syncButtons();
 
   fetch('data/phasmo-shorts.json', { cache: 'no-store' })
@@ -107,9 +169,9 @@
       render(data.videos);
     })
     .catch(() => {
-      track.hidden = true;
+      // Sur erreur YouTube, garder le lien permanent vers la playlist.
+      render([]);
       status.hidden = false;
-      status.textContent = 'Impossible de charger les Shorts. La playlist reste accessible avec le bouton YouTube.';
-      syncButtons();
+      status.textContent = 'Impossible de charger les Shorts. La playlist reste accessible sur YouTube.';
     });
 })();
