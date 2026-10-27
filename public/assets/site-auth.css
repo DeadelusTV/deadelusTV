@@ -1,0 +1,41 @@
+/* Point d'entrée discret pour le compte commun DeadelusTV. */
+.site-account,
+.site-account * { box-sizing: border-box; }
+.site-account { position: relative; flex: 0 0 auto; z-index: 34; }
+.site-account [hidden] { display: none !important; }
+.site-account-toggle {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  color: #e3dac9; background: #1b1b1c; border: 1px solid #62523c;
+  border-radius: 30px; padding: 8px 12px; min-height: 38px;
+  font: 600 12px/1 Arial, sans-serif; white-space: nowrap; cursor: pointer;
+}
+.site-account-toggle:hover, .site-account-toggle[aria-expanded="true"] { border-color: #d9b781; background: #2c261e; }
+.site-account-toggle:focus-visible, .site-account-menu :focus-visible {
+  outline: 2px solid #d9b781; outline-offset: 3px;
+}
+.site-account-menu {
+  position: absolute; top: calc(100% + 12px); right: 0; width: min(280px, calc(100vw - 32px));
+  background: #1a1a1b; color: #f5e9d8; border: 1px solid #65523a;
+  box-shadow: 0 16px 45px #000b; border-radius: 10px; padding: 16px;
+  font: 13px/1.5 Arial, sans-serif;
+}
+.site-account-title { margin: 0 0 6px; color: #ebd2a1; font: 700 17px Georgia, serif; }
+.site-account-status { margin: 0 0 12px; color: #c9bdad; overflow-wrap: anywhere; }
+.site-account-action, .site-account-link {
+  display: flex; width: 100%; align-items: center; justify-content: center;
+  text-align: center; min-height: 38px; padding: 9px 11px;
+  border-radius: 6px; border: 1px solid #92734c;
+  color: #eddec7; background: #342d23; font: 600 12px/1.3 Arial, sans-serif;
+  text-decoration: none; cursor: pointer;
+}
+.site-account-action:hover, .site-account-link:hover { background: #4c3d2c; color: #fff4e4; }
+.site-account-action:disabled { opacity: .55; cursor: wait; }
+.site-account-link { margin-bottom: 9px; }
+.site-account-note { color: #e4b6a2; margin: 10px 0 0; font-size: 11px; }
+@media (max-width: 900px) {
+  .site-account { margin-left: auto; }
+}
+@media (max-width: 600px) {
+  .site-account-toggle { width: 39px; height: 39px; padding: 7px; }
+  .site-account-toggle-label { display: none; }
+}
