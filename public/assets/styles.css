@@ -450,18 +450,20 @@ dialog{color:var(--text);background:#19191a;border:1px solid #59513e;border-radi
 .tiktok-only .tiktok-motion::after { display: none; }
 .tiktok-only .tiktok-motion > span {
   position: absolute;
-  inset: 0;
+  /* Calques 9:16 au centre du panneau élargi : aucun étirement horizontal. */
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  right: auto;
+  height: 100%;
+  width: auto;
+  aspect-ratio: 9 / 16;
+  translate: -50% 0;
   display: block;
   pointer-events: none;
   background-repeat: no-repeat;
   background-position: center;
   background-size: 100% 100%;
-}
-/* Le panneau s'élargit, mais chaque logo reste centré et à son échelle d'origine. */
-.tiktok-only .tiktok-motion__deadelus,
-.tiktok-only .tiktok-motion__logo,
-.tiktok-only .tiktok-motion__echo {
-  background-size: auto 100%;
 }
 @media (min-width: 1101px) {
   /* Ne pas agrandir la carte ni rogner la zone de texte sur les écrans étroits. */
