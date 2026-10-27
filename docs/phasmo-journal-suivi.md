@@ -529,3 +529,19 @@ Décision : la rubrique **News devient un chantier prioritaire**, après validat
 - Analyse syntaxique des scripts modifiés ; correspondance de toutes les références de contrôles HTML ; **30 vérifications unitaires/statiques** sur les modèles et la structure : création/renommage/mouvement, UUID stables, archive et descendants invisibles, refus suppression dossier non vide, prévention cycles et doublons, ordre par dossier, migration V5 et roundtrip JSON v6, modèle d'image inchangé.
 - **Recette réelle navigateur NON encore validée**. Scénario à faire : exporter JSON ; créer une sous-catégorie dans « Entités », y déplacer la fiche de test ; créer une sous-catégorie enfant et une nouvelle fiche ; passer en mode Test puis vérifier onglet Entités → dossier → sous-dossier → fiche → flèches → retour ; archiver puis restaurer un dossier ; vérifier F5 et export/import JSON V6 ; tester les liens et calques/images de la fiche après déplacement entre onglets.
 - Limites assumées : catégories racines physiques encore fixes (cinq), mise en page et capacité visuelle de la liste inchangées ; pagination, recherche, fil d'Ariane explicite dans les pages, édition collaborative, rôles RLS, publication Supabase et refonte simplifiée de l'atelier sont des étapes ultérieures. Une arborescence profonde ou de très nombreuses fiches nécessitera des améliorations de lecture avant publication.
+
+
+### 27/10/2026 — Fiches toujours accessibles dans la liste générale malgré le classement
+
+**Retour validé par l'utilisatrice** : les sous-catégories dynamiques fonctionnent en prévisualisation, mais une fiche comme Willow doit **rester directement accessible dans la liste principale de son onglet Maps**, même lorsqu'elle est rangée dans « Petites cartes ». La sous-catégorie est un parcours secondaire et optionnel, non un déplacement exclusif de la fiche hors du sommaire de la catégorie.
+
+**Correctif intégré dans `journal-editor.html` sur `developpement/phasmo-v2`** :
+- Liste racine des cinq catégories : afficher toutes les fiches visibles de la catégorie, y compris celles classées dans une sous-catégorie enfant ou plus profonde, en plus des liens vers les sous-catégories de premier niveau. Le sommaire global affichait déjà toutes les fiches.
+- Dans une sous-catégorie : ne montrer que ses fiches directes et ses sous-catégories enfants, sans changer l'arborescence enregistrée.
+- Ouverture directe d'une fiche depuis la liste générale : mémoriser que le visiteur vient de la racine de l'onglet, pour le bouton « Retour » et les flèches précédent/suivant. Ouverture depuis le dossier : conserver la navigation locale à ce dossier.
+- Les archives restent invisibles partout, y compris lorsqu'un ancêtre de la fiche est archivé.
+- Aucune duplication de fiche, aucun changement de `folderId`, de l'UUID, des calques, du fond, des onglets, ni de Supabase ; les JSON V6 existants restent compatibles.
+
+**Contrôles de régression** : 18 vérifications sur une arborescence simulée « Maps → Petites cartes → Willow » avec une fiche racine, un dossier enfant, clics, retours, flèches, archives, restauration et syntaxe du script. **Recette réelle du correctif à confirmer dans le navigateur**.
+
+**Décision de mise en page** : l'utilisatrice souhaite positionner visuellement « Petites cartes » à part, elle-même dans l'atelier ; ne pas imposer d'emplacement ni refaire le visuel à sa place. Limite actuelle : le lien de sous-catégorie et les noms des fiches sont générés dans le même calque « Liste cliquable des fiches ». Le réglage du positionnement indépendant des rubriques demandera un calque / contrôle séparé à prévoir dans l'éditeur ; cette fonctionnalité de placement n'a pas été ajoutée par ce correctif.
