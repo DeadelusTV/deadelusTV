@@ -441,3 +441,10 @@ Décision : la rubrique **News devient un chantier prioritaire**, après validat
 - Le schéma actuel de l'atelier expose cinq onglets physiques. L'ajout de nouveaux noms dans ces catégories existe dans le prototype, mais **la création de catégories/sous-catégories supplémentaires et le stockage de fiches différentes par identifiant** restent à développer, ainsi que la gestion des versions, l'archivage, les médias et la publication.
 
 **Recette proposée :** sur la prévisualisation Phasmo V2, ouvrir Livre puis carnet, essayer les cinq onglets, sommaire, fiches et flèches ; ouvrir directement `/modules/phasmophobia/journal-editor.html` pour importer/exporter un JSON et prévisualiser ses placements dans le même navigateur. Vérifier bureau/mobile et ne pas tenter de publier le prototype sur `main` avant la partie RLS / données.
+
+
+#### Test local complémentaire (sans réseau ni déploiement)
+
+- Après les contrôles statiques, le moteur original V4.3, avec les adaptations `viewer` de l'intégration et la police distante neutralisée pour le test, a été exécuté dans Chromium à partir du HTML fourni (injection locale de document, sans navigation vers le site).
+- Observé : **image d'origine chargée**, **18 calques visibles sur le sommaire**, mode « Test des clics » actif, clic sur l'onglet ENTITÉS → liste affichée avec 30 entrées de démonstration, clic sur le premier nom → fiche Aswang, reclic onglet ENTITÉS → retour à la liste. **Aucune exception JavaScript** au cours de ce scénario.
+- Limites du test : cette exécution reconstruit localement la logique adaptée, **pas** la branche déployée avec iframe réel, et ne valide ni les permissions Supabase, ni mobile, ni la sauvegarde partagée. Le serveur HTTP localhost est inaccessible au navigateur de test dans cet environnement ; validation réelle de la branche nécessaire.
