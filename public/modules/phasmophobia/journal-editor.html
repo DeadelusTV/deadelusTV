@@ -273,6 +273,36 @@ html.journal-viewer #book .layer{cursor:default}
           <button class="btn small" id="journal-official-prepare" type="button">Préparer une version officielle (privée)</button>
         </div>
         <p class="tip">Cette étape ne publie rien et ne transfère aucun média vers le bucket public. La véritable mise en ligne reste verrouillée côté Supabase jusqu'à validation explicite.</p>
+        <div class="field" id="journal-official-admin-commands">
+          <strong>Commandes administrateur · publication et retour arrière</strong>
+          <p id="journal-admin-commands-status" class="tip" role="status" aria-live="polite">Chargement des droits et de l'historique officiel…</p>
+          <div class="field">
+            <label for="journal-official-rights-confirm">
+              <input type="checkbox" id="journal-official-rights-confirm">
+              Je confirme que tous les textes, images et polices du candidat disposent des droits nécessaires pour une diffusion publique.
+            </label>
+            <label for="journal-official-publish-phrase">Confirmation de publication</label>
+            <input id="journal-official-publish-phrase" type="text" autocomplete="off" spellcheck="false" placeholder="PUBLIER-OFFICIELLEMENT">
+            <button class="btn small" id="journal-official-publish" type="button" disabled>Publier officiellement</button>
+          </div>
+          <div class="field">
+            <strong>Historique et restauration</strong>
+            <label for="journal-official-history">Ancienne version officielle</label>
+            <select id="journal-official-history"><option value="">Aucune publication officielle enregistrée</option></select>
+            <label for="journal-official-restore-phrase">Confirmation de restauration</label>
+            <input id="journal-official-restore-phrase" type="text" autocomplete="off" spellcheck="false" placeholder="RESTAURER-OFFICIELLEMENT">
+            <button class="btn small" id="journal-official-restore" type="button" disabled>Restaurer cette version</button>
+          </div>
+          <div class="field">
+            <strong>Mise hors ligne d'urgence</strong>
+            <p class="tip">Ce bouton masque immédiatement une publication en ligne, même si de nouvelles publications sont verrouillées. Il ne supprime pas l'historique ni les médias déjà publiés.</p>
+            <button class="btn small" id="journal-official-offline" type="button" disabled>Mettre le carnet hors ligne</button>
+          </div>
+          <div class="buttons">
+            <button class="btn small" id="journal-official-commands-refresh" type="button">Actualiser les commandes et l'historique</button>
+          </div>
+          <p class="tip">La mise en ligne et la restauration ne seront activées qu'après validation explicite et ouverture du verrou sur le serveur, jamais par le formulaire seul.</p>
+        </div>
         <div class="field" id="journal-staging-transfer-controls">
           <strong>Test technique · Storage privé uniquement</strong>
           <p class="tip" id="journal-staging-transfer-status" role="status" aria-live="polite">Copie physique temporaire de l'image et de la police du candidat préparé, vérification SHA-256, puis nettoyage. Aucun média publié.</p>
@@ -1361,6 +1391,7 @@ init();
 <script src="journal-preview-sync.js" defer></script>
 <script src="journal-preview-publish.js" defer></script>
 <script src="journal-official-prepare.js" defer></script>
+<script src="journal-official-commands.js" defer></script>
 <script src="journal-storage-dryrun-ui.js" defer></script>
 <script src="journal-preview-publication-viewer.js" defer></script>
 <script src="journal-publication-viewer.js" defer></script>
