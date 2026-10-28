@@ -92,3 +92,9 @@ Le bucket `phasmo-news-draft-images` est **privé** ; `phasmo-news-published-ima
 - La barre de mise en forme reste en haut de l’écran pendant le défilement dans l’article : le conteneur utilise overflow:clip plutôt que hidden, qui empêchait le sticky de suivre le défilement de la page. Le focus des commandes conserve la position de défilement.
 - Compatibilité après rechargement : le premier paragraphe d’un élément de liste est rendu directement dans le li, tout en conservant les sous-listes et les autres paragraphes. Dans Chrome, le p enveloppant conduisait la commande indent à créer un blockquote visuel au lieu d’une sous-liste, dont le retrait disparaissait à la sauvegarde. Le contenu JSON et les mises en forme restent conservés ; aucune écriture directe en base.
 - Ressources de l’éditeur versionnées pour charger le même moteur et les mêmes styles après une mise à jour. Le cas exact du brouillon de Mattarix reste à confirmer avec son retour ; aucune lecture de ses métadonnées d’authentification n’a été effectuée.
+
+## Lecture publique : largeur et listes — 28 octobre 2026
+
+- Le corps de l’article public utilise la même largeur intérieure que la couverture ; la limite de 800 px est conservée sur les figures du corps, centrées, pour ne pas agrandir les images.
+- Listes et sous-listes publiques : interligne à 1,6, marges entre éléments à 4 px, suppression de la marge de paragraphe de 23 px à l’intérieur des puces et espacement réduit des sous-listes. Les paragraphes successifs d’un même élément conservent une petite séparation.
+- Modifications limitées au lecteur public ; styles et contenu de l’éditeur inchangés. Feuille news.css versionnée dans l’accueil pour charger le nouvel habillage.

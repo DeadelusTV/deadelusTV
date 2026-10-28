@@ -202,7 +202,8 @@
   margin: 20px 0 31px;
 }
 #page-phasmophobia .phasma-news-article {
-  max-width: 800px;
+  width: 100%;
+  max-width: none;
   margin: 0 auto;
   color: #dfd9d0;
   font-size: clamp(14px, 1.7vw, 16px);
@@ -219,12 +220,23 @@
   font: 600 clamp(22px, 2.6vw, 29px)/1.3 Georgia, serif;
 }
 #page-phasmophobia .phasma-news-article-list {
-  margin: 9px 0 29px;
+  margin: 9px 0 22px;
   padding-left: 23px;
+  line-height: 1.6;
 }
-#page-phasmophobia .phasma-news-article-list li { margin-bottom: 8px; }
+#page-phasmophobia .phasma-news-article-list li { margin: 4px 0; }
+#page-phasmophobia .phasma-news-article-list li > .phasma-news-article-paragraph {
+  margin: 0;
+}
+#page-phasmophobia .phasma-news-article-list li > .phasma-news-article-paragraph + .phasma-news-article-paragraph {
+  margin-top: 6px;
+}
+#page-phasmophobia .phasma-news-article-list .phasma-news-article-list {
+  margin: 6px 0 8px;
+}
 #page-phasmophobia .phasma-news-article-figure {
-  margin: 28px 0;
+  max-width: 800px;
+  margin: 28px auto;
 }
 #page-phasmophobia .phasma-news-article-figure img {
   display: block;
