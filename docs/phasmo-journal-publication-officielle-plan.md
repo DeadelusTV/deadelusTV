@@ -119,3 +119,14 @@ Le 28 octobre 2026, les deux essais de la fonction `phasmo-journal-storage-test`
 - **Supprimer**, en précisant lors de la conception finale *ce qui est supprimé* (par exemple un brouillon, et non l'historique ou les médias d'anciennes versions) et avec confirmation.
 
 **Principe validé :** l'utilisateur ne doit pas gérer à la main les états intermédiaires « publication de test / candidat privé / vérification Storage / réservation / confirmation technique » dans le panneau final. Ces contrôles restent automatiques côté serveur ; les outils de diagnostic peuvent rester accessibles séparément aux administrateurs si nécessaire. **Ne pas simplifier avant la fin de la recette complète.** Aucun travail sur `main` pour cette décision.
+
+
+## 12. Contrôles supplémentaires du panneau administrateur
+
+Contrôles supplémentaires réalisés le 28 octobre 2026, sur `developpement/phasmo-v2`, en conservant la future simplification de l'interface comme décision validée.
+
+- **13 simulations du nouveau panneau** : absence de publication et d'historique, verrou fermé, confirmation insuffisante, réservation en cours, mise hors ligne d'urgence disponible seulement avec publication live, révocation du verrou après chargement, retour HTTP 423, refus sans session Twitch et absence totale d'appel de mutation lorsqu'on vérifie uniquement le statut. Les actions de publication/restauration ne sont simulées qu'avec un statut fictif ouvert ; le verrou réel n'a pas changé.
+- **3 tests sur les RPC réellement déployées** `phasmo_journal_reserve_official_release`, `phasmo_journal_commit_official_release` et `phasmo_journal_restore_official_release` : avec le verrou fermé, toutes refusent bien l'opération (code SQL `42501`). Tests exécutés dans une transaction terminée par `ROLLBACK`.
+- Contrôle de l'état réel au début des essais : **0 publication officielle, 0 historique officiel, 0 fichier public, verrou fermé, aucune réservation**, candidat privé test n°8 / révision 12 inchangé.
+
+**Étape restante à valider dans le navigateur admin :** depuis l'éditeur DEV (onglet 7), cliquer « Actualiser les commandes et l'historique » ; attendre « Verrou public fermé », candidat test n°8/révision 12, aucune version officielle et historique vide. Vérifier que `Publier officiellement`, `Restaurer cette version` et `Mettre le carnet hors ligne` restent grisés, y compris après saisie de la confirmation de publication. Ne pas ouvrir le verrou pour cette recette.
