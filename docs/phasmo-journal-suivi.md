@@ -671,3 +671,12 @@ Fichiers de branche : `docs/phasmo-journal-preview-schema-v1.sql` (SQL appliqué
 **Recette utilisateur recommandée** : une fois Cloudflare à jour, charger le brouillon partagé (et vérifier le contenu initial), sélectionner un calque image et importer une petite PNG/WebP, enregistrer sur Supabase, confirmer, F5, recharger le brouillon : image toujours visible. Vérifier le nouveau fichier dans Supabase Storage → bucket `phasmo-journal-draft-assets`. Refaire une sauvegarde sans modifier l'image : pas de remplacement ni double stockage. Publier ensuite **pour test privé** à partir de cette révision et ouvrir « Voir le livre publié en test » : l'image doit s'afficher. Tester une police personnalisée seulement si l'utilisatrice en utilise. Vérifier que le JSON local conserve des chaînes data:base64 et que le JSON distant contient des références. S'assurer que le navigateur conserve le brouillon local si l'upload est refusé.
 
 **Encore hors périmètre** : bucket public de publication production, exposition publique du carnet, fusion sur `main`, suppression automatique des médias orphelins, conversions futures pour un accès public. Les médias du bucket privé ne peuvent pas être servis directement aux visiteurs anonymes, ce qui est voulu pour l'instant.
+
+
+### 28/10/2026 — Validation du premier média réel dans Storage
+
+**Retour utilisateur** : « Parfait l'image apparait ». L'utilisatrice confirme l'affichage de l'image après la mise en place de Supabase Storage pour le carnet V7.
+
+**Vérification Supabase en lecture seule** : bucket privé `phasmo-journal-draft-assets` contenant **1 objet image** et **0 police** ; le brouillon partagé `preview` a atteint la **révision 7**, avec **1 image de calque référencée par `journal-storage://` dans le JSON distant**, et non un gros bloc base64. Cela valide le transfert d'un média réel au stockage distant et le bon enregistrement de sa référence. La phrase « l'image apparait » ne permet pas à elle seule de conclure que le test F5/rechargement ou la visionneuse de la publication privée ont été effectués : ces deux vérifications visuelles restent à confirmer séparément. Un test de police importée et la vérification de non-duplication lors de nouvelles sauvegardes restent également ouverts.
+
+**Périmètre préservé** : `developpement/phasmo-v2` et bucket dédié, sans fusion `main` ni activation d'un Storage public.
