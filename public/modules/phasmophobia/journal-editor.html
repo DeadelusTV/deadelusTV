@@ -424,32 +424,103 @@ function performAction(action,target,entry){
 }
 function drawList(node,e){
  const linked=e.source&&state.groups[e.source];
+ const modeName=e.listMode||(linked?'records':'manual');
  const inCategory=linked&&view.page==='category:'+e.source;
- const entries=inCategory?[
-  ...(view.folderId?[{title:'← Retour',kind:'back'}]:[]),
-  ...FOLDERS.list(state.folders,e.source,view.folderId).map(f=>({title:'▸ '+f.title,id:f.id,kind:'folder'})),
-  ...(view.folderId?folderRecords(e.source,view.folderId):recordList(e.source))
-    .map(r=>({title:r.title,id:r.id,kind:'record'}))
- ]:linked?recordList(e.source).map(r=>({title:r.title,id:r.id,kind:'record'})):
-   e.text.split('\n').map(x=>x.trim()).filter(Boolean).map(title=>({title,id:null,kind:'record'}));
- const rows=Math.max(1,Math.ceil(entries.length/Math.max(1,e.columns)));
+ const back=modeName==='folders'&&inCategory&&!!view.folderId;
+ let entries=[];
+ if(linked&&modeName==='folders'){
+  entries=inCategory?FOLDERS.list(state.folders,e.source,view.folderId)
+    .map(f=>({title:f.title,id:f.id,kind:'folder'})):[];
+ }else if(linked&&modeName==='records'){
+  const records=inCategory&&view.folderId?folderRecords(e.source,view.folderId):recordList(e.source);
+  entries=records.map(r=>({title:r.title,id:r.id,kind:'record'}));
+ }else{
+  entries=String(e.text||'').split('\n').map(x=>x.trim()).filter(Boolean)
+    .map(title=>({title,id:null,kind:'manual'}));
+ }
+ // Les deux listes sont autonomes. Un calque fiches ne contient jamais de lien dossier.
+ // Chaque page possède sa propre pagination, qui ne déplace aucun calque.
+ node.classList.add('paginated-list');
+ node.style.height=e.h+'%';node.style.minHeight='0';
+ const columns=Math.max(1,Math.min(6,Math.round(Number(e.columns)||1)));
+ let canvas=null;
+ try{canvas=document.createElement('canvas').getContext('2d');}catch{}
+ if(canvas)canvas.font=(e.bold?'700 ':'')+e.size+'px '+(e.font||'Kalam');
+ const maxHeight=e.h/100*1024-(back?Math.max(25,e.size*.85):0);
+ const pages=PAGINATION.paginate(entries,{columns,width:e.w/100*1536,
+  height:maxHeight,size:e.size,line:e.line,
+  measure:canvas?text=>canvas.measureText(text).width:null});
+ const key=[view.page,view.folderId||'root',view.entryId||'none',e.id].join('|');
+ const index=Math.max(0,Math.min(pages.length-1,listPagePositions.get(key)||0));
+ listPagePositions.set(key,index);
+ if(back){
+  const btn=document.createElement('button');btn.className='list-return';btn.type='button';
+  btn.textContent='← '+(FOLDERS.find(state.folders,view.folderId)?.parentId?
+    folderLabel(e.source,FOLDERS.find(state.folders,view.folderId).parentId):state.groups[e.source].label);
+  btn.style.cssText='color:inherit;font:inherit;font-size:.8em;text-align:left;background:none;border:0;cursor:pointer;min-height:25px';
+  btn.tabIndex=mode==='test'?0:-1;
+  btn.addEventListener('click',event=>{if(mode==='test'){event.stopPropagation();performAction('back');}});
+  node.append(btn);
+ }
+ const current=pages[index]||[];
+ const rows=Math.max(1,Math.ceil(current.length/columns));
  const list=document.createElement('div');list.className='words';
  list.style.gridTemplateRows='repeat('+rows+',auto)';
- list.style.gridTemplateColumns='repeat('+e.columns+',minmax(0,1fr))';
- entries.forEach(entry=>{
-  const btn=document.createElement('button');btn.className='word';btn.type='button';btn.textContent=entry.title;
+ list.style.gridTemplateColumns='repeat('+columns+',minmax(0,1fr))';
+ for(const entry of current){
+  const btn=document.createElement('button');btn.className='word';btn.type='button';
+  btn.textContent=(entry.kind==='folder'?'▸ ':'')+entry.title;
   btn.tabIndex=mode==='test'?0:-1;
+  if(entry.kind==='folder')btn.setAttribute('aria-label','Ouvrir la rubrique '+entry.title);
   btn.addEventListener('click',ev=>{
    if(mode!=='test')return;ev.stopPropagation();
    const group=e.source||view.group;
    if(!group||!state.groups[group])return;
-   if(entry.kind==='back')return performAction('back');
    if(entry.kind==='folder')return setView('category:'+group,null,entry.id);
    setView('detail:'+group,entry.id||entry.title,view.folderId);
   });
   list.append(btn);
- });
+ }
  node.append(list);
+ if(pages.length>1){
+  const pager=document.createElement('div');pager.className='list-pagination';
+  const before=document.createElement('button'),after=document.createElement('button'),label=document.createElement('span');
+  before.type=after.type='button';
+  before.textContent='‹';after.textContent='›';
+  before.title='Page précédente';after.title='Page suivante';
+  before.setAttribute('aria-label',e.name+' : page précédente');
+  after.setAttribute('aria-label',e.name+' : page suivante');
+  label.textContent=(index+1)+' / '+pages.length;
+  label.setAttribute('aria-label','Page '+(index+1)+' sur '+pages.length);
+  before.disabled=index===0||mode!=='test';
+  after.disabled=index===pages.length-1||mode!=='test';
+  const move=(delta,ev)=>{
+   if(mode!=='test')return;ev.stopPropagation();
+   listPagePositions.set(key,index+delta);
+   renderLayers();
+   const next=surface.querySelector('[data-id="'+e.id+'"] .list-pagination button'+(delta<0?':first-child':':last-child'));
+   next?.focus({preventScroll:true});
+  };
+  before.addEventListener('click',ev=>move(-1,ev));
+  after.addEventListener('click',ev=>move(1,ev));
+  pager.append(before,label,after);node.append(pager);
+ }
+}
+function drawBreadcrumb(node,e){
+ const group=view.group;
+ if(!group)return;
+ const groupButton=document.createElement('button');groupButton.type='button';
+ groupButton.textContent=state.groups[group].label;
+ groupButton.addEventListener('click',ev=>{if(mode==='test'){ev.stopPropagation();setView('category:'+group);}});
+ groupButton.tabIndex=mode==='test'?0:-1;node.append(groupButton);
+ const trail=FOLDERS.lineage(state.folders,view.folderId).filter(f=>f.group===group);
+ for(const folder of trail){
+  const divider=document.createElement('span');divider.textContent='›';node.append(divider);
+  const link=document.createElement('button');link.type='button';link.textContent=folder.title;
+  link.addEventListener('click',ev=>{if(mode==='test'){ev.stopPropagation();setView('category:'+group,null,folder.id);}});
+  link.tabIndex=mode==='test'?0:-1;node.append(link);
+ }
+ if(view.entryId){const label=document.createElement('span');label.textContent='› '+view.name;node.append(label);}
 }
 function applyLayerStyles(node,e){
  node.style.left=e.x+'%';node.style.top=e.y+'%';node.style.width=e.w+'%';
