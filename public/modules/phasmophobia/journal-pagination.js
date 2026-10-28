@@ -24,13 +24,39 @@
   }
   return lines;
  }
+ // Les colonnes partagent l'espace libre après avoir réservé la largeur des noms.
+ // Le même calcul sert au rendu et à la pagination, y compris pour les rubriques.
+ function listLayout(slice,columns,widthPx,fontSize,measure,columnGap=12){
+  const rows=Math.max(1,Math.ceil(slice.length/columns));
+  const width=Math.max(1,widthPx-4); // padding du calque : 2 px de chaque côté
+  const len=text=>measure?measure(text):String(text).length*Math.max(8,fontSize)*.58;
+  const widths=new Array(columns).fill(4);
+  slice.forEach((entry,i)=>{
+   const title=(entry.kind==='folder'?'▸ ':'')+entry.title;
+   const column=Math.floor(i/rows);
+   widths[column]=Math.max(widths[column],Math.ceil(len(title))+6);
+  });
+  const required=widths.reduce((a,b)=>a+b,0);
+  let gap=clamp(Number(columnGap)||0,0,80);
+  if(required<=width){
+   // Un grand espace ne doit pas couper un nom alors qu'il tient dans le calque.
+   if(columns>1)gap=Math.min(gap,(width-required)/(columns-1));
+   const extra=Math.max(0,(width-required-gap*(columns-1))/columns);
+   return {rows,widths:widths.map(w=>w+extra),columnGap:gap,singleLine:true};
+  }
+  // Zone réellement trop étroite : conserver un retour à la ligne mesuré.
+  gap=Math.min(gap,Math.max(0,(width-columns*10)/Math.max(1,columns-1)));
+  return {rows,widths:new Array(columns).fill(Math.max(1,(width-gap*(columns-1))/columns)),columnGap:gap,singleLine:false};
+ }
  function measuredHeight(slice,columns,widthPx,fontSize,lineHeight,measure,rowGap=0,columnGap=12){
   if(!slice.length)return 0;
-  const rows=Math.ceil(slice.length/columns);
-  const usableWidth=Math.max(15,(widthPx-(columns-1)*columnGap)/columns-6);
+  const layout=listLayout(slice,columns,widthPx,fontSize,measure,columnGap);
+  const rows=layout.rows;
   const rowHeights=new Array(rows).fill(0);
   slice.forEach((entry,i)=>{
-   const lines=wrappedLines(entry.title,usableWidth,fontSize,measure);
+   const title=(entry.kind==='folder'?'▸ ':'')+entry.title;
+   const usableWidth=Math.max(1,layout.widths[Math.floor(i/rows)]-4);
+   const lines=layout.singleLine?1:wrappedLines(title,usableWidth,fontSize,measure);
    const row=i%rows;
    rowHeights[row]=Math.max(rowHeights[row],lines*fontSize*lineHeight+4);
   });
@@ -58,13 +84,14 @@
    let count=1;
    const limit=Math.min(rows.length-offset,240);
    for(let test=2;test<=limit;test++){
-    if(measuredHeight(rows.slice(offset,offset+test),cols,width,size,line,measure,rowGap,columnGap)>budget)break;
-    count=test;
+    // Changer le nombre de lignes change aussi la répartition en colonnes :
+    // un candidat plus grand peut mieux tenir que le précédent.
+    if(measuredHeight(rows.slice(offset,offset+test),cols,width,size,line,measure,rowGap,columnGap)<=budget)count=test;
    }
    pages.push(rows.slice(offset,offset+count));
    offset+=count;
   }
   return pages;
  }
- window.PHASMO_JOURNAL_PAGINATION=Object.freeze({paginate,wrappedLines,measuredHeight});
+ window.PHASMO_JOURNAL_PAGINATION=Object.freeze({paginate,wrappedLines,measuredHeight,listLayout});
 })();

@@ -906,3 +906,17 @@ Publication/dépublication : parcours serveur conservé, toujours soumis au verr
 **Tests hors navigateur :** analyse syntaxique réussie des 4 fichiers impliqués ; 20 contrôles d'intégration HTML/JS (IDs uniques, champs associés, conservation des listes/pagination, accès historique, visibilité des outils techniques) et 10 scénarios simulés sur les boutons. État Supabase contrôlé après les commits : brouillon source révision 12, candidat test n°8/révision 12 intact, 0 publication, 0 média public, `activation_enabled=false`. **À confirmer sur DEV avec compte Twitch :** rechargement complet de l'atelier, ouverture/fermeture des panneaux, contrôle des deux espacements sur une liste, liste des entités non éditable directement mais fiche renommable dans Organisation des pages, menu historique, chargement/sauvegarde privé, aperçu en mode Test, publication bien verrouillée.
 
 **Docs** : voir `docs/phasmo-journal-publication-officielle-plan.md` section 14. Aucune modification de `main`.
+
+
+
+### 28/10/2026 — Interface validée ; correction des noms coupés dans les listes
+
+**Validation utilisatrice :** interface actuelle validée pour le moment. Défaut signalé ensuite sur les noms : « Capteur sonore », « Boîte à musique », « Patte de singe », et même des mots comme « Enregistreur » se coupent malgré l'espace disponible et décalent les autres colonnes.
+
+**Cause :** colonnes CSS égales, espace horizontal soustrait à leur largeur, coupure autorisée au milieu des mots, hauteur de ligne partagée entre colonnes.
+
+**Correctif DEV :** largeur de chaque colonne calculée selon ses noms réels (préfixes de sous-menus et styles gras/italique compris), puis partage de l'espace restant. Lorsque les noms tiennent dans la largeur totale, ils restent sur une ligne ; l'espace entre colonnes est plafonné à la place disponible plutôt que de provoquer une coupure. Le nombre de colonnes choisi est conservé. Si la zone est réellement trop étroite, le retour à la ligne reste possible pour éviter les chevauchements. Le même calcul est utilisé par le rendu et la pagination ; les candidats de pagination sont tous examinés car la redistribution en colonnes peut améliorer un candidat plus grand. Recalcul après disponibilité des polices.
+
+**Vérifications hors navigateur :** syntaxe JS/HTML valide ; 418 contrôles de largeurs et de pagination avec les libellés signalés, 1/2/3/4/6 colonnes, zones étroites/larges et espacements 0/12/56/80 px : aucune entrée perdue, largeur contenue, budget vertical respecté hors entrée unique trop grande. Validation visuelle du correctif à effectuer après déploiement DEV.
+
+Aucune modification du brouillon, de l'historique, des médias, des verrous de publication ou de `main`.
