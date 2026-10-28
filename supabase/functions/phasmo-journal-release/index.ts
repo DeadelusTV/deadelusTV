@@ -183,39 +183,61 @@ Deno.serve(async req=>{
        preview.data.release_number!==c.source_preview_release||
        JSON.stringify(preview.data.payload)!==JSON.stringify(source))
       throw Error('La publication preview a changé : reprépare la version officielle.');
-    const history=await client.from('phasmo_journal_production_publication_history')
-      .select('release_number').order('release_number',{ascending:false}).limit(1);
-    if(history.error)throw Error('Historique des publications indisponible.');
-    const official=await client.from('phasmo_journal_production_publications')
-      .select('release_number').eq('stage','production').maybeSingle();
-    if(official.error)throw Error('Publication actuelle indisponible.');
-    const release=Math.max(Number(history.data?.[0]?.release_number||0),
-      Number(official.data?.release_number||0))+1;
-    const publicPayload=publishedPayload(source,manifest,release);
-    // Assets are only copied AFTER the server-side activation gate is opened.
-    // Uploaded public files are immutable; failed finalization leaves unreferenced
-    // public files to audit manually, never an overwritten previous release.
-    for(const asset of manifest){
-      const publicPath=asset.kind+'/releases/'+release+'/'+asset.hash+'.'+asset.extension;
-      const downloaded=await client.storage.from(PRIVATE_BUCKET).download(asset.path);
-      if(downloaded.error||!downloaded.data)throw Error('Média source indisponible.');
-      const uploaded=await client.storage.from(PUBLIC_BUCKET).upload(publicPath,downloaded.data,
-        {contentType:asset.mime,cacheControl:'31536000',upsert:false});
-      if(uploaded.error){
-        // If this release attempt is retried, accept only an existing identical object.
-        const exists=await client.storage.from(PUBLIC_BUCKET).download(publicPath);
-        if(exists.error||!exists.data)throw Error('Envoi public refusé : '+uploaded.error.message);
-        const check=new Uint8Array(await crypto.subtle.digest('SHA-256',await exists.data.arrayBuffer()));
-        if(Array.from(check,b=>b.toString(16).padStart(2,'0')).join('')!==asset.hash)
-          throw Error('Un fichier public de ce nom est différent : publication bloquée.');
-      }
-    }
-    const committed=await client.rpc('phasmo_journal_commit_official_release',{
+    // Reservation exclusive avant copie, protege aussi contre 2 activations simultanees.
+    const token=crypto.randomUUID();
+    const reserved=await client.rpc('phasmo_journal_reserve_official_release',{
       p_actor:actor,p_source_revision:c.source_preview_revision,
-      p_source_release:c.source_preview_release,p_public_payload:publicPayload
+      p_source_release:c.source_preview_release,p_claim_token:token
     });
-    if(committed.error)throw Error('Validation atomique refusée : '+committed.error.message);
-    return answer({ok:true,published:committed.data});
+    if(reserved.error||!Array.isArray(reserved.data)||reserved.data.length!==1)
+      throw Error('Reservation exclusive refusée : '+(reserved.error?.message||'réponse incorrecte'));
+    const release=Number(reserved.data[0].release_number);
+    if(!Number.isSafeInteger(release)||release<1)throw Error('Numéro de release réservé invalide.');
+    const uploaded:string[]=[];
+    try {
+      const publicPayload=publishedPayload(source,manifest,release);
+      for(const asset of manifest){
+        const publicPath=asset.kind+'/releases/'+release+'/'+asset.hash+'.'+asset.extension;
+        const downloaded=await client.storage.from(PRIVATE_BUCKET).download(asset.path);
+        if(downloaded.error||!downloaded.data)throw Error('Média source indisponible.');
+        const sha=new Uint8Array(await crypto.subtle.digest('SHA-256',await downloaded.data.arrayBuffer()));
+        if(Array.from(sha,b=>b.toString(16).padStart(2,'0')).join('')!==asset.hash)
+          throw Error('Empreinte du média source incorrecte.');
+        const result=await client.storage.from(PUBLIC_BUCKET).upload(publicPath,downloaded.data,
+          {contentType:asset.mime,cacheControl:'31536000',upsert:false});
+        if(result.error){
+          const exists=await client.storage.from(PUBLIC_BUCKET).download(publicPath);
+          if(exists.error||!exists.data)throw Error('Transfert public refusé : '+result.error.message);
+          const check=new Uint8Array(await crypto.subtle.digest('SHA-256',await exists.data.arrayBuffer()));
+          if(Array.from(check,b=>b.toString(16).padStart(2,'0')).join('')!==asset.hash)
+            throw Error('Fichier public existant différent : publication refusée.');
+        }else uploaded.push(publicPath);
+      }
+      const committed=await client.rpc('phasmo_journal_commit_official_release',{
+        p_actor:actor,p_source_revision:c.source_preview_revision,
+        p_source_release:c.source_preview_release,p_public_payload:publicPayload,p_claim_token:token
+      });
+      if(committed.error)throw Error('Finalisation atomique refusée : '+committed.error.message);
+      return answer({ok:true,published:committed.data});
+    }catch(error){
+      // Ne pas supprimer les fichiers si une coupure réseau a masqué une publication reussie.
+      const current=await client.from('phasmo_journal_production_publications')
+        .select('release_number,visibility').eq('stage','production').maybeSingle();
+      if(!current.error&&current.data?.release_number===release&&current.data.visibility==='live')
+        return answer({ok:true,published:[{release_number:release}],
+          note:'Publication confirmée après une réponse serveur interrompue.'});
+      if(current.error)throw Error('Etat officiel incertain : réservation conservée et contrôle manuel requis.');
+      if(uploaded.length){
+        const cleaned=await client.storage.from(PUBLIC_BUCKET).remove(uploaded);
+        if(cleaned.error)throw Error('Nettoyage public refusé : réservation conservée, intervention nécessaire.');
+      }
+      const aborted=await client.rpc('phasmo_journal_abort_official_release',{
+        p_actor:actor,p_claim_token:token
+      });
+      if(aborted.error||aborted.data!==true)
+        throw Error('Réservation conservée pour contrôle manuel : '+(aborted.error?.message||'annulation impossible'));
+      throw error;
+    }
   }catch(err){
     return answer({error:errMessage(err)},422);
   }
