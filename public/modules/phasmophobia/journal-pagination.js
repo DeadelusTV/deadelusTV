@@ -24,17 +24,17 @@
   }
   return lines;
  }
- function measuredHeight(slice,columns,widthPx,fontSize,lineHeight,measure){
+ function measuredHeight(slice,columns,widthPx,fontSize,lineHeight,measure,rowGap=0,columnGap=12){
   if(!slice.length)return 0;
   const rows=Math.ceil(slice.length/columns);
-  const usableWidth=Math.max(15,(widthPx-(columns-1)*12)/columns-6);
+  const usableWidth=Math.max(15,(widthPx-(columns-1)*columnGap)/columns-6);
   const rowHeights=new Array(rows).fill(0);
   slice.forEach((entry,i)=>{
    const lines=wrappedLines(entry.title,usableWidth,fontSize,measure);
    const row=i%rows;
    rowHeights[row]=Math.max(rowHeights[row],lines*fontSize*lineHeight+4);
   });
-  return rowHeights.reduce((a,b)=>a+b,0);
+  return rowHeights.reduce((a,b)=>a+b,0)+Math.max(0,rows-1)*rowGap;
  }
  function paginate(entries,options={}){
   const rows=Array.isArray(entries)?entries:[];
@@ -45,6 +45,8 @@
   const size=clamp(Number(options.size)||24,8,120);
   const line=clamp(Number(options.line)||1.16,.75,2.6);
   const measure=typeof options.measure==='function'?options.measure:null;
+  const rowGap=clamp(Number(options.rowGap??0)||0,0,80);
+  const columnGap=clamp(Number(options.columnGap??12)||0,0,80);
   const minimum= Math.max(size*line+4,1);
   const footer=Math.min(height*.4,Math.max(29,size*line+7));
   const budget=Math.max(minimum,height-footer);
@@ -56,7 +58,7 @@
    let count=1;
    const limit=Math.min(rows.length-offset,240);
    for(let test=2;test<=limit;test++){
-    if(measuredHeight(rows.slice(offset,offset+test),cols,width,size,line,measure)>budget)break;
+    if(measuredHeight(rows.slice(offset,offset+test),cols,width,size,line,measure,rowGap,columnGap)>budget)break;
     count=test;
    }
    pages.push(rows.slice(offset,offset+count));
