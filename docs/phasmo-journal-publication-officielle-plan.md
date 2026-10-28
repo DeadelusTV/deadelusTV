@@ -69,3 +69,16 @@ Deux corrections produites par ces tests ont été appliquées sur les fonctions
 - `docs/phasmo-journal-release-media-integrity-v2.sql` : obligation pour chaque image/police de garder le même SHA et d'être dans le dossier du **bon numéro de release**.
 
 État de fin de recette : candidat n°8 / révision 12 / 2 médias, `activation_enabled=false`, 0 publication live, 0 historique live, 0 média public. **À faire avant publication réelle** : essais du transfert physique de Storage dans un environnement distinct, sécurisation de la réservation de numéro en cas d'activations simultanées, et commandes administrateur finales.
+
+
+## 8. Tests de transfert privé et réservation exclusive (28 octobre 2026)
+
+**Suite du chantier technique, sans mise en ligne :**
+
+- `docs/phasmo-journal-staging-transfer-bucket-v1.sql` : bucket `phasmo-journal-release-test-private`, privé et sans policy client, destiné à recevoir temporairement la copie *réelle* des médias du candidat prêt.
+- `supabase/functions/phasmo-journal-storage-test/index.ts` : Edge Function admin de recette physique à deux modes (`normal`, `fault`). Contrôle du manifeste préparé, du JWT, des droits, du verrou public, des empreintes source/copie, puis nettoyage en fin de test. Boutons de recette ajoutés dans `journal-editor.html` via `journal-storage-dryrun-ui.js`. **Recette du transfert réel en attente du clic utilisateur**.
+- `docs/phasmo-journal-exclusive-release-reservation-v1.sql` : réservation atomique de numéro avant copie des médias publics, refus d'une seconde activation, signature de commit liée au token de réservation, annulation uniquement après nettoyage et restauration bloquée pendant une réservation active. Déployée sur les RPC serveur et la fonction Edge officielle v3, sans déverrouiller l'activation.
+- Tests SQL isolés : **10 scénarios de réservation et de concurrence réussis**, transactions annulées ; tests UI automatisés en simulation : **13 vérifications réussies**.
+- Les scénarios de transfert public réel, restauration live, récupération après panne complète de process et double activation réseau effective **ne sont pas encore validés**. Le bucket `phasmo-journal-public-assets` est toujours vide et la publication publique reste désactivée.
+
+**État vérifié** : candidat n°8, révision 12, 2 médias ; 0 publication officielle, 0 fichier public, 0 copie staging, aucune réservation active. Aucun changement sur `main`.
