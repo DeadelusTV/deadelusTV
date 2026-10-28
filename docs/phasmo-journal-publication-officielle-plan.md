@@ -82,3 +82,14 @@ Deux corrections produites par ces tests ont été appliquées sur les fonctions
 - Les scénarios de transfert public réel, restauration live, récupération après panne complète de process et double activation réseau effective **ne sont pas encore validés**. Le bucket `phasmo-journal-public-assets` est toujours vide et la publication publique reste désactivée.
 
 **État vérifié** : candidat n°8, révision 12, 2 médias ; 0 publication officielle, 0 fichier public, 0 copie staging, aucune réservation active. Aucun changement sur `main`.
+
+
+## 9. Recette confirmée des transferts privés et du nettoyage
+
+Le 28 octobre 2026, les deux essais de la fonction `phasmo-journal-storage-test` ont été validés depuis l'éditeur DEV avec un compte administrateur Twitch.
+
+- **Transfert normal** : publication de test n°8, révision 12 ; 1 image WebP et 1 police TTF, soit **38 516 octets** vérifiés par SHA-256 ; copies temporaires supprimées.
+- **Échec simulé** : interruption volontaire immédiatement après la première copie ; réponse du serveur « Test d’échec réussi : interruption volontaire après le premier transfert. Copie privée supprimée et aucun média rendu public. »
+- **Contrôle SQL indépendant après le second essai** : 0 objet dans `phasmo-journal-release-test-private` (bucket toujours privé), 0 objet dans `phasmo-journal-public-assets`, 0 version de production, 0 historique, verrou `activation_enabled=false`, aucune réservation active et candidat n°8 / révision 12 / 2 médias intact.
+
+**Conclusion :** le transfert réel en bucket privé et le nettoyage après échec contrôlé sont validés. Ce n'est **pas** une validation de publication effective, du transfert dans le bucket public ou de la récupération après crash brutal du processus. Les commandes de publication restent à finaliser et à auditer avant ouverture explicite du verrou.
