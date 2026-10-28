@@ -98,6 +98,7 @@ Le bucket `phasmo-news-draft-images` est **privé** ; `phasmo-news-published-ima
 - Le corps de l’article public utilise la même largeur intérieure que la couverture ; la limite de 800 px est conservée sur les figures du corps, centrées, pour ne pas agrandir les images.
 - Listes et sous-listes publiques : interligne à 1,6, marges entre éléments à 4 px, suppression de la marge de paragraphe de 23 px à l’intérieur des puces et espacement réduit des sous-listes. Les paragraphes successifs d’un même élément conservent une petite séparation.
 - Modifications limitées au lecteur public ; styles et contenu de l’éditeur inchangés. Feuille news.css versionnée dans l’accueil pour charger le nouvel habillage.
+
 ## Validation de Mattarix et navigation publique — 28 octobre 2026
 
 - Retour utilisateur : Mattarix valide l'éditeur pour le moment ainsi que la mise en page publique. Les éventuels nouveaux bugs ou besoins seront signalés au fil de l'usage.
@@ -105,4 +106,4 @@ Le bucket `phasmo-news-draft-images` est **privé** ; `phasmo-news-published-ima
 - Un bouton « Retour aux news » figure après le contenu et les crédits de chaque article. Il ramène aux cartes des News et replace la vue sur le panneau News.
 - Fermer le panneau déroulant News quitte l'article ou les archives en cours et rétablit la liste. Sa réouverture montre donc les cartes ; l'URL de lecture est retirée sans ajouter une entrée dans l'historique et sans remonter la page.
 - Ces changements concernent la consultation publique ; les contenus, droits et brouillons ne sont pas modifiés.
-
+- Vérifications : retour du bas vers les cartes, fermeture/réouverture après lecture, liens directs et archives sur la version de test ; retour du bas et fermeture/réouverture également contrôlés sur le site officiel dans Chrome.
