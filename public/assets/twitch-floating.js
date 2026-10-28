@@ -29,10 +29,14 @@
 
   function refresh() {
     if (!dock || !controller || !anchor) return;
-    // Sur mobile/tablette, le panneau suit le flux de la page, sans rattrapage JS.
-    const nextInline = window.innerWidth <= 900;
+    // Les panneaux hors live suivent toujours le flux, sans rattrapage au scroll.
+    // Seul un direct autorise sur un ecran adapte utilise le dock persistant.
+    const live = controller.active && controller.state === 'live' && consented();
+    const nextInline = !live || !canFloat();
     if (inline !== nextInline) {
-      const restart = inline !== null && controller.active;
+      // Une verification en cours n'a pas encore d'iframe : ne pas l'annuler
+      // quand setState('live') prepare le dock juste avant sa creation.
+      const restart = inline !== null && !!controller.instance;
       // Un changement de format peut deplacer le dock : retirer l'iframe avant.
       if (restart) {
         controller.active = false;
@@ -46,8 +50,7 @@
     }
     const home = isHomeVisible();
     const rect = home && !inline ? anchor.getBoundingClientRect() : null;
-    const live = controller.active && controller.state === 'live' && consented();
-    const floating = !closed && live && canFloat() && (!home || !fullyVisible(rect));
+    const floating = !closed && !inline && (!home || !fullyVisible(rect));
 
     reopen.hidden = !closed || !consented();
     anchor.dataset.closed = closed ? 'true' : 'false';

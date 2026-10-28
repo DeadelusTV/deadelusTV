@@ -30,8 +30,8 @@
   box-sizing: border-box;
 }
 .twitch-player-dock[hidden], .twitch-float-reopen[hidden] { display: none !important; }
-/* Le panneau mobile occupe sa hauteur reelle, image et texte compris. */
-.twitch-player-placeholder[data-inline="true"] {
+/* Les panneaux hors live, sur PC comme sur mobile, occupent leur hauteur reelle. */
+.twitch-player-placeholder[data-inline="true"]:not([data-closed="true"]) {
   min-height: 0;
   aspect-ratio: auto;
 }

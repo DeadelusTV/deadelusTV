@@ -92,7 +92,7 @@ function createEnv({consent = true, width = 1400, height = 800, state = 'live'} 
   vm.runInNewContext(source, {window, document, requestAnimationFrame: fn => {fn(); return 1;}});
   const player = {
     state, active: true,
-    stop() { stopCount++; },
+    stop() { stopCount++; this.instance = null; },
     setState(next) { this.state = next; window.DEADELUSTV_TWITCH_FLOAT.onState(next); },
     sync() { syncCount++; }
   };
@@ -165,6 +165,7 @@ test('petit ecran : pas de lecteur flottant', () => {
 });
 test('changement de format : arret avant deplacement, puis reprise dans le nouveau format', () => {
   const e = createEnv();
+  e.player.instance = {};
   const append = e.anchor.append.bind(e.anchor);
   e.anchor.append = (...nodes) => {
     assert.equal(e.counts().stops, 1, 'le lecteur est arrete avant de deplacer son conteneur');
@@ -175,10 +176,41 @@ test('changement de format : arret avant deplacement, puis reprise dans le nouve
   assert.equal(e.dock.parent, e.anchor);
   assert.equal(e.dock.classList.contains('is-floating'), false);
   assert.equal(e.counts().syncs, 1);
+  e.player.active = true;
   e.window.innerWidth = 1400;
   e.window.DEADELUSTV_TWITCH_FLOAT.refresh();
   assert.equal(e.dock.parent, e.home.parent);
   assert.equal(e.anchor.attributes['aria-hidden'], 'true');
+});
+test('sur PC, tous les panneaux hors live restent dans le flux pendant le defilement', () => {
+  for (const state of ['loading', 'offline', 'blocked', 'unknown', 'small']) {
+    const e = createEnv({state});
+    const moves = e.dock.moved;
+    assert.equal(e.dock.parent, e.anchor, state);
+    assert.equal(e.anchor.attributes['aria-hidden'], 'false');
+    e.anchor.getBoundingClientRect = () => { throw new Error('le panneau ne doit pas mesurer sa position'); };
+    e.window.DEADELUSTV_TWITCH_FLOAT.refresh();
+    assert.equal(e.dock.style.top, '');
+    assert.equal(e.dock.style.left, '');
+    assert.equal(e.dock.moved, moves, 'aucun deplacement au scroll');
+  }
+});
+test('passage chargement puis live : ne pas annuler la verification avant creation de l iframe', () => {
+  const e = createEnv({state: 'loading'});
+  assert.equal(e.dock.parent, e.anchor);
+  e.player.setState('live');
+  assert.equal(e.dock.parent, e.home.parent);
+  assert.equal(e.player.active, true);
+  assert.equal(e.counts().stops, 0, 'la verification en cours reste valide');
+  assert.equal(e.counts().syncs, 0, 'pas de seconde verification concurrente');
+  const moves = e.dock.moved;
+  e.player.instance = {};
+  e.window.DEADELUSTV_TWITCH_FLOAT.refresh();
+  assert.equal(e.dock.moved, moves, 'le live reste dans son dock');
+  e.player.stop();
+  e.player.setState('offline');
+  assert.equal(e.dock.parent, e.anchor, 'retour hors live dans la page');
+  assert.equal(e.counts().stops, 1, 'pas de second arret apres fin du live');
 });
 test('retrait de consentement apres fermeture : la reprise est masquee', () => {
   const e = createEnv();
