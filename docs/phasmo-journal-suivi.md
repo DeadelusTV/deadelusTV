@@ -762,3 +762,10 @@ Fichiers de branche : `docs/phasmo-journal-preview-schema-v1.sql` (SQL appliqué
 **Vérification réelle** : tous les privilèges serveur attendus passent à `true`. En `SET LOCAL ROLE service_role` dans une transaction de lecture annulée, 2 administrateurs, 1 publication preview, accès au verrou et aux tables de candidats/historique/publication sont tous lisibles sans refus. Les privilèges client directs restent absents ; `activation_enabled=false`, 0 version officielle, 0 fichier public. Avis sécurité Supabase examiné ; seul l'avis informatif RLS sans policy sur la table de verrou reste intentionnel pour garantir l'absence d'accès client.
 
 **Correctif frontal complémentaire** : commit `747fe535b291d5da74e1ef5cb036e00ae670e139` : passage explicite du JWT utilisateur à l'Edge Function et affichage du statut HTTP, du code d'erreur et du motif retourné. La recette navigateur « Vérifier l'état officiel » reste **à confirmer par l'utilisatrice**, mais la cause SQL vérifiée a été supprimée. Aucun changement `main`, aucune activation publique.
+
+
+### 28/10/2026 — Recette validée : Vérifier l'état officiel
+
+**Confirmation réelle de l'utilisatrice :** après la correction des droits SQL `service_role` et du diagnostic JWT, le bouton **« Vérifier l'état officiel »** fonctionne dans l'éditeur DEV et retourne exactement : « Publication publique verrouillée. Aucun candidat officiel préparé. Aucune version publique en ligne. »
+
+**Statut : contrôle du statut officiel validé en navigateur**, incident précédent « Edge Function returned a non-2xx status code » résolu pour cette action. La connexion authentifiée à la fonction Edge et l'accès serveur au statut sont opérationnels. Le verrou `activation_enabled=false` reste fermé. **Prochaine recette** : cliquer « Préparer une version officielle (privée) », vérifier la révision de la publication preview, les images et polices contrôlées, confirmer qu'aucun contenu ni média n'est rendu public. La préparation privée n'est pas encore validée dans le navigateur.
