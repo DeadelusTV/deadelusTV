@@ -364,7 +364,18 @@
       const node=el(tag);
       if(['paragraph','heading'].includes(item.type)&&['left','center','right'].includes(item.attrs?.textAlign))
         node.style.textAlign=item.attrs.textAlign;
-      if(['paragraph','heading'].includes(item.type)){
+      if(item.type==='listItem'){
+        for(const [index,sub] of (item.content||[]).entries()){
+          // Un p autour de la première ligne fait indenter le paragraphe par
+          // Chrome (blockquote), pas l'élément de liste après rechargement.
+          if(index===0&&sub.type==='paragraph'){
+            if(['left','center','right'].includes(sub.attrs?.textAlign))
+              node.style.textAlign=sub.attrs.textAlign;
+            renderInline(node,sub.content);
+            if(!node.childNodes.length)node.append(document.createElement('br'));
+          }else walk(node,sub);
+        }
+      }else if(['paragraph','heading'].includes(item.type)){
         renderInline(node,item.content);
         if(!node.childNodes.length)node.append(document.createElement('br'));
       }else for(const sub of item.content||[])walk(node,sub);
@@ -528,7 +539,7 @@
     foot.append(el('p','','Source : '+(d.sourceUrl||'à compléter')));
   }
   function command(command,value){
-    root.focus();
+    root.focus({preventScroll:true});
     try{
       const ok=document.execCommand(command,false,value||undefined);
       if(!ok)report('Commande non disponible dans ce navigateur : '+command+'.');
@@ -1000,6 +1011,7 @@
     try{await store();}finally{saveButton.disabled=false;}
   });
   window.addEventListener('pagehide',()=>{const d=current();if(d)d.doc=readEditor();if(timer)store();});
+  root.dataset.editorRelease='20261028.6';
   root.setAttribute('contenteditable','true');
   root.setAttribute('spellcheck','true');
   root.setAttribute('role','textbox');

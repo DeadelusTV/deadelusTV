@@ -86,3 +86,9 @@ Le bucket `phasmo-news-draft-images` est **privé** ; `phasmo-news-published-ima
 
 - Yekelle confirme les sous-listes à puces. Elle signale que les sous-listes numérotées ne fonctionnent pas dans son essai ; point non bloquant, à examiner séparément. Les tests sur le prototype ne valent donc pas validation de la numérotation dans le bureau privé.
 - Formes de puces selon la profondeur : disque plein, cercle vide, carré, puis disque plein et cercle vide pour les niveaux quatre et cinq. Styles communs à la rédaction, à l’aperçu et à l’article public ; aucun changement du contenu sauvegardé.
+
+## Articles longs et anciens brouillons — 28 octobre 2026
+
+- La barre de mise en forme reste en haut de l’écran pendant le défilement dans l’article : le conteneur utilise overflow:clip plutôt que hidden, qui empêchait le sticky de suivre le défilement de la page. Le focus des commandes conserve la position de défilement.
+- Compatibilité après rechargement : le premier paragraphe d’un élément de liste est rendu directement dans le li, tout en conservant les sous-listes et les autres paragraphes. Dans Chrome, le p enveloppant conduisait la commande indent à créer un blockquote visuel au lieu d’une sous-liste, dont le retrait disparaissait à la sauvegarde. Le contenu JSON et les mises en forme restent conservés ; aucune écriture directe en base.
+- Ressources de l’éditeur versionnées pour charger le même moteur et les mêmes styles après une mise à jour. Le cas exact du brouillon de Mattarix reste à confirmer avec son retour ; aucune lecture de ses métadonnées d’authentification n’a été effectuée.

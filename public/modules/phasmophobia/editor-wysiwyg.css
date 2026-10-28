@@ -2,7 +2,9 @@
    Aucun de ces styles ne s'applique aux pages publiques hors prototype. */
 .phasma-editor-demo .phasma-wysiwyg-panel { padding: clamp(15px, 2.5vw, 28px); }
 .phasma-editor-demo .phasma-wysiwyg-wrapper {
-  overflow: hidden;
+  /* clip conserve les coins arrondis sans créer le faux défilement de hidden. */
+  overflow: visible;
+  overflow: clip;
   border: 1px solid #62523b;
   border-radius: 9px;
   background: #1a1b1b;
@@ -12,6 +14,7 @@
   display: flex; flex-wrap: wrap; align-items: center;
   gap: 5px;
   position: sticky; top: 0; z-index: 3;
+  box-shadow: 0 6px 12px #0004;
   padding: 11px 12px;
   border-bottom: 1px solid #5b4e3c;
   background: #24231f;
