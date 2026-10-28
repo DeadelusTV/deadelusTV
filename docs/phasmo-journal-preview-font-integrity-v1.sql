@@ -17,7 +17,7 @@ BEGIN
         SELECT 1
         FROM pg_catalog.jsonb_array_elements(NEW.payload->'fonts') AS f
         WHERE f->>'family'=e->>'font'
-          AND f->>'data' ~ '^journal-storage://fonts/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[a-f0-9]{64}\\.(ttf|otf|woff|woff2)$'
+          AND f->>'data' ~ '^journal-storage://fonts/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[a-f0-9]{64}\.(ttf|otf|woff|woff2)$'
       )
   ) THEN
     RAISE EXCEPTION 'Police personnalisée absente des médias du carnet : enregistre à nouveau le brouillon avant publication'
