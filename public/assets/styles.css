@@ -527,3 +527,14 @@ dialog{color:var(--text);background:#19191a;border:1px solid #59513e;border-radi
   .community-banner-home p { font-size: 11px; line-height: 1.3; }
   .community-banner-home .btn { min-height: 30px; padding: 6px 10px; font-size: 10px; }
 }
+
+/* Espacement du bandeau Discord sur l'accueil */
+.community-banner-home {
+  margin-top: 40px;
+}
+
+@media (max-width: 600px) {
+  .community-banner-home {
+    margin-top: 28px;
+  }
+}
