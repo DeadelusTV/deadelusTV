@@ -680,3 +680,16 @@ Fichiers de branche : `docs/phasmo-journal-preview-schema-v1.sql` (SQL appliqué
 **Vérification Supabase en lecture seule** : bucket privé `phasmo-journal-draft-assets` contenant **1 objet image** et **0 police** ; le brouillon partagé `preview` a atteint la **révision 7**, avec **1 image de calque référencée par `journal-storage://` dans le JSON distant**, et non un gros bloc base64. Cela valide le transfert d'un média réel au stockage distant et le bon enregistrement de sa référence. La phrase « l'image apparait » ne permet pas à elle seule de conclure que le test F5/rechargement ou la visionneuse de la publication privée ont été effectués : ces deux vérifications visuelles restent à confirmer séparément. Un test de police importée et la vérification de non-duplication lors de nouvelles sauvegardes restent également ouverts.
 
 **Périmètre préservé** : `developpement/phasmo-v2` et bucket dédié, sans fusion `main` ni activation d'un Storage public.
+
+
+### 28/10/2026 — Validation navigateur complète : images Storage et publication PREVIEW
+
+**Recette utilisateur confirmée :** après migration des images dans le bucket privé `phasmo-journal-draft-assets`, l'utilisatrice a effectué en conditions réelles les étapes suivantes :
+
+1. **Charger le brouillon partagé** : l'image précédemment transférée dans Storage est bien présente dans l'éditeur après rechargement.
+2. **Publier pour test (admin)** : publication privée réalisée depuis l'atelier V7.
+3. **Voir le livre publié en test** : l'image est bien présente dans la visionneuse de publication privée. L'utilisatrice conclut « validé ».
+
+**Statut : circuit complet des images Storage validé en navigateur**, de l'enregistrement distant à la lecture du brouillon puis à la publication PREVIEW privée. Les médias restent privés, accessibles via authentification et contrôles RLS. Aucune activation de publication publique ni fusion `main`.
+
+**Restent ouverts** : recette réelle des polices personnalisées importées (TTF/OTF/WOFF/WOFF2), vérification des mises à jour concurrentes avec Deadelus, gestion des fichiers orphelins et préparation ultérieure des médias de la publication publique. La validation des images ne vaut pas validation automatique de ces points.
