@@ -130,3 +130,12 @@ Contrôles supplémentaires réalisés le 28 octobre 2026, sur `developpement/ph
 - Contrôle de l'état réel au début des essais : **0 publication officielle, 0 historique officiel, 0 fichier public, verrou fermé, aucune réservation**, candidat privé test n°8 / révision 12 inchangé.
 
 **Étape restante à valider dans le navigateur admin :** depuis l'éditeur DEV (onglet 7), cliquer « Actualiser les commandes et l'historique » ; attendre « Verrou public fermé », candidat test n°8/révision 12, aucune version officielle et historique vide. Vérifier que `Publier officiellement`, `Restaurer cette version` et `Mettre le carnet hors ligne` restent grisés, y compris après saisie de la confirmation de publication. Ne pas ouvrir le verrou pour cette recette.
+
+
+## 13. Correction du contrôle administrateur : variable token
+
+Après ouverture de la section « Commandes administrateur » et clic sur « Actualiser les commandes et l'historique », la recette navigateur a révélé l'erreur `HTTP 422 : Cannot access 'token' before initialization`. La cause était un masquage de variable JavaScript dans l'Edge Function `phasmo-journal-release` : `const token=authorization.slice(7)` (JWT Twitch) et, dans le même bloc logique, `const token=crypto.randomUUID()` (réservation d'une publication). La déclaration tardive rendait le JWT inaccessible lors du `auth.getUser(token)`, y compris pour l'action `status`.
+
+**Correctif** : la variable de réservation est renommée `claimToken` dans sa déclaration et ses trois utilisations RPC. Le jeton d'authentification reste `token`. Commit `79d0ccb38c5f0f1610d4eff648d582b88e5eb603` sur `developpement/phasmo-v2`. Fonction serveur redéployée en **version 5**, active ; vérification du code déployé : plus de déclaration locale concurrente. Vérification SQL après correctif : candidat de test **n°8/révision 12**, aucune publication ni média public, verrou `false` et aucune réservation active.
+
+**Test navigateur encore demandé** : sans republier ni toucher aux brouillons, cliquer sur « Actualiser les commandes et l'historique » et lire le texte immédiatement sous « Commandes administrateur · publication et retour arrière ». Résultat attendu : « Verrou public fermé. Candidat : test n°8, révision 12. Aucune version officielle. Historique : 0 version(s). » ; boutons Publier, Restaurer et Mettre hors ligne grisés. Ne pas valider cette recette navigateur avant confirmation de l'administratrice.
