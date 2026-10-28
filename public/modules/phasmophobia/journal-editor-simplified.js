@@ -6,7 +6,7 @@
 (() => {
  if(new URLSearchParams(location.search).get('viewer')==='1')return;
  const $=id=>document.getElementById(id);
- const panel=$('journal-simple-save');
+ const panel=$('journal-simple-controls');
  if(!panel)return;
  const status=$('journal-simple-status');
  const note=$('journal-simple-publish-note');
