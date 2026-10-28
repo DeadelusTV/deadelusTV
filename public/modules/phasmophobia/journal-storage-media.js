@@ -93,9 +93,46 @@
   MEMORY.set('known:'+kind+':'+hash,PREFIX+path);
   return PREFIX+path;
  }
+ // Certaines anciennes révisions peuvent contenir un calque référençant
+ // une police de bibliothèque sans déclarer cette police dans payload.fonts.
+ // La famille Atelier_Biblio_<SHA256> permet une restauration déterministe.
+ function missingCustomFamilies(payload){
+  if(!Array.isArray(payload?.elements)||!Array.isArray(payload?.fonts))
+   throw Error('Carnet V7 incomplet : impossible de vérifier ses polices.');
+  const known=new Set(payload.fonts.map(f=>f?.family).filter(v=>typeof v==='string'));
+  return [...new Set(payload.elements
+   .map(e=>e?.font)
+   .filter(font=>typeof font==='string'&&/^Atelier(?:Font)?_[\w-]{1,90}$/.test(font)&&!known.has(font)))];
+ }
+ async function recoverMissingFonts(payload,client,progress=()=>{}){
+  const missing=missingCustomFamilies(payload);
+  for(const family of missing){
+   const matched=/^Atelier_Biblio_([a-f0-9]{64})$/.exec(family);
+   if(!matched)throw Error('La police personnalisée « '+family+' » est absente du carnet. Réimporte-la avant sauvegarde ou publication.');
+   const hash=matched[1];
+   let found=null;
+   for(const extension of ['ttf','otf','woff','woff2']){
+    const result=await client.rpc('phasmo_journal_find_private_asset',{
+     p_kind:'fonts',p_sha256:hash,p_extension:extension
+    });
+    if(result.error)throw Error('Recherche de la police manquante refusée : '+result.error.message);
+    if(result.data){found=PREFIX+result.data;break;}
+   }
+   if(!found||!REFERENCE.test(found)||!found.startsWith(PREFIX+'fonts/'))
+    throw Error('Police '+hash.slice(0,10)+' introuvable dans le Storage privé. Elle doit être réimportée avant publication.');
+   const data=await downloadOne(client,found);
+   const parsed=mimeAndExtension(data,'fonts');
+   if(await sha256(parsed.bytes)!==hash)
+    throw Error('La police stockée ne correspond pas à son empreinte SHA-256.');
+   payload.fonts.push({family,label:'Bibliothèque '+hash.slice(0,10),data});
+   progress('Police manquante récupérée depuis la bibliothèque privée : '+hash.slice(0,10));
+  }
+  return payload;
+ }
  async function prepareForSave(payload,client,userId,progress=()=>{}){
   if(!/^[0-9a-f-]{36}$/.test(String(userId)))throw Error('Identité Twitch/Supabase invalide.');
   const remote=JSON.parse(JSON.stringify(payload));
+  await recoverMissingFonts(remote,client,progress);
   const fields=items(remote),cached=new Map();
   let done=0;
   for(const field of fields){
@@ -147,6 +184,7 @@
    field.object[field.key]=restored;
    progress('Médias restaurés depuis Storage : '+(++done)+'/'+fields.length);
   }
+  await recoverMissingFonts(local,client,progress);
   return local;
  }
  async function listPrivateAssets(client,kind,page=0){
