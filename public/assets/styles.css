@@ -435,3 +435,94 @@ dialog{color:var(--text);background:#19191a;border:1px solid #59513e;border-radi
   .twitch-offline-copy { position:relative; inset:auto; padding:21px 20px; gap:12px; }
   .twitch-offline-title { font-size:26px; }
 }
+.community-banner{
+  position:relative;
+  overflow:hidden;
+  margin-top:30px;
+  border:1px solid #353637;
+  border-radius:8px;
+  min-height:220px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background-position:center;
+  background-size:cover;
+  background-repeat:no-repeat;
+  isolation:isolate;
+}
+
+.community-banner-home{
+  background-image:url('discord-home.webp');
+}
+
+.community-banner-phasmo{
+  background-image:url('discord-phasmo.webp');
+}
+
+.community-banner-overlay{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg, rgba(7,10,14,.50), rgba(7,10,14,.62));
+  z-index:0;
+}
+
+.community-banner-content{
+  position:relative;
+  z-index:1;
+  width:min(900px, calc(100% - 40px));
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  gap:18px;
+  padding:34px 20px;
+}
+
+.community-banner .community-text{
+  flex:none;
+}
+
+.community-banner h2{
+  font-size:clamp(28px, 3vw, 38px);
+  margin-bottom:10px;
+  color:#f2eee7;
+  text-shadow:0 2px 10px rgba(0,0,0,.45);
+}
+
+.community-banner p{
+  font-size:15px;
+  line-height:1.7;
+  color:#e4e0d8;
+  text-shadow:0 2px 8px rgba(0,0,0,.35);
+  max-width:760px;
+}
+
+.community-banner .btn{
+  white-space:nowrap;
+}
+
+@media (max-width: 600px){
+  .community-banner{
+    min-height:210px;
+    margin-top:24px;
+  }
+
+  .community-banner-content{
+    width:calc(100% - 28px);
+    padding:26px 14px;
+    gap:16px;
+  }
+
+  .community-banner h2{
+    font-size:24px;
+  }
+
+  .community-banner p{
+    font-size:13px;
+  }
+
+  .community-banner .btn{
+    width:100%;
+  }
+}
