@@ -824,3 +824,12 @@ Fichiers de branche : `docs/phasmo-journal-preview-schema-v1.sql` (SQL appliqué
 **Contrôle SQL réel après les actions :** `phasmo_journal_preview_drafts` à la **révision 12** et `phasmo_journal_preview_publications` à la **publication de test n°8 (source révision 12)**. Les deux documents ont chacun **1 image** référencée dans Storage privé, **1 police personnalisée** dans `payload.fonts`, et **1 calque heading** dont le champ `font` correspond à l'entrée `fonts[].family`. La police est une référence `journal-storage://fonts/…`, pas un lien local ou une famille orpheline. **Le défaut de persistance des polices observé sur la révision 11 / publication n°7 est désormais corrigé pour la nouvelle révision et la nouvelle publication.**
 
 **Statut :** le rendu de la police dans l'aperçu avait été confirmé visuellement par l'utilisatrice au test précédent ; la persistance dans le brouillon et la publication est **confirmée par SQL**. Les anciens snapshots historiques ne sont pas altérés. Aucun déploiement sur `main`, aucun contenu officiel rendu public.
+
+
+### 28/10/2026 — Recette validée : candidat officiel privé révision 12 avec image et police
+
+**Confirmation utilisatrice :** après avoir confirmé « Préparer PRIVÉMENT la dernière version publiée en test », l'atelier indique exactement « Version officielle préparée en privé : révision 12, publication de test n°8. Médias vérifiés : 1 image(s), 1 police(s). Aucune publication publique effectuée. Activation toujours verrouillée ».
+
+**Vérification indépendante SQL :** `phasmo_journal_production_candidates` contient le **candidat de la publication de test n°8/source révision 12**, avec un manifeste de **2 médias** (1 image, 1 police) et un horodatage de préparation le 28 octobre 2026. La table officielle `phasmo_journal_production_publications` contient **0 ligne**, le bucket `phasmo-journal-public-assets` contient **0 fichier**, et le verrou `phasmo_journal_production_release_controls.activation_enabled` est **false**. Cette préparation valide la phase privée avec médias. Elle ne valide pas encore le transfert effectif vers le bucket public, la transaction d'activation, l'historique ou le rollback.
+
+**Prochain chantier :** éprouver l'activation et les retours arrière sur un environnement de test isolé (ou simulations transactionnelles totalement annulées sans copier de médias publics), avant toute demande de déverrouillage réel. Aucune modification sur `main` et aucune publication publique autorisée.
