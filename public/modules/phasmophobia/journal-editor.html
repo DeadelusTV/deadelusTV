@@ -247,6 +247,15 @@ html.journal-viewer #book .layer{cursor:default}
         </div>
         <p class="tip">Ce test exige le rôle administrateur. Seule la révision enregistrée sur Supabase est publiée, jamais les modifications locales non sauvegardées. Ce contenu n'est visible ni sur main, ni pour les visiteurs anonymes.</p>
       </div>
+      <div class="field" id="journal-official-release-controls">
+        <strong>Publication officielle · préparation uniquement</strong>
+        <p id="journal-official-status" class="tip" role="status" aria-live="polite">Aucune publication publique automatique. Le serveur vérifie la version privée validée et les médias avant de préparer un candidat.</p>
+        <div class="buttons">
+          <button class="btn small" id="journal-official-status-check" type="button">Vérifier l'état officiel</button>
+          <button class="btn small" id="journal-official-prepare" type="button">Préparer une version officielle (privée)</button>
+        </div>
+        <p class="tip">Cette étape ne publie rien et ne transfère aucun média vers le bucket public. La véritable mise en ligne reste verrouillée côté Supabase jusqu'à validation explicite.</p>
+      </div>
     </div>
     <div class="buttons"><button id="export" class="btn solid" type="button">↓ Télécharger mes réglages</button><button id="import" class="btn" type="button">↑ Charger un JSON</button><button id="reset" class="btn" type="button">Réinitialiser l'atelier</button></div>
     <input id="json-input" type="file" accept="application/json,.json"><p class="tip">Le JSON local reste exportable et contient les médias. Les fichiers du brouillon partagé sont stockés dans le bucket privé dédié de Supabase Storage. Les réglages se conservent aussi dans ce navigateur quand le stockage local est autorisé. <b>Le JSON est la sauvegarde fiable à transmettre ici.</b> Compatible avec les exports du premier Atelier Sommaire.</p>
@@ -1280,6 +1289,7 @@ init();
 <script src="journal-public-media.js" defer></script>
 <script src="journal-preview-sync.js" defer></script>
 <script src="journal-preview-publish.js" defer></script>
+<script src="journal-official-prepare.js" defer></script>
 <script src="journal-preview-publication-viewer.js" defer></script>
 <script src="journal-publication-viewer.js" defer></script>
 </body></html>
