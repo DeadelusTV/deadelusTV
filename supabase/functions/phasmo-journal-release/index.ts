@@ -96,7 +96,7 @@ Deno.serve(async req=>{
   try{
     const body=await req.json();
     const action=typeof body?.action==='string'?body.action:'';
-    if(!['prepare','status','activate','offline'].includes(action))return answer({error:'Action inconnue.'},400);
+    if(!['prepare','status','activate','offline','restore'].includes(action))return answer({error:'Action inconnue.'},400);
     const client=createClient(PROJECT_URL,SERVICE_KEY,{auth:{
       persistSession:false,autoRefreshToken:false,detectSessionInUrl:false
     }});
@@ -139,7 +139,7 @@ Deno.serve(async req=>{
       const saved=await client.from('phasmo_journal_production_candidates')
         .upsert(record,{onConflict:'stage'}).select('source_preview_revision,source_preview_release,prepared_at').single();
       if(saved.error)throw Error('Préparation non enregistrée : '+saved.error.message);
-      return answer({ok:true,locked:true,prepared:saved.data,media:{
+      return answer({ok:true,locked,prepared:saved.data,media:{
         images:assets.filter(a=>a.kind==='images').length,
         fonts:assets.filter(a=>a.kind==='fonts').length,
         totalBytes:assets.reduce((n,a)=>n+a.size,0)
@@ -152,10 +152,23 @@ Deno.serve(async req=>{
       return answer({ok:true,disabled:Boolean(result.data)});
     }
 
-    // Activation is deliberately locked. Changing the client UI cannot unlock it.
+    // Activation and rollback are deliberately locked. The UI cannot unlock them.
     if(locked)return answer({error:'La publication publique reste verrouillée en base. Autorisation finale requise.'},423);
-    if(body?.confirmation!=='PUBLIER-OFFICIELLEMENT')
-      return answer({error:'Confirmation explicite manquante.'},400);
+    if(action==='restore'){
+      if(body?.confirmation!=='RESTAURER-OFFICIELLEMENT'||
+         !Number.isSafeInteger(body?.target_release)||body.target_release<1)
+        return answer({error:'Confirmation de restauration et numéro historique requis.'},400);
+      const history=await client.from('phasmo_journal_production_publication_history')
+        .select('release_number').eq('release_number',body.target_release).maybeSingle();
+      if(history.error||!history.data)throw Error('Version historique introuvable.');
+      const restored=await client.rpc('phasmo_journal_restore_official_release',{
+        p_actor:actor,p_target_release:body.target_release
+      });
+      if(restored.error)throw Error('Restauration refusée : '+restored.error.message);
+      return answer({ok:true,restored:restored.data});
+    }
+    if(body?.confirmation!=='PUBLIER-OFFICIELLEMENT'||body?.rightsApproved!==true)
+      return answer({error:'Confirmation officielle et droits des médias requis.'},400);
 
     const candidate=await client.from('phasmo_journal_production_candidates')
       .select('payload,asset_manifest,source_preview_revision,source_preview_release')
