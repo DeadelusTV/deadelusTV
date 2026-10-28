@@ -58,3 +58,14 @@
 - Tests réalisés : déploiement de la fonction Edge et des migrations, contrôle SQL de l'absence de droit client, erreurs de verrou attendues et simulations front-end des boutons. **La recette navigateur de `prepare` reste ouverte ; les scénarios effectifs d'activation et rollback restent volontairement non exécutés en production partagée.**
 
 Cette mise à jour remplace le statut « promotion non implémentée » du plan initial, sans changer l'absence de feu vert pour la publication publique.
+
+
+## 7. Simulations SQL isolées de la sortie officielle (28 octobre 2026)
+
+Les fonctions SQL réelles de `commit`, `offline` et `restore` ont été clonées uniquement pour les essais sur des tables temporaires. Chaque série a été annulée par `ROLLBACK`, sans créer de publication et sans copier d'image ni de police vers le bucket public. **18 contrôles passés**, dont deux cycles de publication, retour arrière historisé et protection des médias (référence supprimée, mauvaise version, mauvais SHA, fichiers absents).
+
+Deux corrections produites par ces tests ont été appliquées sur les fonctions officielles **sans activer la diffusion** :
+- `docs/phasmo-journal-release-restore-fix-ambiguity-v2.sql` : correction de la colonne ambiguë `release_number` dans la restauration.
+- `docs/phasmo-journal-release-media-integrity-v2.sql` : obligation pour chaque image/police de garder le même SHA et d'être dans le dossier du **bon numéro de release**.
+
+État de fin de recette : candidat n°8 / révision 12 / 2 médias, `activation_enabled=false`, 0 publication live, 0 historique live, 0 média public. **À faire avant publication réelle** : essais du transfert physique de Storage dans un environnement distinct, sécurisation de la réservation de numéro en cas d'activations simultanées, et commandes administrateur finales.
