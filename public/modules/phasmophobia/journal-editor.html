@@ -96,6 +96,11 @@ aside p.lead{font-size:12px;color:#afa69b;line-height:1.6;margin:0 0 16px}
 #delete-layer-dialog button{border-radius:5px;padding:9px 14px;border:1px solid #806b4b;background:#31281f;color:#f4e8d8;cursor:pointer}
 #delete-layer-dialog #confirm-delete-layer{background:#803528;border-color:#bf695b;color:#fff7f0}
 #delete-layer-dialog button:focus-visible{outline:2px solid #edc388;outline-offset:3px}
+#journal-publication-view-status{display:none}
+html.journal-publication-preview #book{visibility:hidden}
+html.journal-publication-preview #journal-publication-view-status{display:grid;place-items:center;text-align:center;position:fixed;inset:0;z-index:40;padding:30px;color:#f1ddbd;background:#0e0f10;font:17px/1.6 Arial,sans-serif}
+html.journal-publication-ready #journal-publication-view-status{display:none}
+html.journal-publication-ready #book{visibility:visible}
 </style>
 
 <style id="journal-viewer-rules">
@@ -211,7 +216,7 @@ html.journal-viewer #book .layer{cursor:default}
     <div class="field"><label for="record-move-group">Déplacer la fiche vers</label><select id="record-move-group"></select></div>
     <div class="field"><label for="record-move-folder">Sous-catégorie de destination</label><select id="record-move-folder"></select></div>
     <div class="buttons"><button type="button" class="btn small" id="record-move">Déplacer la fiche</button></div>
-    <p class="tip">Chaque fiche a un identifiant stable et ses propres calques. Les archives disparaissent des listes. <b>Prototype local uniquement : exporte le JSON pour conserver tes essais. Aucune publication Supabase.</b></p>
+    <p class="tip">Chaque fiche possède un identifiant stable et ses propres calques. Les archives disparaissent des listes. Le brouillon partagé et la publication de test sont deux versions indépendantes.</p>
   </div>
 <div class="block" id="journal-folder-manager">
     <h3>6 · Sous-catégories dynamiques</h3>
@@ -233,6 +238,15 @@ html.journal-viewer #book .layer{cursor:default}
         <button type="button" class="btn small" id="journal-remote-save">Enregistrer sur Supabase</button>
       </div>
       <p class="tip">Réservé aux comptes autorisés. Enregistrement manuel, uniquement sur la branche de test. Le JSON et le stockage local restent disponibles.</p>
+      <div class="field" id="journal-preview-publication">
+        <strong>Publication de test · privée</strong>
+        <p id="journal-publish-status" class="tip" role="status" aria-live="polite">Publie un instantané du dernier brouillon enregistré. Cette copie reste distincte de tes futurs changements.</p>
+        <div class="buttons">
+          <button type="button" class="btn small" id="journal-publish-preview">Publier pour test (admin)</button>
+          <a class="btn small" id="journal-published-preview-link" href="journal-editor.html?viewer=1&amp;publication=preview" target="_blank" rel="noopener noreferrer">Voir le livre publié en test</a>
+        </div>
+        <p class="tip">Ce test exige le rôle administrateur. Seule la révision enregistrée sur Supabase est publiée, jamais les modifications locales non sauvegardées. Ce contenu n'est visible ni sur main, ni pour les visiteurs anonymes.</p>
+      </div>
     </div>
     <div class="buttons"><button id="export" class="btn solid" type="button">↓ Télécharger mes réglages</button><button id="import" class="btn" type="button">↑ Charger un JSON</button><button id="reset" class="btn" type="button">Réinitialiser l'atelier</button></div>
     <input id="json-input" type="file" accept="application/json,.json"><p class="tip">Les images et polices peuvent remplir le stockage du navigateur : <b>exporte régulièrement ton JSON</b>. Les réglages se conservent aussi dans ce navigateur quand le stockage local est autorisé. <b>Le JSON est la sauvegarde fiable à transmettre ici.</b> Compatible avec les exports du premier Atelier Sommaire.</p>
@@ -245,9 +259,10 @@ html.journal-viewer #book .layer{cursor:default}
     <span class="push" style="font-size:11px;color:#ada28f" id="view-info">Édition des calques</span>
   </div>
   <div class="stage-viewport" id="stage-viewport"><div id="stage-wrap"><div id="book" class="edit-mode"><img class="book-image" alt="Carnet brun, pages vierges, cinq onglets et deux languettes latérales" src="../../assets/phasmo-carnet-brun.webp"><div id="element-surface"></div></div></div></div>
-  <div class="status"><span id="message" role="status" aria-live="polite">Prêt : sélectionne un bloc ou crée une zone cliquable.</span><span>Fond brun validé pour prototypage · 1536 × 1024 px · édition 100 % locale</span></div>
+  <div class="status"><span id="message" role="status" aria-live="polite">Prêt : sélectionne un bloc ou crée une zone cliquable.</span><span>Fond brun validé pour prototypage · 1536 × 1024 px · brouillons partagés en prévisualisation</span></div>
 </section>
 </main>
+<div id="journal-publication-view-status" role="status" aria-live="polite">Chargement du livre publié pour test…</div>
 <dialog id="delete-layer-dialog" aria-labelledby="delete-layer-heading" aria-describedby="delete-layer-description">
  <h2 id="delete-layer-heading">Supprimer ce calque ?</h2>
  <p id="delete-layer-description">Cette zone sera supprimée de ton prototype.</p>
@@ -269,8 +284,11 @@ html.journal-viewer #book .layer{cursor:default}
 <script>
 'use strict';
 (() => {
-const VIEWER_ONLY = new URLSearchParams(location.search).get('viewer') === '1';
-if (VIEWER_ONLY) document.documentElement.classList.add('journal-viewer');
+const QUERY_PARAMS=new URLSearchParams(location.search);
+const VIEWER_ONLY=QUERY_PARAMS.get('viewer')==='1';
+const PUBLICATION_PREVIEW_VIEW=VIEWER_ONLY&&QUERY_PARAMS.get('publication')==='preview';
+if(VIEWER_ONLY)document.documentElement.classList.add('journal-viewer');
+if(PUBLICATION_PREVIEW_VIEW)document.documentElement.classList.add('journal-publication-preview');
 const $ = s => document.querySelector(s);
 const COPY = x => JSON.parse(JSON.stringify(x));
 const SAVE_KEY='deadelustv.phasmo.atelier.complet.v4_3';
@@ -646,7 +664,7 @@ function fitStage(){
 function updateInfo(){
  $('#view-info').textContent=(mode==='edit'?'Édition':'Test des clics')+' · '+(view.page==='sommaire'?'Sommaire':(view.name||(view.folderId?folderPath(view.group,view.folderId):state.groups[view.group].label)));
 }
-function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));}catch(e){/* Certains navigateurs bloquent le stockage local : exporter le JSON. */}},350);}
+function save(){if(PUBLICATION_PREVIEW_VIEW)return;clearTimeout(saveTimer);saveTimer=setTimeout(()=>{try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));}catch(e){/* Certains navigateurs bloquent le stockage local : exporter le JSON. */}},350);}
 function updateCurrentElement(){
  const e=getSelected();if(!e)return;const old=surface.querySelector(`[data-id="${e.id}"]`);
  if(old)old.replaceWith(makeLayer(e));renderLayerList();save();
@@ -1257,4 +1275,5 @@ init();
 })();
 </script>
 <script src="journal-preview-sync.js" defer></script>
+<script src="journal-preview-publication-viewer.js" defer></script>
 </body></html>
