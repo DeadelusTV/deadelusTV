@@ -5,7 +5,7 @@
  */
 (() => {
  const params=new URLSearchParams(location.search);
- if(params.get('viewer')!=='1'||params.get('publication')!=='public')return;
+ if(params.get('viewer')!=='1'||params.get('publication')==='preview')return;
  const status=document.getElementById('journal-publication-view-status');
  const show=message=>{if(status)status.textContent=message;};
  const project='https://eodtxlhnfzyapkyvvxdi.supabase.co';
