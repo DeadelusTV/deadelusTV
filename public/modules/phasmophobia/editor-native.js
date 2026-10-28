@@ -128,19 +128,7 @@
         out.attrs={...(out.attrs||{}),textAlign:raw.attrs.textAlign};
       if(Array.isArray(raw.content)){
         const children=raw.content.map(child=>clean(child,level+1)).filter(Boolean);
-        // D'anciens brouillons ont une liste séparée pour chaque ligne : le
-        // premier élément de chacune ne pouvait pas devenir une sous-liste.
-        // Fusionner uniquement les listes à puces contiguës, sans séparateur.
-        const blocks=[];
-        for(const child of children){
-          const previous=blocks[blocks.length-1];
-          if(['doc','listItem'].includes(raw.type)&&child.type==='bulletList'&&
-            previous?.type==='bulletList'&&
-            (previous.content?.length||0)+(child.content?.length||0)<=200){
-            previous.content=[...(previous.content||[]),...(child.content||[])];
-          }else blocks.push(child);
-        }
-        if(blocks.length)out.content=blocks;
+        if(children.length)out.content=children;
       }
       return out;
     }
@@ -376,7 +364,18 @@
       const node=el(tag);
       if(['paragraph','heading'].includes(item.type)&&['left','center','right'].includes(item.attrs?.textAlign))
         node.style.textAlign=item.attrs.textAlign;
-      if(['paragraph','heading'].includes(item.type)){
+      if(item.type==='listItem'){
+        for(const [index,sub] of (item.content||[]).entries()){
+          // Un p autour de la première ligne fait indenter le paragraphe par
+          // Chrome (blockquote), pas l'élément de liste après rechargement.
+          if(index===0&&sub.type==='paragraph'){
+            if(['left','center','right'].includes(sub.attrs?.textAlign))
+              node.style.textAlign=sub.attrs.textAlign;
+            renderInline(node,sub.content);
+            if(!node.childNodes.length)node.append(document.createElement('br'));
+          }else walk(node,sub);
+        }
+      }else if(['paragraph','heading'].includes(item.type)){
         renderInline(node,item.content);
         if(!node.childNodes.length)node.append(document.createElement('br'));
       }else for(const sub of item.content||[])walk(node,sub);
@@ -1012,7 +1011,7 @@
     try{await store();}finally{saveButton.disabled=false;}
   });
   window.addEventListener('pagehide',()=>{const d=current();if(d)d.doc=readEditor();if(timer)store();});
-  root.dataset.editorRelease='20261028.5';
+  root.dataset.editorRelease='20261028.6';
   root.setAttribute('contenteditable','true');
   root.setAttribute('spellcheck','true');
   root.setAttribute('role','textbox');
