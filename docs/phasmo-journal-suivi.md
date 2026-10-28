@@ -769,3 +769,12 @@ Fichiers de branche : `docs/phasmo-journal-preview-schema-v1.sql` (SQL appliqué
 **Confirmation réelle de l'utilisatrice :** après la correction des droits SQL `service_role` et du diagnostic JWT, le bouton **« Vérifier l'état officiel »** fonctionne dans l'éditeur DEV et retourne exactement : « Publication publique verrouillée. Aucun candidat officiel préparé. Aucune version publique en ligne. »
 
 **Statut : contrôle du statut officiel validé en navigateur**, incident précédent « Edge Function returned a non-2xx status code » résolu pour cette action. La connexion authentifiée à la fonction Edge et l'accès serveur au statut sont opérationnels. Le verrou `activation_enabled=false` reste fermé. **Prochaine recette** : cliquer « Préparer une version officielle (privée) », vérifier la révision de la publication preview, les images et polices contrôlées, confirmer qu'aucun contenu ni média n'est rendu public. La préparation privée n'est pas encore validée dans le navigateur.
+
+
+### 28/10/2026 — Recette validée : préparation privée d'une version officielle
+
+**Confirmation utilisatrice :** la préparation d'une version publique/« officielle (privée) » fonctionne depuis l'atelier connecté ; la page Livre du site DEV continue correctement d'afficher « carnet en préparation ».
+
+**Contrôle Supabase réel après la recette :** 1 candidat privé enregistré dans `phasmo_journal_production_candidates`, prélevé sur la publication privée **n°6**, brouillon source **révision 10**. Le verrou `activation_enabled=false` reste fermé ; 0 publication officielle et 0 fichier dans `phasmo-journal-public-assets`. **Attention importante pour la recette des médias :** ce candidat et la publication privée n°6 contiennent actuellement 73 calques mais **aucun calque image et aucune police importée**, leur manifeste comporte donc **0 média**. Les précédents tests Storage image/police sont distincts de cette version figée ; ne pas affirmer que le transfert d'images/polices vers les médias publics a été testé ici. Les deux fichiers Storage privés précédents ne sont pas supprimés par cette préparation.
+
+**Statut :** préparation privée validée côté utilisatrice et enregistrée ; attente du feu vert futur de publication officielle et des tests de copie d'une version contenant des médias, restauration et activation sous contrôle. Aucun changement sur `main`.
