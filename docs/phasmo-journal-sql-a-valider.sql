@@ -1,3 +1,8 @@
+-- ⚠ OBSOLÈTE POUR LE CARNET V7 : NE PAS EXÉCUTER CE SCRIPT.
+-- Ancienne esquisse (27/10/2026) conservée pour l'historique.
+-- Le plan actualisé est dans docs/phasmo-journal-supabase-architecture-v7.md.
+-- Une migration exécutable distincte devra être rédigée, testée et validée.
+--
 -- Phasmophobia / Carnet interactif : PROJET DE SCHEMA, NON EXECUTE.
 -- Version de conception 2026-10-27. A relire avec Deadelus avant toute activation.
 -- Ne pas déployer dans le projet Supabase commun sans validation explicite.
