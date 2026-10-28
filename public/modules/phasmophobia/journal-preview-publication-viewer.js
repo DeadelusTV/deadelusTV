@@ -41,7 +41,10 @@
    if(published.payload?.version!==7)throw Error('Publication incompatible avec le carnet V7.');
    const bridge=window.PHASMO_JOURNAL_REMOTE_BRIDGE;
    if(!bridge?.importPayload)throw Error('Le moteur du carnet n’est pas disponible.');
-   await bridge.importPayload(published.payload);
+   const media=window.PHASMO_JOURNAL_STORAGE_MEDIA;
+   if(!media)throw Error('Module Storage indisponible. Actualise la page.');
+   const restored=await media.restoreForEditor(published.payload,client,show);
+   await bridge.importPayload(restored);
    document.documentElement.classList.add('journal-publication-ready');
    document.title='Publication de test #'+published.release_number+' · Livre Phasmophobia';
   }catch(error){
