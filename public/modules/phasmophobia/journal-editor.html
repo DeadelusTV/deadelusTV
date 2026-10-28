@@ -134,11 +134,11 @@ html.journal-viewer #book .layer{cursor:default}
 </style>
 </head>
 <body>
-<header><div class="brand"><div class="sigil">✦</div><div><h1>Atelier V7 du journal Phasmophobia</h1><p>DeadelusTV · Mise en page, images superposées, typographie et zones cliquables</p></div></div><div class="header-right"><span class="pill">Phasmo V2 · Prévisualisation</span></div></header>
+<header><div class="brand"><div class="sigil">✦</div><div><h1>Atelier V7 du journal Phasmophobia</h1><p>DeadelusTV · Mise en page, images superposées, typographie et zones cliquables</p></div></div><div class="header-right"><a class="btn journal-back-site" href="/">← Retour au site</a><span class="pill">Phasmo V2 · Atelier</span></div></header>
 <main>
 <aside>
   <h2>Atelier de mise en page</h2>
-  <div id="journal-editor-preview-notice" role="note" style="width:100%;margin-bottom:13px;line-height:1.5;padding:5px 12px;border:1px solid #7c623b;border-radius:5px;background:#32281f;color:#f0d9b0;font:12px Arial,sans-serif">Atelier de prévisualisation : sauvegarde locale et export JSON conservés. Le brouillon partagé sur Supabase s'enregistre manuellement dans la section 7. Aucun contenu n'est publié automatiquement.</div>
+  <div id="journal-editor-preview-notice" role="note" style="width:100%;margin-bottom:13px;line-height:1.5;padding:5px 12px;border:1px solid #7c623b;border-radius:5px;background:#32281f;color:#f0d9b0;font:12px Arial,sans-serif">Atelier privé : les modifications restent un brouillon tant que tu ne les enregistres pas. Rien n’est publié automatiquement.</div>
   <p class="lead">En <b>Édition</b>, clique puis déplace un élément sur le livre. En <b>Test</b>, les onglets, flèches, noms et zones cliquables fonctionnent. Les coordonnées sont communes à toutes les tailles d'écran.</p>
   <div class="block" style="padding-top:5px;border:0">
     <h3>1 · Mode de travail</h3>
@@ -223,7 +223,7 @@ html.journal-viewer #book .layer{cursor:default}
     <p class="tip">Pour les images, sélectionne d'abord un calque « Image ». Pour les polices, sélectionne un calque de texte. La bibliothèque partagée affiche les fichiers privés déjà stockés, même s'ils ne figurent plus dans le brouillon. Aucun nouveau téléversement lors de la réutilisation. Polices TTF, OTF, WOFF, WOFF2 (max. 1,5 Mo). Images optimisées à l’import (jusqu’à 7 Mo par fichier source). Vérifie les droits avant publication.</p>
   </div>
   <div class="block" id="journal-record-manager">
-    <h3>5 · Fiches dynamiques</h3>
+    <h3>5 · Organisation des pages</h3>
     <div class="field"><label for="group-edit">Catégorie</label><select id="group-edit"></select></div>
     <div class="field"><label for="record-folder">Sous-catégorie pour une nouvelle fiche</label><select id="record-folder"></select></div>
     <div class="field"><label for="record-select">Fiches (archives incluses)</label><select id="record-select" size="7" style="width:100%" aria-label="Choisir une fiche"></select></div>
@@ -234,10 +234,10 @@ html.journal-viewer #book .layer{cursor:default}
     <div class="field"><label for="record-move-group">Déplacer la fiche vers</label><select id="record-move-group"></select></div>
     <div class="field"><label for="record-move-folder">Sous-catégorie de destination</label><select id="record-move-folder"></select></div>
     <div class="buttons"><button type="button" class="btn small" id="record-move">Déplacer la fiche</button></div>
-    <p class="tip">Chaque fiche possède un identifiant stable et ses propres calques. Les archives disparaissent des listes. Le brouillon partagé et la publication de test sont deux versions indépendantes.</p>
+    <p class="tip">Chaque fiche possède un identifiant stable et ses propres calques. Les archives disparaissent des listes. Le brouillon partagé conserve les fiches et leur organisation.</p>
   </div>
 <div class="block" id="journal-folder-manager">
-    <h3>6 · Sous-catégories dynamiques</h3>
+    <h3>6 · Sous-menus</h3>
     <p class="tip">Crée des rubriques à l'intérieur des cinq onglets du carnet, avec des sous-catégories imbriquées.</p>
     <div class="field"><label for="folder-select">Rubriques (archives incluses)</label><select id="folder-select" size="6" style="width:100%"></select></div>
     <div class="field"><label for="folder-parent">Emplacement de création ou destination</label><select id="folder-parent"></select></div>
@@ -1295,7 +1295,7 @@ function setup(){
    try{await importManyImages(Array.from(ev.target.files));}catch(e){note('Images : '+e.message);}
    ev.target.value='';
  });
- $('#make-detail-template').addEventListener('click',makeIllustratedTemplate);
+ $('#make-detail-template')?.addEventListener('click',makeIllustratedTemplate);
  for(const [id,key] of [['el-imageopacity','opacity'],['el-imagerotate','rotate']])$('#'+id).addEventListener('input',ev=>{if(ev.target.value!=='')handleChange(key,ev.target.value);});
  $('#el-scope').addEventListener('change',ev=>{
    const e=getSelected();if(!e)return;e.page=ev.target.value==='global'?'*':(view.entryId?recordPage(view.entryId):view.page);renderLayers();renderLayerList();save();
@@ -1395,4 +1395,5 @@ init();
 <script src="journal-storage-dryrun-ui.js" defer></script>
 <script src="journal-preview-publication-viewer.js" defer></script>
 <script src="journal-publication-viewer.js" defer></script>
+<script src="journal-editor-simplified.js" defer></script>
 </body></html>
