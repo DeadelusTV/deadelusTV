@@ -273,6 +273,15 @@ html.journal-viewer #book .layer{cursor:default}
           <button class="btn small" id="journal-official-prepare" type="button">Préparer une version officielle (privée)</button>
         </div>
         <p class="tip">Cette étape ne publie rien et ne transfère aucun média vers le bucket public. La véritable mise en ligne reste verrouillée côté Supabase jusqu'à validation explicite.</p>
+        <div class="field" id="journal-staging-transfer-controls">
+          <strong>Test technique · Storage privé uniquement</strong>
+          <p class="tip" id="journal-staging-transfer-status" role="status" aria-live="polite">Copie physique temporaire de l'image et de la police du candidat préparé, vérification SHA-256, puis nettoyage. Aucun média publié.</p>
+          <div class="buttons">
+            <button class="btn small" id="journal-staging-transfer-test" type="button">Tester transfert privé</button>
+            <button class="btn small" id="journal-staging-transfer-fault" type="button">Tester échec et nettoyage</button>
+          </div>
+          <p class="tip">Les deux tests exigent les droits administrateur. Le bucket de test est privé ; les copies sont supprimées en fin de contrôle.</p>
+        </div>
       </div>
     </div>
     <div class="buttons"><button id="export" class="btn solid" type="button">↓ Télécharger mes réglages</button><button id="import" class="btn" type="button">↑ Charger un JSON</button><button id="reset" class="btn" type="button">Réinitialiser l'atelier</button></div>
@@ -1352,6 +1361,7 @@ init();
 <script src="journal-preview-sync.js" defer></script>
 <script src="journal-preview-publish.js" defer></script>
 <script src="journal-official-prepare.js" defer></script>
+<script src="journal-storage-dryrun-ui.js" defer></script>
 <script src="journal-preview-publication-viewer.js" defer></script>
 <script src="journal-publication-viewer.js" defer></script>
 </body></html>
