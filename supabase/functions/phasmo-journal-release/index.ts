@@ -114,14 +114,20 @@ Deno.serve(async req=>{
     const locked=!lock.data.activation_enabled;
 
     if(action==='status'){
-      const [candidate,official]=await Promise.all([
+      const [candidate,official,history]=await Promise.all([
         client.from('phasmo_journal_production_candidates')
           .select('source_preview_revision,source_preview_release,asset_manifest,prepared_at').eq('stage','production').maybeSingle(),
         client.from('phasmo_journal_production_publications')
-          .select('visibility,release_number').eq('stage','production').maybeSingle()
+          .select('visibility,release_number').eq('stage','production').maybeSingle(),
+        client.from('phasmo_journal_production_publication_history')
+          .select('release_number,source_preview_revision,published_at,approved_at')
+          .order('release_number',{ascending:false}).limit(30)
       ]);
-      if(candidate.error||official.error)throw Error('Statut de publication inaccessible.');
-      return answer({ok:true,locked,candidate:candidate.data,official:official.data});
+      if(candidate.error||official.error||history.error)
+        throw Error('Statut et historique officiels inaccessibles.');
+      return answer({ok:true,locked,reserved:Boolean(lock.data.reserved_token),
+        reserved_release:lock.data.reserved_token?lock.data.reserved_release:null,
+        candidate:candidate.data,official:official.data,history:history.data||[]});
     }
 
     if(action==='prepare'){
