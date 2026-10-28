@@ -202,10 +202,10 @@ Deno.serve(async req=>{
        JSON.stringify(preview.data.payload)!==JSON.stringify(source))
       throw Error('La publication preview a changé : reprépare la version officielle.');
     // Reservation exclusive avant copie, protege aussi contre 2 activations simultanees.
-    const token=crypto.randomUUID();
+    const claimToken=crypto.randomUUID();
     const reserved=await client.rpc('phasmo_journal_reserve_official_release',{
       p_actor:actor,p_source_revision:c.source_preview_revision,
-      p_source_release:c.source_preview_release,p_claim_token:token
+      p_source_release:c.source_preview_release,p_claim_token:claimToken
     });
     if(reserved.error||!Array.isArray(reserved.data)||reserved.data.length!==1)
       throw Error('Reservation exclusive refusée : '+(reserved.error?.message||'réponse incorrecte'));
@@ -233,7 +233,7 @@ Deno.serve(async req=>{
       }
       const committed=await client.rpc('phasmo_journal_commit_official_release',{
         p_actor:actor,p_source_revision:c.source_preview_revision,
-        p_source_release:c.source_preview_release,p_public_payload:publicPayload,p_claim_token:token
+        p_source_release:c.source_preview_release,p_public_payload:publicPayload,p_claim_token:claimToken
       });
       if(committed.error)throw Error('Finalisation atomique refusée : '+committed.error.message);
       return answer({ok:true,published:committed.data});
@@ -250,7 +250,7 @@ Deno.serve(async req=>{
         if(cleaned.error)throw Error('Nettoyage public refusé : réservation conservée, intervention nécessaire.');
       }
       const aborted=await client.rpc('phasmo_journal_abort_official_release',{
-        p_actor:actor,p_claim_token:token
+        p_actor:actor,p_claim_token:claimToken
       });
       if(aborted.error||aborted.data!==true)
         throw Error('Réservation conservée pour contrôle manuel : '+(aborted.error?.message||'annulation impossible'));
