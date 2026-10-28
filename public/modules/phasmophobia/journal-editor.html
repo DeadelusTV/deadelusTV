@@ -616,6 +616,7 @@ function drawList(node,e){
  list.style.columnGap=safeNum(e.columnGap,12,0,80)+'px';
  list.style.rowGap=safeNum(e.rowGap,0,0,80)+'px';
  list.style.gridTemplateColumns='repeat('+columns+',minmax(0,1fr))';
+ list.style.alignContent='start'; // Ne pas étirer les lignes pour remplir toute la hauteur du calque.
  for(const entry of current){
   const btn=document.createElement('button');btn.className='word';btn.type='button';
   btn.textContent=(entry.kind==='folder'?'▸ ':'')+entry.title;
