@@ -715,3 +715,10 @@ Fichiers de branche : `docs/phasmo-journal-preview-schema-v1.sql` (SQL appliqué
 - Contrôles : 11 vérifications de structure/JS avec simulations d'une publication absente et présente, et du signal `journal-ready`. Test SQL transactionnel sur la politique RLS : brouillon officiel `disabled` invisible par `anon`, `live` lisible dans une transaction annulée, sans laisser de contenu publié. Le contrôle final confirme **0 publication officielle, 0 historique officiel, 0 média public**, lecture anonyme autorisée pour le futur seulement et aucune autorisation client d'INSERT. Aucun nouveau avis de sécurité Supabase sur ces tables.
 
 **Plan de mise en ligne, sécurité des médias et liste des tests futurs :** `docs/phasmo-journal-publication-officielle-plan.md`. Restent notamment le mécanisme de promotion transactionnelle/autorisé par administrateur, le transfert public de médias **approuvés** avec licences de polices, les annulations/restaurations, la vérification multi-comptes et la recette navigateur de la nouvelle iframe. Aucun contenu du carnet n'est encore publiquement consultable.
+
+
+### 28/10/2026 — Recette navigateur : lecteur public sans publication
+
+**Retour utilisateur :** sur le site DEV, en ouvrant la rubrique « Livre », l'utilisatrice confirme voir le message indiquant que le carnet arrive / est en préparation. **Résultat attendu et validé** : aucune publication officielle `live` n'étant disponible, la visionneuse publique affiche un écran d'attente et ne révèle ni brouillon local, ni brouillon Supabase, ni publication de test privée. Cette confirmation valide le scénario visuel « aucune publication publique » dans le navigateur ; elle ne valide pas encore le scénario public avec une publication officielle active.
+
+**Suite prévue :** préparer l'opération de publication officielle contrôlée (autorisation administrateur vérifiée côté serveur, médias autorisés, état `disabled` avant activation, historique, restauration/désactivation) et réaliser les tests avant mise en ligne. Ne publier aucun contenu sans validation explicite. Aucune fusion vers `main`.
