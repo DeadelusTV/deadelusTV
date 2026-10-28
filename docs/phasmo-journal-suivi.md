@@ -609,3 +609,25 @@ Fichiers de branche : `docs/phasmo-journal-preview-schema-v1.sql` (SQL appliqué
 - **Limite d'appellation « admin sur tout le site » :** la vérification concerne les modules Supabase News/TCG/Carnet. Il n'existe pas de rôle global universel donnant automatiquement accès à GitHub, Cloudflare, d'autres sites autonomes ou modules non encore dotés d'autorisations.
 
 **Carnet V7 / synchronisation :** les rôles Phasmo sont créés, mais le brouillon partagé reste vide et la synchronisation UI n'est **pas encore activée**. Le module `journal-preview-sync.js` est préparé mais non chargé par l'atelier, faute de pont achevé ; la section 7 de sauvegardes reste locale. Conserver l'export JSON comme point de restauration avant le premier import.
+
+
+### 28/10/2026 — Carnet V7 : synchronisation manuelle du brouillon PREVIEW branchée
+
+**Travail livré sur `developpement/phasmo-v2`, aucune modification du code de `main` :**
+
+- `public/modules/phasmophobia/journal-editor.html` expose désormais un pont contrôlé `window.PHASMO_JOURNAL_REMOTE_BRIDGE` avec `exportPayload()` pour copier l'état V7 et `importPayload(payload)` pour appliquer un snapshot distant via le même validateur JSON qu'un import local. Les calques, fiches, rubriques, médias et cinq onglets restent dans leur modèle V7.
+- La section `7 · Sauvegardes` contient maintenant les boutons **Charger le brouillon partagé** et **Enregistrer sur Supabase**, plus un texte d'état. Ils sont servis par `public/modules/phasmophobia/journal-preview-sync.js` et ne s'activent pas dans la visionneuse `?viewer=1`.
+- `journal-preview-sync.js` : client Supabase avec clé publiable uniquement, récupération de la session Twitch de la même origine Cloudflare que le portail, contrôle en base des rôles `phasmo_journal_admins`/`phasmo_journal_editors`, lecture de la table `phasmo_journal_preview_drafts` uniquement. Une action de l'utilisateur est exigée pour charger un snapshot distant et une confirmation pour remplacer l'état local. Si la table est vide, le bouton « Charger » initialise la référence de révision à 0, sans importer ni effacer de données ; « Enregistrer » crée la révision 1. Les écritures ultérieures exigent la **révision attendue** (`WHERE revision=<ancienne>`), puis passent à N+1. Une écriture concurrente provoque un message de conflit sans effacer les modifications locales. Aucun enregistrement serveur automatique.
+- Le navigateur continue de sauvegarder localement et peut exporter/importer le JSON. Dans ce pilote, le JSON du brouillon ne doit pas dépasser 7,5 Mo environ ; une vraie migration des images/polices vers un Storage privé est encore à prévoir. Un brouillon n'est **jamais** une publication publique.
+- Les libellés de l'interface indiquent désormais « Atelier V7 » et « Prévisualisation » plutôt que « prototype local V4.3 ».
+
+**Vérifications :**
+- SQL live sur Supabase en transaction annulée : lecture sous identité administrateur autorisée, écriture d'une révision 1 acceptée et création d'une ligne d'historique ; mise à jour N→N+1 acceptée avec historique ; écriture sous un compte Twitch non autorisé refusée par RLS (SQLSTATE 42501). Tests annulés avec `ROLLBACK` : ils n'ont laissé ni brouillon ni ligne d'historique.
+- Relecture SQL : les quatre tables ont RLS activée, les politiques attendues sont présentes, `anon` n'a pas le GRANT SELECT.
+- 12 contrôles de parcours avec client Supabase simulé : premier chargement vide, création V1, deuxième éditeur charge, révision suivante, conflit sur ancien numéro, conservation des modifications locales, rejet du compte ordinaire, recharge et enregistrement après conflit, visionneuse inactive.
+- Analyse syntaxique de l'éditeur V7 et du module JS, présence vérifiée des trois boutons/états et du pont entre scripts.
+- **Limite** : la session Twitch réelle sur le domaine Cloudflare de prévisualisation, le déploiement effectif du commit et le rendu dans le navigateur n'ont pas pu être testés depuis cette exécution. Ne pas annoncer une recette navigateur terminée.
+
+**Recette demandée** : l'utilisatrice et/ou Deadelus ouvrent le site de **prévisualisation Phasmo V2**, se connectent au menu Compte avec Twitch (connexion sur `main` ne partage pas automatiquement la session Cloudflare), puis ouvrent `/modules/phasmophobia/journal-editor.html`. Dans la section 7, « Charger le brouillon partagé » doit annoncer qu'il est vide ; « Enregistrer sur Supabase » crée la première version à partir de l'atelier courant (maquette et exemples). Le second administrateur fait « Charger le brouillon partagé » et retrouve le même état. Modifier une fiche, enregistrer, puis recharger sur l'autre poste ; en cas d'édition simultanée, vérifier que l'écriture obsolète est refusée et que l'état local reste intact. Tester également déconnexion et compte sans permission. En cas d'échec, reporter le message exact de la section 7.
+
+**Restent hors périmètre de ce lot** : publication publique du carnet, Storage/media partagé hors JSON, attribution d'éditeurs supplémentaires, administration des rôles dans l'UI, fusion des changements concurrents, déploiement `main`.
