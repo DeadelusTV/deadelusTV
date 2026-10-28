@@ -572,3 +572,17 @@ Décision : la rubrique **News devient un chantier prioritaire**, après validat
 **Validation de recette utilisateur reçue** : « C'est validé ! » pour la navigation V7, la séparation libre des calques « Fiches » et « Sous-catégories », la pagination automatique des longues listes et le parcours de retour / fil d'Ariane. La version prototype sur `developpement/phasmo-v2` est acceptée par l'utilisatrice. Les vérifications multi-appareils exhaustives ne sont pas impliquées par ce retour.
 
 **Étape suivante prévue** : étudier et préparer la sauvegarde partagée via Supabase (modèle, migration des JSON, brouillons/publication, autorisations/RLS). Conserver les cinq onglets et toutes les positions, fiches, sous-catégories, images et comportements validés. Le système « modos Twitch du canal DeadelusTV seulement = éditeurs Phasmo » reste **une idée planifiée, non activée**. Ne rien déployer sur `main` ni modifier Supabase sans définir et valider d'abord les modalités.
+
+
+### 28/10/2026 — Audit Supabase du carnet V7, sans migration
+
+**Audit en lecture seule du projet Supabase partagé `eodtxlhnfzyapkyvvxdi` :**
+- PostgreSQL 17.11 ; aucune table `public.phasmo_journal_*` dans le relevé à cette date.
+- Auth Twitch réutilisable dans `public/assets/site-auth.js`. Permissions News existantes (`phasmo_news_editors`, `phasmo_news_admins`), **distinctes** des futures permissions du carnet. Ne toucher ni aux tables News ni au TCG.
+- Buckets Storage existants uniquement : `phasmo-news-draft-images` (privé), `phasmo-news-published-images` (public), `tcg-card-images` (public). Prévoir des buckets propres au carnet et une migration du base64 (images ET polices).
+- Le SQL historique `docs/phasmo-journal-sql-a-valider.sql` était un **brouillon non appliqué**, conçu avant l'évolution V7, et ne représente pas tout le besoin. Un avertissement « OBSOLÈTE, NE PAS EXÉCUTER » y a été ajouté ; le fichier d'origine reste pour l'historique.
+- Revue de documentation Supabase actuelle sur la RLS, Storage, RPC/transactions, et avis de changement concernant l'exposition Data API des nouvelles tables publiques (échéance générale annoncée au 30 octobre 2026). RLS + GRANT + vérification d'exposition Data API indispensables.
+
+**Proposition de conception créée :** `docs/phasmo-journal-supabase-architecture-v7.md`. Elle compare les données du JSON V7, recommande cinq tables (deux permissions, brouillons partagés, publications explicites, historique), deux buckets média dédiés, une sauvegarde optimiste par `revision` et des contrôles RLS par identité, stage et rôle. Brouillon jamais public ; publication preview distincte de production. Elle documente les limites de l'édition concurrente sur JSON global et les arbitrages avant une future migration.
+
+**Aucune action sur la base Supabase**, aucune création de rôle ou bucket, aucun changement d'authentification existante et aucune fusion de GitHub `main`. **Prochaine action seulement après validation** : figer les droits, visibilité preview, stratégie de synchronisation, puis préparer le SQL exécutable et ses tests, sans l'exécuter à ce stade.
