@@ -1337,7 +1337,7 @@ function setup(){
  $('#record-delete-confirm').addEventListener('click',confirmRecordDeletion);
  $('#delete-record-dialog').addEventListener('close',()=>{pendingRecordDelete=null;});
  for(const key of ['name','text','x','y','w','h','size','font','color','align','columns','line','columnGap','rowGap','rotate','opacity','z','action','target','entry','imageFit','blend']){
-   $('#el-'+(key==='imageFit'?'imagefit':key)).addEventListener('input',ev=>{if(ev.target.value===''&&ev.target.type==='number')return;handleChange(key,ev.target.value);});
+   $('#el-'+(key==='imageFit'?'imagefit':key==='columnGap'?'column-gap':key==='rowGap'?'row-gap':key)).addEventListener('input',ev=>{if(ev.target.value===''&&ev.target.type==='number')return;handleChange(key,ev.target.value);});
  }
  $('#el-listmode').addEventListener('change',ev=>handleChange('listMode',ev.target.value));
  for(const field of ['locked','hidden','bold','italic','underline']){
