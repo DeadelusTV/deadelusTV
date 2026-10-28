@@ -32,8 +32,38 @@
   const api=await client();
   const identity=await api.auth.getUser();
   if(identity.error||!identity.data?.user)throw Error('Connecte-toi d’abord avec Twitch.');
-  const {data,error}=await api.functions.invoke('phasmo-journal-release',{body:{action}});
-  if(error)throw Error(data?.error||error.message||'Publication non disponible.');
+  // Ne pas supposer que l'instance Functions a récupéré automatiquement le JWT.
+  // Le serveur revérifie de toute façon le JWT avec auth.getUser(token)
+  // et le rôle Phasmo en base.
+  const session=await api.auth.getSession();
+  if(session.error||!session.data?.session?.access_token)
+   throw Error('Session Twitch non disponible pour cette action. Reconnecte-toi et réessaie.');
+  const {data,error}=await api.functions.invoke('phasmo-journal-release',{
+   body:{action},
+   headers:{Authorization:'Bearer '+session.data.session.access_token}
+  });
+  if(error){
+   let message=typeof data?.error==='string'?data.error:'';
+   let httpCode='';
+   const response=error.context;
+   if(response&&typeof response.status==='number'){
+    httpCode='HTTP '+response.status;
+    const errorCode=response.headers?.get?.('sb-error-code');
+    if(errorCode)httpCode+=' ('+errorCode+')';
+    try{
+     const value=await response.clone().json();
+     if(typeof value?.error==='string')message=value.error;
+     else if(typeof value?.message==='string')message=value.message;
+     else if(typeof value?.msg==='string')message=value.msg;
+    }catch{
+     try{
+      const value=(await response.clone().text()).trim();
+      if(value&&!/^</.test(value))message=value.slice(0,200);
+     }catch{/* Réponse HTTP sans corps lisible. */}
+    }
+   }
+   throw Error([httpCode,message||error.message||'Publication indisponible.'].filter(Boolean).join(' : '));
+  }
   if(!data?.ok)throw Error(data?.error||'Réponse de publication invalide.');
   return data;
  }
