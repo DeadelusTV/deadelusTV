@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Atelier Phasmo V7 · Brouillon de prévisualisation · DeadelusTV</title>
+<title>Éditeur du carnet Phasmophobia · DeadelusTV</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Caveat:wght@400;600;700&family=Gloria+Hallelujah&family=Indie+Flower&family=Kalam:wght@400;700&family=Patrick+Hand&display=swap');
 :root{font-family:Arial,Helvetica,sans-serif;--bg:#0e0f10;--surface:#19191a;--surface2:#242322;--line:#3c372f;--gold:#dec089;--muted:#b9ae9c;--text:#f3e7d7;color-scheme:dark}
@@ -1016,7 +1016,7 @@ function manageFolder(action){
   renderFolderManager(action==='delete'?null:folder?.id||id);
   renderRecordManager();
   renderLayers();renderLayerList();renderEditor();updateInfo();save();
-  note('Sous-catégorie modifiée localement. Exporte le JSON pour conserver tes essais.');
+  note('Sous-menu modifié localement. Enregistre le brouillon pour conserver ce changement.');
  }catch(error){note('Sous-catégories : '+error.message);}
 }
 function manageRecord(action){
@@ -1063,7 +1063,7 @@ function manageRecord(action){
   if(view.entryId===rec?.id)view.name=rec.title;
   syncRecordsToGroups();renderRecordManager(rec?.id||id);renderLayers();updateInfo();save();
   if(action==='add'){setView('detail:'+group,rec.id);save();}
-  note('Changement local enregistré. Pour conserver tes essais, exporte le JSON.');
+  note('Modification locale prête. Enregistre le brouillon pour la partager.');
  }catch(err){note(err.message);}
 }
 function confirmRecordDeletion(){
@@ -1217,7 +1217,7 @@ async function loadSettings(file,fromRemote=false){
  if(raw.version<RECORD_SCHEMA)migrateSeparateLists();
  listPagePositions.clear();
  selected=state.elements[0]?.id;view={page:'sommaire',group:null,name:null,entryId:null,folderId:null};
- $('#page-select').value=view.page;fillGroupEdit();renderLayers();renderLayerList();renderEditor();fitStage();save();note('Réglages chargés. Vérifie l’affichage, puis exporte ta version complète.');
+ $('#page-select').value=view.page;fillGroupEdit();renderLayers();renderLayerList();renderEditor();fitStage();save();note('Version chargée. Vérifie le carnet avant de l’enregistrer.');
 }
 
 function shiftLayer(direction){
