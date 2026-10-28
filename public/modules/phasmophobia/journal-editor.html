@@ -1233,7 +1233,7 @@ function setup(){
  renderLayers();renderLayerList();renderEditor();fitStage();fillGroupEdit();updateInfo();
 }
 async function init(){
- try{
+ if(!PUBLICATION_PREVIEW_VIEW)try{
    const previous=localStorage.getItem(SAVE_KEY)||localStorage.getItem(OLD_SAVE_KEY)||localStorage.getItem(OLDER_SAVE_KEY)||localStorage.getItem(OLDEST_SAVE_KEY)||localStorage.getItem('deadelustv.phasmo.atelier.complet.v3');
    if(previous){const data=JSON.parse(previous);if([2,3,4,5,6,RECORD_SCHEMA].includes(data?.version)&&Array.isArray(data.elements)){
      const tmp=new Blob([JSON.stringify(data)],{type:'application/json'});
