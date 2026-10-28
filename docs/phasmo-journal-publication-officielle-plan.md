@@ -139,3 +139,12 @@ Après ouverture de la section « Commandes administrateur » et clic sur « Act
 **Correctif** : la variable de réservation est renommée `claimToken` dans sa déclaration et ses trois utilisations RPC. Le jeton d'authentification reste `token`. Commit `79d0ccb38c5f0f1610d4eff648d582b88e5eb603` sur `developpement/phasmo-v2`. Fonction serveur redéployée en **version 5**, active ; vérification du code déployé : plus de déclaration locale concurrente. Vérification SQL après correctif : candidat de test **n°8/révision 12**, aucune publication ni média public, verrou `false` et aucune réservation active.
 
 **Test navigateur encore demandé** : sans republier ni toucher aux brouillons, cliquer sur « Actualiser les commandes et l'historique » et lire le texte immédiatement sous « Commandes administrateur · publication et retour arrière ». Résultat attendu : « Verrou public fermé. Candidat : test n°8, révision 12. Aucune version officielle. Historique : 0 version(s). » ; boutons Publier, Restaurer et Mettre hors ligne grisés. Ne pas valider cette recette navigateur avant confirmation de l'administratrice.
+
+
+### Recette navigateur confirmée le 28 octobre 2026 — statut des commandes administrateur
+
+L'administratrice a rafraîchi le panneau « Commandes administrateur · publication et retour arrière » sur l'éditeur DEV après le correctif `token`. **Texte observé et confirmé :** « Verrou public fermé. Candidat : test n°8, révision 12. Aucune version officielle. Historique : 0 version(s). » L'erreur JavaScript `Cannot access 'token' before initialization` n'apparaît plus : **contrôle d'état et d'historique en navigateur validé**.
+
+**Contre-vérification SQL après retour :** `activation_enabled=false`, aucune réservation active, candidat n°8/révision 12 intact, **0 publication officielle**, **0 ligne d'historique** et **0 fichier dans le bucket public**. Aucun changement sur `main`.
+
+**À distinguer :** la capture ou le retour de ce test confirme l'affichage du bon statut, mais ne constitue pas encore un retour explicite sur le grisage des trois boutons après saisie d'une confirmation ; ce comportement a été validé en simulation JavaScript. Aucun test réel de publication ou restauration n'a été entrepris.
