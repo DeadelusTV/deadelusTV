@@ -735,6 +735,22 @@ function add(kind){
  if(kind==='tab')e.action='category';
  state.elements.push(e);selected=e.id;renderLayers();renderLayerList();renderEditor();save();note('Calque ajouté. Glisse-le à l’endroit voulu.');
 }
+function addNavigationLayer(kind){
+ if(mode!=='edit')setMode('edit');
+ if(kind==='folders'&&!view.page.startsWith('category:')){
+  note('Choisis d’abord une « Liste · ... » dans le menu « Vue à travailler ».');return;
+ }
+ if(kind==='breadcrumb'&&!/^(category|detail):/.test(view.page)){
+  note('Choisis une catégorie ou un modèle de fiche pour ajouter son fil d’Ariane.');return;
+ }
+ const page=view.entryId?recordPage(view.entryId):view.page;
+ const e=kind==='folders'
+  ?layer(page,'list','Liste des sous-catégories','',55,76,34,17,{size:24,columns:2,source:view.group,listMode:'folders'})
+  :layer(page,'breadcrumb','Fil d’Ariane','',10,8,37,4,{size:24,font:'Kalam',z:38});
+ state.elements.push(e);selected=e.id;
+ renderLayers();renderLayerList();renderEditor();save();
+ note(kind==='folders'?'Liste des rubriques créée : tu peux la déplacer et la redimensionner librement.':'Fil d’Ariane créé : position et apparence libres.');
+}
 function cloneLayer(){const e=getSelected();if(!e)return;const newEl=COPY(e);newEl.id='element-'+serial++;newEl.name=e.name+' (copie)';newEl.x=Math.min(96,e.x+1.5);newEl.y=Math.min(96,e.y+1.5);state.elements.push(newEl);selectLayer(newEl.id);renderLayers();save();}
 let pendingDeleteId=null;
 function removeLayer(){
@@ -960,14 +976,14 @@ async function loadSettings(file){
  const raw=JSON.parse(await file.text());
  let incoming;
  if(raw.version===1&&raw.blocks&&raw.groups)incoming=importLegacy(raw);
- else if([2,3,4,5,RECORD_SCHEMA].includes(raw.version)&&Array.isArray(raw.elements)&&raw.groups&&Array.isArray(raw.fonts))incoming=raw;
+ else if([2,3,4,5,6,RECORD_SCHEMA].includes(raw.version)&&Array.isArray(raw.elements)&&raw.groups&&Array.isArray(raw.fonts))incoming=raw;
  else throw Error('Format non reconnu. Le JSON attendu vient de cet atelier ou du premier sommaire.');
  if(incoming.elements.length>5000)throw Error('Trop de calques (maximum 5 000).');
  const defaults=buildDefault();
  const folders=FOLDERS.normalize(incoming.folders);
  const records=RECORDS.normalize(incoming.records,incoming.groups,folders);
  const recordPages=new Set(records.map(rec=>recordPage(rec.id)));
- const permitted=['heading','text','list','hotspot','tab','image','line'];
+ const permitted=['heading','text','list','hotspot','tab','image','line','breadcrumb'];
  const cleaned=incoming.elements.filter(e=>e&&permitted.includes(e.kind)&&typeof e.name==='string'&&typeof e.page==='string'&&(e.page==='*'||VIEWS.some(v=>v.id===e.page)||recordPages.has(e.page))).map(e=>({
    ...layer(e.page,e.kind,String(e.name).slice(0,100),String(e.text??'').slice(0,20000),0,0,12,8),
    ...e,
@@ -976,7 +992,9 @@ async function loadSettings(file){
    z:safeNum(e.z,e.page==='*'?800:30,-100,2000),locked:!!e.locked,hidden:!!e.hidden,bold:!!e.bold,italic:!!e.italic,underline:!!e.underline,
    imageFit:['contain','cover','fill'].includes(e.imageFit)?e.imageFit:'contain',blend:['normal','multiply','screen','darken'].includes(e.blend)?e.blend:'normal',
    size:safeNum(e.size,24,8,120),columns:safeNum(e.columns,3,1,6),line:safeNum(e.line,1.16,.75,2.6),rotate:safeNum(e.rotate,0,-40,40),opacity:safeNum(e.opacity,100,0,100),
-   image:typeof e.image==='string'&&e.image.length<5_000_000&&/^data:image\/(?:png|jpeg|webp|gif);base64,/.test(e.image)?e.image:''
+   image:typeof e.image==='string'&&e.image.length<5_000_000&&/^data:image\/(?:png|jpeg|webp|gif);base64,/.test(e.image)?e.image:'',
+   source:GROUP_ORDER.includes(e.source)?e.source:null,
+   listMode:['records','folders','manual'].includes(e.listMode)?e.listMode:(e.source?'records':'manual')
  }));
  if(cleaned.length===0)throw Error('Ce fichier ne contient aucun calque utilisable.');
  state={...defaults,...incoming,version:RECORD_SCHEMA,folders,records,elements:cleaned,fonts:[],groups:defaults.groups};
@@ -989,6 +1007,8 @@ async function loadSettings(file){
  for(const f of incomingFonts.slice(0,8)){try{await registerFont(f);}catch(e){note('Attention : une police n’a pas été chargée.');}}
  // Aucune confiance dans les identifiants de l'import : recréation stable.
  state.elements.forEach((e,i)=>e.id='element-'+(i+1));serial=state.elements.length+1;
+ if(raw.version<RECORD_SCHEMA)migrateSeparateLists();
+ listPagePositions.clear();
  selected=state.elements[0]?.id;view={page:'sommaire',group:null,name:null,entryId:null,folderId:null};
  $('#page-select').value=view.page;fillGroupEdit();renderLayers();renderLayerList();renderEditor();fitStage();save();note('Réglages chargés. Vérifie l’affichage, puis exporte ta version complète.');
 }
@@ -1137,6 +1157,8 @@ function setup(){
  $('#test-mode').addEventListener('click',()=>setMode('test'));
  $('#grid').addEventListener('click',()=>{state.grid=!state.grid;renderLayers();save();$('#grid').classList.toggle('active',state.grid);});
  for(const kind of ['heading','text','list','tab','hotspot','image','line'])$('#add-'+kind).addEventListener('click',()=>add(kind));
+ $('#add-folders-list').addEventListener('click',()=>addNavigationLayer('folders'));
+ $('#add-breadcrumb').addEventListener('click',()=>addNavigationLayer('breadcrumb'));
  $('#clone').addEventListener('click',cloneLayer);$('#remove').addEventListener('click',removeLayer);$('#remove-quick').addEventListener('click',removeLayer);
  $('#cancel-delete-layer').addEventListener('click',()=>$('#delete-layer-dialog').close());
  $('#confirm-delete-layer').addEventListener('click',confirmDeleteLayer);
@@ -1146,7 +1168,7 @@ function setup(){
  $('#export').addEventListener('click',exportSettings);
  $('#import').addEventListener('click',()=>$('#json-input').click());
  $('#json-input').addEventListener('change',async ev=>{const file=ev.target.files[0];if(!file)return;try{await loadSettings(file);}catch(err){note('Import : '+err.message);}ev.target.value='';});
- $('#reset').addEventListener('click',()=>{if(!confirm('Réinitialiser l’atelier ? Exporte tes réglages avant si tu veux les conserver.'))return;state=buildDefault();selected=state.elements[0].id;fillGroupEdit();setView('sommaire');fitStage();save();note('Atelier réinitialisé.');});
+ $('#reset').addEventListener('click',()=>{if(!confirm('Réinitialiser l’atelier ? Exporte tes réglages avant si tu veux les conserver.'))return;state=buildDefault();listPagePositions.clear();selected=state.elements[0].id;fillGroupEdit();setView('sommaire');fitStage();save();note('Atelier réinitialisé.');});
  $('#import-font').addEventListener('click',()=>$('#font-input').click());
  $('#font-input').addEventListener('change',async ev=>{const f=ev.target.files[0];if(f)try{await attachFont(f);}catch(err){note('Police : '+err.message);}ev.target.value='';});
  $('#import-image').addEventListener('click',()=>$('#asset-input').click());
@@ -1177,7 +1199,7 @@ function setup(){
 async function init(){
  try{
    const previous=localStorage.getItem(SAVE_KEY)||localStorage.getItem(OLD_SAVE_KEY)||localStorage.getItem(OLDER_SAVE_KEY)||localStorage.getItem(OLDEST_SAVE_KEY)||localStorage.getItem('deadelustv.phasmo.atelier.complet.v3');
-   if(previous){const data=JSON.parse(previous);if([2,3,4,5,RECORD_SCHEMA].includes(data?.version)&&Array.isArray(data.elements)){
+   if(previous){const data=JSON.parse(previous);if([2,3,4,5,6,RECORD_SCHEMA].includes(data?.version)&&Array.isArray(data.elements)){
      const tmp=new Blob([JSON.stringify(data)],{type:'application/json'});
      // Restore inline to avoid requiring File-compatible features in older browsers.
      const parsed=JSON.parse(await tmp.text());
@@ -1188,6 +1210,7 @@ async function init(){
       syncRecordsToGroups();
      state.elements=state.elements.map(e=>({...{z:e.page==='*'?800:30,locked:false,hidden:false,bold:false,italic:false,underline:false,imageFit:'contain',blend:'normal'},...e}));
      serial=Math.max(1,...state.elements.map(e=>Number(String(e.id).split('-')[1])||0))+1;
+     if(parsed.version<RECORD_SCHEMA)migrateSeparateLists();
      for(const font of (parsed.fonts||[]).slice(0,8)){try{await registerFont(font);}catch(e){}}
      selected=state.elements[0]?.id;
      if(migrated)save();
