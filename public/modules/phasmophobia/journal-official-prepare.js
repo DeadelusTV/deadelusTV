@@ -76,6 +76,7 @@
  check.addEventListener('click',()=>busy(async()=>{
   show('Vérification des permissions et de l’état des publications…');
   const info=await invoke('status');
+  window.dispatchEvent(new CustomEvent('phasmo:official-status',{detail:info}));
   const candidate=info.candidate;
   const official=info.official;
   show((info.locked?'Publication publique verrouillée. ':'Publication publique autorisée sur le serveur. ')+
@@ -88,6 +89,7 @@
   if(!confirm('Préparer PRIVÉMENT la dernière version publiée en test ? Le serveur va vérifier ses images et polices, mais ne rendra rien public.'))return;
   show('Vérification du snapshot figé et des fichiers privés sur Supabase…');
   const data=await invoke('prepare');
+  window.dispatchEvent(new CustomEvent('phasmo:official-prepared',{detail:data}));
   const m=data.media;
   show('Version officielle préparée en privé : révision '+data.prepared.source_preview_revision+
     ', publication de test n°'+data.prepared.source_preview_release+
