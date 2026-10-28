@@ -57,6 +57,14 @@ aside p.lead{font-size:12px;color:#afa69b;line-height:1.6;margin:0 0 16px}
 #book .layer[data-kind="tab"]{display:flex;align-items:center;justify-content:center;font-family:'Caveat',cursive;font-weight:700;color:#2a1c0e;text-shadow:0 1px 1px #ffedce;white-space:nowrap}
 #book .layer[data-kind="line"]{border-top:3px solid #2b2119;height:4px!important;min-height:0!important}
 #book .layer[data-kind="list"] .words{display:grid;gap:0 12px;grid-auto-flow:column;align-items:start}
+#book .layer[data-kind="list"].paginated-list{display:flex;flex-direction:column;min-height:0;overflow:hidden}
+#book .layer[data-kind="list"].paginated-list .words{flex:1;min-height:0;overflow:hidden}
+#book .layer .list-pagination{display:flex;align-items:center;justify-content:space-between;flex:none;gap:8px;padding-top:3px;font:600 .76em/1.15 Arial,sans-serif}
+#book .layer .list-pagination button{border:1px solid #8a6e48;border-radius:4px;color:inherit;background:#efddb055;min-width:24px;min-height:25px;padding:2px 7px;cursor:pointer}
+#book .layer .list-pagination button:disabled{opacity:.35;cursor:default}
+#book .layer[data-kind="breadcrumb"]{display:flex;align-items:flex-start;gap:5px;flex-wrap:wrap;line-height:1.1}
+#book .layer[data-kind="breadcrumb"] button{font:inherit;color:inherit;border:0;background:none;padding:0 3px;cursor:pointer;text-decoration:underline}
+#book .layer[data-kind="breadcrumb"] button:focus-visible,#book .layer .list-pagination button:focus-visible{outline:3px solid #85541d}
 #book .layer[data-kind="list"] .words .word{display:block;color:inherit;text-decoration:none;text-align:inherit;border:0;background:transparent;padding:0 2px;font:inherit;white-space:normal;overflow-wrap:anywhere;cursor:inherit}
 #book .layer[data-kind="list"] .words .word:hover{color:#76431c;text-decoration:underline}
 #book.edit-mode .layer{cursor:grab}#book.edit-mode .layer:hover{outline:2px dashed #9b6935a8;outline-offset:1px}
@@ -118,7 +126,7 @@ html.journal-viewer #book .layer{cursor:default}
     <h3>2 · Calques de cette page</h3>
     <div class="field"><label for="layers">Sélectionner un élément</label><div id="layers" class="item-list" role="listbox" aria-label="Éléments de la page"></div></div>
     <div class="buttons" style="margin:8px 0 11px"><button id="remove-quick" class="btn small" type="button" title="Supprimer le calque sélectionné">🗑 Supprimer la sélection</button></div>
-    <div class="buttons"><button id="add-heading" class="btn small" type="button">+ Titre</button><button id="add-text" class="btn small" type="button">+ Texte</button><button id="add-list" class="btn small" type="button">+ Liste</button><button id="add-tab" class="btn small" type="button">+ Onglet</button><button id="add-hotspot" class="btn small" type="button">+ Zone cliquable</button><button id="add-image" class="btn small" type="button">+ Image</button><button id="add-line" class="btn small" type="button">+ Trait</button></div>
+    <div class="buttons"><button id="add-heading" class="btn small" type="button">+ Titre</button><button id="add-text" class="btn small" type="button">+ Texte</button><button id="add-list" class="btn small" type="button">+ Liste</button><button id="add-folders-list" class="btn small" type="button">+ Liste des rubriques</button><button id="add-breadcrumb" class="btn small" type="button">+ Fil d’Ariane</button><button id="add-tab" class="btn small" type="button">+ Onglet</button><button id="add-hotspot" class="btn small" type="button">+ Zone cliquable</button><button id="add-image" class="btn small" type="button">+ Image</button><button id="add-line" class="btn small" type="button">+ Trait</button></div>
     <p class="tip">Les zones cliquables sont <b>bleues en édition</b> et <b>invisibles en test</b>. Les textes et les onglets peuvent aussi avoir leur propre action.</p>
   </div>
   <div class="block">
@@ -130,6 +138,10 @@ html.journal-viewer #book .layer{cursor:default}
   <div class="block" id="editor-panel">
     <h3>3 · Réglages de l'élément sélectionné</h3>
     <div class="field"><label for="el-name">Nom du calque (atelier)</label><input id="el-name" type="text" maxlength="100"></div>
+    <div class="field" id="list-mode-field"><label for="el-listmode">Contenu de cette liste</label>
+      <select id="el-listmode"><option value="records">Fiches de la catégorie</option><option value="folders">Sous-catégories / rubriques</option><option value="manual">Liste manuelle (texte)</option></select>
+      <p class="tip">Les listes « Fiches » et « Sous-catégories » sont des calques indépendants : déplace-les librement dans le livre. La même maquette sert pour toutes les profondeurs d'une catégorie.</p>
+    </div>
     <div class="field" id="text-field"><label for="el-text">Texte à afficher (ou liste : un élément par ligne)</label><textarea id="el-text" rows="4"></textarea></div>
     <div class="two">
       <div class="field"><label for="el-x">Position X (%)</label><input id="el-x" type="number" step="0.1" min="0" max="99"></div>
@@ -242,6 +254,7 @@ html.journal-viewer #book .layer{cursor:default}
 </dialog>
 <script src="journal-records.js"></script>
 <script src="journal-folders.js"></script>
+<script src="journal-pagination.js"></script>
 <script src="journal-viewer-zoom.js"></script>
 <script>
 'use strict';
@@ -253,7 +266,8 @@ const COPY = x => JSON.parse(JSON.stringify(x));
 const SAVE_KEY='deadelustv.phasmo.atelier.complet.v4_3';
 const RECORDS=window.PHASMO_JOURNAL_RECORDS;
 const FOLDERS=window.PHASMO_JOURNAL_FOLDERS;
-const RECORD_SCHEMA=6;
+const PAGINATION=window.PHASMO_JOURNAL_PAGINATION;
+const RECORD_SCHEMA=7;
 const OLD_SAVE_KEY='deadelustv.phasmo.atelier.complet.v4_2';
 const OLDER_SAVE_KEY='deadelustv.phasmo.atelier.complet.v4_1';
 const OLDEST_SAVE_KEY='deadelustv.phasmo.atelier.complet.v4';
@@ -276,7 +290,7 @@ function layer(page,kind,name,text,x,y,w,h,more={}){
 function buildDefault(){
  const items=[];
  const title=(key,x,y,w,size)=>items.push(layer('sommaire','heading','Titre '+GROUPS[key].label,GROUPS[key].label,x,y,w,7,{size,align:'center',action:'category',target:key}));
- const list=(key,x,y,w,h,size,cols)=>items.push(layer('sommaire','list','Liste '+GROUPS[key].label,'',x,y,w,h,{size,columns:cols,source:key}));
+ const list=(key,x,y,w,h,size,cols)=>items.push(layer('sommaire','list','Liste '+GROUPS[key].label,'',x,y,w,h,{size,columns:cols,source:key,listMode:'records'}));
  title('entites',9.0,7.8,38.8,56);list('entites',9.5,15.0,38.0,35.5,27,3);
  title('equipements',9,52,38.8,55);list('equipements',9.5,60,38,29,26,4);
  title('cartes',52.0,7.8,39,56);list('cartes',52.5,15,38.3,17,27,4);
@@ -291,7 +305,8 @@ function buildDefault(){
  for(const group of GROUP_ORDER){
    const page='category:'+group;
    items.push(layer(page,'heading','Titre de la catégorie',GROUPS[group].label,11,12,35,8,{size:72,align:'center'}));
-   items.push(layer(page,'list','Liste cliquable des fiches','',10,23,38,63,{size:32,columns:3,source:group}));
+   items.push(layer(page,'list','Liste cliquable des fiches','',10,23,38,63,{size:32,columns:3,source:group,listMode:'records'}));
+    items.push(layer(page,'list','Liste des sous-catégories','',55,76,34,17,{size:24,columns:2,source:group,listMode:'folders'}));
    items.push(layer(page,'heading','Notes / informations','Carnet de terrain',54,13,35,8,{size:62,align:'center'}));
    items.push(layer(page,'text','Aide pour la liste','Choisis une fiche dans la liste à gauche.\n\nLes textes de ce modèle seront à remplir en ligne après validation du journal.',55,25,34,30,{size:28}));
    items.push(layer(page,'text','Retour au sommaire','← Sommaire général',55,65,33,7,{size:33,font:'Caveat',action:'home'}));
@@ -305,6 +320,7 @@ function buildDefault(){
  return {version:RECORD_SCHEMA,groups:COPY(GROUPS),folders:[],records:RECORDS.normalize(null,GROUPS,[]),elements:items,fonts:[],grid:false,zoom:100};
 }
 let state=buildDefault();
+const listPagePositions=new Map();
 let mode='edit',view={page:'sommaire',group:null,name:null,entryId:null,folderId:null},selected=state.elements[0]?.id,drag=null,resizeDrag=null,saveTimer=null,currentScale=1,pendingRecordDelete=null;
 const book=$('#book'),surface=$('#element-surface'),wrap=$('#stage-wrap'),viewport=$('#stage-viewport');
 function note(message){$('#message').textContent=message;}
@@ -327,6 +343,20 @@ function ensureRecordPage(entry) {
    .map(e=>({...COPY(e),id:'element-'+serial++,page})));
 }
 function syncRecordsToGroups(){for(const group of GROUP_ORDER)state.groups[group].names=recordList(group).map(r=>r.title);}
+function migrateSeparateLists(){
+ // Ajouter seulement lors d'une migration d'ancien atelier. Ne jamais
+ // recréer des calques supprimés volontairement par l'utilisateur en V7.
+ for(const group of GROUP_ORDER){
+  const page='category:'+group,legacy=state.elements.find(e=>e.page===page&&e.kind==='list'&&e.source===group);
+  if(legacy&&!legacy.listMode)legacy.listMode='records';
+  if(legacy&&!state.elements.some(e=>e.page===page&&e.kind==='list'&&e.source===group&&e.listMode==='folders')){
+    state.elements.push(layer(page,'list','Liste des sous-catégories','',55,76,34,17,
+     {size:24,columns:2,source:group,listMode:'folders'}));
+  }
+ }
+ for(const e of state.elements)
+  if(e.kind==='list'&&e.source&&!e.listMode)e.listMode='records';
+}
 function visibleLayers(){
  const personal=view.entryId?recordPage(view.entryId):'';
  const page=personal&&state.elements.some(e=>e.page===personal)?personal:view.page;
