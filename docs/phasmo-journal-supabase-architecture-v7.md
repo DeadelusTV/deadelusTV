@@ -1,5 +1,8 @@
 # Phasmo V2 — Architecture Supabase du carnet V7 (proposition à valider)
 
+> **État actualisé au 28 octobre 2026 :** la première phase **preview** a été appliquée dans Supabase. Quatre tables `phasmo_journal_*` sécurisées, deux comptes administrateurs autorisés (compte existant et DeadelusTV), stockage du brouillon preview et historique des révisions. La synchronisation **manuelle** du brouillon est raccordée dans `journal-editor.html` sur `developpement/phasmo-v2`. Les tests SQL et les scénarios de conflit simulés passent. **Recette navigateur réelle à faire**. Aucune publication, table production, migration Storage ni fusion `main` effectuée. Le plan ci-dessous conserve ses arbitrages de conception initiaux ; les tables publiques et les buckets de publication qu'il propose ne sont pas encore créés.
+
+
 **Date :** 28 octobre 2026  
 **Statut :** audit et conception uniquement, **aucune table / politique / bucket créé(e), aucune migration exécutée**.  
 **Périmètre GitHub :** `developpement/phasmo-v2` exclusivement. `main` et News/TCG inchangés.
