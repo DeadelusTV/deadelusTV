@@ -1,41 +1,5 @@
--- Durcissement release V2 : correspondance stricte des medias avec la release.
--- Aucun changement du verrou et aucune publication nouvelle.
--- Phasmo V7 : gestion des candidats officiels, bloquée hors ligne.
--- La preparation copie UNIQUEMENT une publication preview déjà figée.
--- Aucun fichier n'est copié au bucket public à cette étape.
+-- Révision 2 de la validation media de publication : sans modification du verrou.
 BEGIN;
-CREATE TABLE public.phasmo_journal_production_candidates (
-  stage text PRIMARY KEY DEFAULT 'production' CHECK(stage='production'),
-  source_preview_revision bigint NOT NULL CHECK(source_preview_revision>0),
-  source_preview_release bigint NOT NULL CHECK(source_preview_release>0),
-  payload jsonb NOT NULL CHECK (jsonb_typeof(payload)='object' AND payload @> '{"version":7}'::jsonb
-    AND jsonb_typeof(payload->'elements')='array' AND jsonb_typeof(payload->'fonts')='array'),
-  asset_manifest jsonb NOT NULL DEFAULT '[]'::jsonb CHECK (jsonb_typeof(asset_manifest)='array'),
-  prepared_by uuid NOT NULL REFERENCES auth.users(id),
-  prepared_at timestamptz NOT NULL DEFAULT now()
-);
-ALTER TABLE public.phasmo_journal_production_candidates ENABLE ROW LEVEL SECURITY;
-REVOKE ALL ON public.phasmo_journal_production_candidates FROM PUBLIC, anon, authenticated;
-GRANT SELECT ON public.phasmo_journal_production_candidates TO authenticated;
-CREATE POLICY phasmo_journal_production_candidates_admin_read
- ON public.phasmo_journal_production_candidates FOR SELECT TO authenticated
- USING (EXISTS (
-   SELECT 1 FROM public.phasmo_journal_admins a
-   WHERE a.user_id=(SELECT auth.uid()) AND a.enabled
- ));
-
-CREATE TABLE public.phasmo_journal_production_release_controls (
-  singleton boolean PRIMARY KEY DEFAULT true CHECK(singleton),
-  activation_enabled boolean NOT NULL DEFAULT false,
-  last_authorized_at timestamptz
-);
-ALTER TABLE public.phasmo_journal_production_release_controls ENABLE ROW LEVEL SECURITY;
-REVOKE ALL ON public.phasmo_journal_production_release_controls FROM PUBLIC, anon, authenticated;
-INSERT INTO public.phasmo_journal_production_release_controls(singleton,activation_enabled)
- VALUES(true,false);
-
--- Les fonctions de publication officielle sont reservees a service_role.
--- Elles ne sont PAS appellees depuis le navigateur.
 CREATE OR REPLACE FUNCTION public.phasmo_journal_commit_official_release(
  p_actor uuid, p_source_revision bigint, p_source_release bigint,
  p_public_payload jsonb
@@ -78,214 +42,35 @@ BEGIN
       COALESCE((SELECT MAX(p.release_number) FROM public.phasmo_journal_production_publications p),0))+1
    INTO n FROM public.phasmo_journal_production_publication_history h;
 
-  -- Chaque media doit conserver la meme empreinte de fichier que dans la
-  -- preview, ET pointer vers le numero exact de cette nouvelle release.
-  -- Cela interdit de supprimer un lien, d'en substituer un autre, ou de
-  -- reutiliser par erreur un fichier d'une ancienne release.
+  -- Vérifier les chemins exacts des médias, sans substitution ni omission.
   IF EXISTS (
-    SELECT 1
-    FROM pg_catalog.jsonb_array_elements(c.payload->'elements')
+    SELECT 1 FROM pg_catalog.jsonb_array_elements(c.payload->'elements')
       WITH ORDINALITY AS original(e,ord)
-    WHERE original.e->>'kind'='image'
-      AND (
-        (COALESCE(original.e->>'image','')<>''
-         AND original.e->>'image' !~ '^journal-storage://images/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[a-f0-9]{64}\\.(png|jpg|webp|gif)
-  src:=jsonb_set(src,'{elements}', (
-   SELECT COALESCE(jsonb_agg(CASE WHEN e->>'kind'='image'
-     THEN e - 'image' ELSE e END ORDER BY ord), '[]'::jsonb)
-   FROM jsonb_array_elements(c.payload->'elements') WITH ORDINALITY AS a(e,ord)
-  ));
-  dst:=jsonb_set(dst,'{elements}', (
-   SELECT COALESCE(jsonb_agg(CASE WHEN e->>'kind'='image'
-     THEN e - 'image' ELSE e END ORDER BY ord), '[]'::jsonb)
-   FROM jsonb_array_elements(p_public_payload->'elements') WITH ORDINALITY AS a(e,ord)
-  ));
-  src:=jsonb_set(src,'{fonts}', (
-   SELECT COALESCE(jsonb_agg(f-'data' ORDER BY ord),'[]'::jsonb)
-   FROM jsonb_array_elements(c.payload->'fonts') WITH ORDINALITY AS a(f,ord)
-  ));
-  dst:=jsonb_set(dst,'{fonts}', (
-   SELECT COALESCE(jsonb_agg(f-'data' ORDER BY ord),'[]'::jsonb)
-   FROM jsonb_array_elements(p_public_payload->'fonts') WITH ORDINALITY AS a(f,ord)
-  ));
-  IF src<>dst THEN RAISE EXCEPTION 'Contenu modifie depuis la preparation' USING ERRCODE='22023'; END IF;
-
-  -- Les references publiees doivent toutes exister dans le bucket public.
-  -- Les chemins ne peuvent pas pointer vers le bucket de brouillons.
-  IF EXISTS (
-    SELECT 1 FROM jsonb_array_elements(p_public_payload->'elements') a
-    WHERE a->>'kind'='image' AND COALESCE(a->>'image','')<>''
-      AND (a->>'image' !~ '^journal-public://images/releases/[1-9][0-9]*/[a-f0-9]{64}\.(png|jpg|webp|gif)$'
-        OR NOT EXISTS (
-         SELECT 1 FROM storage.objects o
-         WHERE o.bucket_id='phasmo-journal-public-assets'
-           AND o.name=substring(a->>'image' FROM 18)
-      ))
+    WHERE original.e->>'kind'='image' AND
+     (
+      (COALESCE(original.e->>'image','')<>''
+       AND original.e->>'image' !~ '^journal-storage://images/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[a-f0-9]{64}\.(png|jpg|webp|gif)$')
+      OR (p_public_payload->'elements'->((original.ord-1)::integer)->>'image')
+         IS DISTINCT FROM
+         CASE WHEN COALESCE(original.e->>'image','')=''
+           THEN original.e->>'image'
+           ELSE 'journal-public://images/releases/'||n::text||'/'||
+                  pg_catalog.split_part(original.e->>'image','/',5)
+         END
+     )
   ) OR EXISTS (
-    SELECT 1 FROM jsonb_array_elements(p_public_payload->'fonts') f
-    WHERE COALESCE(f->>'data','')<>''
-      AND (f->>'data' !~ '^journal-public://fonts/releases/[1-9][0-9]*/[a-f0-9]{64}\.(ttf|otf|woff|woff2)$'
-        OR NOT EXISTS (
-         SELECT 1 FROM storage.objects o
-         WHERE o.bucket_id='phasmo-journal-public-assets'
-           AND o.name=substring(f->>'data' FROM 18)
-      ))
-  ) THEN
-    RAISE EXCEPTION 'Media officiel manquant ou non autorise' USING ERRCODE='22023';
-  END IF;
-  -- Confirmation que le candidat correspond toujours au snapshot prive.
-  IF NOT EXISTS (
-    SELECT 1 FROM public.phasmo_journal_preview_publications p
-    WHERE p.stage='preview' AND p.source_revision=c.source_preview_revision
-      AND p.release_number=c.source_preview_release AND p.payload=c.payload
-  ) THEN
-    RAISE EXCEPTION 'Publication privee modifiee depuis la preparation' USING ERRCODE='40001';
-  END IF;
-
-  INSERT INTO public.phasmo_journal_production_publications
-    (stage,visibility,release_number,source_preview_revision,payload,approved_by,approved_at,published_at)
-  VALUES('production','live',n,c.source_preview_revision,p_public_payload,p_actor,now(),now())
-  ON CONFLICT(stage) DO UPDATE SET
-    visibility='live',release_number=excluded.release_number,
-    source_preview_revision=excluded.source_preview_revision,
-    payload=excluded.payload,approved_by=excluded.approved_by,
-    approved_at=excluded.approved_at,published_at=excluded.published_at;
-
-  INSERT INTO public.phasmo_journal_production_publication_history
-    (release_number,source_preview_revision,payload,approved_by,approved_at,published_at,visibility)
-  VALUES(n,c.source_preview_revision,p_public_payload,p_actor,now(),now(),'live');
-  RETURN QUERY SELECT n,c.source_preview_revision;
-END;
-$body$;
-REVOKE ALL ON FUNCTION public.phasmo_journal_commit_official_release(uuid,bigint,bigint,jsonb) FROM PUBLIC,anon,authenticated;
-GRANT EXECUTE ON FUNCTION public.phasmo_journal_commit_official_release(uuid,bigint,bigint,jsonb) TO service_role;
-
-CREATE OR REPLACE FUNCTION public.phasmo_journal_disable_official_release(p_actor uuid)
-RETURNS boolean
-LANGUAGE plpgsql SECURITY DEFINER SET search_path=''
-AS $body$
-BEGIN
- IF NOT EXISTS (SELECT 1 FROM public.phasmo_journal_admins a
-   WHERE a.user_id=p_actor AND a.enabled)
- THEN RAISE EXCEPTION 'Administrateur du carnet non autorise' USING ERRCODE='42501'; END IF;
- -- Mise hors ligne d'urgence autorisee meme si l'activation est verrouillee.
- UPDATE public.phasmo_journal_production_publications
- SET visibility='disabled' WHERE stage='production' AND visibility='live';
- RETURN FOUND;
-END;
-$body$;
-REVOKE ALL ON FUNCTION public.phasmo_journal_disable_official_release(uuid) FROM PUBLIC,anon,authenticated;
-GRANT EXECUTE ON FUNCTION public.phasmo_journal_disable_official_release(uuid) TO service_role;
-COMMIT;)
-        OR (p_public_payload->'elements'->((original.ord-1)::integer)->>'image')
-          IS DISTINCT FROM
-          CASE WHEN COALESCE(original.e->>'image','')=''
-            THEN original.e->>'image'
-            ELSE 'journal-public://images/releases/'||n::text||'/'||
-                 pg_catalog.split_part(original.e->>'image','/',5)
-          END
-      )
-  ) OR EXISTS (
-    SELECT 1
-    FROM pg_catalog.jsonb_array_elements(c.payload->'fonts')
+    SELECT 1 FROM pg_catalog.jsonb_array_elements(c.payload->'fonts')
       WITH ORDINALITY AS original(f,ord)
     WHERE
       (COALESCE(original.f->>'data','')<>''
-       AND original.f->>'data' !~ '^journal-storage://fonts/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[a-f0-9]{64}\\.(ttf|otf|woff|woff2)
-  src:=jsonb_set(src,'{elements}', (
-   SELECT COALESCE(jsonb_agg(CASE WHEN e->>'kind'='image'
-     THEN e - 'image' ELSE e END ORDER BY ord), '[]'::jsonb)
-   FROM jsonb_array_elements(c.payload->'elements') WITH ORDINALITY AS a(e,ord)
-  ));
-  dst:=jsonb_set(dst,'{elements}', (
-   SELECT COALESCE(jsonb_agg(CASE WHEN e->>'kind'='image'
-     THEN e - 'image' ELSE e END ORDER BY ord), '[]'::jsonb)
-   FROM jsonb_array_elements(p_public_payload->'elements') WITH ORDINALITY AS a(e,ord)
-  ));
-  src:=jsonb_set(src,'{fonts}', (
-   SELECT COALESCE(jsonb_agg(f-'data' ORDER BY ord),'[]'::jsonb)
-   FROM jsonb_array_elements(c.payload->'fonts') WITH ORDINALITY AS a(f,ord)
-  ));
-  dst:=jsonb_set(dst,'{fonts}', (
-   SELECT COALESCE(jsonb_agg(f-'data' ORDER BY ord),'[]'::jsonb)
-   FROM jsonb_array_elements(p_public_payload->'fonts') WITH ORDINALITY AS a(f,ord)
-  ));
-  IF src<>dst THEN RAISE EXCEPTION 'Contenu modifie depuis la preparation' USING ERRCODE='22023'; END IF;
-
-  -- Les references publiees doivent toutes exister dans le bucket public.
-  -- Les chemins ne peuvent pas pointer vers le bucket de brouillons.
-  IF EXISTS (
-    SELECT 1 FROM jsonb_array_elements(p_public_payload->'elements') a
-    WHERE a->>'kind'='image' AND COALESCE(a->>'image','')<>''
-      AND (a->>'image' !~ '^journal-public://images/releases/[1-9][0-9]*/[a-f0-9]{64}\.(png|jpg|webp|gif)$'
-        OR NOT EXISTS (
-         SELECT 1 FROM storage.objects o
-         WHERE o.bucket_id='phasmo-journal-public-assets'
-           AND o.name=substring(a->>'image' FROM 18)
-      ))
-  ) OR EXISTS (
-    SELECT 1 FROM jsonb_array_elements(p_public_payload->'fonts') f
-    WHERE COALESCE(f->>'data','')<>''
-      AND (f->>'data' !~ '^journal-public://fonts/releases/[1-9][0-9]*/[a-f0-9]{64}\.(ttf|otf|woff|woff2)$'
-        OR NOT EXISTS (
-         SELECT 1 FROM storage.objects o
-         WHERE o.bucket_id='phasmo-journal-public-assets'
-           AND o.name=substring(f->>'data' FROM 18)
-      ))
-  ) THEN
-    RAISE EXCEPTION 'Media officiel manquant ou non autorise' USING ERRCODE='22023';
-  END IF;
-  -- Confirmation que le candidat correspond toujours au snapshot prive.
-  IF NOT EXISTS (
-    SELECT 1 FROM public.phasmo_journal_preview_publications p
-    WHERE p.stage='preview' AND p.source_revision=c.source_preview_revision
-      AND p.release_number=c.source_preview_release AND p.payload=c.payload
-  ) THEN
-    RAISE EXCEPTION 'Publication privee modifiee depuis la preparation' USING ERRCODE='40001';
-  END IF;
-
-  INSERT INTO public.phasmo_journal_production_publications
-    (stage,visibility,release_number,source_preview_revision,payload,approved_by,approved_at,published_at)
-  VALUES('production','live',n,c.source_preview_revision,p_public_payload,p_actor,now(),now())
-  ON CONFLICT(stage) DO UPDATE SET
-    visibility='live',release_number=excluded.release_number,
-    source_preview_revision=excluded.source_preview_revision,
-    payload=excluded.payload,approved_by=excluded.approved_by,
-    approved_at=excluded.approved_at,published_at=excluded.published_at;
-
-  INSERT INTO public.phasmo_journal_production_publication_history
-    (release_number,source_preview_revision,payload,approved_by,approved_at,published_at,visibility)
-  VALUES(n,c.source_preview_revision,p_public_payload,p_actor,now(),now(),'live');
-  RETURN QUERY SELECT n,c.source_preview_revision;
-END;
-$body$;
-REVOKE ALL ON FUNCTION public.phasmo_journal_commit_official_release(uuid,bigint,bigint,jsonb) FROM PUBLIC,anon,authenticated;
-GRANT EXECUTE ON FUNCTION public.phasmo_journal_commit_official_release(uuid,bigint,bigint,jsonb) TO service_role;
-
-CREATE FUNCTION public.phasmo_journal_disable_official_release(p_actor uuid)
-RETURNS boolean
-LANGUAGE plpgsql SECURITY DEFINER SET search_path=''
-AS $body$
-BEGIN
- IF NOT EXISTS (SELECT 1 FROM public.phasmo_journal_admins a
-   WHERE a.user_id=p_actor AND a.enabled)
- THEN RAISE EXCEPTION 'Administrateur du carnet non autorise' USING ERRCODE='42501'; END IF;
- -- Mise hors ligne d'urgence autorisee meme si l'activation est verrouillee.
- UPDATE public.phasmo_journal_production_publications
- SET visibility='disabled' WHERE stage='production' AND visibility='live';
- RETURN FOUND;
-END;
-$body$;
-REVOKE ALL ON FUNCTION public.phasmo_journal_disable_official_release(uuid) FROM PUBLIC,anon,authenticated;
-GRANT EXECUTE ON FUNCTION public.phasmo_journal_disable_official_release(uuid) TO service_role;
-COMMIT;)
+       AND original.f->>'data' !~ '^journal-storage://fonts/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[a-f0-9]{64}\.(ttf|otf|woff|woff2)$')
       OR (p_public_payload->'fonts'->((original.ord-1)::integer)->>'data')
-        IS DISTINCT FROM
-        CASE WHEN COALESCE(original.f->>'data','')=''
-          THEN original.f->>'data'
-          ELSE 'journal-public://fonts/releases/'||n::text||'/'||
-               pg_catalog.split_part(original.f->>'data','/',5)
-        END
+         IS DISTINCT FROM
+         CASE WHEN COALESCE(original.f->>'data','')=''
+           THEN original.f->>'data'
+           ELSE 'journal-public://fonts/releases/'||n::text||'/'||
+                  pg_catalog.split_part(original.f->>'data','/',5)
+         END
   ) THEN
     RAISE EXCEPTION 'Correspondance des médias avec la release incorrecte'
       USING ERRCODE='22023';
@@ -363,7 +148,7 @@ $body$;
 REVOKE ALL ON FUNCTION public.phasmo_journal_commit_official_release(uuid,bigint,bigint,jsonb) FROM PUBLIC,anon,authenticated;
 GRANT EXECUTE ON FUNCTION public.phasmo_journal_commit_official_release(uuid,bigint,bigint,jsonb) TO service_role;
 
-CREATE FUNCTION public.phasmo_journal_disable_official_release(p_actor uuid)
+CREATE OR REPLACE FUNCTION public.phasmo_journal_disable_official_release(p_actor uuid)
 RETURNS boolean
 LANGUAGE plpgsql SECURITY DEFINER SET search_path=''
 AS $body$
