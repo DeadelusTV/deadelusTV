@@ -62,6 +62,22 @@
   const alreadyLoaded=MEMORY.get('known:'+kind+':'+hash);
   if(alreadyLoaded)return alreadyLoaded;
   if(MEMORY.has(path))return PREFIX+path;
+  // Meme contenu chez un autre editeur ? Reutiliser l'objet prive existant.
+  const found=await client.rpc('phasmo_journal_find_private_asset',{
+   p_kind:kind,p_sha256:hash,p_extension:file.extension
+  });
+  if(found.error)throw Error('Recherche des doublons impossible : '+found.error.message);
+  if(found.data){
+   const ref=PREFIX+found.data;
+   if(!REFERENCE.test(ref))throw Error('Fichier de bibliothèque invalide.');
+   const existing=await client.storage.from(BUCKET).download(found.data);
+   if(existing.error||!existing.data)throw Error('Impossible de vérifier le média existant.');
+   if(existing.data.size>MAX_FILE_BYTES)throw Error('Média existant trop volumineux.');
+   const digest=await sha256(new Uint8Array(await existing.data.arrayBuffer()));
+   if(digest!==hash)throw Error('Empreinte incorrecte du média existant.');
+   MEMORY.set('known:'+kind+':'+hash,ref);
+   return ref;
+  }
   const upload=await client.storage.from(BUCKET).upload(path,
    new Blob([file.bytes],{type:file.mime}),{contentType:file.mime,upsert:false,cacheControl:'31536000'});
   const err=upload.error;
@@ -133,7 +149,21 @@
   }
   return local;
  }
+ async function listPrivateAssets(client,kind,page=0){
+  if(!['images','fonts'].includes(kind)||!Number.isInteger(page)||page<0||page>1000)
+   throw Error('Page de bibliothèque invalide.');
+  const {data,error}=await client.rpc('phasmo_journal_list_private_assets',{p_kind:kind,p_page:page});
+  if(error)throw Error('Bibliothèque privée inaccessible : '+error.message);
+  if(!Array.isArray(data))throw Error('Réponse de bibliothèque invalide.');
+  return data.filter(item=>item?.kind===kind&&REFERENCE.test(PREFIX+item.path));
+ }
+ async function readPrivateAsset(client,kind,path){
+  if(!['images','fonts'].includes(kind)||typeof path!=='string')throw Error('Média de bibliothèque invalide.');
+  const ref=PREFIX+path,m=REFERENCE.exec(ref);
+  if(!m||m[1]!==kind)throw Error('Chemin de bibliothèque interdit.');
+  return downloadOne(client,ref);
+ }
  window.PHASMO_JOURNAL_STORAGE_MEDIA=Object.freeze({
-  prepareForSave,restoreForEditor,BUCKET
+  prepareForSave,restoreForEditor,listPrivateAssets,readPrivateAsset,BUCKET
  });
 })();
