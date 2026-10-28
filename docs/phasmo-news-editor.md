@@ -1,6 +1,6 @@
 # Phasmophobia — News et éditeur privé
 
-**État : 27 octobre 2026.** Éditeur News privé intégré et testé sur le site officiel. Le livre interactif des preuves est un **chantier distinct, non validé**.
+**État : 28 octobre 2026 — terminé et validé.** Yekelle confirme la clôture officielle de l’éditeur News après validation de Mattarix ; mise en page publique également validée. Les prochaines interventions relèvent de la maintenance sur remontée de bugs ou de suggestions d’amélioration. Le livre interactif des preuves est un **chantier distinct, non validé**.
 
 Documentation complète sur Drive : [Phasmophobia — Actualités et éditeur privé : documentation et suivi](https://docs.google.com/document/d/1vqHaregg5l-UjjADw3qtzpt79vX0nfxGjt9LFng2kvI/edit).
 
@@ -107,3 +107,7 @@ Le bucket `phasmo-news-draft-images` est **privé** ; `phasmo-news-published-ima
 - Fermer le panneau déroulant News quitte l'article ou les archives en cours et rétablit la liste. Sa réouverture montre donc les cartes ; l'URL de lecture est retirée sans ajouter une entrée dans l'historique et sans remonter la page.
 - Ces changements concernent la consultation publique ; les contenus, droits et brouillons ne sont pas modifiés.
 - Vérifications : retour du bas vers les cartes, fermeture/réouverture après lecture, liens directs et archives sur la version de test ; retour du bas et fermeture/réouverture également contrôlés sur le site officiel dans Chrome.
+
+## Clôture officielle — 28 octobre 2026
+
+28 octobre 2026 — clôture officielle : Yekelle déclare l’éditeur News officiellement terminé après validation de Mattarix. La mise en page publique est également validée. Le chantier passe en maintenance : corrections sur remontée de bugs et évolutions sur suggestion d’amélioration. Cette clôture concerne les News et leur éditeur ; elle ne clôt pas le chantier distinct du Livre de preuves. Le signalement antérieur sur les sous-listes numérotées reste une limite connue non bloquante, sans nouvelle confirmation de résolution.

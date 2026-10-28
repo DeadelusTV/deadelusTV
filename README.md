@@ -21,7 +21,9 @@ Les branches de développement sont indépendantes. La démo `preview/presentati
 
 Les pages Phasmo V2 et TCG d'attente ont été publiées sur `main` le **25 octobre 2026** (commit `8db665fbf9d4b966e815a7d580fbbb4991ca3e1a`). La correction de libellé « Pavillon Noir » déjà présente sur `main` a été conservée. Ne pas confondre cette publication avec le **prototype de livre interactif Phasmo** en cours sur `developpement/phasmo-v2`, non retenu pour cette publication.
 
-## Actualités Phasmophobia : News et éditeur privé (livrés)
+## Actualités Phasmophobia : News et éditeur privé (terminés et validés)
+
+**28 octobre 2026 :** Yekelle confirme l’éditeur officiellement terminé après validation de Mattarix, avec mise en page publique validée. Suite : maintenance sur remontée de bugs et évolutions sur suggestion d’amélioration.
 
 Le module **News Phasmophobia** et son éditeur réservé sont intégrés au site officiel ; ne pas les confondre avec le livre interactif, encore en travail. La section News affiche les articles publiés (et une carte fixe vers Kinetic Games avec son logo), tandis que le bureau de rédaction est accessible à l'adresse `/modules/phasmophobia/editor-private.html` après connexion Twitch via Supabase et contrôle des permissions RLS (`phasmo_news_editors` / `phasmo_news_admins`). Aucune permission n'est déduite du rôle TCG ou du pseudo Twitch.
 
