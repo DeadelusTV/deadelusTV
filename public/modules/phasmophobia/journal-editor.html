@@ -1102,6 +1102,14 @@ async function attachImage(file){
 }
 window.PHASMO_JOURNAL_REMOTE_BRIDGE = {
  exportPayload: () => COPY(state),
+ resetLocalDraft: () => {
+  if(PUBLICATION_REMOTE_VIEW)throw Error('Réinitialisation indisponible en lecture.');
+  state=buildDefault();
+  listPagePositions.clear();
+  selected=state.elements[0]?.id||null;
+  fillGroupEdit();setView('sommaire');fitStage();save();
+  note('Brouillon local réinitialisé. Les versions enregistrées sur Supabase sont intactes.');
+ },
  useLibraryAsset: async ({kind,path,data}) => {
   const e=getSelected();
   if(kind==='images'){
