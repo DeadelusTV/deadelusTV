@@ -190,6 +190,9 @@ Deno.serve(async req=>{
       .eq('stage','production').single();
     if(candidate.error||!candidate.data)throw Error('Aucune version officielle n’a été préparée.');
     const c=candidate.data, source=c.payload as Json;
+    if(body?.expected_preview_release!==c.source_preview_release||
+       body?.expected_revision!==c.source_preview_revision)
+      return answer({error:'Le candidat officiel a changé : actualise les commandes.'},409);
     const manifest=await verifyAssets(client,parseMedia(source));
     const preview=await client.from('phasmo_journal_preview_publications')
       .select('source_revision,release_number,payload').eq('stage','preview').single();
