@@ -59,17 +59,22 @@
   const file=mimeAndExtension(data,kind);
   const hash=await sha256(file.bytes);
   const path=kind+'/'+userId+'/'+hash+'.'+file.extension;
+  const alreadyLoaded=MEMORY.get('known:'+kind+':'+hash);
+  if(alreadyLoaded)return alreadyLoaded;
   if(MEMORY.has(path))return PREFIX+path;
   const upload=await client.storage.from(BUCKET).upload(path,
    new Blob([file.bytes],{type:file.mime}),{contentType:file.mime,upsert:false,cacheControl:'31536000'});
   const err=upload.error;
   if(err){
-   const duplicate=String(err.statusCode||err.status)==='409'||
-      (/already exists|duplicate/i.test(String(err.message||''))&&
-       String(err.statusCode||err.status||'409')==='409');
-   if(!duplicate)throw Error('Envoi Storage refusé : '+(err.message||'erreur inconnue'));
+   const conflict=String(err.statusCode||err.status)==='409'||
+     /already exists|duplicate/i.test(String(err.message||''));
+   if(!conflict)throw Error('Envoi Storage refusé : '+(err.message||'erreur inconnue'));
+   // Vérifier réellement l'objet avant d'accepter un conflit 409/duplicate.
+   const existing=await client.storage.from(BUCKET).download(path);
+   if(existing.error||!existing.data)throw Error('Média déjà présent mais impossible à vérifier dans Storage.');
   }
   MEMORY.set(path,true);
+  MEMORY.set('known:'+kind+':'+hash,PREFIX+path);
   return PREFIX+path;
  }
  async function prepareForSave(payload,client,userId,progress=()=>{}){
@@ -108,6 +113,7 @@
    reader.readAsDataURL(file);
   });
   MEMORY.set('base64:'+ref,data);
+  MEMORY.set('known:'+m[1]+':'+m[3],ref);
   return data;
  }
  async function restoreForEditor(payload,client,progress=()=>{}){
