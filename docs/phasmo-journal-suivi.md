@@ -693,3 +693,12 @@ Fichiers de branche : `docs/phasmo-journal-preview-schema-v1.sql` (SQL appliqué
 **Statut : circuit complet des images Storage validé en navigateur**, de l'enregistrement distant à la lecture du brouillon puis à la publication PREVIEW privée. Les médias restent privés, accessibles via authentification et contrôles RLS. Aucune activation de publication publique ni fusion `main`.
 
 **Restent ouverts** : recette réelle des polices personnalisées importées (TTF/OTF/WOFF/WOFF2), vérification des mises à jour concurrentes avec Deadelus, gestion des fichiers orphelins et préparation ultérieure des médias de la publication publique. La validation des images ne vaut pas validation automatique de ces points.
+
+
+### 28/10/2026 — Validation réelle de Supabase Storage pour les polices
+
+**Recette rapportée par l'utilisatrice :** police importée et carnet **enregistré sur Supabase**, puis **brouillon partagé rechargé** sans problème, **publication de test administrateur** effectuée. Dans le panneau Supabase Storage, elle confirme un nouveau répertoire `fonts` avec un fichier daté du 28/10 vers 04 h 12 et le répertoire `images` issu du test précédent. Elle valide implicitement le parcours de sauvegarde/chargement/publication de la police.
+
+**Contrôle SQL en lecture seule après la recette :** bucket privé `phasmo-journal-draft-assets` : **1 fichier font** + **1 fichier image**. Brouillon `preview` à la **révision 9** comportant **1 référence `journal-storage://` dans `fonts[].data`**. Publication privée `preview` issue de la **révision 9** et comportant elle aussi **1 référence de police Storage**. Les données distantes et l'archive publiée utilisent donc bien des références de fichiers plutôt que des blobs base64 intégrés.
+
+**État :** stockage et restauration fonctionnelle des médias du carnet V7 (images et polices) validés dans le flux réel. La police n'a pas fait l'objet d'une confirmation *visuelle explicite* de son rendu typographique dans la visionneuse, même si l'action de publication a réussi. Tests en second compte administrateur, pilotage d'une publication publique, gestion des médias orphelins et `main` demeurent hors de cette validation.
