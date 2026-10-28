@@ -287,7 +287,7 @@ html.journal-viewer #book .layer{cursor:default}
 const QUERY_PARAMS=new URLSearchParams(location.search);
 const VIEWER_ONLY=QUERY_PARAMS.get('viewer')==='1';
 const PUBLICATION_PREVIEW_VIEW=VIEWER_ONLY&&QUERY_PARAMS.get('publication')==='preview';
-const PUBLICATION_PUBLIC_VIEW=VIEWER_ONLY&&QUERY_PARAMS.get('publication')==='public';
+const PUBLICATION_PUBLIC_VIEW=VIEWER_ONLY&&QUERY_PARAMS.get('publication')!=='preview';
 const PUBLICATION_REMOTE_VIEW=PUBLICATION_PREVIEW_VIEW||PUBLICATION_PUBLIC_VIEW;
 if(VIEWER_ONLY)document.documentElement.classList.add('journal-viewer');
 if(PUBLICATION_REMOTE_VIEW)document.documentElement.classList.add('journal-publication-preview');
