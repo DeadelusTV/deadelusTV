@@ -109,7 +109,7 @@ Deno.serve(async req=>{
       return answer({error:'Seuls les administrateurs Phasmo peuvent préparer une publication.'},403);
 
     const lock=await client.from('phasmo_journal_production_release_controls')
-      .select('activation_enabled').eq('singleton',true).single();
+      .select('activation_enabled,reserved_token,reserved_release').eq('singleton',true).single();
     if(lock.error||!lock.data)return answer({error:'Verrou de publication indisponible.'},503);
     const locked=!lock.data.activation_enabled;
 
