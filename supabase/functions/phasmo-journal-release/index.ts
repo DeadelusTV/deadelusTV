@@ -161,7 +161,9 @@ Deno.serve(async req=>{
         return answer({error:'Aucune publication en ligne à désactiver.'},409);
       if(body?.expected_release!==current.data.release_number)
         return answer({error:'La version en ligne a changé : actualise les commandes.'},409);
-      const result=await client.rpc('phasmo_journal_disable_official_release',{p_actor:actor});
+      const result=await client.rpc('phasmo_journal_disable_official_release',{
+        p_actor:actor,p_expected_release:body.expected_release
+      });
       if(result.error)throw Error(result.error.message);
       if(result.data!==true)return answer({error:'Mise hors ligne non confirmée. Actualise le statut.'},409);
       return answer({ok:true,disabled:true});
