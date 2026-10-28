@@ -948,6 +948,14 @@ async function attachImage(file){
  if(!/^image\/(?:png|jpeg|webp|gif)$/.test(file.type))throw Error('Format accepté : PNG, JPG, WebP ou GIF.');
  e.image=await mediaData(file);updateCurrentElement();note('Image optimisée et ajoutée. Tu peux déplacer, changer son ordre et redimensionner son calque.');
 }
+window.PHASMO_JOURNAL_REMOTE_BRIDGE = {
+ exportPayload: () => COPY(state),
+ importPayload: async payload => {
+  if (!payload || payload.version !== RECORD_SCHEMA) throw Error('Version de carnet incompatible.');
+  const blob = new Blob([JSON.stringify(payload)], {type:'application/json'});
+  await loadSettings(blob);
+ }
+};
 function exportSettings(){
  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);
  const a=document.createElement('a');a.href=url;a.download='deadelustv-journal-reglages-complets.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);note('Réglages JSON exportés. À m’envoyer pour intégrer les valeurs au site.');
