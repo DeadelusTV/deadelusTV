@@ -287,8 +287,10 @@ html.journal-viewer #book .layer{cursor:default}
 const QUERY_PARAMS=new URLSearchParams(location.search);
 const VIEWER_ONLY=QUERY_PARAMS.get('viewer')==='1';
 const PUBLICATION_PREVIEW_VIEW=VIEWER_ONLY&&QUERY_PARAMS.get('publication')==='preview';
+const PUBLICATION_PUBLIC_VIEW=VIEWER_ONLY&&QUERY_PARAMS.get('publication')==='public';
+const PUBLICATION_REMOTE_VIEW=PUBLICATION_PREVIEW_VIEW||PUBLICATION_PUBLIC_VIEW;
 if(VIEWER_ONLY)document.documentElement.classList.add('journal-viewer');
-if(PUBLICATION_PREVIEW_VIEW)document.documentElement.classList.add('journal-publication-preview');
+if(PUBLICATION_REMOTE_VIEW)document.documentElement.classList.add('journal-publication-preview');
 const $ = s => document.querySelector(s);
 const COPY = x => JSON.parse(JSON.stringify(x));
 const SAVE_KEY='deadelustv.phasmo.atelier.complet.v4_3';
@@ -664,7 +666,7 @@ function fitStage(){
 function updateInfo(){
  $('#view-info').textContent=(mode==='edit'?'Édition':'Test des clics')+' · '+(view.page==='sommaire'?'Sommaire':(view.name||(view.folderId?folderPath(view.group,view.folderId):state.groups[view.group].label)));
 }
-function save(){if(PUBLICATION_PREVIEW_VIEW)return;clearTimeout(saveTimer);saveTimer=setTimeout(()=>{try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));}catch(e){/* Certains navigateurs bloquent le stockage local : exporter le JSON. */}},350);}
+function save(){if(PUBLICATION_REMOTE_VIEW)return;clearTimeout(saveTimer);saveTimer=setTimeout(()=>{try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));}catch(e){/* Certains navigateurs bloquent le stockage local : exporter le JSON. */}},350);}
 function updateCurrentElement(){
  const e=getSelected();if(!e)return;const old=surface.querySelector(`[data-id="${e.id}"]`);
  if(old)old.replaceWith(makeLayer(e));renderLayerList();save();
@@ -1233,7 +1235,7 @@ function setup(){
  renderLayers();renderLayerList();renderEditor();fitStage();fillGroupEdit();updateInfo();
 }
 async function init(){
- if(!PUBLICATION_PREVIEW_VIEW)try{
+ if(!PUBLICATION_REMOTE_VIEW)try{
    const previous=localStorage.getItem(SAVE_KEY)||localStorage.getItem(OLD_SAVE_KEY)||localStorage.getItem(OLDER_SAVE_KEY)||localStorage.getItem(OLDEST_SAVE_KEY)||localStorage.getItem('deadelustv.phasmo.atelier.complet.v3');
    if(previous){const data=JSON.parse(previous);if([2,3,4,5,6,RECORD_SCHEMA].includes(data?.version)&&Array.isArray(data.elements)){
      const tmp=new Blob([JSON.stringify(data)],{type:'application/json'});
@@ -1268,14 +1270,16 @@ async function init(){
      if (command.category === 'sommaire') setView('sommaire');
      else if (GROUP_ORDER.includes(command.category)) setView('category:' + command.category);
    });
-   try { window.parent.postMessage({type:'deadelustv:journal-ready'}, window.location.origin); } catch {}
+   if(!PUBLICATION_REMOTE_VIEW)try { window.parent.postMessage({type:'deadelustv:journal-ready'}, window.location.origin); } catch {}
  }
 }
 init();
 })();
 </script>
 <script src="journal-storage-media.js" defer></script>
+<script src="journal-public-media.js" defer></script>
 <script src="journal-preview-sync.js" defer></script>
 <script src="journal-preview-publish.js" defer></script>
 <script src="journal-preview-publication-viewer.js" defer></script>
+<script src="journal-publication-viewer.js" defer></script>
 </body></html>
