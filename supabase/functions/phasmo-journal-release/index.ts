@@ -153,9 +153,18 @@ Deno.serve(async req=>{
     }
 
     if(action==='offline'){
+      if(body?.confirmation!=='METTRE-HORS-LIGNE')
+        return answer({error:'Confirmation explicite de mise hors ligne requise.'},400);
+      const current=await client.from('phasmo_journal_production_publications')
+        .select('visibility,release_number').eq('stage','production').maybeSingle();
+      if(current.error||!current.data||current.data.visibility!=='live')
+        return answer({error:'Aucune publication en ligne à désactiver.'},409);
+      if(body?.expected_release!==current.data.release_number)
+        return answer({error:'La version en ligne a changé : actualise les commandes.'},409);
       const result=await client.rpc('phasmo_journal_disable_official_release',{p_actor:actor});
       if(result.error)throw Error(result.error.message);
-      return answer({ok:true,disabled:Boolean(result.data)});
+      if(result.data!==true)return answer({error:'Mise hors ligne non confirmée. Actualise le statut.'},409);
+      return answer({ok:true,disabled:true});
     }
 
     // Activation and rollback are deliberately locked. The UI cannot unlock them.
