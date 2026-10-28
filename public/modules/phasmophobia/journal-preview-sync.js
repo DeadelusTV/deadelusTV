@@ -115,5 +115,44 @@
   }
   update('Brouillon privé enregistré sur Supabase · révision '+loadedRevision+'.');
  }));
+ // Bridge dédié à la navigation dans l'historique des brouillons.
+ // On ne modifie jamais les anciennes versions : seule une nouvelle sauvegarde
+ // du brouillon peut appliquer l'une de leurs copies.
+ window.PHASMO_JOURNAL_REMOTE_SYNC=Object.freeze({
+  listVersions:async()=>{
+   const {client}=await authorized();
+   const {data,error}=await client.from('phasmo_journal_preview_revisions')
+    .select('revision,saved_at').order('revision',{ascending:false}).limit(100);
+   if(error)throw Error('Historique indisponible : '+error.message);
+   return data||[];
+  },
+  loadRevision:async requested=>{
+   if(busy)throw Error('Une opération de brouillon est déjà en cours.');
+   const rev=Number(requested);
+   if(!Number.isSafeInteger(rev)||rev<1)throw Error('Révision historique invalide.');
+   busy=true;load.disabled=save.disabled=true;
+   try{
+    const {client}=await authorized();
+    const [historical,current]=await Promise.all([
+     client.from('phasmo_journal_preview_revisions')
+      .select('revision,payload').eq('revision',rev).maybeSingle(),
+     client.from(TABLE).select('revision').eq('stage','preview').maybeSingle()
+    ]);
+    if(historical.error||!historical.data)throw Error('Cette version n’est plus accessible dans l’historique.');
+    if(current.error)throw Error('Impossible de vérifier la révision actuelle.');
+    if(!confirm('Charger l’ancienne révision '+rev+' ? Elle remplacera les modifications locales non enregistrées. L’historique distant restera intact.'))return false;
+    const media=window.PHASMO_JOURNAL_STORAGE_MEDIA;
+    if(!media)throw Error('Stockage des médias indisponible.');
+    update('Récupération de la révision '+rev+' et de ses médias privés…');
+    const hydrated=await media.restoreForEditor(historical.data.payload,client,update);
+    await bridge().importPayload(hydrated);
+    loadedRevision=current.data?.revision??0;
+    update('Révision '+rev+' chargée dans l’atelier. Pour la conserver comme nouveau brouillon, clique sur « Enregistrer le brouillon ».');
+    return true;
+   }catch(error){update('Erreur : '+(error?.message||'Chargement historique impossible'));throw error;}
+   finally{busy=false;load.disabled=save.disabled=false;}
+  },
+  invalidateLocalRevision:()=>{loadedRevision=null;}
+ });
  update('Mode local actif. Le brouillon partagé envoie images et polices vers Storage privé. Charge sa dernière révision avant d’enregistrer.');
 })();
