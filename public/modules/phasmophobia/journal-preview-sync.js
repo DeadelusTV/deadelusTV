@@ -76,7 +76,10 @@
    update('Chargement annulé. Tes données locales restent inchangées.');
    return;
   }
-  await bridge().importPayload(data.payload);
+  const media=window.PHASMO_JOURNAL_STORAGE_MEDIA;
+  if(!media)throw Error('Module Storage du carnet absent. Actualise la page.');
+  const hydrated=await media.restoreForEditor(data.payload,client,update);
+  await bridge().importPayload(hydrated);
   loadedRevision=data.revision;
   update('Brouillon partagé chargé · révision '+loadedRevision+'.');
  }));
@@ -86,11 +89,14 @@
   const {client,user}=await authorized();
   const payload=bridge().exportPayload();
   if(payload?.version!==7)throw Error('Seul le format du carnet V7 peut être enregistré.');
-  const bytes=new TextEncoder().encode(JSON.stringify(payload)).byteLength;
-  if(bytes>7500000)throw Error('Carnet trop volumineux pour ce premier essai. Les images nécessiteront Supabase Storage.');
-  if(!confirm('Enregistrer cette version du carnet dans le brouillon partagé ? Elle restera privée et ne sera pas publiée.'))return;
+  if(!confirm('Enregistrer cette version du carnet dans le brouillon partagé ? Elle restera privée et ne sera pas publiée. Les images et polices seront transférées dans Storage privé.'))return;
+  const media=window.PHASMO_JOURNAL_STORAGE_MEDIA;
+  if(!media)throw Error('Module Storage du carnet absent. Actualise la page.');
+  const remotePayload=await media.prepareForSave(payload,client,user.id,update);
+  const bytes=new TextEncoder().encode(JSON.stringify(remotePayload)).byteLength;
+  if(bytes>7500000)throw Error('Le JSON distant dépasse 7,5 Mo malgré Storage. Aucun brouillon n’a été écrasé.');
   if(loadedRevision===0){
-   const {error}=await client.from(TABLE).insert({stage:'preview',payload,revision:1,updated_by:user.id});
+   const {error}=await client.from(TABLE).insert({stage:'preview',payload:remotePayload,revision:1,updated_by:user.id});
    if(error){
     loadedRevision=null;
     throw Error('Le brouillon a peut-être été créé ailleurs. Recharge sa dernière version avant d’enregistrer.');
@@ -99,7 +105,7 @@
   }else{
    const expected=loadedRevision;
    const {data,error}=await client.from(TABLE)
-    .update({payload,revision:expected+1,updated_by:user.id,updated_at:new Date().toISOString()})
+    .update({payload:remotePayload,revision:expected+1,updated_by:user.id,updated_at:new Date().toISOString()})
     .eq('stage','preview').eq('revision',expected).select('revision').maybeSingle();
    if(error||!data){
     loadedRevision=null;
@@ -109,5 +115,5 @@
   }
   update('Brouillon privé enregistré sur Supabase · révision '+loadedRevision+'.');
  }));
- update('Mode local actif. Clique sur « Charger le brouillon partagé » avant ton premier enregistrement distant.');
+ update('Mode local actif. Le brouillon partagé envoie images et polices vers Storage privé. Charge sa dernière révision avant d’enregistrer.');
 })();
