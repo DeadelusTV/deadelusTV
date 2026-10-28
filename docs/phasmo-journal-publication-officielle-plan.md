@@ -105,3 +105,17 @@ Le 28 octobre 2026, les deux essais de la fonction `phasmo-journal-storage-test`
 - Vérification réelle Supabase après modification : candidat **publication de test n°8/révision 12**, 2 médias, verrou `false`, aucune réservation, 0 publication, 0 entrée d'historique, 0 média dans les buckets public et staging. Les appels SQL sont inaccessibles à `anon` et `authenticated`, accessibles uniquement au serveur. Le message informatif de sécurité RLS sans policy sur la table de verrou est intentionnel.
 
 **Recette navigateur à confirmer** : après Ctrl+F5 sur l'atelier DEV avec compte administrateur, voir le nouveau panneau ; cliquer « Actualiser les commandes et l'historique ». Le statut doit dire verrou fermé, candidat test n°8/rév.12, aucune version officielle, historique vide. Même en cochant les droits et en saisissant `PUBLIER-OFFICIELLEMENT`, le bouton de publication doit **rester désactivé** ; restauration et mise hors ligne également. Ne pas ouvrir le verrou pour cet essai. La publication, la restauration ou le retrait d'une véritable version en ligne ne sont **pas encore testés en conditions réelles**, et restent soumis à validation explicite avant toute activation publique.
+
+
+## 11. Interface finale épurée après validation des tests
+
+**Décision fonctionnelle (28 octobre 2026) :** conserver provisoirement le panneau technique complet et ses boutons de recette pendant les derniers tests. **Une fois les tests validés**, le masquer ou le retirer de l'interface courante et adopter une gestion simple, sur le modèle de l'éditeur de News :
+
+- **Enregistrer** le brouillon partagé.
+- **Charger** une version enregistrée, ou, de préférence à examiner, remplacer « Charger » par un **menu déroulant Historique des modifications** donnant accès aux versions antérieures et à leur chargement.
+- **Aperçu** pour visualiser le carnet sans publier.
+- **Publier** pour valider la mise en ligne du carnet, tout en conservant les contrôles serveur existants en arrière-plan.
+- **Dépublier** pour masquer le carnet public.
+- **Supprimer**, en précisant lors de la conception finale *ce qui est supprimé* (par exemple un brouillon, et non l'historique ou les médias d'anciennes versions) et avec confirmation.
+
+**Principe validé :** l'utilisateur ne doit pas gérer à la main les états intermédiaires « publication de test / candidat privé / vérification Storage / réservation / confirmation technique » dans le panneau final. Ces contrôles restent automatiques côté serveur ; les outils de diagnostic peuvent rester accessibles séparément aux administrateurs si nécessaire. **Ne pas simplifier avant la fin de la recette complète.** Aucun travail sur `main` pour cette décision.
