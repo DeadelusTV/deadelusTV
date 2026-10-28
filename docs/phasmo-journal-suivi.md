@@ -815,3 +815,12 @@ Fichiers de branche : `docs/phasmo-journal-preview-schema-v1.sql` (SQL appliqué
 ### 28/10/2026 — Recette navigateur : police restaurée dans l'aperçu privé
 
 **Retour utilisateur confirmé :** après le correctif de récupération des familles `Atelier_Biblio_<SHA256>` depuis le Storage privé, l'utilisatrice confirme : « c est good j'ai la font dans l'apercu ». La **police TTF personnalisée s'affiche désormais dans le livre publié en test**, et l'image précédemment sélectionnée y était déjà visible. **Scénario de rendu navigateur validé**. Cela confirme la récupération de la police pour cette visualisation, mais pas à lui seul la persistance d'une nouvelle entrée `payload.fonts` dans la publication existante ; ne déclarer cette étape durablement réparée en base qu'après contrôle de la version enregistrée/publiée. Aucun changement `main` ni diffusion publique.
+
+
+### 28/10/2026 — Police conservée dans la publication privée n°8
+
+**Retour utilisatrice :** après l'affichage réparé de la police personnalisée dans le livre publié en test, elle a chargé le brouillon, publié une nouvelle version de test puis ouvert le livre publié en test.
+
+**Contrôle SQL réel après les actions :** `phasmo_journal_preview_drafts` à la **révision 12** et `phasmo_journal_preview_publications` à la **publication de test n°8 (source révision 12)**. Les deux documents ont chacun **1 image** référencée dans Storage privé, **1 police personnalisée** dans `payload.fonts`, et **1 calque heading** dont le champ `font` correspond à l'entrée `fonts[].family`. La police est une référence `journal-storage://fonts/…`, pas un lien local ou une famille orpheline. **Le défaut de persistance des polices observé sur la révision 11 / publication n°7 est désormais corrigé pour la nouvelle révision et la nouvelle publication.**
+
+**Statut :** le rendu de la police dans l'aperçu avait été confirmé visuellement par l'utilisatrice au test précédent ; la persistance dans le brouillon et la publication est **confirmée par SQL**. Les anciens snapshots historiques ne sont pas altérés. Aucun déploiement sur `main`, aucun contenu officiel rendu public.
