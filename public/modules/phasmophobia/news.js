@@ -34,6 +34,7 @@
   let entries = [];
   let loaded = false;
   let track = null;
+  let returningToNews = false;
 
   function el(tag, className, value) {
     const node = document.createElement(tag);
@@ -190,6 +191,10 @@
   function backLink(text) {
     const back = el('a', 'phasma-news-back', text);
     back.href = '#phasmophobia';
+    back.addEventListener('click', event => {
+      if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+      returningToNews = true;
+    });
     return back;
   }
 
@@ -348,6 +353,9 @@
     source.rel = 'noopener noreferrer';
     credits.append(source);
     reader.append(credits);
+    const bottomBack = backLink('← Retour aux news');
+    bottomBack.classList.add('btn', 'btn-outline', 'phasma-news-back--bottom');
+    reader.append(bottomBack);
   }
 
   function route() {
@@ -355,13 +363,21 @@
     try { route = decodeURIComponent(location.hash.slice(1)); }
     catch { route = location.hash.slice(1); }
     const isNews = route === 'phasmophobia/news' || route.startsWith('phasmophobia/news/');
-    if (!loaded && !isNews) return;
     if (!isNews) {
       reader.hidden = true;
       feed.hidden = entries.length === 0;
       intro.hidden = entries.length > 0;
+      if (returningToNews && route === 'phasmophobia') {
+        returningToNews = false;
+        requestAnimationFrame(() => {
+          if (!root.open || !reader.hidden || document.getElementById('page-phasmophobia').hidden) return;
+          root.querySelector('summary').focus({ preventScroll: true });
+          root.scrollIntoView({ block: 'start', behavior: 'auto' });
+        });
+      }
       return;
     }
+    returningToNews = false;
     root.open = true;
     intro.hidden = true;
     feed.hidden = true;
@@ -374,13 +390,20 @@
     else showArticle(route.slice('phasmophobia/news/'.length));
     // Sur un lien partagé, afficher directement l'article, après le routeur principal.
     requestAnimationFrame(() => {
-      if (reader.hidden || document.getElementById('page-phasmophobia').hidden) return;
+      if (!root.open || reader.hidden || document.getElementById('page-phasmophobia').hidden) return;
       reader.focus({ preventScroll: true });
       reader.scrollIntoView({ block: 'start', behavior: 'auto' });
     });
   }
 
   window.addEventListener('hashchange', route);
+  root.addEventListener('toggle', () => {
+    if (root.open || reader.hidden) return;
+    // Fermer le panneau quitte aussi l'article, sans ajouter une étape à l'historique.
+    history.replaceState(history.state, '', '#phasmophobia');
+    returningToNews = false;
+    route();
+  });
   window.addEventListener('deadelustv:consent-change',()=>{
     const allowed=window.DEADELUSTV_CONSENT?.hasConsent('youtube')===true;
     for(const image of document.querySelectorAll('#page-phasmophobia .phasma-youtube-thumbnail')){
