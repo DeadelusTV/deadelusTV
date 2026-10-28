@@ -8,7 +8,7 @@
 - `phasmo_journal_preview_publications` : dernière version de **test privé** ; consultation administrateur Twitch uniquement.
 - `phasmo_journal_production_publications` : version officielle destinée aux visiteurs, séparée du brouillon et de la publication test. Lecture anonyme autorisée **uniquement** lorsque `stage='production' AND visibility='live'`.
 - `phasmo_journal_production_publication_history` : structure d'historique des publications officielles futures, lecture admin, pas d'accès aux visiteurs.
-- La promotion de contenu **n'est pas encore implémentée ou autorisée**. Ni `anon`, ni `authenticated` ne disposent de `INSERT`/`UPDATE` sur la publication officielle.
+- Le circuit de promotion **est implémenté côté serveur, mais demeure volontairement verrouillé** par `phasmo_journal_production_release_controls.activation_enabled=false`. Ni `anon`, ni `authenticated` ne disposent de `INSERT`/`UPDATE` sur la publication officielle, ni du droit `EXECUTE` sur les fonctions SQL de validation. Une fonction Edge authentifiée permet seulement de préparer une version privée en attendant la validation de mise en ligne.
 
 ## 2. Médias : deux buckets strictement séparés
 
@@ -45,3 +45,16 @@
 6. Autorisation explicite de rendre le contenu public et **autorisation distincte** pour toute fusion `main`.
 
 **Ne pas considérer les nouvelles tables ou le bucket public comme une autorisation de publier. Aucune action en production n'est déclenchée automatiquement par les sauvegardes ou la publication de test.**
+
+
+## 6. Implémentation du contrôle de sortie officielle (28 octobre 2026)
+
+- `phasmo_journal_production_candidates` conserve la version **publiée pour test**, figée et vérifiée (pas le brouillon live), avec l'empreinte de chaque média privé. Le candidat peut être préparé depuis le bouton « Préparer une version officielle (privée) » dans l'atelier.
+- Edge Function `phasmo-journal-release` (`supabase/functions/phasmo-journal-release/index.ts`), `verify_jwt=true`, origine DEV, validation du JWT Twitch et du rôle admin côté base. Elle expose `status`, `prepare`, `activate`, `offline`, `restore`.
+- `prepare` valide chaque image et police depuis Storage privé sans envoyer de fichier dans le bucket public. `activate` est programmé pour copier les seuls médias du candidat validé et créer un nouveau snapshot officiel ainsi que sa ligne d'historique via une RPC SQL atomique réservée au service role. Une confirmation de droits des médias et une confirmation textuelle sont exigées **après déverrouillage explicite du serveur**.
+- `offline` permet une mise hors ligne urgente par un admin, même verrou d'activation fermé ; `restore` créerait une nouvelle release qui reproduit un ancien snapshot, sans réécrire l'historique, avec vérification des médias encore disponibles.
+- `activation_enabled=false` est en place et vérifié. **Aucun bouton d'activation n'est exposé à ce stade.** Tant que la validation de la publication publique n'a pas été donnée, il est interdit de modifier ce verrou.
+- Références : `docs/phasmo-journal-release-management-v1.sql`, `docs/phasmo-journal-release-restore-v1.sql`, `public/modules/phasmophobia/journal-official-prepare.js`.
+- Tests réalisés : déploiement de la fonction Edge et des migrations, contrôle SQL de l'absence de droit client, erreurs de verrou attendues et simulations front-end des boutons. **La recette navigateur de `prepare` reste ouverte ; les scénarios effectifs d'activation et rollback restent volontairement non exécutés en production partagée.**
+
+Cette mise à jour remplace le statut « promotion non implémentée » du plan initial, sans changer l'absence de feu vert pour la publication publique.
