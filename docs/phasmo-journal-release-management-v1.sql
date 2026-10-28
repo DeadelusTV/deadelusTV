@@ -103,7 +103,7 @@ BEGIN
   IF EXISTS (
     SELECT 1 FROM jsonb_array_elements(p_public_payload->'elements') a
     WHERE a->>'kind'='image' AND COALESCE(a->>'image','')<>''
-      AND (a->>'image' !~ '^journal-public://images/releases/[1-9][0-9]*/[a-f0-9]{64}\\.(png|jpg|webp|gif)$'
+      AND (a->>'image' !~ '^journal-public://images/releases/[1-9][0-9]*/[a-f0-9]{64}\.(png|jpg|webp|gif)$'
         OR NOT EXISTS (
          SELECT 1 FROM storage.objects o
          WHERE o.bucket_id='phasmo-journal-public-assets'
@@ -112,7 +112,7 @@ BEGIN
   ) OR EXISTS (
     SELECT 1 FROM jsonb_array_elements(p_public_payload->'fonts') f
     WHERE COALESCE(f->>'data','')<>''
-      AND (f->>'data' !~ '^journal-public://fonts/releases/[1-9][0-9]*/[a-f0-9]{64}\\.(ttf|otf|woff|woff2)$'
+      AND (f->>'data' !~ '^journal-public://fonts/releases/[1-9][0-9]*/[a-f0-9]{64}\.(ttf|otf|woff|woff2)$'
         OR NOT EXISTS (
          SELECT 1 FROM storage.objects o
          WHERE o.bucket_id='phasmo-journal-public-assets'
