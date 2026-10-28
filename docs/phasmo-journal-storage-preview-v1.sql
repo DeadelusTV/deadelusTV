@@ -35,7 +35,7 @@ CREATE POLICY phasmo_journal_storage_preview_upload
  FOR INSERT TO authenticated
  WITH CHECK (
   bucket_id='phasmo-journal-draft-assets'
-  AND name ~ '^(images|fonts)/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[a-f0-9]{64}\\.(webp|png|jpg|gif|ttf|otf|woff|woff2)$'
+  AND name ~ '^(images|fonts)/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[a-f0-9]{64}\.(webp|png|jpg|gif|ttf|otf|woff|woff2)$'
   AND (storage.foldername(name))[2] = (SELECT auth.uid())::text
   AND (
    EXISTS(SELECT 1 FROM public.phasmo_journal_admins a
