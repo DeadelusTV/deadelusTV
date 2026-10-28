@@ -225,13 +225,7 @@ html.journal-viewer #book .layer{cursor:default}
   </div>
   <div class="block">
     <h3>7 · Sauvegardes</h3>
-    <div class="field" id="journal-remote-sync">
-      <strong>Supabase · Brouillon partagé (prévisualisation)</strong>
-      <p class="tip" id="journal-remote-status" role="status">Mode local actif.</p>
-      <div class="buttons">
-        <button type="button" class="btn small" id="journal-remote-load">Charger le brouillon partagé</button>
-        <button type="button" class="btn small" id="journal-remote-save">Enregistrer sur Supabase</button>
-      </div>
+
       <p class="tip">Connexion Twitch et rôle carnet nécessaires. Aucune sauvegarde distante automatique ; exporte d'abord ton JSON local.</p>
     </div>
     <div class="buttons"><button id="export" class="btn solid" type="button">↓ Télécharger mes réglages</button><button id="import" class="btn" type="button">↑ Charger un JSON</button><button id="reset" class="btn" type="button">Réinitialiser l'atelier</button></div>
@@ -264,7 +258,7 @@ html.journal-viewer #book .layer{cursor:default}
 <script src="journal-records.js"></script>
 <script src="journal-folders.js"></script>
 <script src="journal-pagination.js"></script>
-<script src="journal-preview-sync.js" defer></script>
+
 <script src="journal-viewer-zoom.js"></script>
 <script>
 'use strict';
