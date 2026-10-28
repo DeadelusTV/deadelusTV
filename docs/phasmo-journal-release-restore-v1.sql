@@ -26,13 +26,13 @@ BEGIN
    AND NOT EXISTS(
     SELECT 1 FROM storage.objects o WHERE
       o.bucket_id='phasmo-journal-public-assets'
-      AND o.name=pg_catalog.substring(e->>'image' FROM 18)
+      AND o.name=pg_catalog.substring(e->>'image',18)
    )
  ) OR EXISTS(SELECT 1 FROM pg_catalog.jsonb_array_elements(h.payload->'fonts') f
    WHERE COALESCE(f->>'data','')<>'' AND NOT EXISTS(
     SELECT 1 FROM storage.objects o
     WHERE o.bucket_id='phasmo-journal-public-assets'
-      AND o.name=pg_catalog.substring(f->>'data' FROM 18)
+      AND o.name=pg_catalog.substring(f->>'data',18)
    )
  ) THEN RAISE EXCEPTION 'Media manquant pour cette ancienne version' USING ERRCODE='22023'; END IF;
 
