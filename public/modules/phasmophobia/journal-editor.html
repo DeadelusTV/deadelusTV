@@ -101,6 +101,23 @@ html.journal-publication-preview #book{visibility:hidden}
 html.journal-publication-preview #journal-publication-view-status{display:grid;place-items:center;text-align:center;position:fixed;inset:0;z-index:40;padding:30px;color:#f1ddbd;background:#0e0f10;font:17px/1.6 Arial,sans-serif}
 html.journal-publication-ready #journal-publication-view-status{display:none}
 html.journal-publication-ready #book{visibility:visible}
+/* Bibliothèque privée des images/polices existantes */
+#journal-asset-library{box-sizing:border-box;width:min(770px,calc(100vw - 24px));max-height:88dvh;padding:18px;border:1px solid #8c7151;border-radius:10px;background:#1e1b19;color:#f4e6d4;box-shadow:0 20px 80px #000e;overflow:auto;font:13px Arial,sans-serif}
+#journal-asset-library::backdrop{background:#000c}
+#journal-asset-library .journal-library-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#journal-asset-library h2{margin:0;font:600 20px Georgia,serif;color:#f4d7a9}
+#journal-asset-library button{cursor:pointer;border:1px solid #6d5840;background:#302821;color:#f0dfc9;border-radius:6px;padding:8px 11px;font:12px Arial,sans-serif}
+#journal-asset-library button:disabled{opacity:.5;cursor:default}
+#journal-asset-library button:focus-visible{outline:2px solid #f4c784;outline-offset:2px}
+#journal-library-info{margin:11px 0 13px;color:#b9ad9a;min-height:18px}
+#journal-library-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;max-height:56dvh;overflow:auto}
+#journal-library-grid .journal-media-choice{display:flex;flex-direction:column;gap:6px;min-height:125px;overflow:hidden;text-align:left;padding:8px;word-break:break-word}
+#journal-library-grid .journal-media-choice:hover{border-color:#d7ab68;background:#423326}
+#journal-library-grid .journal-media-preview{width:100%;height:100px;object-fit:contain;background:#120f0d;border-radius:4px;color:#d1b68f;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#journal-library-grid .journal-media-name{font-weight:600}
+#journal-library-grid .journal-media-details{font-size:11px;color:#b8a991}
+#journal-asset-library .journal-library-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:14px}
+@media(max-width:530px){#journal-asset-library{padding:12px}#journal-library-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}}
 </style>
 
 <style id="journal-viewer-rules">
@@ -200,9 +217,10 @@ html.journal-viewer #book .layer{cursor:default}
   </div>
   <div class="block">
     <h3>4 · Polices et images</h3>
-    <div class="buttons"><button id="import-font" class="btn small" type="button">Importer une police</button><button id="import-image" class="btn small" type="button">Image du calque sélectionné</button></div>
+    <div class="buttons"><button id="import-font" class="btn small" type="button">Importer une police</button><button id="journal-library-fonts" class="btn small" type="button">Police déjà enregistrée</button></div>
+    <div class="buttons"><button id="import-image" class="btn small" type="button">Importer une image</button><button id="journal-library-images" class="btn small" type="button">Image déjà enregistrée</button></div>
     <input id="font-input" type="file" accept=".ttf,.otf,.woff,.woff2"><input id="asset-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
-    <p class="tip">Polices TTF, OTF, WOFF, WOFF2 (max. 1,5 Mo). Images optimisées à l’import puis incluses dans le JSON (jusqu’à 7 Mo par fichier source). Les droits d'utilisation restent à vérifier avant publication.</p>
+    <p class="tip">Pour les images, sélectionne d'abord un calque « Image ». Pour les polices, sélectionne un calque de texte. La bibliothèque partagée affiche les fichiers privés déjà stockés, même s'ils ne figurent plus dans le brouillon. Aucun nouveau téléversement lors de la réutilisation. Polices TTF, OTF, WOFF, WOFF2 (max. 1,5 Mo). Images optimisées à l’import (jusqu’à 7 Mo par fichier source). Vérifie les droits avant publication.</p>
   </div>
   <div class="block" id="journal-record-manager">
     <h3>5 · Fiches dynamiques</h3>
@@ -279,6 +297,12 @@ html.journal-viewer #book .layer{cursor:default}
   <button id="cancel-delete-layer" type="button">Annuler</button>
   <button id="confirm-delete-layer" type="button">Supprimer définitivement</button>
  </div>
+</dialog>
+<dialog id="journal-asset-library" aria-labelledby="journal-asset-library-title">
+  <div class="journal-library-head"><h2 id="journal-asset-library-title">Bibliothèque privée du carnet</h2><button type="button" id="journal-library-close" aria-label="Fermer la bibliothèque">✕</button></div>
+  <p id="journal-library-info" class="tip" role="status" aria-live="polite">Les médias enregistrés sont réservés aux éditeurs autorisés.</p>
+  <div id="journal-library-grid" aria-label="Fichiers disponibles"></div>
+  <div class="journal-library-foot"><button type="button" id="journal-library-prev">← Précédents</button><span id="journal-library-page">Page 1</span><button type="button" id="journal-library-next">Suivants →</button></div>
 </dialog>
 <dialog id="delete-record-dialog" aria-labelledby="delete-record-title">
 <h2 id="delete-record-title">Supprimer cette fiche ?</h2>
@@ -988,6 +1012,31 @@ async function attachImage(file){
 }
 window.PHASMO_JOURNAL_REMOTE_BRIDGE = {
  exportPayload: () => COPY(state),
+ useLibraryAsset: async ({kind,path,data}) => {
+  const e=getSelected();
+  if(kind==='images'){
+   if(!e||e.kind!=='image')throw Error('Sélectionne un calque « Image » avant de choisir un fichier.');
+   if(!/^data:image\/(png|jpeg|webp|gif);base64,/.test(data))throw Error('Image de bibliothèque invalide.');
+   e.image=data;updateCurrentElement();
+   note('Image existante réutilisée sans nouvel import.');
+   return;
+  }
+  if(kind!=='fonts')throw Error('Catégorie de média inconnue.');
+  if(!e||!['heading','text','list','tab'].includes(e.kind))
+   throw Error('Sélectionne un calque de texte avant de choisir une police.');
+  if(!/^data:[^,]+;base64,/.test(data))throw Error('Police de bibliothèque invalide.');
+  const hash=/\/([a-f0-9]{64})\.(?:ttf|otf|woff|woff2)$/.exec(path)?.[1];
+  if(!hash)throw Error('Référence de police invalide.');
+  let font=state.fonts.find(f=>f.data===data);
+  if(!font){
+   const family='Atelier_Biblio_'+hash;
+   await registerFont({family,label:'Bibliothèque '+hash.slice(0,10),data});
+   font=state.fonts.find(f=>f.family===family);
+  }
+  e.font=font.family;
+  renderLayers();renderEditor();save();
+  note('Police existante appliquée sans nouvel import.');
+ },
  importPayload: async payload => {
   if (!payload || payload.version !== RECORD_SCHEMA) throw Error('Version de carnet incompatible.');
   const blob = new Blob([JSON.stringify(payload)], {type:'application/json'});
@@ -1286,6 +1335,7 @@ init();
 })();
 </script>
 <script src="journal-storage-media.js" defer></script>
+<script src="journal-asset-library.js" defer></script>
 <script src="journal-public-media.js" defer></script>
 <script src="journal-preview-sync.js" defer></script>
 <script src="journal-preview-publish.js" defer></script>
