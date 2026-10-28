@@ -249,7 +249,7 @@ html.journal-viewer #book .layer{cursor:default}
       </div>
     </div>
     <div class="buttons"><button id="export" class="btn solid" type="button">↓ Télécharger mes réglages</button><button id="import" class="btn" type="button">↑ Charger un JSON</button><button id="reset" class="btn" type="button">Réinitialiser l'atelier</button></div>
-    <input id="json-input" type="file" accept="application/json,.json"><p class="tip">Les images et polices peuvent remplir le stockage du navigateur : <b>exporte régulièrement ton JSON</b>. Les réglages se conservent aussi dans ce navigateur quand le stockage local est autorisé. <b>Le JSON est la sauvegarde fiable à transmettre ici.</b> Compatible avec les exports du premier Atelier Sommaire.</p>
+    <input id="json-input" type="file" accept="application/json,.json"><p class="tip">Le JSON local reste exportable et contient les médias. Les fichiers du brouillon partagé sont stockés dans le bucket privé dédié de Supabase Storage. Les réglages se conservent aussi dans ce navigateur quand le stockage local est autorisé. <b>Le JSON est la sauvegarde fiable à transmettre ici.</b> Compatible avec les exports du premier Atelier Sommaire.</p>
   </div>
 </aside>
 <section class="workspace" aria-label="Prévisualisation du livre">
@@ -980,7 +980,7 @@ window.PHASMO_JOURNAL_REMOTE_BRIDGE = {
  importPayload: async payload => {
   if (!payload || payload.version !== RECORD_SCHEMA) throw Error('Version de carnet incompatible.');
   const blob = new Blob([JSON.stringify(payload)], {type:'application/json'});
-  await loadSettings(blob);
+  await loadSettings(blob,true);
  }
 };
 function exportSettings(){
@@ -1007,8 +1007,8 @@ function importLegacy(data){
  s._pendingFonts=Array.isArray(data.customFonts)?data.customFonts:[];
  return s;
 }
-async function loadSettings(file){
- if(file.size>17_000_000)throw Error('JSON trop volumineux (17 Mo maximum).');
+async function loadSettings(file,fromRemote=false){
+ if(file.size>(fromRemote?85_000_000:17_000_000))throw Error('JSON trop volumineux.');
  const raw=JSON.parse(await file.text());
  let incoming;
  if(raw.version===1&&raw.blocks&&raw.groups)incoming=importLegacy(raw);
@@ -1274,6 +1274,7 @@ async function init(){
 init();
 })();
 </script>
+<script src="journal-storage-media.js" defer></script>
 <script src="journal-preview-sync.js" defer></script>
 <script src="journal-preview-publish.js" defer></script>
 <script src="journal-preview-publication-viewer.js" defer></script>
