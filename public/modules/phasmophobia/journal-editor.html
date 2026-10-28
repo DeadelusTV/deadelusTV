@@ -1100,7 +1100,19 @@ async function loadSettings(file,fromRemote=false){
  }
  syncRecordsToGroups();
  const incomingFonts=Array.isArray(incoming._pendingFonts)?incoming._pendingFonts:incoming.fonts||[];
- for(const f of incomingFonts.slice(0,8)){try{await registerFont(f);}catch(e){note('Attention : une police n’a pas été chargée.');}}
+ for(const f of incomingFonts.slice(0,8)){
+  try{await registerFont(f);}
+  catch(error){
+   if(fromRemote)throw Error('Police enregistrée impossible à charger : '+(error?.message||'format invalide')+'. La publication reste masquée.');
+   note('Attention : une police n’a pas été chargée : '+(error?.message||'erreur inconnue'));
+  }
+ }
+ const loadedFontFamilies=new Set(state.fonts.map(f=>f.family));
+ const missingFonts=[...new Set(state.elements
+  .map(e=>e.font)
+  .filter(font=>typeof font==='string'&&/^Atelier(?:Font)?_[\w-]{1,90}$/.test(font)&&!loadedFontFamilies.has(font)))];
+ if(fromRemote&&missingFonts.length)
+  throw Error('Police personnalisée absente du document distant : '+missingFonts[0]+'. Recharge le brouillon partagé puis sauvegarde-le.');
  // Aucune confiance dans les identifiants de l'import : recréation stable.
  state.elements.forEach((e,i)=>e.id='element-'+(i+1));serial=state.elements.length+1;
  if(raw.version<RECORD_SCHEMA)migrateSeparateLists();
