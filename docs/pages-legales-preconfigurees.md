@@ -27,3 +27,14 @@ Tous les blocs d'attente portent `data-legal-pending="true"` pour les identifier
 **Technique : préparé ; textes officiels : non fournis/non validés.** Les CGU et CGV sont des projets de pages, pas des contrats actifs ni une annonce d'activité commerciale. Des CGV deviennent pertinentes/obligatoires selon les ventes effectivement réalisées ; ne pas les activer avant que la fonctionnalité de vente et les conditions adaptées aient été décidées.
 
 **Avertissement important :** masquer les liens des mentions légales et de la confidentialité ne répond pas aux obligations légales d'information et réduit leur accessibilité. C'est une mesure d'interface temporaire demandée par l'utilisatrice, à supprimer au plus vite. Le lien de gestion des cookies reste toujours accessible, ainsi que l'accès direct à la page confidentialité depuis la bannière.
+
+
+## Intégration documentaire sur developpement/phasmo-v2 — 29 octobre 2026
+
+- Mentions légales : texte Drive « Mentions légales.txt » intégré au HTML pour relecture ; validation finale non confirmée ; lien du pied de page masqué.
+- Confidentialité et cookies : texte Drive « Confidentialité et cookies.txt » déclaré validé par l’utilisatrice, intégré en une seule page #confidentialite ; lien visible sur V2 et bouton « Gestion des cookies » conservé.
+- Ancienne adresse #politique-cookies : affiche désormais le document #confidentialite ; doublon HTML supprimé et lien doublon retiré.
+- CGU : texte Drive « Conditions générales d’utilisation.txt » intégré pour relecture ; validation finale non confirmée ; lien masqué.
+- CGV : page et lien masqués conservés.
+- Notes de relecture visibles sur les articles non encore validés ; les textes Drive d’origine ne sont pas modifiés.
+- Avant future fusion : confirmer les mentions légales et CGU, tester les liens, la navigation, la version mobile et le gestionnaire Twitch/YouTube. Aucun changement sur main.
