@@ -7,7 +7,7 @@ function closeMenu(){nav.classList.remove('is-open');menu.setAttribute('aria-exp
 menu.addEventListener('click',()=>{const open=menu.getAttribute('aria-expanded')!=='true';nav.classList.toggle('is-open',open);menu.setAttribute('aria-expanded',String(open));menu.setAttribute('aria-label',open?'Fermer le menu':'Ouvrir le menu');});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&menu.getAttribute('aria-expanded')==='true'){closeMenu();menu.focus();}});
 document.addEventListener('click',e=>{if(!e.target.closest('.site-header'))closeMenu();});
-const routeTitles={'accueil':'Le repaire de la communauté','jeux-de-role':'Pavillon Noir','crewmongus':'Crewmongus','tcg':'Trading Card Game','phasmophobia':'Phasmophobia','pavillon-noir':'Pavillon Noir','mentions-legales':'Mentions légales','confidentialite':'Politique de confidentialité','conditions-utilisation':'Conditions générales d’utilisation','conditions-vente':'Conditions générales de vente','politique-cookies':'Politique de cookies'};
+const routeTitles={'accueil':'Le repaire de la communauté','jeux-de-role':'Pavillon Noir','crewmongus':'Crewmongus','tcg':'Trading Card Game','phasmophobia':'Phasmophobia','pavillon-noir':'Pavillon Noir','mentions-legales':'Mentions légales','confidentialite':'Confidentialité et cookies','conditions-utilisation':'Conditions générales d’utilisation','conditions-vente':'Conditions générales de vente','politique-cookies':'Politique de cookies'};
 const player=$('#player-shell');
 let activeRoute='accueil';
 function route(focus=false){
@@ -20,7 +20,9 @@ function route(focus=false){
   if(crewAuth)window.DEADELUSTV_CREW_AUTH=true;
   const isCrew=crewAuth||requested==='crewmongus'||requested.startsWith('crewmongus/');
   const isPhasmoNews=requested==='phasmophobia/news'||requested.startsWith('phasmophobia/news/');
-  const name=isCrew?'crewmongus':isCampaign?'pavillon-noir':isPhasmoNews?'phasmophobia':Object.hasOwn(routeTitles,requested)?requested:'accueil';
+  // L'adresse historique cookies utilise la page commune.
+  const legalRoute=requested==='politique-cookies'?'confidentialite':requested;
+  const name=isCrew?'crewmongus':isCampaign?'pavillon-noir':isPhasmoNews?'phasmophobia':Object.hasOwn(routeTitles,legalRoute)?legalRoute:'accueil';
   const navName=isCampaign&&!isCrew?'jeux-de-role':name;
   $$('[data-page]').forEach(section=>section.hidden=section.dataset.page!==name);
  const communityBanners = $$('[data-community-banner]');
