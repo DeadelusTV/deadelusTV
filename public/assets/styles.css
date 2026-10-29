@@ -530,3 +530,107 @@ dialog{color:var(--text);background:#19191a;border:1px solid #59513e;border-radi
   }
   .tiktok-only .tiktok-motion__echo { opacity: 0; }
 }
+
+/* DEADELUSTV - Bandeaux Discord : réglages validés depuis les simulateurs.
+   Accueil = export 1 ; Phasmophobia = export 2.
+   À utiliser à la place du bloc .community-banner situé à la fin de
+   public/assets/styles.css (ou ajouter à la fin pour écraser l'ancien bloc).
+   Images requises dans public/assets/ : discord-home.webp et discord-phasmo.webp.
+   Le texte reste modifiable dans public/index.html. */
+
+.community-banner {
+  position: relative;
+  display: block;
+  padding: 0;
+  overflow: hidden;
+  isolation: isolate;
+  background-image: none;
+}
+.community-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-repeat: no-repeat;
+  background-size: cover;
+  transform-origin: center center;
+}
+.community-banner-home { background-image: none; }
+.community-banner-phasmo { background-image: none; }
+.community-banner-home::before { background-image: url('discord-home.webp'); }
+.community-banner-phasmo::before { background-image: url('discord-phasmo.webp'); }
+.community-banner .community-banner-overlay { position: absolute; inset: 0; z-index: 0; }
+.community-banner .community-banner-content {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  box-sizing: border-box;
+  max-width: none;
+  margin: 0;
+  transform: translate(-50%, -50%);
+}
+.community-banner .community-text { flex: none; width: 100%; min-width: 0; }
+.community-banner h2 { font-family: Georgia, 'Times New Roman', serif; font-weight: 500; line-height: 1.17; margin: 0 0 6px; }
+.community-banner p { line-height: 1.45; }
+.community-banner .btn { min-height: 34px; padding: 8px 15px; margin: 0; white-space: nowrap; }
+
+/* ACCUEIL : premier export, bouton Discord conservé. */
+.community-banner-home { height: 128px; min-height: 0; }
+.community-banner-home::before { background-position: 47% 33%; transform: scale(1.00); }
+.community-banner-home .community-banner-overlay { background: rgba(5,8,12,0.24); }
+.community-banner-home .community-banner-content { left: 56%; top: 50%; width: 51%; gap: 11px; padding: 12px 18px; }
+.community-banner-home h2 { font-size: 30px; }
+.community-banner-home p { font-size: 12px; }
+.community-banner-home .btn { font-size: 12px; width: auto; }
+
+/* PHASMOPHOBIA : second export, bandeau affiné à 128px. */
+.community-banner-phasmo { height: 128px; min-height: 0; }
+.community-banner-phasmo::before { background-position: 82% 43%; transform: scale(1.00); }
+.community-banner-phasmo .community-banner-overlay { background: rgba(5,8,12,0.32); }
+.community-banner-phasmo .community-banner-content { left: 46%; top: 49%; width: 55%; gap: 7px; padding: 12px 18px; }
+.community-banner-phasmo h2 { font-size: 29px; }
+.community-banner-phasmo p { font-size: 13px; }
+.community-banner-phasmo .btn { font-size: 12px; width: auto; }
+
+@media (max-width: 600px) {
+  /* ACCUEIL mobile : premier export. */
+  .community-banner-home { height: 195px; min-height: 0; }
+  .community-banner-home::before { background-position: 47% 50%; transform: scale(1.00); }
+  .community-banner-home .community-banner-overlay { background: rgba(5,8,12,0.29); }
+  .community-banner-home .community-banner-content { left: 68%; top: 51%; width: 64%; gap: 9px; padding: 12px 8px; }
+  .community-banner-home h2 { font-size: 20px; }
+  .community-banner-home p { font-size: 12px; }
+  .community-banner-home .btn { font-size: 11px; width: auto; }
+
+  /* PHASMOPHOBIA mobile : second export. */
+  .community-banner-phasmo { height: 195px; min-height: 0; }
+  .community-banner-phasmo::before { background-position: 50% 50%; transform: scale(1.00); }
+  .community-banner-phasmo .community-banner-overlay { background: rgba(5,8,12,0.36); }
+  .community-banner-phasmo .community-banner-content { left: 50%; top: 50%; width: 88%; gap: 9px; padding: 12px 8px; }
+  .community-banner-phasmo h2 { font-size: 20px; }
+  .community-banner-phasmo p { font-size: 12px; }
+  .community-banner-phasmo .btn { font-size: 11px; width: auto; }
+}
+
+/* Sécurité pour les téléphones très étroits : évite de couper le bouton Accueil. */
+@media (max-width: 360px) {
+  .community-banner-home .community-banner-content { gap: 6px; padding: 6px 6px; }
+  .community-banner-home h2 { font-size: 17px; line-height: 1.15; margin-bottom: 4px; }
+  .community-banner-home p { font-size: 11px; line-height: 1.3; }
+  .community-banner-home .btn { min-height: 30px; padding: 6px 10px; font-size: 10px; }
+}
+
+/* Espacement du bandeau Discord sur l'accueil */
+.community-banner-home {
+  margin-top: 40px;
+}
+
+@media (max-width: 600px) {
+  .community-banner-home {
+    margin-top: 28px;
+  }
+}
