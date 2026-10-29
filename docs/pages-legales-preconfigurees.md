@@ -38,3 +38,7 @@ Tous les blocs d'attente portent `data-legal-pending="true"` pour les identifier
 - CGV : page et lien masqués conservés.
 - Notes de relecture visibles sur les articles non encore validés ; les textes Drive d’origine ne sont pas modifiés.
 - Avant future fusion : confirmer les mentions légales et CGU, tester les liens, la navigation, la version mobile et le gestionnaire Twitch/YouTube. Aucun changement sur main.
+
+## Visibilité des liens légaux sur V2 — 29 octobre 2026
+
+À la demande de l'utilisatrice, les liens « Mentions légales » et « CGU » du pied de page sont désormais affichés sur la branche developpement/phasmo-v2 pour faciliter leur relecture, comme le lien « Confidentialité et cookies » déjà visible. Le gestionnaire « Gestion des cookies » reste actif et indépendant. L'ancienne adresse #politique-cookies continue d'afficher la page confidentialité commune. Les mentions légales et CGU conservent sur cette branche leur note de relecture et leur statut « à valider » ; rendre leurs liens visibles sur la branche de test ne constitue pas une validation juridique ou une autorisation de publication sur main. La page et le lien CGV demeurent masqués en l'absence de conditions définitives. Aucun changement sur main ni déploiement public.
