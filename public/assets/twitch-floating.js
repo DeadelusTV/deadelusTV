@@ -9,6 +9,7 @@
   let closed = false;
   let remoteStarting = false;
   let animationFrame = 0;
+  let inline = null;
 
   const consented = () => window.DEADELUSTV_CONSENT?.hasTwitchConsent() === true;
   const canFloat = () => window.innerWidth >= 901 && window.innerHeight >= 450;
@@ -28,10 +29,28 @@
 
   function refresh() {
     if (!dock || !controller || !anchor) return;
-    const home = isHomeVisible();
-    const rect = home ? anchor.getBoundingClientRect() : null;
+    // Les panneaux hors live suivent toujours le flux, sans rattrapage au scroll.
+    // Seul un direct autorise sur un ecran adapte utilise le dock persistant.
     const live = controller.active && controller.state === 'live' && consented();
-    const floating = !closed && live && canFloat() && (!home || !fullyVisible(rect));
+    const nextInline = !live || !canFloat();
+    if (inline !== nextInline) {
+      // Une verification en cours n'a pas encore d'iframe : ne pas l'annuler
+      // quand setState('live') prepare le dock juste avant sa creation.
+      const restart = inline !== null && !!controller.instance;
+      // Un changement de format peut deplacer le dock : retirer l'iframe avant.
+      if (restart) {
+        controller.active = false;
+        controller.stop();
+      }
+      inline = nextInline;
+      anchor.dataset.inline = String(inline);
+      anchor.setAttribute('aria-hidden', String(!inline));
+      (inline ? anchor : document.body).append(dock);
+      if (restart) requestAnimationFrame(() => controller.sync());
+    }
+    const home = isHomeVisible();
+    const rect = home && !inline ? anchor.getBoundingClientRect() : null;
+    const floating = !closed && !inline && (!home || !fullyVisible(rect));
 
     reopen.hidden = !closed || !consented();
     anchor.dataset.closed = closed ? 'true' : 'false';
@@ -42,7 +61,12 @@
     }
     dock.hidden = false;
     dock.classList.toggle('is-floating', floating);
-    if (floating) {
+    if (inline) {
+      dock.style.top = '';
+      dock.style.left = '';
+      dock.style.bottom = '';
+      dock.style.width = '';
+    } else if (floating) {
       dock.style.left = EDGE + 'px';
       dock.style.top = 'auto';
       dock.style.bottom = EDGE + 'px';
