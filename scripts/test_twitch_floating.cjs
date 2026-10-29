@@ -92,14 +92,14 @@ function createEnv({consent = true, width = 1400, height = 800, state = 'live'} 
   vm.runInNewContext(source, {window, document, requestAnimationFrame: fn => {fn(); return 1;}});
   const player = {
     state, active: true,
-    stop() { stopCount++; },
+    stop() { stopCount++; this.instance = null; },
     setState(next) { this.state = next; window.DEADELUSTV_TWITCH_FLOAT.onState(next); },
     sync() { syncCount++; }
   };
   window.DEADELUSTV_TWITCH_FLOAT.setup(root, controls, player);
-  const dock = body.children.find(node => node.className.includes('twitch-player-dock'));
-  const reopen = body.children.find(node => node.className.includes('twitch-float-reopen'));
   const anchor = home.children[0];
+  const dock = [...body.children, ...anchor.children].find(node => node.className.includes('twitch-player-dock'));
+  const reopen = body.children.find(node => node.className.includes('twitch-float-reopen'));
   return {
     window, home, root, controls, player, dock, reopen, anchor,
     counts: () => ({stops: stopCount, syncs: syncCount}),
@@ -153,6 +153,64 @@ test('petit ecran : pas de lecteur flottant', () => {
   const e = createEnv({width: 850, height: 600});
   assert.equal(e.dock.classList.contains('is-floating'), false);
   assert.equal(e.window.DEADELUSTV_TWITCH_FLOAT.shouldPersist(e.player), false);
+  assert.equal(e.dock.parent, e.anchor, 'le panneau reste dans le flux de l accueil');
+  assert.equal(e.anchor.attributes['aria-hidden'], 'false', 'les liens restent accessibles');
+  e.anchor.getBoundingClientRect = () => { throw new Error('aucune mesure de position mobile'); };
+  e.window.DEADELUSTV_TWITCH_FLOAT.refresh();
+  assert.equal(e.dock.style.top, '');
+  assert.equal(e.dock.style.left, '');
+  e.home.hidden = true;
+  e.window.DEADELUSTV_TWITCH_FLOAT.refresh();
+  assert.equal(e.dock.hidden, true);
+});
+test('changement de format : arret avant deplacement, puis reprise dans le nouveau format', () => {
+  const e = createEnv();
+  e.player.instance = {};
+  const append = e.anchor.append.bind(e.anchor);
+  e.anchor.append = (...nodes) => {
+    assert.equal(e.counts().stops, 1, 'le lecteur est arrete avant de deplacer son conteneur');
+    append(...nodes);
+  };
+  e.window.innerWidth = 390;
+  e.window.DEADELUSTV_TWITCH_FLOAT.refresh();
+  assert.equal(e.dock.parent, e.anchor);
+  assert.equal(e.dock.classList.contains('is-floating'), false);
+  assert.equal(e.counts().syncs, 1);
+  e.player.active = true;
+  e.window.innerWidth = 1400;
+  e.window.DEADELUSTV_TWITCH_FLOAT.refresh();
+  assert.equal(e.dock.parent, e.home.parent);
+  assert.equal(e.anchor.attributes['aria-hidden'], 'true');
+});
+test('sur PC, tous les panneaux hors live restent dans le flux pendant le defilement', () => {
+  for (const state of ['loading', 'offline', 'blocked', 'unknown', 'small']) {
+    const e = createEnv({state});
+    const moves = e.dock.moved;
+    assert.equal(e.dock.parent, e.anchor, state);
+    assert.equal(e.anchor.attributes['aria-hidden'], 'false');
+    e.anchor.getBoundingClientRect = () => { throw new Error('le panneau ne doit pas mesurer sa position'); };
+    e.window.DEADELUSTV_TWITCH_FLOAT.refresh();
+    assert.equal(e.dock.style.top, '');
+    assert.equal(e.dock.style.left, '');
+    assert.equal(e.dock.moved, moves, 'aucun deplacement au scroll');
+  }
+});
+test('passage chargement puis live : ne pas annuler la verification avant creation de l iframe', () => {
+  const e = createEnv({state: 'loading'});
+  assert.equal(e.dock.parent, e.anchor);
+  e.player.setState('live');
+  assert.equal(e.dock.parent, e.home.parent);
+  assert.equal(e.player.active, true);
+  assert.equal(e.counts().stops, 0, 'la verification en cours reste valide');
+  assert.equal(e.counts().syncs, 0, 'pas de seconde verification concurrente');
+  const moves = e.dock.moved;
+  e.player.instance = {};
+  e.window.DEADELUSTV_TWITCH_FLOAT.refresh();
+  assert.equal(e.dock.moved, moves, 'le live reste dans son dock');
+  e.player.stop();
+  e.player.setState('offline');
+  assert.equal(e.dock.parent, e.anchor, 'retour hors live dans la page');
+  assert.equal(e.counts().stops, 1, 'pas de second arret apres fin du live');
 });
 test('retrait de consentement apres fermeture : la reprise est masquee', () => {
   const e = createEnv();
