@@ -941,7 +941,7 @@ Aucune modification du brouillon, de l'historique, des médias, des verrous de p
 
 **Distinction :** comportement automatique pour les images classiques (opacité 100 %, fusion normale, hors rôle background) ; fonds/filigranes à opacité réduite ou effet d'encre exclus par défaut. Réglage individuel « Agrandissement au clic » : automatique, autoriser, ne pas agrandir. Choix booléen `zoomable` conservé dans le payload V7 et à l'import. Le fond du livre lui-même ne devient pas cliquable.
 
-**Tests :** `node scripts/test_phasmo_image_zoom.cjs` (25 contrôles) ; régression `node scripts/test_phasmo_custom_lists.cjs` (35 contrôles). Recette navigateur à compléter après déploiement DEV.
+**Tests :** `node scripts/test_phasmo_image_zoom.cjs` (25 contrôles) ; régression `node scripts/test_phasmo_custom_lists.cjs` (35 contrôles). **Recette navigateur DEV effectuée dans un onglet séparé :** image existante ouverte sans modification du brouillon ; boutons +/− vérifiés à 100/150 %, clic sur l’image vérifié à 200 %, Ajuster vérifié, rendu contrôlé. Les petites images sont centrées dans la vue agrandie. Le navigateur ne charge ni ne sauvegarde de version distante pour ce test. Le message public d’attente est inchangé.
 
 **À FAIRE PLUS TARD — NE PAS MODIFIER MAINTENANT :** après une dépublication, remplacer le message public d'attente « livre bientôt » par un message expliquant le problème technique et le retour prochain du journal (intention utilisateur : « pb technique journal revient »). Ce changement de texte est seulement consigné ; aucun texte public d'attente ou de dépublication n'est modifié dans cette livraison. Distinguer à terme première publication et retrait d'un journal déjà publié.
 
