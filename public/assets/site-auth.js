@@ -69,7 +69,8 @@
       const auth = window.supabase.createClient(PROJECT_URL, PUBLISHABLE_KEY, {
         auth: {
           flowType: 'pkce',
-          detectSessionInUrl: true,
+          // Le code OAuth de Crew appartient à son projet Supabase distinct.
+          detectSessionInUrl: new URLSearchParams(window.location.search).get('crew_auth') !== '1',
           persistSession: true,
           autoRefreshToken: true
         }
@@ -228,6 +229,7 @@
   setOpen(false);
   // Ne charge pas le fournisseur chez un visiteur anonyme tant qu'il n'ouvre pas
   // le compte/News, sauf au retour d'une redirection OAuth.
-  if (returning || new URLSearchParams(window.location.search).has('code')) refresh();
+  const authQuery = new URLSearchParams(window.location.search);
+  if (authQuery.get('crew_auth') !== '1' && (returning || authQuery.has('code'))) refresh();
   window.DEADELUSTV_AUTH = Object.freeze({ getClient, refresh, canManageNews, canManageJournal });
 })();
