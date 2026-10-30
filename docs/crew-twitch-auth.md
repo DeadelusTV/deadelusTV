@@ -43,19 +43,27 @@ L'association exige simultanément une session portail vérifiée et une session
 
 - SQL `docs/crew-twitch-sql-a-appliquer.sql` appliqué sur **Crew**, migration `crew_portal_twitch_common_login`. Ne pas le réexécuter.
 - Edge Function `crew-twitch-access` déployée sur Crew. `verify_jwt=false` car le jeton du portail est vérifié explicitement auprès d'Auth portail dans la fonction.
-- Origines autorisées par défaut : `https://developpement-phasmo-v2.deadelustv.pages.dev` et l’aperçu atomique vérifié `https://d9a00d48.deadelustv.pages.dev`. La production doit être ajoutée explicitement lors de sa préparation, via `CREW_ALLOWED_ORIGINS`. Pas d'activation du parcours commun sur main par ce lot.
+- Origine autorisée par défaut : `https://deadelustv.pages.dev`, domaine stable dont la branche de production Cloudflare est `developpement/phasmo-v2` (vérifié dans le tableau des déploiements). Les aperçus atomiques et l’ancien alias supposé ne sont plus autorisés par défaut. La production doit être ajoutée explicitement lors de sa préparation, via `CREW_ALLOWED_ORIGINS`. Pas d'activation du parcours commun sur main par ce lot.
 - Variables serveur Supabase intégrées réutilisées ; pas de nouveau fournisseur OAuth Crew ni de secret Twitch à configurer.
 - Aucun changement appliqué au schéma portail/TCG, aux droits Phasmo ou Journal, aux statistiques, aux parties, aux sauvegardes ou à la DLL.
 
 ## Vérifications et limites
 
-- 20 contrôles HTTP serveur simulés : identité portail, faux rôles/métadonnées, identité Twitch différente, viewer/modo/propriétaire, session émise, association protégée, pagination, panne Twitch, révocation, expiration, origine interdite, absence de secrets dans les réponses.
+- 23 contrôles HTTP serveur simulés : identité portail, faux rôles/métadonnées, identité Twitch différente, viewer/modo/propriétaire, session émise, association protégée, pagination, panne Twitch, révocation, expiration, origine interdite, absence de secrets dans les réponses.
 - 10 scénarios UI simulés : connexion commune, présence du menu selon le rôle, permissions Phasmo/Journal indépendantes, Admin/Helper, transition, déconnexion et réponse concurrente tardive.
 - Tests PostgreSQL avec comptes fictifs dans une transaction intégralement annulée : viewer refusé, Helper sans Admin, expiration, retrait, conservation Admin, substitution d'identité refusée, TTL borné et exécution cliente de la RPC interdite. Contrôle sous le rôle SQL `authenticated` inclus.
 - Après activation : tables privées avec RLS, RPC interdite au client, absence des comptes de test et absence d'association créée à ce stade confirmées. Le conseiller relève deux infos « RLS sans politique », intentionnelles pour ces tables privées interdites aux clients, et les avertissements préexistants des fonctions métier et mots de passe ; aucun nouvel avertissement de fonction publique privilégiée.
-- Syntaxe JavaScript vérifiée. Contrôle navigateur réel partiel : aperçu atomique Cloudflare e28b979 chargé, menu Compte et écran Gestion anonymes vérifiés ; le bouton commun ouvre la demande Twitch du projet portail avec la permission de lecture des chaînes modérées. L’autorisation Twitch n’a pas été accordée par l’agent : retour OAuth, rôle effectif et écritures non testés. Le lien de branche historique redirigeait vers un site plus ancien lors du contrôle ; utiliser l’aperçu atomique pour cette recette, sans assimiler le déploiement GitHub réussi à une validation de cet alias.
+- Syntaxe JavaScript vérifiée. Contrôle navigateur réel partiel : aperçu atomique Cloudflare e28b979 chargé, menu Compte et écran Gestion anonymes vérifiés ; le bouton commun ouvre la demande Twitch du projet portail avec la permission de lecture des chaînes modérées. L’autorisation Twitch n’a pas été accordée par l’agent : retour OAuth, rôle effectif et écritures non testés. Le conseil précédent d’utiliser l’aperçu atomique est remplacé par le domaine stable ci-dessous après vérification de Cloudflare et de la liste des retours Auth.
 
 **Encore à valider sur la prévisualisation :** reconnexion Twitch commune, menu et ouverture de Gestion avec un modo réel, association des deux admins existants, écritures Admin/Helper sur données d'essai, refus d'un viewer et d'un modo d'une autre chaîne, déconnexion, F5, expiration/retrait du rôle et absence d'interférence avec les éditeurs Phasmo/Journal. Pas de fusion vers main avant validation.
+
+## Retour vers le TCG : diagnostic du 30 octobre
+
+L’utilisatrice a constaté que la connexion depuis l’aperçu atomique la renvoyait vers le TCG. Vérification en lecture seule du tableau de bord Auth du portail : `Site URL` vaut l’adresse de développement du TCG ; la liste de retours autorise déjà `https://deadelustv.pages.dev/**` mais pas les sous-domaines d’aperçu atomique. Le champ Site URL décrit explicitement son emploi de repli lorsque le retour demandé ne correspond pas à la liste. Ce repli explique la destination signalée. Aucun changement de Site URL ni de liste d’URLs n’est nécessaire pour utiliser le domaine stable.
+
+Cloudflare confirme que **`https://deadelustv.pages.dev` sert la branche `developpement/phasmo-v2` comme production Pages** ; cela ne désigne pas le main hébergé sur www.deadelustv.com. L’ancienne déduction d’un alias `developpement-phasmo-v2` était inadaptée à cette configuration.
+
+Le test doit désormais commencer à `https://deadelustv.pages.dev/#crewmongus/admin`, avec le bouton Twitch commun. Le serveur Crew autorise exactement cette origine par défaut. Les URLs atomiques ne sont plus nécessaires. Le retour OAuth et l’accès réel restent distincts du seul contrôle de cette configuration.
 
 ## Références techniques
 
