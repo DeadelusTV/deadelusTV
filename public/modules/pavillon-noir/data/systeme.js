@@ -55,7 +55,7 @@ window.PAVILLON_SYSTEME = {
   "blessures": {
     "titre": "Blessures et localisation",
     "texte": "Lorsqu'un personnage est touché, un D6 peut servir uniquement à déterminer la zone atteinte parmi six localisations. Ce D6 ne représente pas les dégâts. Les dégâts sont ensuite appliqués séparément à la zone concernée.",
-    "exemple": "Lors de l'embuscade de la Session 03, Barron lance un D6 : le résultat désigne le bras gauche, puis la flèche lui inflige 2 points de dégâts à cet endroit."
+    "exemple": "Lors de l'embuscade de la Session 03, Baron lance un D6 : le résultat désigne le bras gauche, puis la flèche lui inflige 2 points de dégâts à cet endroit."
   },
   "progression": {
     "titre": "Pourquoi ils cochent parfois une compétence ?",
