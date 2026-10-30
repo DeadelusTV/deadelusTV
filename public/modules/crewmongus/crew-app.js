@@ -6,6 +6,7 @@ window.DEADELUSTV_CREW_FACTORY = function(root, sdk, onNavigate) {
   let crewAuthTimer;
   let authRequest = 0;
   let authNotice = '';
+  let portalCrewSession=false,portalCrewName='';
 const TEST_MODE = false;
 
 const SUPABASE_URL="https://qonkgfbxmtmmwdjzyxuf.supabase.co";
@@ -18,7 +19,7 @@ let authSetupRequested=["invite","recovery"].includes(AUTH_HASH_PARAMS.get("type
 const supabaseClient = TEST_MODE
   ? null
   : sdk.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-      auth:{flowType:authSetupRequested||AUTH_HASH_PARAMS.has('access_token')?'implicit':'pkce',persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
+      auth:{flowType:authSetupRequested||AUTH_HASH_PARAMS.has('access_token')?'implicit':'pkce',persistSession:false,autoRefreshToken:true,detectSessionInUrl:AUTH_QUERY_PARAMS.get('crew_auth')==='1'}
     });
 let authUser=null;
 let authRole=null;
@@ -47,6 +48,33 @@ async function refreshAdminAuth(sessionOverride=null){
   renderAdminAccess();
   try{
     let session=sessionOverride;
+    const portal=window.DEADELUSTV_AUTH;
+    let access=null;
+    if(portal && !sessionOverride){
+      const common=await (await portal.getClient()).auth.getSession();
+      if(common.data?.session){
+        access=await portal.getCrewAccess({action:'session'});
+        if(request!==authRequest)return;
+        if(access.session){
+          const issued=await supabaseClient.auth.setSession(access.session);
+          if(issued.error)throw issued.error;
+          session=issued.data?.session;
+          portalCrewSession=true;
+          portalCrewName=common.data.session.user.user_metadata?.preferred_username||common.data.session.user.user_metadata?.user_name||'compte Twitch du site';
+          const expires=Date.parse(access.expires_at);
+          if(Number.isFinite(expires))nextCheck=Math.max(1000,Math.min(nextCheck,expires-Date.now()-1000));
+        }else{
+          // Un viewer connecté au portail ne récupère jamais une ancienne session Crew.
+          await supabaseClient.auth.signOut({scope:'local'});
+          portalCrewSession=false;
+          authUser=common.data.session.user;
+          authNotice=access.notice?'Reconnecte Twitch via le compte du site pour vérifier tes droits.':'';
+          authLoading=false;renderAdminAccess();renderAccountSetup();syncEditorNavigation();return;
+        }
+      }else if(portalCrewSession){
+        await supabaseClient.auth.signOut({scope:'local'});portalCrewSession=false;
+      }
+    }
     if(!session){
       const {data,error}=await supabaseClient.auth.getSession();
       if(error)throw error;
@@ -57,26 +85,7 @@ async function refreshAdminAuth(sessionOverride=null){
     if(authUser){
       const {data,error}=await supabaseClient.from("user_roles").select("role").eq("user_id",authUser.id).maybeSingle();
       if(error)throw error;
-      let role=data?.role||null;
-      const twitch=authUser.identities?.some(identity=>identity.provider==='twitch');
-      if(twitch){
-        if(session.provider_token){
-          try {
-            const result=await supabaseClient.functions.invoke('crew-twitch-access',{
-              body:{provider_token:session.provider_token}
-            });
-            if(result.error)throw result.error;
-            role=['admin','helper'].includes(result.data?.role)?result.data.role:null;
-            const expires=Date.parse(result.data?.expires_at);
-            if(Number.isFinite(expires))nextCheck=Math.max(1000,Math.min(nextCheck,expires-Date.now()-1000));
-          } catch {
-            // Seuls les droits manuels déjà lus en base sont conservés en cas d'échec.
-            authNotice='Vérification Twitch indisponible. Reconnecte Twitch pour renouveler tes droits.';
-          }
-        } else {
-          authNotice='Reconnecte Twitch pour vérifier tes droits de modération.';
-        }
-      }
+      let role=access?.role||data?.role||null;
       if(request!==authRequest)return;
       authRole=role;
       if(authRole==="admin"){
@@ -100,21 +109,21 @@ async function refreshAdminAuth(sessionOverride=null){
 
 async function handleTwitchLogin(link=false){
   const status=crewById('admin-auth-status');
-  const button=crewById(link?'admin-link-twitch':'admin-twitch-login');
-  if(button)button.disabled=true;
-  if(status)status.textContent='Ouverture de Twitch…';
-  const options={
-    redirectTo:window.location.origin+window.location.pathname+'?crew_auth=1',
-    scopes:'user:read:email user:read:moderated_channels'
-  };
   try{
-    const {error}=link
-      ?await supabaseClient.auth.linkIdentity({provider:'twitch',options})
-      :await supabaseClient.auth.signInWithOAuth({provider:'twitch',options});
-    if(error)throw error;
+    const portal=window.DEADELUSTV_AUTH;
+    if(!portal)throw new Error('Compte du site indisponible');
+    if(link){
+      const {data}=await supabaseClient.auth.getSession();
+      const common=await (await portal.getClient()).auth.getSession();
+      if(!common.data?.session){
+        if(status)status.textContent='Connecte d’abord Twitch avec le bouton Compte du site, puis ouvre ton ancien compte Crew.';
+        return;
+      }
+      await portal.getCrewAccess({action:'link',legacyToken:data?.session?.access_token});
+      await refreshAdminAuth();await portal.refresh();
+    }else await portal.signIn();
   }catch{
-    if(status)status.textContent='Connexion Twitch impossible. Vérifie la configuration de connexion ou réessaie.';
-    if(button)button.disabled=false;
+    if(status)status.textContent='Association indisponible. Vérifie les deux connexions et réessaie.';
   }
 }
 
@@ -132,6 +141,7 @@ async function handleLegacyLogin(){
     if(status)status.textContent="Connexion impossible : "+error.message;
     return;
   }
+  portalCrewSession=false;
   await refreshAdminAuth(data?.session||null);
   if(!editorCanWrite()){
     await supabaseClient.auth.signOut();
@@ -161,6 +171,8 @@ async function handlePasswordLink(){
 async function handleAdminLogout(){
   ++authRequest;
   clearTimeout(crewAuthTimer);
+  if(portalCrewSession)await window.DEADELUSTV_AUTH?.signOut();
+  portalCrewSession=false;
   const {error}=await supabaseClient.auth.signOut({scope:"local"});
   if(error){
     const status=crewById("admin-auth-status");
@@ -228,6 +240,14 @@ async function handleAccountSetup(event){
   },700);
 }
 
+function legacyAccountForm(){
+  return `<details class="gap-top"><summary>Ancien compte Crew — transition</summary><p class="muted">Connecte Twitch avec le bouton Compte du site, puis ouvre ici ton ancien compte Crew et associe-le une seule fois.</p><form id="admin-login-form" class="admin-auth-form"><label>E-mail<input id="admin-login-email" type="email" autocomplete="username" required></label><label>Mot de passe<input id="admin-login-password" type="password" autocomplete="current-password" required></label><div class="admin-auth-actions"><button class="secondary" type="submit">Connexion à l’ancien compte</button><button id="admin-password-link" class="secondary" type="button">Définir / réinitialiser le mot de passe</button></div></form></details>`;
+}
+function bindLegacyAccountForm(){
+  crewById('admin-login-form')?.addEventListener('submit',e=>{e.preventDefault();handleLegacyLogin();});
+  crewById('admin-password-link')?.addEventListener('click',handlePasswordLink);
+}
+
 function renderAdminAccess(){
   const panel=crewById("admin-auth-panel"),protectedBox=crewById("admin-protected");
   if(!panel||!protectedBox)return;
@@ -238,9 +258,10 @@ function renderAdminAccess(){
   }
   if(editorCanWrite()){
     const isAdmin=authRole==="admin";
-    const twitch=authUser.identities?.some(identity=>identity.provider==='twitch');
-    const name=authUser.user_metadata?.preferred_username||authUser.user_metadata?.user_name||authUser.email||'compte';
-    panel.innerHTML=`<div class="admin-auth-user"><div><h3>${isAdmin?"Administration":"Accès modération / Helper"} déverrouillé</h3><p class="muted">Connecté avec <strong>${esc(name)}</strong> • rôle ${isAdmin?"Admin":"Helper"}${isAdmin?"":" • saisie et modification des fiches"}</p></div><button id="admin-logout-btn" class="secondary" type="button">Se déconnecter</button></div><div class="admin-auth-actions">${twitch?'<button id="admin-twitch-login" class="secondary" type="button">Renouveler la connexion Twitch</button>':'<button id="admin-link-twitch" class="primary" type="button">Associer mon compte Twitch</button>'}</div><span id="admin-auth-status" class="muted admin-auth-status"></span>`;
+    const twitch=portalCrewSession;
+    const name=portalCrewSession?portalCrewName:(authUser.user_metadata?.preferred_username||authUser.user_metadata?.user_name||authUser.email||'compte');
+    panel.innerHTML=`<div class="admin-auth-user"><div><h3>${isAdmin?"Administration":"Accès modération / Helper"} déverrouillé</h3><p class="muted">Connecté avec <strong>${esc(name)}</strong> • rôle ${isAdmin?"Admin":"Helper"}${isAdmin?"":" • saisie et modification des fiches"}</p></div><button id="admin-logout-btn" class="secondary" type="button">Se déconnecter</button></div><div class="admin-auth-actions">${twitch?'<button id="admin-twitch-login" class="secondary" type="button">Renouveler Twitch via le compte du site</button>':'<button id="admin-link-twitch" class="primary" type="button">Associer au compte Twitch du site</button>'}</div><span id="admin-auth-status" class="muted admin-auth-status"></span>${portalCrewSession?legacyAccountForm():''}`;
+    bindLegacyAccountForm();
     protectedBox.hidden=false;
     crewById("admin-logout-btn")?.addEventListener("click",handleAdminLogout);
     crewById('admin-twitch-login')?.addEventListener('click',()=>handleTwitchLogin());
@@ -249,13 +270,12 @@ function renderAdminAccess(){
     return;
   }
   const message=authUser?"Ce compte n’a pas accès à la gestion. L’accès est réservé aux admins Crew et aux modérateurs Twitch de DeadelusTV.":"Les statistiques sont publiques. Connecte-toi avec Twitch pour accéder à la gestion si tu es admin ou modérateur de DeadelusTV.";
-  panel.innerHTML=`<h3>Accès Gestion</h3><p class="muted">${message}</p><div class="admin-auth-actions"><button id="admin-twitch-login" class="primary" type="button">${authUser?'Vérifier mon accès avec Twitch':'Se connecter avec Twitch'}</button>${authUser?'<button id="admin-logout-btn" class="secondary" type="button">Se déconnecter</button>':''}</div><span id="admin-auth-status" class="muted admin-auth-status"></span><details class="gap-top"><summary>Ancien compte Crew — transition</summary><p class="muted">Connecte-toi à ton ancien compte puis associe Twitch pour conserver tes droits.</p><form id="admin-login-form" class="admin-auth-form"><label>E-mail<input id="admin-login-email" type="email" autocomplete="username" required></label><label>Mot de passe<input id="admin-login-password" type="password" autocomplete="current-password" required></label><div class="admin-auth-actions"><button class="secondary" type="submit">Connexion à l’ancien compte</button><button id="admin-password-link" class="secondary" type="button">Définir / réinitialiser le mot de passe</button></div></form></details>`;
+  panel.innerHTML=`<h3>Accès Gestion</h3><p class="muted">${message}</p><div class="admin-auth-actions"><button id="admin-twitch-login" class="primary" type="button">${authUser?'Vérifier mon accès avec Twitch':'Connexion Twitch du site'}</button>${authUser?'<button id="admin-logout-btn" class="secondary" type="button">Se déconnecter</button>':''}</div><span id="admin-auth-status" class="muted admin-auth-status"></span>${legacyAccountForm()}`;
   protectedBox.hidden=true;
   crewById('admin-twitch-login')?.addEventListener('click',()=>handleTwitchLogin());
   crewById('admin-logout-btn')?.addEventListener('click',handleAdminLogout);
   crewById('admin-auth-status').textContent=authNotice;
-  crewById("admin-login-form")?.addEventListener("submit",e=>{e.preventDefault();handleLegacyLogin()});
-  crewById("admin-password-link")?.addEventListener("click",handlePasswordLink);
+  bindLegacyAccountForm();
 }
 
 function editorCanWrite(){return (authRole==="admin"||authRole==="helper")&&!!authUser}
@@ -2928,11 +2948,19 @@ async function deleteAdminRecord(index){
   }
 }
 
+function onPortalAuthChange(){
+  ++authRequest;authRole=null;clearProtectedImportLogs();
+  renderAdminAccess();syncEditorNavigation();
+  setTimeout(()=>refreshAdminAuth(),0);
+}
+window.addEventListener('deadelustv:auth-change',onPortalAuthChange);
 crewById("account-setup-form")?.addEventListener("submit",handleAccountSetup);
 if(!TEST_MODE){
   crewAuthSubscription=supabaseClient.auth.onAuthStateChange((event,session)=>{
     if(event==="PASSWORD_RECOVERY")authSetupRequested=true;
-    setTimeout(()=>refreshAdminAuth(session||null),0);
+    // Les sessions émises par le portail sont appliquées dans refreshAdminAuth.
+    // Éviter un deuxième contrôle qui pourrait réécrire les droits en cours.
+    if(authSetupRequested)setTimeout(()=>refreshAdminAuth(session||null),0);
   });
 }
 crewById("admin-add-session-btn").addEventListener("click",addAdminSession);
@@ -3052,5 +3080,5 @@ async function startApp(){
   }
   const ready=startApp();
   return {ready,show:showCrewView,resize:scheduleFrontStatFit,
-    destroy(){++authRequest;clearTimeout(crewAuthTimer);crewAuthSubscription?.data?.subscription?.unsubscribe();supabaseClient?.auth.stopAutoRefresh();window.removeEventListener('resize',scheduleFrontStatFit);}};
+    destroy(){window.removeEventListener('deadelustv:auth-change',onPortalAuthChange);++authRequest;clearTimeout(crewAuthTimer);crewAuthSubscription?.data?.subscription?.unsubscribe();supabaseClient?.auth.stopAutoRefresh();window.removeEventListener('resize',scheduleFrontStatFit);}};
 };

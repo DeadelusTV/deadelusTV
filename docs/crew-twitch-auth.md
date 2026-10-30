@@ -1,65 +1,67 @@
-# Crew — connexion Twitch préparée sur Phasmo V2
+# Crew — connexion Twitch commune du portail
 
-Date : 30 octobre 2026. Branche : `developpement/phasmo-v2`.
+30 octobre 2026 · branche `developpement/phasmo-v2`.
 
-**Statut : développé et testé avec fournisseurs simulés ; activation Supabase et recette OAuth réelle encore à faire.** Aucun changement appliqué au schéma actif, aucun compte ou rôle existant modifié, aucune fusion vers `main`.
+## Parcours demandé et correction
 
-## Comportement retenu
+Le premier lot (`6dc4a9d`) proposait une connexion Twitch séparée dans Crew. L'utilisatrice a précisé que la connexion doit passer par le bouton **Compte / Twitch commun** du site. Ce document remplace donc le précédent guide d'activation : **ne pas activer un second fournisseur Twitch Crew pour ce parcours**.
 
-- Connexion Twitch proposée dans Gestion à la place du formulaire principal e-mail/mot de passe.
-- Tous les modérateurs **de la chaîne DeadelusTV** peuvent accéder à Gestion avec le niveau Helper existant : saisie et modification des fiches. Import JSON, bruts du Logger, suppressions et réglages structurels restent réservés aux admins.
-- Les admins Crew existants conservent leur UUID et leur rôle. Une association Twitch depuis leur ancien compte est proposée ; l'ancien accès e-mail est conservé dans un volet de transition.
-- Le propriétaire de la chaîne DeadelusTV est reconnu par son identifiant Twitch vérifié et dispose du niveau Admin.
-- La consultation des statistiques reste publique. Une connexion Twitch ordinaire n'accorde aucun droit de gestion et ne demande pas de créer un mot de passe.
+Le message `Unsupported provider: provider is not enabled` rapporté lors du premier essai correspondait à l'appel OAuth du projet Crew, où Twitch n'était pas activé. Le nouveau parcours utilise le fournisseur déjà en place sur le portail.
 
-Le niveau Helper des nouveaux modos est un choix d'implémentation conservateur, annoncé pendant le travail. La demande explicite confirme **tous les modos Twitch**, sans leur attribuer tous les pouvoirs Admin.
+- Le menu Compte affiche **Gestion Crew’mong Us** pour les comptes autorisés, à côté des liens Phasmo et Journal lorsque leurs permissions propres le permettent.
+- Tous les modérateurs de **DeadelusTV** reçoivent le niveau Helper existant : saisie et modification des fiches. Les opérations structurelles, suppressions, imports et bruts du Logger restent Admin.
+- Le propriétaire de la chaîne est reconnu par l'identifiant Twitch vérifié `99977368` et reçoit Admin.
+- Les autres viewers gardent la consultation publique.
+- Les droits News et Journal ne sont pas déduits du rôle Crew et restent indépendants.
 
-## Périmètre de la connexion
+## Architecture et sécurité
 
-Crew reste dans son projet Supabase `qonkgfbxmtmmwdjzyxuf`. Le portail / News / TCG utilise `eodtxlhnfzyapkyvvxdi`. Cette étape **remplace le moyen de connexion à Crew** ; elle ne crée pas de session unique entre les deux projets. Le bouton Compte du portail continue de gérer sa propre session. Aucun jeton n'est transféré d'un projet à l'autre et aucune donnée Crew n'est migrée vers le TCG.
+Le portail Auth reste sur `eodtxlhnfzyapkyvvxdi` ; les données Crew restent sur `qonkgfbxmtmmwdjzyxuf`. Le compte visible et le parcours de connexion sont communs. Une session technique Crew est émise côté serveur afin de conserver les RLS et fonctions métier existantes.
 
-Une connexion unique portail/Crew nécessiterait une intégration supplémentaire à concevoir et valider. L'audit Twitch Phasmo antérieur excluait explicitement Crew.
+L'Edge Function Crew `crew-twitch-access` vérifie le jeton portail auprès de l'URL Auth fixe du portail. Elle utilise exclusivement `auth.identities.provider_id` de l'identité Twitch retournée par Auth, jamais les métadonnées utilisateur ni un pseudo. Pour les modos, elle valide le jeton Twitch, exige qu'il appartienne exactement à cette identité puis interroge `GET /helix/moderation/channels`, avec pagination bornée. Le Client ID utilisé pour Helix provient de la réponse de validation Twitch, pas du navigateur. Aucun secret Twitch supplémentaire n'est nécessaire.
 
-## Protection des droits
+Le bouton commun demande désormais `user:read:email user:read:moderated_channels`. Une session ouverte avant ce changement peut nécessiter une déconnexion/reconnexion commune pour obtenir le nouveau scope. Si le jeton Twitch manque ou expire, les droits automatiques ne sont pas renouvelés ; une reconnexion est proposée. Le jeton fournisseur n'est conservé en plus qu'en mémoire pendant la page ; aucune copie persistante additionnelle n'est créée.
 
-L'Edge Function `crew-twitch-access` valide la session Crew auprès de Supabase Auth, valide le jeton fournisseur auprès de Twitch, vérifie le Client ID et interroge `GET /helix/moderation/channels` avec le scope `user:read:moderated_channels`. La pagination est prise en charge avec durée totale bornée. La chaîne cible `99977368` / DeadelusTV provient de la configuration TCG consultée en lecture seule.
+Les associations portail → compte Crew et les droits temporaires sont dans deux tables privées, avec RLS et sans accès client. La RPC publique est `SECURITY INVOKER` et exécutable seulement par `service_role` ; la fonction privilégiée est dans le schéma privé. Les gardes existantes acceptent les rôles manuels ou les baux temporaires valables au maximum cinq minutes. Une erreur de vérification n'accorde pas de nouveau droit. La suppression du statut de modo cesse d'accorder l'accès au plus tard à l'expiration du dernier bail.
 
-La fonction SQL serveur vérifie que `auth.identities.provider_id` correspond à l'identité Twitch validée avant d'accorder le moindre droit. Aucun pseudo, champ `user_metadata`, rôle envoyé par le navigateur ou statut viewer TCG ne sert à autoriser une opération.
+Pour un nouveau gestionnaire, Auth Crew émet une session à partir d'un compte technique déterministe ; les liens à usage unique sont générés et consommés côté serveur, sans envoi d'e-mail. Aucun JWT n'est fabriqué et aucune clé serveur n'est envoyée au client. Aucun compte technique n'est créé lors d'un simple contrôle du menu ou pour un viewer sans rôle.
 
-Les droits automatiques sont stockés dans une table privée avec RLS, interdite aux visiteurs et utilisateurs connectés. La fonction publique d'octroi est `SECURITY INVOKER`, exécutable uniquement par `service_role` ; sa fonction privilégiée reste dans le schéma privé. Les clés serveur restent dans les variables intégrées des Edge Functions.
+La session technique Crew reste en mémoire dans le module (`persistSession:false`). Elle est invalidée localement à la déconnexion du compte commun ; le serveur supprime aussi son bail quand cette demande aboutit. Les JWT déjà émis restent soumis aux gardes SQL et à leur expiration. Les rôles manuels historiques continuent d'être indépendants des baux automatiques.
 
-La vérification reste valable au maximum cinq minutes, avec renouvellement dans le module ouvert au plus toutes les quatre minutes. Les contrôles SQL des opérations utilisent aussi cette expiration : garder un ancien JWT ne prolonge pas indéfiniment un accès de modo. Le retrait du statut Twitch cesse donc d'accorder l'accès **au plus tard à l'expiration de la dernière vérification**, pas instantanément. Une erreur Twitch ne renouvelle aucun droit automatique. Les rôles manuels existants sont indépendants.
+## Transition des admins existants
 
-Supabase ne renouvelle pas ici le jeton fournisseur Twitch ; si celui-ci expire, le bouton de renouvellement relance OAuth. Aucun jeton fournisseur supplémentaire n'est copié dans un autre stockage par ce code.
+Aucun rapprochement par pseudo ou e-mail n'est effectué. Aucun rôle manuel existant n'est réécrit.
 
-## Activation nécessaire avant la recette réelle
+1. Se connecter avec le bouton Twitch **commun** du site.
+2. Ouvrir Crew / Gestion. Dans **Ancien compte Crew — transition**, ouvrir l'ancien compte e-mail/mot de passe.
+3. Cliquer **Associer au compte Twitch du site**.
+4. Vérifier Admin et les opérations autorisées ; les connexions suivantes passent seulement par le compte commun.
 
-Les réglages Supabase sont communs à `main` et aux branches de développement. Un push Git ne les isole pas. Ce lot les prépare sans les activer.
+L'association exige simultanément une session portail vérifiée et une session Crew vérifiée dont le rôle manuel est Admin ou Helper. L'UUID Crew historique est alors conservé. Le formulaire de transition reste disponible pour un modo déjà connecté en Helper, afin qu'il puisse récupérer son rôle Admin historique. Un compte Crew déjà associé à un autre compte portail ne peut pas être repris.
 
-1. Dans le projet **Crew**, configurer le fournisseur **Twitch** dans Authentication → Sign In / Providers avec une application Twitch et ses identifiants. Son callback Supabase est `https://qonkgfbxmtmmwdjzyxuf.supabase.co/auth/v1/callback` ; l'ajouter dans l'application Twitch sans retirer les callbacks existants. Ne pas publier le Client Secret dans Git ou dans le navigateur.
-2. Autoriser le retour de prévisualisation `https://developpement-phasmo-v2.deadelustv.pages.dev/?crew_auth=1` dans Authentication → URL Configuration → Redirect URLs. Cette origine est identifiée dans le suivi Drive du déploiement Phasmo V2 ; le retour OAuth Crew lui-même reste à recetter. Ajouter celui de production lors de sa préparation, sans retirer les autres : `https://www.deadelustv.com/?crew_auth=1`.
-3. Pour associer Twitch aux comptes admins dont l'adresse Twitch est différente, activer **Manual identity linking** dans les réglages Auth. Un admin doit ouvrir son ancien compte Crew, puis cliquer sur **Associer mon compte Twitch** ; vérifier ensuite qu'il retrouve ses droits. La liaison automatique par e-mail, lorsqu'elle est applicable, relève de Supabase ; aucun rapprochement maison par pseudo n'est effectué.
-4. Relire puis appliquer `docs/crew-twitch-sql-a-appliquer.sql` **sur Crew uniquement**. L'exécuter une seule fois. Il étend les gardes de droits existantes et ajoute une table privée de vérifications temporaires ; il ne modifie pas `user_roles`.
-5. Déployer `supabase/functions/crew-twitch-access/` avec `index.ts` comme point d'entrée. La fonction vérifie elle-même chaque session via Auth ; configurer `verify_jwt=false` pour accepter les JWT modernes sans dépendre du vérificateur historique de la passerelle. La fonction reste protégée par cette vérification interne.
-6. Ajouter aux variables de l'Edge Function `CREW_TWITCH_CLIENT_ID` = Client ID de l'application du fournisseur Crew et `CREW_ALLOWED_ORIGINS` = `https://developpement-phasmo-v2.deadelustv.pages.dev` pour l'essai de branche. Ajouter `,https://www.deadelustv.com` lors de la préparation de production. Utiliser des origines exactes sans chemin ni slash final. Les variables serveur Supabase intégrées sont réutilisées ; le Client Secret Twitch reste dans la configuration du fournisseur Auth et n'est pas nécessaire à cette fonction.
-7. Tester les parcours ci-dessous sur Phasmo V2 avant de décider la fusion vers `main`. Ne retirer le volet d'ancien compte qu'après association et validation des comptes admins concernés.
+## Mise en place et état réel
 
-## Vérification réalisée
+- SQL `docs/crew-twitch-sql-a-appliquer.sql` appliqué sur **Crew**, migration `crew_portal_twitch_common_login`. Ne pas le réexécuter.
+- Edge Function `crew-twitch-access` déployée sur Crew. `verify_jwt=false` car le jeton du portail est vérifié explicitement auprès d'Auth portail dans la fonction.
+- Origine autorisée par défaut : `https://developpement-phasmo-v2.deadelustv.pages.dev` uniquement. La production doit être ajoutée explicitement lors de sa préparation, via `CREW_ALLOWED_ORIGINS`. Pas d'activation du parcours commun sur main par ce lot.
+- Variables serveur Supabase intégrées réutilisées ; pas de nouveau fournisseur OAuth Crew ni de secret Twitch à configurer.
+- Aucun changement appliqué au schéma portail/TCG, aux droits Phasmo ou Journal, aux statistiques, aux parties, aux sauvegardes ou à la DLL.
 
-- `node scripts/test_crew_twitch_access.cjs` : 18 contrôles serveur sur réponses simulées, dont viewer, modo, propriétaire, admin manuel, pagination, faux rôle client, jeton révoqué, application incorrecte, scope absent, panne Twitch et identité différente.
-- `node scripts/test_crew_twitch_ui.cjs` : 11 parcours de logique d'interface avec DOM/SDK simulés, dont association explicite, conservation des admins, absence de formulaire de création de mot de passe pour un viewer, réponse tardive après déconnexion et séparation des callbacks OAuth Crew / portail.
-- Vérification PostgreSQL dans un schéma de test séparé, avec données fictives et transaction intégralement annulée : rôles manuels, privilèges Helper/Admin, expiration, retrait du statut, identité associée, TTL et interdiction des appels d'octroi par `anon`/`authenticated`. Appel serveur et refus client vérifiés en changeant réellement de rôle SQL. Absence du schéma de test et absence d'activation confirmées après l'essai.
-- Analyse syntaxique JavaScript réussie. L'exécution navigateur Playwright n'a pas pu démarrer, car le binaire Chromium n'est pas disponible dans cet environnement ; les contrôles UI ci-dessus restent des simulations.
-- Le conseiller de sécurité signale les fonctions métier publiques `SECURITY DEFINER` déjà existantes. Elles conservent leurs gardes de rôles ; ce lot ne les réécrit pas et n'a pas ajouté de fonction publique privilégiée en production.
+## Vérifications et limites
 
-## Recette encore requise
+- 20 contrôles HTTP serveur simulés : identité portail, faux rôles/métadonnées, identité Twitch différente, viewer/modo/propriétaire, session émise, association protégée, pagination, panne Twitch, révocation, expiration, origine interdite, absence de secrets dans les réponses.
+- 10 scénarios UI simulés : connexion commune, présence du menu selon le rôle, permissions Phasmo/Journal indépendantes, Admin/Helper, transition, déconnexion et réponse concurrente tardive.
+- Tests PostgreSQL avec comptes fictifs dans une transaction intégralement annulée : viewer refusé, Helper sans Admin, expiration, retrait, conservation Admin, substitution d'identité refusée, TTL borné et exécution cliente de la RPC interdite. Contrôle sous le rôle SQL `authenticated` inclus.
+- Après activation : tables privées avec RLS, RPC interdite au client, absence des comptes de test et absence d'association créée à ce stade confirmées. Le conseiller relève deux infos « RLS sans politique », intentionnelles pour ces tables privées interdites aux clients, et les avertissements préexistants des fonctions métier et mots de passe ; aucun nouvel avertissement de fonction publique privilégiée.
+- Syntaxe JavaScript vérifiée. Ces contrôles ne constituent pas une recette OAuth/navigateur réelle.
 
-Connexion et annulation OAuth réelles ; retour sur Gestion dans la prévisualisation ; association des deux comptes admins existants ; accès d'un modo de DeadelusTV ; refus d'un viewer et d'un modo d'une autre chaîne ; droits de saisie sans import/suppression pour Helper ; écriture réelle Admin/Helper sur données d'essai ; expiration/retrait du rôle ; déconnexion et reconnexion ; absence d'interférence avec le Compte et les éditeurs Phasmo du portail.
+**Encore à valider sur la prévisualisation :** reconnexion Twitch commune, menu et ouverture de Gestion avec un modo réel, association des deux admins existants, écritures Admin/Helper sur données d'essai, refus d'un viewer et d'un modo d'une autre chaîne, déconnexion, F5, expiration/retrait du rôle et absence d'interférence avec les éditeurs Phasmo/Journal. Pas de fusion vers main avant validation.
 
-## Sources techniques
+## Références techniques
 
 - https://supabase.com/docs/guides/auth/social-sign-in/auth-twitch
-- https://supabase.com/docs/guides/auth/auth-identity-linking
+- https://supabase.com/docs/reference/javascript/auth-admin-generatelink
+- https://supabase.com/docs/reference/javascript/auth-verifyotp
+- https://github.com/supabase/auth/blob/master/internal/api/mail.go
 - https://dev.twitch.tv/docs/api/reference/#get-moderated-channels
 - https://dev.twitch.tv/docs/authentication/validate-tokens/
-- Code et schéma Crew consultés le 30/10/2026 ; documentation Drive « Crewmong Us - Documentation et décisions » et audit Twitch Phasmo du dépôt.

@@ -1,78 +1,72 @@
-const assert = require('node:assert/strict');
-const {pathToFileURL} = require('node:url');
-const path = require('node:path');
-
-(async () => {
-  const {createHandler, BROADCASTER_ID} = await import(pathToFileURL(path.resolve('supabase/functions/crew-twitch-access/core.js')));
-  const env = {SUPABASE_URL:'https://crew.example', SUPABASE_SERVICE_ROLE_KEY:'server-test',
-    SUPABASE_ANON_KEY:'public-test', CREW_TWITCH_CLIENT_ID:'client-test', CREW_ALLOWED_ORIGINS:'https://preview.example'};
-  const req = (body = {provider_token:'twitch-test'}, extra = {}) => new Request('https://crew.example/functions/v1/crew-twitch-access', {
-    method:'POST', headers:{origin:'https://preview.example', authorization:'Bearer session-test', 'Content-Type':'application/json', ...extra},
-    body:JSON.stringify(body)
-  });
-  const json = (data, status = 200) => new Response(JSON.stringify(data), {status});
-  function setup(options = {}) {
-    const calls = [];
-    let page = 0;
-    const http = async (url, init) => {
-      calls.push({url:String(url), init});
-      if (String(url).endsWith('/auth/v1/user')) return options.authError ? json({}, 401) : json({id:'user-test',
-        user_metadata:{role:'admin', twitch_user_id:BROADCASTER_ID}});
-      if (String(url).endsWith('/validate')) return json({client_id:options.client || 'client-test',
-        user_id:options.owner ? BROADCASTER_ID : '123', expires_in:options.ttl ?? 3600,
-        scopes:options.noScope ? [] : ['user:read:moderated_channels']}, options.tokenError ? 401 : 200);
-      if (String(url).includes('/moderation/channels?')) {
-        page++;
-        if (options.twitchError) return json({}, 503);
-        if (options.loop) return json({data:[], pagination:{cursor:'same'}});
-        if (options.secondPage && page === 1) return json({data:[], pagination:{cursor:'page-2'}});
-        return json({data:options.viewer ? [{broadcaster_id:'other-channel'}] : [{broadcaster_id:BROADCASTER_ID}], pagination:{}});
-      }
-      if (String(url).endsWith('/crew_set_twitch_access')) {
-        const payload = JSON.parse(init.body);
-        assert.equal(init.headers.Authorization, 'Bearer server-test');
-        assert.equal(payload.p_user_id, 'user-test');
-        assert.ok(!Object.hasOwn(payload, 'role'));
-        return options.mismatch ? json({},403) : json({role:options.manualAdmin || options.owner ? 'admin' : payload.p_is_moderator ? 'helper' : null,
-          expires_at:'2026-10-30T12:05:00Z'});
-      }
-      throw new Error('Unexpected URL ' + url);
-    };
-    return {handler:createHandler(env, http), calls};
-  }
-  let count = 0;
-  async function check(name, options, expected, verify = () => {}) {
-    const {handler,calls} = setup(options);
-    const response = await handler(req({provider_token:'twitch-test',role:'admin',user_id:BROADCASTER_ID}));
-    const data = await response.json();
-    assert.equal(response.status, expected, name);
-    assert.equal(response.headers.get('cache-control'), 'no-store');
-    assert.ok(!JSON.stringify(data).includes('server-test'));
-    verify(data,calls);
-    count++;
-  }
-  await check('modérateur = helper', {}, 200, d => assert.equal(d.role,'helper'));
-  await check('viewer, fausses métadonnées ignorées', {viewer:true}, 200, d => assert.equal(d.role,null));
-  await check('propriétaire de chaîne = admin', {owner:true,noScope:true}, 200, (d,c) => {
-    assert.equal(d.role,'admin'); assert.ok(!c.some(x=>x.url.includes('/moderation/channels')));
-  });
-  await check('admin manuel conservé', {manualAdmin:true}, 200, d => assert.equal(d.role,'admin'));
-  await check('pagination', {secondPage:true}, 200, (d,c) => assert.ok(c.some(x=>x.url.includes('after=page-2'))));
-  await check('jeton Supabase invalide', {authError:true}, 401, (d,c) => assert.equal(c.length,1));
-  await check('jeton Twitch révoqué', {tokenError:true}, 401);
-  await check('autre application Twitch', {client:'attacker-client'}, 401);
-  await check('permission Twitch manquante', {noScope:true}, 403);
-  await check('Twitch indisponible : aucun octroi', {twitchError:true}, 503, (d,c)=>assert.ok(!c.some(x=>x.url.endsWith('/crew_set_twitch_access'))));
-  await check('pagination cyclique', {loop:true}, 503);
-  await check('identité différente refusée en SQL', {mismatch:true}, 403);
-  await check('durée limitée par le jeton', {ttl:25}, 200, (d,c)=>assert.equal(JSON.parse(c.at(-1).init.body).p_ttl_seconds,25));
-  await check('durée plafonnée à cinq minutes', {}, 200, (d,c)=>assert.equal(JSON.parse(c.at(-1).init.body).p_ttl_seconds,300));
-  await check('jeton expiré', {ttl:0}, 401);
-  const {handler,calls} = setup();
-  assert.equal((await handler(req({}, {origin:'https://evil.example'}))).status,403);
-  assert.equal(calls.length,0);
-  assert.equal((await handler(req({provider_token:123}))).status,400);
-  const unavailable = createHandler({...env,CREW_TWITCH_CLIENT_ID:''},()=>assert.fail('No network when unconfigured'));
-  assert.equal((await unavailable(req())).status,503);
-  console.log(`${count + 3} contrôles serveur Twitch réussis.`);
-})().catch(error=>{console.error(error);process.exitCode=1;});
+const assert=require('node:assert/strict');
+const {pathToFileURL}=require('node:url');
+const path=require('node:path');
+(async()=>{
+ const {createHandler,BROADCASTER_ID}=await import(pathToFileURL(path.resolve('supabase/functions/crew-twitch-access/core.js')));
+ const portal='11111111-1111-4111-8111-111111111111', crew='22222222-2222-4222-8222-222222222222';
+ const env={SUPABASE_URL:'https://crew.test',SUPABASE_SERVICE_ROLE_KEY:'SERVER_SECRET',SUPABASE_ANON_KEY:'public',CREW_ALLOWED_ORIGINS:'https://preview.test'};
+ const json=(data,status=200)=>new Response(JSON.stringify(data),{status});
+ const req=(body={},origin='https://preview.test')=>new Request('https://crew.test/functions/v1/crew-twitch-access',{method:'POST',headers:{origin,authorization:'Bearer PORTAL_SESSION','Content-Type':'application/json'},body:JSON.stringify(body)});
+ function setup(o={}){
+  const calls=[];let page=0,mapped=!!o.mapped;
+  const http=async(url,init)=>{
+   calls.push({url,init});
+   if(url==='https://eodtxlhnfzyapkyvvxdi.supabase.co/auth/v1/user'){
+    assert.equal(init.headers.Authorization,'Bearer PORTAL_SESSION');
+    return json({id:portal,user_metadata:{role:'admin',twitch_user_id:BROADCASTER_ID},identities:o.noIdentity?[]:[{provider:'twitch',provider_id:o.owner?BROADCASTER_ID:'123'}]},o.authError?401:200);
+   }
+   if(url==='https://crew.test/auth/v1/user')return json({id:crew},o.badLegacy?401:200);
+   if(url.endsWith('/validate'))return json({user_id:o.mismatch?'999':o.owner?BROADCASTER_ID:'123',client_id:'trusted-client',expires_in:o.expired?0:120,scopes:o.noScope?[]:['user:read:moderated_channels']},o.revoked?401:200);
+   if(url.includes('/moderation/channels?')){
+    assert.equal(init.headers['Client-Id'],'trusted-client');page++;
+    if(o.twitchError)return json({},503);
+    if(o.loop)return json({data:[],pagination:{cursor:'same'}});
+    if(o.pages&&page===1)return json({data:[],pagination:{cursor:'second'}});
+    return json({data:o.viewer?[]:[{broadcaster_id:BROADCASTER_ID}],pagination:{}});
+   }
+   if(url.endsWith('/rpc/crew_portal_access')){
+    assert.equal(init.headers.Authorization,'Bearer SERVER_SECRET');
+    const p=JSON.parse(init.body);assert.equal(p.p_portal_user_id,portal);
+    assert.equal(p.p_twitch_user_id,o.owner?BROADCASTER_ID:'123');
+    assert.ok(!('role'in p));
+    if(o.linkRefused&&p.p_link)return json({},403);
+    if(p.p_crew_user_id)mapped=true;
+    const role=p.p_revoke?null:o.manual?'admin':o.owner?'admin':p.p_is_moderator?'helper':null;
+    return json({crew_user_id:mapped?crew:null,email:mapped?'legacy@example.test':null,role,expires_at:new Date(Date.now()+120000).toISOString()});
+   }
+   if(url.endsWith('/admin/generate_link'))return json({id:o.wrongUser?portal:crew,hashed_token:'HASH_SECRET',verification_type:'magiclink'});
+   if(url.endsWith('/auth/v1/verify'))return json({user:{id:crew},access_token:'CREW_ACCESS',refresh_token:'CREW_REFRESH'});
+   throw Error('Unexpected URL '+url);
+  };
+  return {handler:createHandler(env,http),calls};
+ }
+ let count=0;
+ async function check(name,options,body,status,verify=()=>{}){
+  const t=setup(options),r=await t.handler(req({...body,role:'admin',user_id:BROADCASTER_ID})),data=await r.json();
+  assert.equal(r.status,status,name);assert.equal(r.headers.get('cache-control'),'no-store');
+  assert.ok(!JSON.stringify(data).includes('SERVER_SECRET'));assert.ok(!JSON.stringify(data).includes('HASH_SECRET'));
+  verify(data,t.calls);count++;
+ }
+ const token={provider_token:'TWITCH_TOKEN'};
+ await check('modo statut',{},token,200,d=>{assert.equal(d.role,'helper');assert.ok(!d.session);});
+ await check('viewer et faux rôle ignoré',{viewer:true},token,200,(d,c)=>{assert.equal(d.role,null);assert.ok(!c.some(x=>x.url.includes('generate_link')));});
+ await check('propriétaire sans scope',{owner:true},{},200,d=>assert.equal(d.role,'admin'));
+ await check('session automatique',{}, {...token,action:'session'},200,(d,c)=>{assert.equal(d.session.access_token,'CREW_ACCESS');assert.equal(c.filter(x=>x.url.includes('/rpc/')).length,2);});
+ await check('session admin associée',{mapped:true,manual:true},{action:'session'},200,d=>assert.equal(d.role,'admin'));
+ await check('ancien admin association',{manual:true},{action:'link',legacy_token:'LEGACY'},200,(d,c)=>{assert.equal(d.role,'admin');assert.ok(c.some(x=>x.url==='https://crew.test/auth/v1/user'));});
+ await check('faux ancien jeton',{badLegacy:true},{action:'link',legacy_token:'BAD'},403);
+ await check('ancien compte sans rôle',{linkRefused:true},{action:'link',legacy_token:'LEGACY'},503);
+ await check('OAuth portail invalide',{authError:true},token,401);
+ await check('métadonnées insuffisantes',{noIdentity:true},token,403);
+ await check('identité du jeton différente',{mismatch:true},token,403,(d,c)=>assert.ok(!c.some(x=>x.url.includes('/rpc/'))));
+ await check('Twitch en panne',{twitchError:true},token,503,(d,c)=>assert.ok(!c.some(x=>x.url.includes('/rpc/'))));
+ await check('pagination',{pages:true},token,200,(d,c)=>assert.ok(c.some(x=>x.url.includes('after=second'))));
+ await check('boucle pagination',{loop:true},token,503);
+ await check('scope absent',{noScope:true},token,200,d=>{assert.equal(d.role,null);assert.equal(d.notice,'twitch_reconnect_required');});
+ await check('jeton révoqué',{revoked:true},token,200,d=>assert.equal(d.role,null));
+ await check('jeton expiré',{expired:true},token,403);
+ await check('identité session incorrecte',{wrongUser:true},{...token,action:'session'},503,d=>assert.ok(!d.session));
+ await check('déconnexion',{mapped:true},{action:'revoke'},200,d=>assert.equal(d.role,null));
+ const t=setup();assert.equal((await t.handler(req({},'https://evil.test'))).status,403);assert.equal(t.calls.length,0);count++;
+ console.log(count+' contrôles serveur réussis (HTTP simulé).');
+})().catch(e=>{console.error(e);process.exitCode=1;});

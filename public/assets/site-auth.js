@@ -13,7 +13,8 @@
   const note = document.getElementById('site-account-note');
   const newsLink = document.getElementById('site-account-news-link');
   const journalLink = document.getElementById('site-account-journal-link');
-  if (!root || !toggle || !menu || !signin || !signout || !status || !note || !newsLink || !journalLink) return;
+  const crewLink = document.getElementById('site-account-crew-link');
+  if (!root || !toggle || !menu || !signin || !signout || !status || !note || !newsLink || !journalLink || !crewLink) return;
 
   // Clé publiable uniquement. Le même projet Auth est déjà utilisé par les News.
   const PROJECT_URL = 'https://eodtxlhnfzyapkyvvxdi.supabase.co';
@@ -21,6 +22,42 @@
   const RETURN_KEY = 'deadelustv.site.oauth-return.v1';
   let client = null, sdkPromise = null, clientPromise = null, requestNumber = 0;
   let lastIdentity = null;
+  let providerToken = null, providerUser = null, crewCache = null;
+  let authGeneration = 0, signingOut = false;
+  function captureSession(event, session) {
+    if (event === 'SIGNED_OUT' || providerUser && providerUser !== session?.user?.id) {
+      providerToken = null; crewCache = null; ++authGeneration;
+      notifyAuth(null);
+    }
+    providerUser = session?.user?.id || null;
+    if (session?.provider_token) providerToken = session.provider_token;
+  }
+  async function getCrewAccess({action='status', legacyToken=null, force=false}={}) {
+    if(signingOut && action!=='revoke')return {role:null};
+    const generation = authGeneration;
+    const auth = await getClient();
+    const {data,error} = await auth.auth.getSession();
+    if(error)throw error;
+    const session=data?.session;
+    if(!session)return {role:null};
+    captureSession('READ', session);
+    if(action==='session' && !force && crewCache?.userId===session.user.id &&
+       Date.parse(crewCache.expires_at)>Date.now()+60000)return crewCache;
+    const response = await fetch('https://qonkgfbxmtmmwdjzyxuf.supabase.co/functions/v1/crew-twitch-access', {
+      method:'POST', cache:'no-store', signal:AbortSignal.timeout(30000),
+      headers:{Authorization:'Bearer '+session.access_token, 'Content-Type':'application/json',
+        apikey:'sb_publishable_mwxOhhD8qUEU66MR5lziYw_441p5KRR'},
+      body:JSON.stringify({action,provider_token:providerToken, ...(legacyToken?{legacy_token:legacyToken}:{})})
+    });
+    const result=await response.json();
+    if(!response.ok)throw new Error(result.error || 'crew_unavailable');
+    const current=await auth.auth.getSession();
+    if(generation!==authGeneration || current.data?.session?.user?.id!==session.user.id)
+      throw new Error('session_changed');
+    if(action==='session'||action==='link')crewCache={...result,userId:session.user.id};
+    if(action==='revoke')crewCache=null;
+    return result;
+  }
 
   function showNote(message) {
     note.textContent = message || '';
@@ -36,6 +73,7 @@
     signout.hidden = true;
     newsLink.hidden = true;
     journalLink.hidden = true;
+    crewLink.hidden = true;
     toggle.title = 'Compte · non connecté';
   }
   function notifyAuth(userId) {
@@ -76,7 +114,8 @@
         }
       });
       // Le callback est synchrone ; éviter les appels asynchrones Supabase dedans.
-      auth.auth.onAuthStateChange((event) => {
+      auth.auth.onAuthStateChange((event, session) => {
+        captureSession(event, session);
         if (['SIGNED_IN', 'SIGNED_OUT', 'TOKEN_REFRESHED', 'USER_UPDATED'].includes(event)) {
           setTimeout(() => refresh(), 0);
         }
@@ -129,6 +168,7 @@
       toggle.title = 'Compte · connecté';
       newsLink.hidden = true;
       journalLink.hidden = true;
+      crewLink.hidden = true;
       notifyAuth(user.id);
       try {
         const allowed = await canManageNews(auth, user.id);
@@ -142,8 +182,18 @@
         const journalAllowed = await canManageJournal(auth, user.id);
         if (currentRequest === requestNumber) journalLink.hidden = !journalAllowed;
       } catch {
-        journalLink.hidden = true;
+        if(currentRequest === requestNumber)journalLink.hidden = true;
       }
+      try {
+        const crew = await getCrewAccess();
+        if(currentRequest !== requestNumber)return;
+        crewLink.hidden = !['admin','helper'].includes(crew.role);
+        if(crew.notice === 'twitch_reconnect_required' && !crew.role)
+          showNote('Reconnecte Twitch pour vérifier ton accès Crew.');
+      } catch {
+        if(currentRequest === requestNumber)showNote('Vérification des droits Crew indisponible.');
+      }
+
     } catch {
       if (currentRequest !== requestNumber) return;
       setAnonymous();
@@ -164,7 +214,8 @@
       } catch { /* Stockage de session facultatif. */ }
       const { error } = await auth.auth.signInWithOAuth({
         provider: 'twitch',
-        options: { redirectTo: window.location.origin + window.location.pathname }
+        options: { redirectTo: window.location.origin + window.location.pathname,
+          scopes: 'user:read:email user:read:moderated_channels' }
       });
       if (error) throw error;
     } catch {
@@ -176,18 +227,23 @@
   }
   async function signOut() {
     signout.disabled = true;
+    signingOut=true;++authGeneration;++requestNumber;crewCache=null;
+    setAnonymous();notifyAuth(null);
     showNote('');
     try {
       const auth = await getClient();
+      try { await getCrewAccess({action:'revoke'}); } catch { /* Bail Crew borné à 5 minutes. */ }
       const { error } = await auth.auth.signOut();
+      providerToken=null;providerUser=null;crewCache=null;++authGeneration;
       if (error) throw error;
       setAnonymous();
       notifyAuth(null);
       setOpen(false);
     } catch {
+      signingOut=false;await refresh();
       showNote('Déconnexion impossible. Réessaie.');
     } finally {
-      signout.disabled = false;
+      signingOut=false;signout.disabled = false;
     }
   }
 
@@ -214,6 +270,7 @@
     setOpen(next);
     if (next) refresh();
   });
+  crewLink.addEventListener('click', () => setOpen(false));
   signin.addEventListener('click', signIn);
   signout.addEventListener('click', signOut);
   document.addEventListener('click', event => {
@@ -231,5 +288,5 @@
   // le compte/News, sauf au retour d'une redirection OAuth.
   const authQuery = new URLSearchParams(window.location.search);
   if (authQuery.get('crew_auth') !== '1' && (returning || authQuery.has('code'))) refresh();
-  window.DEADELUSTV_AUTH = Object.freeze({ getClient, refresh, canManageNews, canManageJournal });
+  window.DEADELUSTV_AUTH = Object.freeze({ getClient, refresh, signIn, signOut, getCrewAccess, canManageNews, canManageJournal });
 })();
