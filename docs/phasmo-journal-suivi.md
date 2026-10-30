@@ -920,3 +920,15 @@ Publication/dépublication : parcours serveur conservé, toujours soumis au verr
 **Vérifications hors navigateur :** syntaxe JS/HTML valide ; 418 contrôles de largeurs et de pagination avec les libellés signalés, 1/2/3/4/6 colonnes, zones étroites/larges et espacements 0/12/56/80 px : aucune entrée perdue, largeur contenue, budget vertical respecté hors entrée unique trop grande. **Contrôle navigateur DEV effectué après déploiement :** onglet de vérification séparé, sans charger/enregistrer le brouillon. Les cinq listes affichées utilisent le rendu sur une ligne sans débordement horizontal. « Capteur sonore », « Boîte à musique », « Patte de singe », « Thermomètre », « Enregistreur » et « Parabolique » ont chacun une hauteur d'une seule ligne et aucun dépassement. Capture visuelle contrôlée. L'onglet de travail de l'utilisatrice n'a pas été rechargé ; sa validation du correctif reste à recueillir.
 
 Aucune modification du brouillon, de l'historique, des médias, des verrous de publication ou de `main`.
+
+
+### 30/10/2026 — Listes personnalisées : un nom, une destination
+
+**Demande :** laisser Deadelus créer librement plusieurs listes, par exemple trois listes d'entités, puis décider quelle fiche ouvre chaque nom sans déplacer ou dupliquer les fiches.
+
+**Interface :** « + Liste » crée désormais une liste personnalisée vide à une colonne. Dans les réglages, « Ajouter une fiche à cette liste » ajoute son titre et un lien stable ; « + Nom libre » permet un libellé indépendant. Chaque entrée possède un nom affiché, une destination (fiche, catégorie, sous-menu, accueil ou aucun lien), des commandes monter/descendre et retirer. Chaque liste conserve sa position, ses colonnes, espacements et sa pagination. La zone cliquable correspond à chaque nom plutôt qu'au bloc entier. Les listes automatiques et manuelles existantes sont conservées ; passer une liste automatique en mode personnalisé copie ses noms et liens, sans toucher aux fiches.
+
+**Persistance :** entrées `listItems` dans le payload V7 existant, normalisées à l'import ; transport privé et médias inchangés. Les liens de fiches utilisent leurs identifiants : renommage et déplacement restent fonctionnels, archivage/suppression rendent le lien inactif en conservant le libellé et la référence. Retirer une entrée n'efface jamais la fiche.
+
+**Vérification :** script `node scripts/test_phasmo_custom_lists.cjs` couvrant les formulaires, trois listes indépendantes, handlers de clic, liens intercatégories, ordre/retrait, renommage/déplacement, archives, conversion, transport et import V7. Recette navigateur à consigner après déploiement DEV. Aucun changement de base, de droits, de médias existants, de verrou de publication ni de `main`.
+

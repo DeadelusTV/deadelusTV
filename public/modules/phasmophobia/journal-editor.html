@@ -67,6 +67,9 @@ aside p.lead{font-size:12px;color:#afa69b;line-height:1.6;margin:0 0 16px}
 #book .layer[data-kind="breadcrumb"] button:focus-visible,#book .layer .list-pagination button:focus-visible{outline:3px solid #85541d}
 #book .layer[data-kind="list"] .words .word{display:block;min-width:0;width:100%;color:inherit;text-decoration:none;text-align:inherit;border:0;background:transparent;padding:0 2px;font:inherit;white-space:normal;overflow-wrap:anywhere;cursor:inherit}
 #book .layer[data-kind="list"] .words.single-line .word{white-space:nowrap;overflow-wrap:normal}
+#book .layer[data-kind="list"] .words.custom-list .word{width:fit-content;max-width:100%}
+#book .layer[data-kind="list"] .words .word[aria-disabled="true"]{cursor:default}
+#book .layer[data-kind="list"] .words .word[aria-disabled="true"]:hover{color:inherit;text-decoration:none}
 #book .layer[data-kind="list"] .words .word:hover{color:#76431c;text-decoration:underline}
 #book.edit-mode .layer{cursor:grab}#book.edit-mode .layer:hover{outline:2px dashed #9b6935a8;outline-offset:1px}
 #book.edit-mode .layer.selected{outline:3px dashed #68380f;outline-offset:2px;background:#e4a84021}
@@ -186,10 +189,17 @@ html.journal-viewer #book .layer{cursor:default}
     <h3>3 · Réglages de l'élément sélectionné</h3>
     <div class="field"><label for="el-name">Nom du calque (atelier)</label><input id="el-name" type="text" maxlength="100"></div>
     <div class="field" id="list-mode-field"><label for="el-listmode">Contenu de cette liste</label>
-      <select id="el-listmode"><option value="records">Fiches de la catégorie</option><option value="folders">Sous-catégories / rubriques</option><option value="manual">Liste manuelle (texte)</option></select>
+      <select id="el-listmode"><option value="records">Fiches de la catégorie</option><option value="folders">Sous-catégories / rubriques</option><option value="custom">Liste personnalisée (noms et liens)</option><option value="manual">Liste manuelle (texte)</option></select>
       <p class="tip">Les listes « Fiches » et « Sous-catégories » sont des calques indépendants : déplace-les librement dans le livre. La même maquette sert pour toutes les profondeurs d'une catégorie.</p>
     </div>
     <div class="field" id="text-field"><label for="el-text">Texte à afficher (ou liste manuelle : un élément par ligne)</label><textarea id="el-text" rows="4"></textarea><p class="tip is-hidden" id="list-linked-help">La liste se remplit depuis les fiches et sous-menus. Modifie les noms dans « Organisation des pages » ou « Sous-menus », ou sélectionne « Liste manuelle » pour saisir tes propres noms.</p></div>
+    <div id="custom-list-editor" class="is-hidden">
+      <p class="tip">Compose cette liste librement : chaque nom possède sa destination. Tu peux créer plusieurs listes pour les mêmes entités sans modifier leurs fiches.</p>
+      <div class="field"><label for="custom-list-pick">Ajouter une fiche à cette liste</label><select id="custom-list-pick"></select></div>
+      <div class="buttons"><button id="custom-list-add-record" class="btn small" type="button">+ Ajouter la fiche</button><button id="custom-list-add-name" class="btn small" type="button">+ Nom libre</button></div>
+      <div id="custom-list-items" style="margin-top:12px"></div>
+      <p id="custom-list-count" class="tip" role="status"></p>
+    </div>
     <div class="two">
       <div class="field"><label for="el-x">Position X (%)</label><input id="el-x" type="number" step="0.1" min="0" max="99"></div>
       <div class="field"><label for="el-y">Position Y (%)</label><input id="el-y" type="number" step="0.1" min="0" max="99"></div>
@@ -396,6 +406,7 @@ html.journal-viewer #book .layer{cursor:default}
 <script src="journal-records.js"></script>
 <script src="journal-folders.js"></script>
 <script src="journal-pagination.js"></script>
+<script src="journal-custom-lists.js"></script>
 
 <script src="journal-viewer-zoom.js"></script>
 <script>
@@ -414,6 +425,7 @@ const SAVE_KEY='deadelustv.phasmo.atelier.complet.v4_3';
 const RECORDS=window.PHASMO_JOURNAL_RECORDS;
 const FOLDERS=window.PHASMO_JOURNAL_FOLDERS;
 const PAGINATION=window.PHASMO_JOURNAL_PAGINATION;
+const CUSTOM_LISTS=window.PHASMO_JOURNAL_CUSTOM_LISTS;
 const RECORD_SCHEMA=7;
 const OLD_SAVE_KEY='deadelustv.phasmo.atelier.complet.v4_2';
 const OLDER_SAVE_KEY='deadelustv.phasmo.atelier.complet.v4_1';
@@ -575,7 +587,11 @@ function drawList(node,e){
  const inCategory=linked&&view.page==='category:'+e.source;
  const back=modeName==='folders'&&inCategory&&!!view.folderId;
  let entries=[];
- if(linked&&modeName==='folders'){
+ if(modeName==='custom'){
+  entries=CUSTOM_LISTS.normalize(e.listItems).filter(item=>item.label).map(item=>({
+   title:item.label,kind:'custom',destination:CUSTOM_LISTS.resolve(item,state.records,state.folders,FOLDERS.available)
+  }));
+ }else if(linked&&modeName==='folders'){
   entries=inCategory?FOLDERS.list(state.folders,e.source,view.folderId)
     .map(f=>({title:f.title,id:f.id,kind:'folder'})):[];
  }else if(linked&&modeName==='records'){
@@ -616,6 +632,8 @@ function drawList(node,e){
  const rows=layout.rows;
  const list=document.createElement('div');list.className='words';
  list.classList.toggle('single-line',layout.singleLine);
+ list.classList.toggle('custom-list',modeName==='custom');
+ if(modeName==='custom')list.style.justifyItems=e.align==='center'?'center':e.align==='right'?'end':'start';
  list.style.gridTemplateRows='repeat('+rows+',auto)';
  list.style.columnGap=layout.columnGap+'px';
  list.style.rowGap=safeNum(e.rowGap,0,0,80)+'px';
@@ -624,10 +642,18 @@ function drawList(node,e){
  for(const entry of current){
   const btn=document.createElement('button');btn.className='word';btn.type='button';
   btn.textContent=(entry.kind==='folder'?'▸ ':'')+entry.title;
-  btn.tabIndex=mode==='test'?0:-1;
+  const inactive=entry.kind==='custom'&&!entry.destination;
+  btn.tabIndex=mode==='test'&&!inactive?0:-1;
+  if(inactive){btn.setAttribute('aria-disabled','true');btn.title='Aucune destination disponible pour ce nom.';}
   if(entry.kind==='folder')btn.setAttribute('aria-label','Ouvrir la rubrique '+entry.title);
   btn.addEventListener('click',ev=>{
    if(mode!=='test')return;ev.stopPropagation();
+   if(entry.kind==='custom'){
+    const dest=entry.destination;
+    if(!dest)return;
+    if(dest.action==='folder')return setView('category:'+dest.group,null,dest.entry);
+    return performAction(dest.action,dest.group,dest.entry);
+   }
    const group=e.source||view.group;
    if(!group||!state.groups[group])return;
    if(entry.kind==='folder')return setView('category:'+group,null,entry.id);
@@ -753,6 +779,83 @@ function selectLayer(id){selected=id;renderLayerList();renderEditor();
  for(const el of surface.querySelectorAll('.layer'))el.classList.toggle('selected',el.dataset.id===id&&mode==='edit');
 }
 function syncInput(id,val){const node=$('#'+id);if(node)node.value=val;}
+function customDestinationOptions(select){
+ select.add(new Option('Aucun lien','none'));
+ select.add(new Option('Accueil du journal','home'));
+ const categories=document.createElement('optgroup');categories.label='Listes des catégories';
+ for(const group of GROUP_ORDER)categories.append(new Option(state.groups[group].label,'category:'+group));
+ select.append(categories);
+ for(const group of GROUP_ORDER){
+  const section=document.createElement('optgroup');section.label='Fiches · '+state.groups[group].label;
+  for(const rec of recordList(group))section.append(new Option(rec.title,'detail:'+rec.id));
+  if(section.children.length)select.append(section);
+  const folders=document.createElement('optgroup');folders.label='Sous-menus · '+state.groups[group].label;
+  for(const {folder} of walkFolders(group))if(FOLDERS.available(state.folders,group,folder.id))
+   folders.append(new Option(folderPath(group,folder.id),'folder:'+folder.id));
+  if(folders.children.length)select.append(folders);
+ }
+}
+function renderCustomListEditor(e){
+ e.listItems=CUSTOM_LISTS.normalize(e.listItems);
+ const picker=$('#custom-list-pick'),previous=picker.value;
+ picker.replaceChildren();
+ for(const group of GROUP_ORDER){
+  const section=document.createElement('optgroup');section.label=state.groups[group].label;
+  for(const rec of recordList(group))section.append(new Option(rec.title,rec.id));
+  if(section.children.length)picker.append(section);
+ }
+ if(Array.from(picker.options).some(option=>option.value===previous))picker.value=previous;
+ else if(view.group||e.source){
+  const first=recordList(view.group||e.source)[0];if(first)picker.value=first.id;
+ }
+ const full=e.listItems.length>=240;
+ $('#custom-list-add-record').disabled=full||!picker.options.length;
+ $('#custom-list-add-name').disabled=full;
+ const root=$('#custom-list-items');root.replaceChildren();
+ e.listItems.forEach((item,index)=>{
+  const row=document.createElement('div');row.style.cssText='padding:10px 0;border-top:1px solid #51422e';
+  const makeField=(caption,control,suffix)=>{
+   const field=document.createElement('div');field.className='field';
+   const label=document.createElement('label');label.textContent=caption;
+   control.id='custom-list-'+suffix+'-'+index;label.htmlFor=control.id;
+   field.append(label,control);row.append(field);
+  };
+  const label=document.createElement('input');label.type='text';label.maxLength=100;label.value=item.label;label.placeholder='Nom à afficher dans le livre';
+  makeField('Nom affiché '+(index+1),label,'label');
+  label.addEventListener('input',()=>{item.label=label.value.slice(0,100);updateCurrentElement();});
+  const select=document.createElement('select');customDestinationOptions(select);
+  const selectedValue=CUSTOM_LISTS.value(item);
+  if(!Array.from(select.options).some(option=>option.value===selectedValue)){
+   const unavailable=new Option('Destination indisponible (supprimée ou archivée)',selectedValue);unavailable.disabled=true;select.add(unavailable);
+  }
+  select.value=selectedValue;makeField('Destination du nom '+(index+1),select,'destination');
+  select.addEventListener('change',()=>{
+   Object.assign(item,CUSTOM_LISTS.destination(select.value),{label:item.label});
+   if(!item.label&&select.value!=='none')item.label=select.selectedOptions[0].textContent;
+   listPagePositions.clear();updateCurrentElement();renderCustomListEditor(e);
+  });
+  const buttons=document.createElement('div');buttons.className='buttons';
+  const control=(title,caption,disabled,work)=>{
+   const button=document.createElement('button');button.type='button';button.className='btn small';button.textContent=caption;
+   button.setAttribute('aria-label',title+' '+(index+1));button.disabled=disabled;
+   button.addEventListener('click',()=>{work();listPagePositions.clear();updateCurrentElement();renderCustomListEditor(e);});
+   buttons.append(button);
+  };
+  control('Monter le nom','↑',index===0,()=>{[e.listItems[index-1],e.listItems[index]]=[e.listItems[index],e.listItems[index-1]];});
+  control('Descendre le nom','↓',index===e.listItems.length-1,()=>{[e.listItems[index+1],e.listItems[index]]=[e.listItems[index],e.listItems[index+1]];});
+  control('Retirer le nom','Retirer',false,()=>{e.listItems.splice(index,1);});
+  row.append(buttons);root.append(row);
+ });
+ $('#custom-list-count').textContent=e.listItems.length
+  ?e.listItems.length+' nom(s) · retirer un nom ne supprime jamais sa fiche.'
+  :'Liste vide : ajoute une fiche ou un nom libre, puis choisis sa destination.';
+}
+function addCustomListItem(item){
+ const e=getSelected();if(!e||e.kind!=='list'||e.listMode!=='custom')return;
+ e.listItems=CUSTOM_LISTS.normalize(e.listItems);if(e.listItems.length>=240)return;
+ e.listItems.push(CUSTOM_LISTS.normalize([item])[0]);
+ listPagePositions.clear();updateCurrentElement();renderCustomListEditor(e);
+}
 function renderEditor(){
  const e=getSelected(), enabled=!!e;
  $('#editor-panel').classList.toggle('is-hidden',!enabled);
@@ -773,7 +876,11 @@ function renderEditor(){
  $('#entry-field').classList.toggle('is-hidden',e.action!=='detail');
  $('#import-image').disabled=e.kind!=='image';
  $('#el-text').placeholder=e.kind==='list'?'Un nom par ligne. Les listes liées sont éditées plus bas.':'Texte de ton choix';
- const linkedList=e.kind==='list'&&e.listMode!=='manual'&&!!e.source;
+ const custom=e.kind==='list'&&e.listMode==='custom';
+ $('#custom-list-editor').classList.toggle('is-hidden',!custom);
+ if(custom)renderCustomListEditor(e);
+ if(custom)$('#text-field').classList.add('is-hidden');
+ const linkedList=e.kind==='list'&&['records','folders'].includes(e.listMode)&&!!e.source;
  $('#el-text').disabled=linkedList;
  $('#list-linked-help').classList.toggle('is-hidden',!linkedList);
  $('#el-column-gap-field').classList.toggle('is-hidden',e.kind!=='list');
@@ -802,9 +909,16 @@ function updateCurrentElement(){
 function handleChange(key,value){
  const e=getSelected();if(!e)return;
  if(key==='listMode'){
-  e.listMode=['records','folders','manual'].includes(value)?value:'manual';
+  if(value==='custom'&&!Array.isArray(e.listItems)){
+   const oldMode=e.listMode||(e.source?'records':'manual');
+   if(oldMode==='records'&&e.source)e.listItems=recordList(e.source).map(rec=>({label:rec.title,action:'detail',entry:rec.id}));
+   else if(oldMode==='folders'&&e.source)e.listItems=FOLDERS.list(state.folders,e.source,view.folderId).map(folder=>({label:folder.title,action:'folder',entry:folder.id}));
+   else e.listItems=String(e.text||'').split('\n').filter(label=>label.trim()).map(label=>({label,action:'none'}));
+   e.listItems=CUSTOM_LISTS.normalize(e.listItems);
+  }
+  e.listMode=['records','folders','manual','custom'].includes(value)?value:'manual';
   if(e.listMode==='manual')e.source=null;
-  else e.source=view.group||e.source||GROUP_ORDER[0];
+  else if(e.listMode!=='custom')e.source=view.group||e.source||GROUP_ORDER[0];
   listPagePositions.clear();updateCurrentElement();renderEditor();return;
  }
  if(['x','y','w','h','size','columns','line','columnGap','rowGap','rotate','opacity','z'].includes(key)){
@@ -891,6 +1005,7 @@ function add(kind){
  const base={heading:['Nouveau titre',45,14,32,8],text:['Nouveau texte',45,26,32,10],list:['Nom 1\nNom 2\nNom 3',45,40,32,16],tab:['NOUVEL ONGLET',58,5,13,6],hotspot:['',60,55,15,10],image:['',55,35,25,25],line:['',22,62,22,1]}[kind];
  const e=layer(view.entryId?recordPage(view.entryId):view.page,kind,(kind==='hotspot'?'Zone cliquable':kind==='tab'?'Onglet':kind==='image'?'Image':kind==='line'?'Trait':'Calque')+' '+serial,base[0],base[1],base[2],base[3],base[4],kind==='hotspot'?{action:'home'}:{});
  if(kind==='tab')e.action='category';
+ if(kind==='list'){e.listMode='custom';e.listItems=[];e.text='';e.columns=1;}
  state.elements.push(e);selected=e.id;renderLayers();renderLayerList();renderEditor();save();note('Calque ajouté. Glisse-le à l’endroit voulu.');
 }
 function addNavigationLayer(kind){
@@ -1054,6 +1169,7 @@ function manageRecord(action){
    renderRecordManager(rec.id);
    if(view.entryId===rec.id)setView('detail:'+rec.group,rec.id);
    else renderLayers();
+   renderEditor();
    save();note('Fiche déplacée vers '+folderLabel(rec.group,rec.folderId)+'.');
    return;
   }else if(action==='archive')rec=RECORDS.archive(state.records,group,id);
@@ -1065,7 +1181,7 @@ function manageRecord(action){
   }
   if(rec?.status==='archived'&&view.entryId===rec.id)setView('category:'+group,null,rec.folderId);
   if(view.entryId===rec?.id)view.name=rec.title;
-  syncRecordsToGroups();renderRecordManager(rec?.id||id);renderLayers();updateInfo();save();
+  syncRecordsToGroups();renderRecordManager(rec?.id||id);renderLayers();renderEditor();updateInfo();save();
   if(action==='add'){setView('detail:'+group,rec.id);save();}
   note('Modification locale prête. Enregistre le brouillon pour la partager.');
  }catch(err){note(err.message);}
@@ -1193,7 +1309,8 @@ async function loadSettings(file,fromRemote=false){
    size:safeNum(e.size,24,8,120),columns:safeNum(e.columns,3,1,6),line:safeNum(e.line,1.16,.75,2.6),columnGap:safeNum(e.columnGap,12,0,80),rowGap:safeNum(e.rowGap,0,0,80),rotate:safeNum(e.rotate,0,-40,40),opacity:safeNum(e.opacity,100,0,100),
    image:typeof e.image==='string'&&e.image.length<5_000_000&&/^data:image\/(?:png|jpeg|webp|gif);base64,/.test(e.image)?e.image:'',
    source:GROUP_ORDER.includes(e.source)?e.source:null,
-   listMode:['records','folders','manual'].includes(e.listMode)?e.listMode:(e.source?'records':'manual')
+   listMode:['records','folders','manual','custom'].includes(e.listMode)?e.listMode:(e.source?'records':'manual'),
+   ...(Array.isArray(e.listItems)?{listItems:CUSTOM_LISTS.normalize(e.listItems)}:{})
  }));
  if(cleaned.length===0)throw Error('Ce fichier ne contient aucun calque utilisable.');
  state={...defaults,...incoming,version:RECORD_SCHEMA,folders,records,elements:cleaned,fonts:[],groups:defaults.groups};
@@ -1344,6 +1461,11 @@ function setup(){
    $('#el-'+(key==='imageFit'?'imagefit':key==='columnGap'?'column-gap':key==='rowGap'?'row-gap':key)).addEventListener('input',ev=>{if(ev.target.value===''&&ev.target.type==='number')return;handleChange(key,ev.target.value);});
  }
  $('#el-listmode').addEventListener('change',ev=>handleChange('listMode',ev.target.value));
+ $('#custom-list-add-record').addEventListener('click',()=>{
+  const rec=state.records.find(rec=>rec.id===$('#custom-list-pick').value);
+  if(rec)addCustomListItem({label:rec.title,action:'detail',entry:rec.id});
+ });
+ $('#custom-list-add-name').addEventListener('click',()=>addCustomListItem({label:'',action:'none'}));
  for(const field of ['locked','hidden','bold','italic','underline']){
    $('#el-'+field).addEventListener('change',ev=>{const e=getSelected();if(!e)return;e[field]=ev.target.checked;renderLayers();renderLayerList();save();});
  }
@@ -1463,3 +1585,4 @@ init();
 <script src="journal-publication-viewer.js" defer></script>
 <script src="journal-editor-simplified.js" defer></script>
 </body></html>
+
