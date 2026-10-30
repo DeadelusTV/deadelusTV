@@ -283,8 +283,8 @@ window.PAVILLON_SESSIONS = [
     "titre": "La chasse-partie",
     "date": "",
     "vod": {
-      "url": "https://www.twitch.tv/videos/2891954274",
-      "plateforme": "Twitch"
+      "url": "https://www.youtube.com/watch?v=KgvFZDR7KfY",
+      "plateforme": "YouTube"
     },
     "image": "assets/session-04-plage.jpg",
     "imageAlt": "Vue des Îles Vierges utilisée comme décor de plage pendant la Session 04",
