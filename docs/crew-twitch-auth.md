@@ -43,7 +43,7 @@ L'association exige simultanément une session portail vérifiée et une session
 
 - SQL `docs/crew-twitch-sql-a-appliquer.sql` appliqué sur **Crew**, migration `crew_portal_twitch_common_login`. Ne pas le réexécuter.
 - Edge Function `crew-twitch-access` déployée sur Crew. `verify_jwt=false` car le jeton du portail est vérifié explicitement auprès d'Auth portail dans la fonction.
-- Origine autorisée par défaut : `https://developpement-phasmo-v2.deadelustv.pages.dev` uniquement. La production doit être ajoutée explicitement lors de sa préparation, via `CREW_ALLOWED_ORIGINS`. Pas d'activation du parcours commun sur main par ce lot.
+- Origines autorisées par défaut : `https://developpement-phasmo-v2.deadelustv.pages.dev` et l’aperçu atomique vérifié `https://d9a00d48.deadelustv.pages.dev`. La production doit être ajoutée explicitement lors de sa préparation, via `CREW_ALLOWED_ORIGINS`. Pas d'activation du parcours commun sur main par ce lot.
 - Variables serveur Supabase intégrées réutilisées ; pas de nouveau fournisseur OAuth Crew ni de secret Twitch à configurer.
 - Aucun changement appliqué au schéma portail/TCG, aux droits Phasmo ou Journal, aux statistiques, aux parties, aux sauvegardes ou à la DLL.
 
@@ -53,7 +53,7 @@ L'association exige simultanément une session portail vérifiée et une session
 - 10 scénarios UI simulés : connexion commune, présence du menu selon le rôle, permissions Phasmo/Journal indépendantes, Admin/Helper, transition, déconnexion et réponse concurrente tardive.
 - Tests PostgreSQL avec comptes fictifs dans une transaction intégralement annulée : viewer refusé, Helper sans Admin, expiration, retrait, conservation Admin, substitution d'identité refusée, TTL borné et exécution cliente de la RPC interdite. Contrôle sous le rôle SQL `authenticated` inclus.
 - Après activation : tables privées avec RLS, RPC interdite au client, absence des comptes de test et absence d'association créée à ce stade confirmées. Le conseiller relève deux infos « RLS sans politique », intentionnelles pour ces tables privées interdites aux clients, et les avertissements préexistants des fonctions métier et mots de passe ; aucun nouvel avertissement de fonction publique privilégiée.
-- Syntaxe JavaScript vérifiée. Ces contrôles ne constituent pas une recette OAuth/navigateur réelle.
+- Syntaxe JavaScript vérifiée. Contrôle navigateur réel partiel : aperçu atomique Cloudflare e28b979 chargé, menu Compte et écran Gestion anonymes vérifiés ; le bouton commun ouvre la demande Twitch du projet portail avec la permission de lecture des chaînes modérées. L’autorisation Twitch n’a pas été accordée par l’agent : retour OAuth, rôle effectif et écritures non testés. Le lien de branche historique redirigeait vers un site plus ancien lors du contrôle ; utiliser l’aperçu atomique pour cette recette, sans assimiler le déploiement GitHub réussi à une validation de cet alias.
 
 **Encore à valider sur la prévisualisation :** reconnexion Twitch commune, menu et ouverture de Gestion avec un modo réel, association des deux admins existants, écritures Admin/Helper sur données d'essai, refus d'un viewer et d'un modo d'une autre chaîne, déconnexion, F5, expiration/retrait du rôle et absence d'interférence avec les éditeurs Phasmo/Journal. Pas de fusion vers main avant validation.
 
