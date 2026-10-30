@@ -49,7 +49,7 @@ L'association exige simultanément une session portail vérifiée et une session
 
 ## Vérifications et limites
 
-- 23 contrôles HTTP serveur simulés : identité portail, faux rôles/métadonnées, identité Twitch différente, viewer/modo/propriétaire, session émise, association protégée, pagination, panne Twitch, révocation, expiration, origine interdite, absence de secrets dans les réponses.
+- 24 contrôles HTTP serveur simulés : identité portail, faux rôles/métadonnées, identité Twitch différente, viewer/modo/propriétaire, session émise, association protégée, pagination, panne Twitch, révocation, expiration, origine interdite, absence de secrets dans les réponses.
 - 10 scénarios UI simulés : connexion commune, présence du menu selon le rôle, permissions Phasmo/Journal indépendantes, Admin/Helper, transition, déconnexion et réponse concurrente tardive.
 - Tests PostgreSQL avec comptes fictifs dans une transaction intégralement annulée : viewer refusé, Helper sans Admin, expiration, retrait, conservation Admin, substitution d'identité refusée, TTL borné et exécution cliente de la RPC interdite. Contrôle sous le rôle SQL `authenticated` inclus.
 - Après activation : tables privées avec RLS, RPC interdite au client, absence des comptes de test et absence d'association créée à ce stade confirmées. Le conseiller relève deux infos « RLS sans politique », intentionnelles pour ces tables privées interdites aux clients, et les avertissements préexistants des fonctions métier et mots de passe ; aucun nouvel avertissement de fonction publique privilégiée.
@@ -63,7 +63,11 @@ L’utilisatrice a constaté que la connexion depuis l’aperçu atomique la ren
 
 Cloudflare confirme que **`https://deadelustv.pages.dev` sert la branche `developpement/phasmo-v2` comme production Pages** ; cela ne désigne pas le main hébergé sur www.deadelustv.com. L’ancienne déduction d’un alias `developpement-phasmo-v2` était inadaptée à cette configuration.
 
-Le test doit désormais commencer à `https://deadelustv.pages.dev/#crewmongus/admin`, avec le bouton Twitch commun. Le serveur Crew autorise exactement cette origine par défaut. Les URLs atomiques ne sont plus nécessaires. Le retour OAuth et l’accès réel restent distincts du seul contrôle de cette configuration.
+Le test doit désormais commencer à `https://deadelustv.pages.dev/#crewmongus/admin`, avec le bouton Twitch commun. Le serveur Crew autorise exactement cette origine par défaut. Les URLs atomiques ne sont plus nécessaires. Le retour OAuth vers ce domaine stable et sa route Crew a ensuite été observé dans le navigateur avec le compte déjà autorisé ; l’accès réel reste distinct du seul contrôle de cette configuration.
+
+Le contrôle réel a également révélé une erreur de correspondance dans le premier serveur : le nom de colonne SQL `provider_id` avait été utilisé pour lire la réponse JSON Auth. Le modèle officiel Supabase sérialise cette valeur sous `id`, et réserve `identity_id` à son UUID interne. Le serveur lit désormais le champ `id` validé et conserve la vérification stricte d’identité Twitch ; les fixtures des tests reproduisent ce format réel au lieu d’inventer un champ `provider_id`. Un test refuse la forme SQL à la place de la réponse Auth. Source : https://github.com/supabase/auth/blob/master/internal/models/identity.go.
+
+Après correction de la lecture de l’identité (fonction v4), le navigateur reconnaît le compte Twitch connecté sur le domaine stable, sans le message d’indisponibilité initial. Le compte de test n’a pas encore d’accès Crew associé ; le formulaire de transition permet d’associer l’ancien compte Admin. Aucune association ni opération de données n’a été effectuée pendant ce contrôle. Le retour OAuth vers V2 est vérifié ; les privilèges Admin/Helper et les écritures restent à tester.
 
 ## Références techniques
 

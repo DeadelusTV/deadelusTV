@@ -34,7 +34,9 @@ export function createHandler(env, http = fetch) {
       if(!verified.ok)return respond(verified.status===401||verified.status===403?401:503,{error:'portal_auth_unavailable'});
       const user=await verified.json();
       const identities=(user.identities||[]).filter(i=>i.provider==='twitch');
-      const twitchId=identities.length===1?identities[0].provider_id:null;
+      // Auth sérialise la colonne provider_id sous le champ JSON id.
+      // identity_id désigne l'UUID interne ; user_metadata n'autorise rien.
+      const twitchId=identities.length===1?identities[0].id:null;
       if(!UUID.test(user.id||'')||!/^[0-9]{1,32}$/.test(twitchId||''))return respond(403,{error:'twitch_identity_required'});
       const raw=await req.text();if(raw.length>10000)return respond(413,{error:'invalid_request'});
       let payload;try{payload=JSON.parse(raw);}catch{return respond(400,{error:'invalid_request'});}

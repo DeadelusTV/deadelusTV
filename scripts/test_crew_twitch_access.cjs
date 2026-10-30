@@ -13,7 +13,7 @@ const path=require('node:path');
    calls.push({url,init});
    if(url==='https://eodtxlhnfzyapkyvvxdi.supabase.co/auth/v1/user'){
     assert.equal(init.headers.Authorization,'Bearer PORTAL_SESSION');
-    return json({id:portal,user_metadata:{role:'admin',twitch_user_id:BROADCASTER_ID},identities:o.noIdentity?[]:[{provider:'twitch',provider_id:o.owner?BROADCASTER_ID:'123'}]},o.authError?401:200);
+    return json({id:portal,user_metadata:{role:'admin',twitch_user_id:BROADCASTER_ID},identities:o.noIdentity?[]:o.dbShape?[{provider:'twitch',provider_id:'123'}]:[{provider:'twitch',id:o.owner?BROADCASTER_ID:'123',identity_id:'33333333-3333-4333-8333-333333333333'}]},o.authError?401:200);
    }
    if(url==='https://crew.test/auth/v1/user')return json({id:crew},o.badLegacy?401:200);
    if(url.endsWith('/validate'))return json({user_id:o.mismatch?'999':o.owner?BROADCASTER_ID:'123',client_id:'trusted-client',expires_in:o.expired?0:120,scopes:o.noScope?[]:['user:read:moderated_channels']},o.revoked?401:200);
@@ -58,6 +58,7 @@ const path=require('node:path');
  await check('ancien compte sans rôle',{linkRefused:true},{action:'link',legacy_token:'LEGACY'},503);
  await check('OAuth portail invalide',{authError:true},token,401);
  await check('métadonnées insuffisantes',{noIdentity:true},token,403);
+ await check('forme SQL distincte de la réponse Auth',{dbShape:true},token,403);
  await check('identité du jeton différente',{mismatch:true},token,403,(d,c)=>assert.ok(!c.some(x=>x.url.includes('/rpc/'))));
  await check('Twitch en panne',{twitchError:true},token,503,(d,c)=>assert.ok(!c.some(x=>x.url.includes('/rpc/'))));
  await check('pagination',{pages:true},token,200,(d,c)=>assert.ok(c.some(x=>x.url.includes('after=second'))));
