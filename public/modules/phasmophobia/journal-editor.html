@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Éditeur du carnet Phasmophobia · DeadelusTV</title>
+<link rel="stylesheet" href="journal-image-zoom.css">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Caveat:wght@400;600;700&family=Gloria+Hallelujah&family=Indie+Flower&family=Kalam:wght@400;700&family=Patrick+Hand&display=swap');
 :root{font-family:Arial,Helvetica,sans-serif;--bg:#0e0f10;--surface:#19191a;--surface2:#242322;--line:#3c372f;--gold:#dec089;--muted:#b9ae9c;--text:#f3e7d7;color-scheme:dark}
@@ -237,6 +238,7 @@ html.journal-viewer #book .layer{cursor:default}
         <div class="field"><label for="el-blend">Fusion avec le papier</label><select id="el-blend"><option value="normal">Normal</option><option value="multiply">Produit / encre</option><option value="screen">Écran</option><option value="darken">Assombrir</option></select></div>
       </div>
       <div class="two"><div class="field"><label for="el-imageopacity">Opacité de l'image (%)</label><input id="el-imageopacity" type="number" min="0" max="100" step="1"></div><div class="field"><label for="el-imagerotate">Inclinaison de l'image (°)</label><input id="el-imagerotate" type="number" min="-40" max="40" step="0.5"></div></div>
+      <div class="field"><label for="el-imagezoom">Agrandissement au clic</label><select id="el-imagezoom"><option value="auto">Automatique : images classiques uniquement</option><option value="yes">Autoriser le zoom sur cette image</option><option value="no">Ne pas agrandir cette image</option></select><p class="tip">En mode Test et en lecture. En automatique, les fonds, filigranes, images à opacité réduite et effets d’encre ne s’agrandissent pas.</p></div>
       <p class="tip">Pour une silhouette spectrale en filigrane : <b>Produit / encre</b>, opacité 15 à 30 %, et calque derrière les textes. Les images transparentes PNG/WebP sont idéales.</p>
     </div>
     <div class="block" id="format-controls" style="border-top:1px solid #42392e;margin-top:9px">
@@ -407,6 +409,7 @@ html.journal-viewer #book .layer{cursor:default}
 <script src="journal-folders.js"></script>
 <script src="journal-pagination.js"></script>
 <script src="journal-custom-lists.js"></script>
+<script src="journal-image-zoom.js"></script>
 
 <script src="journal-viewer-zoom.js"></script>
 <script>
@@ -426,6 +429,7 @@ const RECORDS=window.PHASMO_JOURNAL_RECORDS;
 const FOLDERS=window.PHASMO_JOURNAL_FOLDERS;
 const PAGINATION=window.PHASMO_JOURNAL_PAGINATION;
 const CUSTOM_LISTS=window.PHASMO_JOURNAL_CUSTOM_LISTS;
+const IMAGE_ZOOM=window.PHASMO_JOURNAL_IMAGE_ZOOM;
 const RECORD_SCHEMA=7;
 const OLD_SAVE_KEY='deadelustv.phasmo.atelier.complet.v4_2';
 const OLDER_SAVE_KEY='deadelustv.phasmo.atelier.complet.v4_1';
@@ -755,6 +759,8 @@ function makeLayer(e){
        el.append(h);
      }
    }
+ }else if(e.kind==='image'&&e.image&&IMAGE_ZOOM.enabled(e)){
+   IMAGE_ZOOM.attach(el,e);
  }else if(e.action!=='none'){
    el.addEventListener('click',()=>performAction(e.action,e.target,e.entry));
    el.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();performAction(e.action,e.target,e.entry);}});
@@ -866,6 +872,7 @@ function renderEditor(){
  syncInput('el-listmode',e.listMode||(e.source?'records':'manual'));
  for(const p of ['locked','hidden','bold','italic','underline'])$('#el-'+p).checked=!!e[p];
  syncInput('el-imageopacity',e.opacity);syncInput('el-imagerotate',e.rotate);
+ syncInput('el-imagezoom',typeof e.zoomable==='boolean'?(e.zoomable?'yes':'no'):'auto');
  $('#image-settings').classList.toggle('is-hidden',e.kind!=='image');
  $('#format-controls').classList.toggle('is-hidden',!['heading','text','tab'].includes(e.kind));
  $('#list-mode-field').classList.toggle('is-hidden',e.kind!=='list');
@@ -1306,6 +1313,7 @@ async function loadSettings(file,fromRemote=false){
    x:safeNum(e.x,10,0,99),y:safeNum(e.y,10,0,99),w:safeNum(e.w,15,.5,100),h:safeNum(e.h,7,.5,100),
    z:safeNum(e.z,e.page==='*'?800:30,-100,2000),locked:!!e.locked,hidden:!!e.hidden,bold:!!e.bold,italic:!!e.italic,underline:!!e.underline,
    imageFit:['contain','cover','fill'].includes(e.imageFit)?e.imageFit:'contain',blend:['normal','multiply','screen','darken'].includes(e.blend)?e.blend:'normal',
+   zoomable:typeof e.zoomable==='boolean'?e.zoomable:undefined,
    size:safeNum(e.size,24,8,120),columns:safeNum(e.columns,3,1,6),line:safeNum(e.line,1.16,.75,2.6),columnGap:safeNum(e.columnGap,12,0,80),rowGap:safeNum(e.rowGap,0,0,80),rotate:safeNum(e.rotate,0,-40,40),opacity:safeNum(e.opacity,100,0,100),
    image:typeof e.image==='string'&&e.image.length<5_000_000&&/^data:image\/(?:png|jpeg|webp|gif);base64,/.test(e.image)?e.image:'',
    source:GROUP_ORDER.includes(e.source)?e.source:null,
@@ -1483,6 +1491,11 @@ function setup(){
  });
  $('#make-detail-template')?.addEventListener('click',makeIllustratedTemplate);
  for(const [id,key] of [['el-imageopacity','opacity'],['el-imagerotate','rotate']])$('#'+id).addEventListener('input',ev=>{if(ev.target.value!=='')handleChange(key,ev.target.value);});
+ $('#el-imagezoom').addEventListener('change',ev=>{
+  const e=getSelected();if(!e||e.kind!=='image')return;
+  if(ev.target.value==='auto')delete e.zoomable;else e.zoomable=ev.target.value==='yes';
+  updateCurrentElement();
+ });
  $('#el-scope').addEventListener('change',ev=>{
    const e=getSelected();if(!e)return;e.page=ev.target.value==='global'?'*':(view.entryId?recordPage(view.entryId):view.page);renderLayers();renderLayerList();save();
  });
@@ -1585,4 +1598,5 @@ init();
 <script src="journal-publication-viewer.js" defer></script>
 <script src="journal-editor-simplified.js" defer></script>
 </body></html>
+
 

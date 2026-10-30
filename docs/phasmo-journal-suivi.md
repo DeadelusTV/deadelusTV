@@ -932,3 +932,17 @@ Aucune modification du brouillon, de l'historique, des médias, des verrous de p
 
 **Vérification :** script `node scripts/test_phasmo_custom_lists.cjs` couvrant les formulaires, trois listes indépendantes, handlers de clic, liens intercatégories, ordre/retrait, renommage/déplacement, archives, conversion, transport et import V7. **35 contrôles automatisés réussis. Recette navigateur effectuée sur l'URL propre au déploiement Cloudflare :** trois listes indépendantes créées, chaque clic ouvre la fiche attendue (Obambo, Aswang, Bleasdale), alias « Visiter Bleasdale » indépendant du nom de fiche, persistance des trois listes et de leurs destinations après rechargement, interface et capture visuelle contrôlées, aucune erreur console. Ces données sont locales à l'aperçu de recette ; ni l'atelier habituel de l'utilisatrice ni le brouillon partagé n'ont été chargés ou sauvegardés. Aucun changement de base, de droits, de médias existants, de verrou de publication ni de `main`.
 
+
+
+
+### 30/10/2026 — Agrandissement des images classiques ; message de retrait à prévoir
+
+**Demande :** images classiques cliquables pour zoomer/dézoomer, sans rendre les filigranes interactifs. En mode Test et en lecture, les images normales ouvrent une vue dédiée : clic pour alterner 100/200 %, boutons +/− (100–400 %), Ajuster, défilement pour explorer, fermeture par bouton/Échap ou clic sur le fond extérieur. Navigation clavier et restitution du focus. Le zoom ne modifie ni les calques ni le brouillon. Le mode Édition garde déplacement et redimensionnement habituels.
+
+**Distinction :** comportement automatique pour les images classiques (opacité 100 %, fusion normale, hors rôle background) ; fonds/filigranes à opacité réduite ou effet d'encre exclus par défaut. Réglage individuel « Agrandissement au clic » : automatique, autoriser, ne pas agrandir. Choix booléen `zoomable` conservé dans le payload V7 et à l'import. Le fond du livre lui-même ne devient pas cliquable.
+
+**Tests :** `node scripts/test_phasmo_image_zoom.cjs` (25 contrôles) ; régression `node scripts/test_phasmo_custom_lists.cjs` (35 contrôles). Recette navigateur à compléter après déploiement DEV.
+
+**À FAIRE PLUS TARD — NE PAS MODIFIER MAINTENANT :** après une dépublication, remplacer le message public d'attente « livre bientôt » par un message expliquant le problème technique et le retour prochain du journal (intention utilisateur : « pb technique journal revient »). Ce changement de texte est seulement consigné ; aucun texte public d'attente ou de dépublication n'est modifié dans cette livraison. Distinguer à terme première publication et retrait d'un journal déjà publié.
+
+Travail limité à developpement/phasmo-v2 ; aucune publication du carnet, modification de main, de contenu partagé, de médias ou du verrou de diffusion.
