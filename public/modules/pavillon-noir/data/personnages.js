@@ -88,7 +88,7 @@ window.PAVILLON_PERSONNAGES = [
     ],
     "relations": [
       {
-        "cible": "Aldry Baratte",
+        "cible": "Aldry Barrate",
         "texte": "Les deux hommes se connaissent déjà un peu avant le début de la campagne."
       },
       {
@@ -173,7 +173,7 @@ window.PAVILLON_PERSONNAGES = [
   {
     "id": "aldry-barat",
     "fiche": "assets/fiche_aldry.png",
-    "nom": "Aldry Baratte",
+    "nom": "Aldry Barrate",
     "role": "Second de l’équipage pirate",
     "origine": "Non précisée",
     "age": "21 ans",

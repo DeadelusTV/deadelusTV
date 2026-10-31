@@ -45,3 +45,4 @@ function setup(o={}){
  }
  console.log('10 scénarios UI réussis : connexion commune, menu, droits séparés, transition, déconnexion et concurrence.');
 })().catch(e=>{console.error(e);process.exitCode=1;});
+

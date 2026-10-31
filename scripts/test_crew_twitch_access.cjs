@@ -73,7 +73,9 @@ const path=require('node:path');
  const preflight=origin=>new Request('https://crew.test/functions/v1/crew-twitch-access',{method:'OPTIONS',headers:{origin}});
  const allowed=await defaultHandler(preflight('https://deadelustv.pages.dev'));
  assert.equal(allowed.status,204);assert.equal(allowed.headers.get('access-control-allow-origin'),'https://deadelustv.pages.dev');count++;
- assert.equal((await defaultHandler(preflight('https://www.deadelustv.com'))).status,403);count++;
+ for(const origin of ['https://www.deadelustv.com','https://deadelustv.com']){const official=await defaultHandler(preflight(origin));assert.equal(official.status,204);assert.equal(official.headers.get('access-control-allow-origin'),origin);count++;}
+ assert.equal((await defaultHandler(preflight('https://www.deadelustv.com.evil.test'))).status,403);count++;
  assert.equal((await defaultHandler(preflight('https://d9a00d48.deadelustv.pages.dev'))).status,403);count++;
  console.log(count+' contrôles serveur réussis (HTTP simulé).');
 })().catch(e=>{console.error(e);process.exitCode=1;});
+

@@ -10,7 +10,7 @@
 .legal-document h3{font-size:20px;margin:26px 0 10px}
 .legal-document h2:not(:first-child){margin-top:32px}
 .legal-document .legal-version{margin:0 0 22px;color:#bfb4a2;font-size:13px}
-.legal-document .legal-draft-note{border-left:3px solid #977847;padding:12px 16px;margin-bottom:22px;background:#26221b;color:#e0d1b7}.legal-document p+p{margin-top:15px}
+.legal-document p+p{margin-top:15px}
 .legal-document ul,.legal-document ol{padding-left:24px}.legal-document li+li{margin-top:8px}
 .legal-document a{color:var(--gold-bright);text-decoration:underline}
 .legal-document[data-legal-pending]{border-style:dashed}
@@ -47,3 +47,4 @@
 /* Lecteur optionnel partage avec les news Phasmo et les univers futurs. */
 .youtube-embed-frame{display:block;width:100%;aspect-ratio:16/9;max-width:100%;border:0;border-radius:10px;background:#08090b}
 .youtube-embed-placeholder{padding:15px;border:1px solid #6c6048;border-radius:9px;background:#211f1c;color:#d8d0c0}
+

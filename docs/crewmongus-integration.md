@@ -1,7 +1,5 @@
 # Crewmong Us dans DeadelusTV
 
-> 30/10/2026 — Remplacement de la connexion Crew par Twitch préparé sur `developpement/phasmo-v2`, avec accès Helper pour les modos Twitch de DeadelusTV. **Non activé dans Supabase, recette OAuth réelle en attente.** Voir [connexion et activation Twitch](crew-twitch-auth.md). Les descriptions e-mail ci-dessous restent l'état historique et le secours de transition ; aucune session unique avec le portail n'est créée par cette étape.
-
 Lot préparé le 25 octobre 2026, à installer. Aucune publication par Jarvis.
 
 ## Installer

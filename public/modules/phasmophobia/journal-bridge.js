@@ -84,3 +84,4 @@
   });
   window.addEventListener('hashchange', () => { if (dialog.open) dialog.close(); });
 })();
+

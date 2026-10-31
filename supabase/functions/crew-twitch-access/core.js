@@ -4,12 +4,13 @@ const PORTAL_URL = 'https://eodtxlhnfzyapkyvvxdi.supabase.co';
 const PORTAL_KEY = 'sb_publishable_HwLsESqtQglS7FoSTxBX-Q_GzxyLX_Z';
 // Domaine Cloudflare stable : la branche Production Pages est Phasmo V2, pas main.
 const PREVIEW = 'https://deadelustv.pages.dev';
+const OFFICIAL_ORIGINS = [PREVIEW, 'https://www.deadelustv.com', 'https://deadelustv.com'].join(',');
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export function createHandler(env, http = fetch) {
   const base = env.SUPABASE_URL || '';
   const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY || '';
   const publicKey = env.SUPABASE_ANON_KEY || env.SUPABASE_PUBLISHABLE_KEY || '';
-  const origins = (env.CREW_ALLOWED_ORIGINS || PREVIEW).split(',').map(x=>x.trim()).filter(Boolean);
+  const origins = (env.CREW_ALLOWED_ORIGINS || OFFICIAL_ORIGINS).split(',').map(x=>x.trim()).filter(Boolean);
   return async req => {
     const origin=req.headers.get('origin') || '';
     const headers={'Content-Type':'application/json;charset=utf-8','Cache-Control':'no-store','Vary':'Origin',
@@ -107,3 +108,4 @@ export function createHandler(env, http = fetch) {
     }catch(error){return respond(503,{error:['association_refused','identity_mismatch'].includes(error.message)?error.message:'verification_unavailable'});}
   };
 }
+

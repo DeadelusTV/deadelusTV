@@ -1,5 +1,7 @@
 # Phasmophobia V2 — suivi des travaux du carnet (branche de développement)
 
+**État au 31/10/2026 :** interface, listes et zoom validés par l'utilisatrice ; transfert du code vers main autorisé, avec remise à zéro explicite du brouillon actif (révision 14). Le nouveau carnet part sans contenu de test. Historique et médias privés préservés ; aucune publication officielle et verrou fermé. Voir [la livraison du 31 octobre](livraison-phasmo-main-20261031.md).
+
 **Statut : prototype en cours, non publié sur `main`.** Ce fichier rassemble les notes spécifiques de `developpement/phasmo-v2`, précédemment consignées dans son README, afin de ne pas les perdre lors de la synchronisation avec la documentation officielle. Il ne valide pas la publication du livre interactif.
 
 ## Phasmophobia — carnet interactif : remarques et travaux à reprendre (25/10/2026)
@@ -946,3 +948,4 @@ Aucune modification du brouillon, de l'historique, des médias, des verrous de p
 **À FAIRE PLUS TARD — NE PAS MODIFIER MAINTENANT :** après une dépublication, remplacer le message public d'attente « livre bientôt » par un message expliquant le problème technique et le retour prochain du journal (intention utilisateur : « pb technique journal revient »). Ce changement de texte est seulement consigné ; aucun texte public d'attente ou de dépublication n'est modifié dans cette livraison. Distinguer à terme première publication et retrait d'un journal déjà publié.
 
 Travail limité à developpement/phasmo-v2 ; aucune publication du carnet, modification de main, de contenu partagé, de médias ou du verrou de diffusion.
+

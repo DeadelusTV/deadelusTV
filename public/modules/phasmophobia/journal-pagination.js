@@ -95,3 +95,4 @@
  }
  window.PHASMO_JOURNAL_PAGINATION=Object.freeze({paginate,wrappedLines,measuredHeight,listLayout});
 })();
+

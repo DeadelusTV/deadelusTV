@@ -32,6 +32,8 @@ renderLayers=()=>{};renderLayerList=()=>{};renderEditor=()=>{};fillGroupEdit=()=
 vm.runInContext(main.replace(/\ninit\(\);/,expose),context);
 const t=context.window.test,C=context.window.PHASMO_JOURNAL_CUSTOM_LISTS,F=context.window.PHASMO_JOURNAL_FOLDERS,R=context.window.PHASMO_JOURNAL_RECORDS;
 const state=t.state(),initialElements=state.elements.length,records=state.records;
+assert.equal(state.records.length,0,'Nouveau carnet sans fiche de test');assert.equal(state.folders.length,0);assert.equal(state.fonts.length,0);assert.ok(Object.values(state.groups).every(group=>group.names.length===0));
+R.create(records,'entites','Obambo');R.create(records,'entites','Aswang');R.create(records,'cartes','Bleasdale');
 const obambo=records.find(row=>row.title==='Obambo'),aswang=records.find(row=>row.title==='Aswang'),map=records.find(row=>row.title==='Bleasdale');
 let checks=0;function check(condition,message){assert(condition,message);checks++;}
 const lists=[];
@@ -89,3 +91,4 @@ check(C.normalize([{label:'X',action:'javascript:alert(1)',entry:'x'.repeat(500)
  check(t.state().records.length===records.length,'Aucune fiche supprimée');
  console.log(checks+' contrôles réussis : trois listes, formulaires, vrais clics, catégories, liens stables, archives, conversion et import V7.');
 })().catch(error=>{console.error(error);process.exitCode=1;});
+

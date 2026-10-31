@@ -424,7 +424,7 @@ if(VIEWER_ONLY)document.documentElement.classList.add('journal-viewer');
 if(PUBLICATION_REMOTE_VIEW)document.documentElement.classList.add('journal-publication-preview');
 const $ = s => document.querySelector(s);
 const COPY = x => JSON.parse(JSON.stringify(x));
-const SAVE_KEY='deadelustv.phasmo.atelier.complet.v4_3';
+const SAVE_KEY='deadelustv.phasmo.atelier.complet.v7.20261031';
 const RECORDS=window.PHASMO_JOURNAL_RECORDS;
 const FOLDERS=window.PHASMO_JOURNAL_FOLDERS;
 const PAGINATION=window.PHASMO_JOURNAL_PAGINATION;
@@ -436,11 +436,11 @@ const OLDER_SAVE_KEY='deadelustv.phasmo.atelier.complet.v4_1';
 const OLDEST_SAVE_KEY='deadelustv.phasmo.atelier.complet.v4';
 const GROUP_ORDER=['entites','cartes','objets','equipements','divers'];
 const GROUPS={
- entites:{label:'Les Entités',names:['Aswang','Deildegast','Gallu','Djinn','Moroi','Obambo','Fantôme','Revenant','Thaye','Spectre','Banshee','Démon','Goryo','Kormos','Myling','Oni','Poltergeist','Ombre','Mimic','Yokai','Dayan','Deogen','Hantu','Cauchemar','Obake','Onryo','Raiju','Esprit','Jumeaux','Yurei']},
- cartes:{label:'Les Maps',names:['Asile','Grafton','Point Hope','Willow','Bleasdale','Grandcamp','Prison','École','Nellsdiner','Ridgeview','Edgefield','Petitcamp','Tanglewood']},
- objets:{label:'Les Objets Maudits',names:['Boîte à musique','Patte de singe','Miroir','Pentacle','Ouija','Tarot','Vaudou']},
- equipements:{label:'Les Équipements',names:['Briquet','Casque','Livre','Parabolique','Thermomètre','UV','Bougie','Crucifix','Enregistreur','Photo','Sel','Caméra','Détecteur','Encens','Pilule','Torche','Capteur sonore','DOTS','EMF','Spirit','Trépied']},
- divers:{label:'Divers',names:['Média photo','Moniteur activité','Chasse','Média sons','Moniteur santé','Média vidéo','Pense-bête']}
+ entites:{label:'Les Entités',names:[]},
+ cartes:{label:'Les Maps',names:[]},
+ objets:{label:'Les Objets Maudits',names:[]},
+ equipements:{label:'Les Équipements',names:[]},
+ divers:{label:'Divers',names:[]}
 };
 const FONTS=[['Caveat','Caveat (manuscrite)'],['Kalam','Kalam (lisible)'],['Patrick Hand','Patrick Hand'],['Gloria Hallelujah','Gloria Hallelujah'],['Indie Flower','Indie Flower'],['Architects Daughter','Architects Daughter'],['Comic Sans MS','Comic Sans MS (locale)'],['Segoe Print','Segoe Print (locale)'],['Georgia','Georgia']];
 const VIEWS=[{id:'sommaire',label:'Accueil · Sommaire'}];
@@ -470,15 +470,13 @@ function buildDefault(){
    items.push(layer(page,'heading','Titre de la catégorie',GROUPS[group].label,11,12,35,8,{size:72,align:'center'}));
    items.push(layer(page,'list','Liste cliquable des fiches','',10,23,38,63,{size:32,columns:3,source:group,listMode:'records'}));
     items.push(layer(page,'list','Liste des sous-catégories','',55,76,34,17,{size:24,columns:2,source:group,listMode:'folders'}));
-   items.push(layer(page,'heading','Notes / informations','Carnet de terrain',54,13,35,8,{size:62,align:'center'}));
-   items.push(layer(page,'text','Aide pour la liste','Choisis une fiche dans la liste à gauche.\n\nLes textes de ce modèle seront à remplir en ligne après validation du journal.',55,25,34,30,{size:28}));
+
    items.push(layer(page,'text','Retour au sommaire','← Sommaire général',55,65,33,7,{size:33,font:'Caveat',action:'home'}));
    const detail='detail:'+group;
    items.push(layer(detail,'heading','Nom de la fiche','{{nom}}',11,12,35,8,{size:72,align:'center'}));
-   items.push(layer(detail,'text','Espace illustration','[ Illustration à ajouter ]',16,34,28,18,{size:30,align:'center',opacity:65}));
+
    items.push(layer(detail,'text','Retour à la liste','← '+GROUPS[group].label,11,78,35,7,{size:32,font:'Caveat',action:'back'}));
-   items.push(layer(detail,'heading','Titre section droite','Notes de terrain',54,13,35,8,{size:62,align:'center'}));
-   items.push(layer(detail,'text','Contenu futur','Prototype de fiche.\n\nLes informations et illustrations réelles seront ajoutées plus tard depuis le formulaire d’administration en ligne.',54,25,34,39,{size:28}));
+
  }
  return {version:RECORD_SCHEMA,groups:COPY(GROUPS),folders:[],records:RECORDS.normalize(null,GROUPS,[]),elements:items,fonts:[],grid:false,zoom:100};
 }
@@ -1544,7 +1542,7 @@ function setup(){
 }
 async function init(){
  if(!PUBLICATION_REMOTE_VIEW)try{
-   const previous=localStorage.getItem(SAVE_KEY)||localStorage.getItem(OLD_SAVE_KEY)||localStorage.getItem(OLDER_SAVE_KEY)||localStorage.getItem(OLDEST_SAVE_KEY)||localStorage.getItem('deadelustv.phasmo.atelier.complet.v3');
+   const previous=localStorage.getItem(SAVE_KEY);
    if(previous){const data=JSON.parse(previous);if([2,3,4,5,6,RECORD_SCHEMA].includes(data?.version)&&Array.isArray(data.elements)){
      const tmp=new Blob([JSON.stringify(data)],{type:'application/json'});
      // Restore inline to avoid requiring File-compatible features in older browsers.
@@ -1598,5 +1596,6 @@ init();
 <script src="journal-publication-viewer.js" defer></script>
 <script src="journal-editor-simplified.js" defer></script>
 </body></html>
+
 
 

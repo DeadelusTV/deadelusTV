@@ -77,3 +77,9 @@ Après correction de la lecture de l’identité (fonction v4), le navigateur re
 - https://github.com/supabase/auth/blob/master/internal/api/mail.go
 - https://dev.twitch.tv/docs/api/reference/#get-moderated-channels
 - https://dev.twitch.tv/docs/authentication/validate-tokens/
+
+
+
+## Préparation de la production — 31 octobre 2026
+
+L'utilisatrice demande maintenant l'intégration du parcours Crew commun dans main. La fonction v5 ajoute les deux origines officielles aux valeurs par défaut, sans changer les rôles ni la vérification des identités. Le menu et l'application Crew sont transférés avec la livraison Phasmo. Les essais OAuth et Admin/Helper sur comptes réels restent à confirmer séparément des tests simulés ; aucun compte ou rôle n'est associé automatiquement par l'agent pendant le transfert. Voir `livraison-phasmo-main-20261031.md`.

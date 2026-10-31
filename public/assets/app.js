@@ -20,12 +20,12 @@ function route(focus=false){
   if(crewAuth)window.DEADELUSTV_CREW_AUTH=true;
   const isCrew=crewAuth||requested==='crewmongus'||requested.startsWith('crewmongus/');
   const isPhasmoNews=requested==='phasmophobia/news'||requested.startsWith('phasmophobia/news/');
-  // L'adresse historique cookies utilise la page commune.
   const legalRoute=requested==='politique-cookies'?'confidentialite':requested;
   const name=isCrew?'crewmongus':isCampaign?'pavillon-noir':isPhasmoNews?'phasmophobia':Object.hasOwn(routeTitles,legalRoute)?legalRoute:'accueil';
   const navName=isCampaign&&!isCrew?'jeux-de-role':name;
   $$('[data-page]').forEach(section=>section.hidden=section.dataset.page!==name);
- const communityBanners = $$('[data-community-banner]');
+  // Le bandeau Discord reste inchangé pour les pages existantes.
+const communityBanners = $$('[data-community-banner]');
 communityBanners.forEach(banner => {
   const target = banner.dataset.communityBanner;
   banner.hidden = target !== name;
@@ -155,3 +155,4 @@ window.addEventListener('resize', () => {
   document.addEventListener('visibilitychange', refreshYoutube);
   window.addEventListener('hashchange', refreshYoutube);
 })();
+

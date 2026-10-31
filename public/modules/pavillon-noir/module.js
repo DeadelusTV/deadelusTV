@@ -154,7 +154,7 @@ function renderHome() {
 
       <aside class="latest-card wood-panel" aria-label="Situation actuelle">
         <span class="panel-label">Situation actuelle</span>
-        <h2>En mer</h2>
+        <h2>A Saint-Pierre</h2>
         <p>${escapeHtml(data.site.situation)}</p>
         <div class="mini-divider"></div>
         <span class="panel-label">Dernière entrée</span>

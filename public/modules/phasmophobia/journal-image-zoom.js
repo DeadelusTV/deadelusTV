@@ -89,3 +89,4 @@
  }
  window.PHASMO_JOURNAL_IMAGE_ZOOM=Object.freeze({enabled,attach});
 })();
+

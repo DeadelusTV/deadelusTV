@@ -290,3 +290,4 @@
   if (authQuery.get('crew_auth') !== '1' && (returning || authQuery.has('code'))) refresh();
   window.DEADELUSTV_AUTH = Object.freeze({ getClient, refresh, signIn, signOut, getCrewAccess, canManageNews, canManageJournal });
 })();
+

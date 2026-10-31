@@ -130,7 +130,7 @@
   try{
    const latest=await request('status');
    official=latest;
-   publish.disabled=latest.locked||latest.reserved||!latest.candidate;
+   publish.disabled=latest.locked||latest.reserved;
    unpublish.disabled=latest.official?.visibility!=='live';
    note.textContent=latest.locked
     ?'Publication publique momentanément verrouillée. Le brouillon et son aperçu restent utilisables.'
@@ -170,7 +170,7 @@
  });});
  publish.addEventListener('click',()=>{void run(async()=>{
   const check=await request('status');
-  if(check.locked||check.reserved||!check.candidate)
+  if(check.locked||check.reserved)
    throw Error('Publication publique verrouillée : aucune mise en ligne possible.');
   if(!confirm('Publier le DERNIER BROUILLON ENREGISTRÉ ? Les modifications non sauvegardées ne seront pas incluses.'))return;
   if(!confirm('Je confirme avoir les droits de diffusion sur les textes, images et polices du carnet. Cette publication sera visible par tous.'))return;
@@ -221,3 +221,4 @@
  });
  void refreshOfficial();
 })();
+

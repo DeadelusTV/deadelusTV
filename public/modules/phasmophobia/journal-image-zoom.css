@@ -14,3 +14,4 @@ dialog.journal-image-dialog{width:min(96vw,1400px);height:min(94dvh,1000px);max-
 .journal-image-canvas img{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:contain;user-select:none;-webkit-user-select:none}
 .journal-image-help{flex:none;margin:0;padding:9px 12px;border-top:1px solid #5c4c35;color:#c7bba8;font:12px/1.4 Arial,sans-serif}
 @media(max-width:600px){.journal-image-toolbar{gap:5px;padding:8px}.journal-image-toolbar h2{flex-basis:100%;font-size:15px}.journal-image-toolbar button{padding:6px 9px}.journal-image-help{font-size:11px}}
+

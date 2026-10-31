@@ -3082,3 +3082,4 @@ async function startApp(){
   return {ready,show:showCrewView,resize:scheduleFrontStatFit,
     destroy(){window.removeEventListener('deadelustv:auth-change',onPortalAuthChange);++authRequest;clearTimeout(crewAuthTimer);crewAuthSubscription?.data?.subscription?.unsubscribe();supabaseClient?.auth.stopAutoRefresh();window.removeEventListener('resize',scheduleFrontStatFit);}};
 };
+

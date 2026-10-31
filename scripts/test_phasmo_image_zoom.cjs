@@ -57,3 +57,4 @@ check(!t.makeLayer({...layer,zoomable:false}).attributes['data-image-zoom'],'Ref
 check(t.makeLayer({...layer,locked:true}).attributes['data-image-zoom']==='true','Verrouiller le déplacement n’empêche pas la lecture');
 const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(match=>match[1]);check(ids.length===new Set(ids).size,'IDs HTML uniques');
 console.log(checks+' contrôles réussis : image classique / filigrane, édition / lecture, clic, clavier, zoom, dézoom, limites et fermeture.');
+

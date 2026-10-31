@@ -6,7 +6,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2.76.1';
  */
 const PROJECT_URL = Deno.env.get('SUPABASE_URL') || '';
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
-const ALLOWED_ORIGIN = 'https://deadelustv.pages.dev';
+const ALLOWED_ORIGINS = new Set(['https://deadelustv.pages.dev','https://www.deadelustv.com','https://deadelustv.com']);
 const PRIVATE_BUCKET = 'phasmo-journal-draft-assets';
 const PUBLIC_BUCKET = 'phasmo-journal-public-assets';
 const PRIVATE_REF = /^journal-storage:\/\/(images|fonts)\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/([a-f0-9]{64})\.(webp|png|jpg|gif|ttf|otf|woff|woff2)$/;
@@ -19,11 +19,7 @@ const MAX_BYTES = 6_000_000;
 
 type Json = Record<string,unknown>;
 type Asset = {kind:'images'|'fonts';source:string;path:string;hash:string;extension:string;mime:string;size:number};
-const allow = {'Access-Control-Allow-Origin':ALLOWED_ORIGIN,
-  'Access-Control-Allow-Headers':'authorization, apikey, content-type, x-client-info',
-  'Access-Control-Allow-Methods':'POST,OPTIONS','Vary':'Origin'};
-const answer=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,
- headers:{...allow,'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'}});
+
 
 function parseMedia(payload:Json){
   if(payload.version!==7||!Array.isArray(payload.elements)||!Array.isArray(payload.fonts)||
@@ -85,10 +81,18 @@ function publishedPayload(payload:Json,assets:Asset[],release:number):Json {
 }
 function errMessage(err:unknown){return err instanceof Error?err.message:'Erreur de publication. Réessaie.';}
 Deno.serve(async req=>{
+  const origin=req.headers.get('Origin')||'';
+  const allow={
+    ...(ALLOWED_ORIGINS.has(origin)?{'Access-Control-Allow-Origin':origin}:{}),
+    'Access-Control-Allow-Headers':'authorization, apikey, content-type, x-client-info',
+    'Access-Control-Allow-Methods':'POST,OPTIONS','Vary':'Origin'
+  };
+  const answer=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,
+    headers:{...allow,'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'}});
+  if(!ALLOWED_ORIGINS.has(origin))return answer({error:'Origine non autorisée.'},403);
   if(req.method==='OPTIONS')return new Response(null,{status:204,headers:allow});
   if(req.method!=='POST')return answer({error:'Méthode non autorisée.'},405);
   // Restrict browser origin in addition to JWT verification and DB permission check.
-  if(req.headers.get('Origin')!==ALLOWED_ORIGIN)return answer({error:'Origine non autorisée.'},403);
   if(!SERVICE_KEY||!PROJECT_URL)return answer({error:'Service Supabase indisponible.'},503);
   const authorization=req.headers.get('Authorization')||'';
   if(!authorization.startsWith('Bearer '))return answer({error:'Connexion Twitch requise.'},401);
@@ -262,3 +266,4 @@ Deno.serve(async req=>{
     return answer({error:errMessage(err)},422);
   }
 });
+

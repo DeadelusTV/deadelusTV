@@ -76,3 +76,4 @@
  run.addEventListener('click',()=>execute('normal'));
  fault.addEventListener('click',()=>execute('fault'));
 })();
+
