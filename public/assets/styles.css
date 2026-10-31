@@ -538,3 +538,99 @@ dialog{color:var(--text);background:#19191a;border:1px solid #59513e;border-radi
     margin-top: 28px;
   }
 }
+
+
+
+/* Vignette TikTok de l'accueil uniquement. Les autres illustrations restent intactes. */
+.tiktok-only .tiktok-motion {
+  isolation: isolate;
+  /* Le fond cuir conserve son format vertical : le noir complète les côtés. */
+  background-color: #050505;
+  background-image: url('tiktok-fond.webp');
+  background-repeat: no-repeat;
+  background-size: auto 100%;
+  background-position: center;
+}
+.tiktok-only .tiktok-motion::after { display: none; }
+.tiktok-only .tiktok-motion > span {
+  position: absolute;
+  /* Calques 9:16 au centre du panneau élargi : aucun étirement horizontal. */
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  right: auto;
+  height: 100%;
+  width: auto;
+  aspect-ratio: 9 / 16;
+  translate: -50% 0;
+  display: block;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+}
+@media (min-width: 1101px) {
+  /* Ne pas agrandir la carte ni rogner la zone de texte sur les écrans étroits. */
+  .latest .tiktok-only .short-card .art {
+    width: min(170px, 39%);
+    aspect-ratio: auto;
+  }
+}
+.tiktok-only .tiktok-motion__halo {
+  /* Lumière diffuse derrière le blason, indépendante du glitch TikTok. */
+  background-image: radial-gradient(ellipse 54% 31% at 50% 64%,
+    rgba(229, 174, 81, .72) 0%, rgba(205, 133, 35, .46) 38%,
+    rgba(166, 90, 20, .20) 66%, transparent 100%);
+  animation: tiktok-deadelus-halo 5.2s ease-in-out infinite;
+}
+.tiktok-only .tiktok-motion__deadelus {
+  background-image: url('tiktok-deadelus.webp');
+  /* Le contour lumineux reste visible même si le blason masque le halo de fond. */
+  animation: tiktok-deadelus-glow 5.2s ease-in-out infinite;
+}
+.tiktok-only .tiktok-motion__logo {
+  background-image: url('tiktok-logo.webp');
+  animation: tiktok-logo-glitch 8s linear infinite;
+}
+.tiktok-only .tiktok-motion__echo {
+  background-image: url('tiktok-logo.webp');
+  opacity: 0;
+  filter: drop-shadow(1px 0 #27f4ee) drop-shadow(-1px 0 #fe2c55);
+  animation: tiktok-logo-echo 8s linear infinite;
+}
+@keyframes tiktok-deadelus-halo {
+  0%, 100% { opacity: .68; transform: scale(.98); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+@keyframes tiktok-deadelus-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 3px rgba(246, 190, 83, .40))
+            drop-shadow(0 0 7px rgba(209, 133, 27, .22));
+  }
+  50% {
+    filter: drop-shadow(0 0 5px rgba(255, 207, 104, .90))
+            drop-shadow(0 0 13px rgba(224, 144, 26, .62));
+  }
+}
+@keyframes tiktok-logo-glitch {
+  0%, 86%, 88%, 90%, 100% { transform: translate(0,0); }
+  87% { transform: translate(1px,-.5px); }
+  89% { transform: translate(-1px,.5px); }
+}
+@keyframes tiktok-logo-echo {
+  0%, 85%, 90%, 100% { opacity: 0; transform: translate(0,0); }
+  86%, 88% { opacity: .24; transform: translate(-1.5px,.5px); }
+  87%, 89% { opacity: .12; transform: translate(1.5px,-.5px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tiktok-only .tiktok-motion__halo,
+  .tiktok-only .tiktok-motion__deadelus,
+  .tiktok-only .tiktok-motion__logo,
+  .tiktok-only .tiktok-motion__echo { animation: none; }
+  .tiktok-only .tiktok-motion__halo { opacity: .85; transform: none; }
+  .tiktok-only .tiktok-motion__deadelus {
+    filter: drop-shadow(0 0 4px rgba(246, 190, 83, .65))
+            drop-shadow(0 0 9px rgba(209, 133, 27, .38));
+  }
+  .tiktok-only .tiktok-motion__echo { opacity: 0; }
+}

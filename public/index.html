@@ -9,11 +9,16 @@
 <title>DeadelusTV — Le repaire de la communauté</title>
 <link rel="icon" href="assets/logo-chaine.png" type="image/png">
 <link rel="stylesheet" href="assets/styles.css">
+<link rel="stylesheet" href="assets/site-auth.css">
 <link rel="stylesheet" href="assets/legal.css">
 <link rel="stylesheet" href="modules/phasmophobia/style.css">
 <link rel="stylesheet" href="modules/phasmophobia/news.css?v=20261028.9">
+<link rel="stylesheet" href="modules/phasmophobia/journal.css">
+<link rel="stylesheet" href="modules/phasmophobia/journal-embed.css">
 <script src="modules/phasmophobia/module.js" defer></script>
+<script src="modules/phasmophobia/journal-bridge.js" defer></script>
 <script src="modules/phasmophobia/news.js?v=20261028.9" defer></script>
+<script src="assets/site-auth.js" defer></script>
 <script src="modules/phasmophobia/news-access.js" defer></script>
 <link rel="stylesheet" href="assets/local-fonts.css">
 <link rel="stylesheet" href="assets/twitch-neon.css">
@@ -55,6 +60,26 @@
 <a href="#crewmongus" data-nav="crewmongus">Crewmong Us</a>
 <a href="#jeux-de-role" data-nav="jeux-de-role">Pavillon Noir</a>
  </nav>
+  <div class="site-account" id="site-account">
+    <button id="site-account-toggle" class="site-account-toggle" type="button"
+            aria-label="Mon compte" aria-controls="site-account-menu" aria-expanded="false">
+      <svg class="icon" aria-hidden="true"><use href="#i-twitch"/></svg>
+      <span class="site-account-toggle-label">Compte</span>
+    </button>
+    <div id="site-account-menu" class="site-account-menu" hidden>
+      <p class="site-account-title">Mon compte</p>
+      <p class="site-account-status" id="site-account-status" aria-live="polite">Non connecté</p>
+      <a id="site-account-news-link" class="site-account-link"
+         href="modules/phasmophobia/editor-private.html" hidden>Gérer les actualités Phasmo</a>
+      <a id="site-account-journal-link" class="site-account-link"
+         href="modules/phasmophobia/journal-editor.html" hidden>Gérer le carnet</a>
+      <a id="site-account-crew-link" class="site-account-link"
+         href="#crewmongus/admin" hidden>Gestion Crew’mong Us</a>
+      <button id="site-account-signin" class="site-account-action" type="button">Connexion Twitch</button>
+      <button id="site-account-signout" class="site-account-action" type="button" hidden>Se déconnecter</button>
+      <p id="site-account-note" class="site-account-note" role="status" hidden></p>
+    </div>
+  </div>
   <button class="menu-toggle" aria-expanded="false" aria-controls="main-nav" aria-label="Ouvrir le menu"><svg class="icon stroke" aria-hidden="true"><use href="#i-menu"/></svg></button>
 </div></header>
 <main class="container" id="main-content" tabindex="-1">
@@ -108,7 +133,12 @@
     </article>
     <div class="shorts-grid tiktok-only">
      <a class="short-card" data-link="tiktok" href="https://www.tiktok.com/@deadelustv" target="_blank" rel="noopener noreferrer">
-      <div class="art art-tiktok" aria-hidden="true"></div>
+      <div class="art art-tiktok tiktok-motion" aria-hidden="true">
+        <span class="tiktok-motion__halo"></span>
+        <span class="tiktok-motion__deadelus"></span>
+        <span class="tiktok-motion__logo"></span>
+        <span class="tiktok-motion__echo"></span>
+       </div>
       <div class="short-body"><span class="platform"><svg class="icon tiktok" aria-hidden="true"><use href="#i-tiktok"/></svg>TikTok</span><h3>Dernière vidéo Tiktok</h3></div>
      </a>
     </div>
@@ -220,34 +250,35 @@
       </div>
       <a class="btn btn-outline phasma-news-official" href="https://www.kineticgames.co.uk/news" target="_blank" rel="noopener noreferrer">Actualités officielles <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a>
      </div>
-     <div class="phasma-news-editor-access" id="phasma-news-editor-access" hidden aria-live="polite">
+     <div class="phasma-news-editor-access" id="phasma-news-editor-access" hidden>
        <a class="btn btn-outline" id="phasma-news-editor-link"
           href="modules/phasmophobia/editor-private.html" hidden>Gérer les actualités</a>
-       <button class="phasma-news-editor-login" id="phasma-news-editor-login"
-          type="button" hidden>Connexion Twitch <span aria-hidden="true">↗</span></button>
-       <button class="phasma-news-editor-logout" id="phasma-news-editor-logout" type="button" hidden>Se déconnecter</button>
-       <p class="phasma-news-editor-note" id="phasma-news-editor-note" hidden></p>
-      </div>
-      <div id="phasma-news-feed" class="phasma-news-feed" hidden aria-label="Futures actualités traduites"></div>
+     </div>
+     <div id="phasma-news-feed" class="phasma-news-feed" hidden aria-label="Futures actualités traduites"></div>
     </div>
    </details>
    <details class="phasma-resource" data-phasma-section="livre">
-     <summary><span class="phasma-resource-number">02 / LE CARNET</span><span class="phasma-resource-summary"><strong>Les Tips</strong><small>A venir</small></span><svg class="icon stroke phasma-resource-chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary>
-     <div class="phasma-resource-body">
-<section class="phasma-journal-section" aria-labelledby="phasma-journal-title">
+    <summary><span class="phasma-resource-number">02 / LE CARNET</span><span class="phasma-resource-summary"><strong>Livre</strong><small>Le journal interactif des enquêteurs</small></span><svg class="icon stroke phasma-resource-chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary>
+    <div class="phasma-resource-body">
+ <section class="phasma-journal-section" aria-labelledby="phasma-journal-title">
   <div class="phasma-journal-copy">
    <span class="eyebrow">LE JOURNAL DES ENQUÊTEURS</span>
    <h2 id="phasma-journal-title">Le carnet des enquêteurs</h2>
-   <p>Les informations et astuces partagées sur le Discord pourront bientôt se retrouver ici, dans un carnet à feuilleter directement sur le site.</p>
-   <div class="phasma-journal-topics" aria-label="Rubriques prévues du carnet">
-    <span>Entités</span><span>Maps</span><span>Équipements</span><span>Conseils</span>
+   <p>Feuillette les rubriques du carnet. Les fiches et astuces du bot Discord seront ajoutées au fur et à mesure de leur validation.</p>
+   <div class="phasma-journal-topics" aria-label="Ouvrir une rubrique du carnet">
+    <button type="button" data-phasma-open-category="entites">Entités</button>
+    <button type="button" data-phasma-open-category="cartes">Maps</button>
+    <button type="button" data-phasma-open-category="objets">Objets maudits</button>
+    <button type="button" data-phasma-open-category="equipements">Équipements</button>
+    <button type="button" data-phasma-open-category="divers">Divers</button>
    </div>
-   <p class="phasma-journal-note">Les pages interactives sont encore à construire.</p>
+   <button class="btn btn-gold phasma-journal-open" type="button" data-phasma-open>Ouvrir le carnet</button>
+   <p class="phasma-journal-note">Sommaire interactif : les fiches détaillées seront ajoutées après vérification.</p>
   </div>
-  <div class="phasma-journal-art" role="img" aria-label="Carnet noir Phasmophobia posé sur un bureau sombre, éclairé par une lampe, avec des onglets Entités, Cartes, Équipements et Conseils."></div>
+  <button type="button" class="phasma-journal-art" data-phasma-open aria-label="Ouvrir le carnet des enquêteurs"></button>
  </section>
-     </div>
-    </details>
+    </div>
+   </details>
     <details class="phasma-resource" data-phasma-section="tutos">
     <summary><span class="phasma-resource-number">03 / LES VIDÉOS</span><span class="phasma-resource-summary"><strong>Tutos</strong><small>Les Shorts de DeadelusTV</small></span><svg class="icon stroke phasma-resource-chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary>
     <div class="phasma-resource-body">
@@ -277,33 +308,194 @@
 <section class="page legal-page" id="page-mentions-legales" data-page="mentions-legales" hidden aria-labelledby="legal-title">
  <div class="breadcrumb"><a href="#accueil">Accueil</a><span>/</span><span>Mentions légales</span></div>
  <div class="legal-heading"><span class="eyebrow">INFORMATIONS LÉGALES</span><h1 id="legal-title" tabindex="-1">Mentions légales</h1></div>
- <!-- DÉBUT DU CONTENU À FOURNIR PAR DEADELUS : remplacer le bloc ci-dessous, puis enlever data-legal-pending -->
- <!-- À traiter dans le texte officiel : éditeur et hébergeur, propriété intellectuelle, créations originales, marques/illustrations/vidéos de tiers et autorisations correspondantes. -->
- <article class="legal-document" data-legal-pending="true">
-  <h2>Mentions légales en cours de publication</h2>
-  <p>Cette rubrique est en préparation. Les mentions légales complètes seront ajoutées après validation par l’éditeur du site.</p>
- </article>
- <!-- FIN DU CONTENU À FOURNIR PAR DEADELUS -->
+ <article class="legal-document">
+<h2>Éditeur du site</h2>
+<p>Le site <strong>DeadelusTV</strong>, accessible à l’adresse <a href="https://deadelustv.com" target="_blank" rel="noopener noreferrer">https://deadelustv.com</a>, est édité par :</p>
+<p><strong>Rémy GRAFFEO — Entrepreneur individuel (EI)</strong>, exerçant sous le nom commercial <strong>DeadelusTV</strong>, au régime de la micro-entreprise.</p>
+<ul>
+<li>Adresse de domiciliation : <strong>Vernouillet, 78540 France</strong>.</li>
+<li>SIREN : <strong>942 724 063</strong>.</li>
+<li>SIRET : <strong>942 724 063 00014</strong>.</li>
+<li>Immatriculation au registre national des entreprises (RNE) : <strong>942 724 063</strong>.</li>
+<li>Adresse électronique : <strong><a href="mailto:rg.twitch@hotmail.com">rg.twitch@hotmail.com</a></strong>.</li>
+<li>Téléphone : <strong>06 38 43 14 09</strong>.</li>
+</ul>
+<h2>Direction de la publication</h2>
+<p>Le directeur de la publication est <strong>Rémy GRAFFEO</strong>.</p>
+<h2>Hébergement du site</h2>
+<h3>OVH SAS</h3>
+<p>2 rue Kellermann, 59100 Roubaix, France.</p>
+<p>Téléphone : <strong>+33 9 72 10 10 07</strong>.</p>
+<p>Site internet : <a href="https://www.ovhcloud.com/fr/" target="_blank" rel="noopener noreferrer">https://www.ovhcloud.com/fr/</a></p>
+<h2>Prestataire de stockage de données</h2>
+<p>Les services de base de données et de stockage de fichiers utilisés par le site sont fournis par <strong>Supabase</strong>.</p>
+<h3>Supabase Pte. Ltd.</h3>
+<p>65 Chulia Street, #38-02/03, OCBC Centre, Singapore 049513, Singapour.</p>
+<p>Site internet : <a href="https://supabase.com/" target="_blank" rel="noopener noreferrer">https://supabase.com/</a></p>
+<h2>Contact et données personnelles</h2>
+<p>Pour toute question concernant le site ou ses contenus, écrire à <strong><a href="mailto:rg.twitch@hotmail.com">rg.twitch@hotmail.com</a></strong>.</p>
+<p>Les informations relatives au traitement des données personnelles et aux traceurs figurent dans la page <strong>Confidentialité et cookies</strong>, accessible depuis le pied de page du site.</p>
+</article>
 </section>
 <section class="page legal-page" id="page-confidentialite" data-page="confidentialite" hidden aria-labelledby="privacy-title">
- <div class="breadcrumb"><a href="#accueil">Accueil</a><span>/</span><span>Confidentialité</span></div>
- <div class="legal-heading"><span class="eyebrow">PROTECTION DES DONNÉES</span><h1 id="privacy-title" tabindex="-1">Politique de confidentialité</h1></div>
- <!-- DÉBUT DU CONTENU À FOURNIR PAR DEADELUS : remplacer le bloc ci-dessous, puis enlever data-legal-pending -->
- <article class="legal-document" data-legal-pending="true">
-  <h2>Politique de confidentialité en cours de publication</h2>
-  <p>Les lecteurs intégrés Twitch et YouTube nécessitent votre accord, modifiable à tout moment dans « Gestion des cookies ». Les informations de confidentialité complètes seront publiées après validation.</p>
- </article>
- <!-- FIN DU CONTENU À FOURNIR PAR DEADELUS -->
+ <div class="breadcrumb"><a href="#accueil">Accueil</a><span>/</span><span>Confidentialité et cookies</span></div>
+ <div class="legal-heading"><span class="eyebrow">PROTECTION DES DONNÉES</span><h1 id="privacy-title" tabindex="-1">Confidentialité et cookies</h1></div>
+ <!-- Politique confidentialité et cookies validée et intégrée. -->
+ <article class="legal-document">
+<p class="legal-version"><strong>Version 1.0 du 26 octobre 2026</strong></p>
+<h2>1. Responsable et périmètre</h2>
+<p>Le responsable des traitements décrits ici est <strong>Rémy GRAFFEO, entrepreneur individuel — DeadelusTV</strong>, domicilié <strong>78540 Vernouillet, France</strong>.</p>
+<p>Contact pour les données personnelles : <strong><a href="mailto:rg.twitch@hotmail.com">rg.twitch@hotmail.com</a></strong>.</p>
+<p>Cette politique décrit les traitements liés au portail. Une fonctionnalité annoncée comme prochaine ne donne pas lieu, du seul fait de son annonce, à la collecte des données prévues pour son fonctionnement.</p>
+<p>Un pseudo Twitch et les données de jeu qui lui sont rattachées peuvent identifier une personne : ils sont donc traités comme des données personnelles, même lorsqu’ils sont publics.</p>
+<h2>2. Données, usages et fondements</h2>
+<p>Voici une liste par catégorie des informations recueillis ainsi que la raison de leurs utilisations</p>
+<p><strong>Compte et collection TCG</strong>: Identifiant Twitch, adresse mail, pseudo, identifiant interne, données nécessaires à la session ; cartes, quantités, raretés, boosters, récompenses et historique utile</p>
+<p>Fournir le compte et le jeu demandés : exécution des conditions du service, pour les données objectivement nécessaires.</p>
+<p><strong>Comparaisons publiques facultatives TCG</strong>: Pseudo et indicateurs choisis, par exemple nombre de boosters ouverts ou de cartes légendaires</p>
+<p>Affichage communautaire avec le consentement distinct de la personne ; retrait possible sans fermer la collection personnelle.</p>
+<p><strong>Bingophobia et événements</strong>: Identifiant Twitch, pseudo, participation, validation d’un bingo, résultat du tirage, récompense et état d’attribution</p>
+<p>Gérer la participation demandée et délivrer la récompense : exécution des règles de l’activité.</p>
+<p><strong>Votes</strong>: Identifiant/pseudo, choix exprimé et éléments nécessaires pour limiter les votes selon les règles annoncées</p>
+<p>Enregistrer la participation demandée. Les résultats sont présentés globalement ; afficher les votes individuels associés aux pseudos nécessite un choix distinct.</p>
+<p><strong>Crewmongus</strong>: Pseudo, lien Twitch, éventuels alias/avatar autorisés, résultats et statistiques de parties</p>
+<p>Analyse et publication communautaire prévues dans l’accord du participant ; consentement pour les usages couverts par cet accord.</p>
+<p><strong>Pavillon Noir</strong>: Pseudo du participant, lien Twitch, association avec son personnage et crédits autorisés</p>
+<p>Présenter les participants et leur contribution à la campagne ; consentement à cette présentation. Le contenu fictif ne constitue pas une description de leur vie réelle.</p>
+<p><strong>Contact</strong>: E-mail, message et éléments volontairement adressés au site</p>
+<p>Répondre aux demandes : intérêt légitime à échanger avec les personnes qui nous sollicitent.</p>
+<p><strong>Gestion et sécurité</strong>: Identifiants de gestion, rôles, données de connexion et traces techniques effectivement nécessaires</p>
+<p>Administrer le site et prévenir les abus : intérêt légitime, avec limitation des accès et des données.</p>
+<p><strong>Soutien financier, lorsqu’il est proposé</strong>: Informations nécessaires au paiement et à son suivi, selon le prestataire : identité ou pseudo du payeur, e-mail, montant, date, référence et statut de transaction</p>
+<p>Exécuter l’opération demandée, traiter les réclamations et respecter les obligations comptables ou fiscales applicables.</p>
+<p>Les données proviennent de la personne, de Twitch lors de la connexion, des actions dans les jeux et événements, ou des fichiers de parties et contributions transmis par les participants. Un import provenant d’une activité déjà organisée sur Twitch reste soumis aux mêmes règles d’information.</p>
+<p>Les informations indispensables à une collection ou à l’attribution d’un gain sont nécessaires à ces fonctions. Leur absence peut empêcher la fourniture de la fonction concernée. Les publications facultatives et le soutien financier n’en sont pas une condition.</p>
+<h2>3. Visibilité et destinataires</h2>
+<p>L’accès administratif est limité à Rémy et aux personnes habilitées à assurer le développement ou la gestion, dans la mesure de leurs besoins.</p>
+<p>Les prestataires techniques peuvent traiter les données pour les services qui leur sont confiés, notamment OVHcloud et Supabase. La messagerie utilisée pour les contacts et, le cas échéant, le prestataire de paiement sont également concernés.</p>
+<p>Les visiteurs voient les contenus, statistiques et résultats expressément destinés à être publics. Une publication publique peut être consultée par des personnes extérieures à la communauté et éventuellement indexée par des moteurs de recherche. Les données d’authentification et les informations de paiement ne font pas partie des informations destinées à être publiées.</p>
+<p>Les compteurs publics facultatifs TCG sont activés par un choix distinct. Pour chaque événement, l’étendue de l’annonce des gagnants est précisée avant la participation ; aucun historique détaillé des participations ou des votes individuels n’est publié automatiquement du seul fait d’une connexion.</p>
+<h2>4. Lieux de traitement</h2>
+<p>Le site utilise un VPS OVHcloud situé au Royaume-Uni, selon les informations de l’hébergement, et les services externes de Supabase.</p>
+<h2>5. Conservation</h2>
+<p>Les données sont conservées pendant la période nécessaire à chaque usage, avec suppression ou anonymisation effective à son terme. Supprimer seulement le pseudo ne suffit pas si les autres informations permettent encore d’identifier la personne.</p>
+<p><strong>Pare-feu UFW : adresses IP, ports, dates et connexions bloquées</strong> : conservation de <strong>28 archives quotidiennes</strong>, en plus du fichier en cours, certaines traces pouvant également être conservées dans le journal central selon sa propre durée.</p>
+<p><strong>Journaux système : événements du système et du noyau, authentifications, tâches automatiques et erreurs techniques</strong> : conservation de <strong>28 archives quotidiennes par journal</strong>, en plus du fichier en cours.</p>
+<p><strong>Journal central : événements de sécurité, erreurs et messages de Caddy et des services, pouvant contenir des adresses IP ou des informations de requête</strong> : rétention paramétrée à <strong>178 jours</strong>, avec rotation au maximum toutes les <strong>24 heures</strong> et nettoyage quotidien, les limites de taille et de nombre de fichiers pouvant entraîner une suppression plus tôt.</p>
+<p><strong>Synchronisation de l’heure et informations techniques Landscape</strong> : conservation de <strong>28 archives quotidiennes par journal</strong>, en plus du fichier en cours.</p>
+<p><strong>Rapports d’erreur Apport et journal de démarrage</strong> : conservation de <strong>7 archives quotidiennes par journal</strong>, en plus du fichier en cours.</p>
+<p><strong>Historique des connexions au serveur et tentatives échouées : comptes techniques, adresses de connexion et horodatages</strong> : conservation de <strong>30 archives quotidiennes par fichier</strong>, en plus du fichier en cours ; ces informations concernent les accès au serveur et non les visites ordinaires du site.</p>
+<p><strong>Dernière connexion enregistrée pour chaque compte technique du serveur</strong> : effacement des enregistrements datant de plus de <strong>178 jours</strong>, lors du nettoyage quotidien.</p>
+<p><strong>Installations, mises à jour et maintenance Ubuntu : opérations effectuées, dates et résultats techniques</strong> : conservation de <strong>178 archives quotidiennes au maximum par journal</strong>, avec purge des archives dépassant le seuil de <strong>178 jours</strong>.</p>
+<p><strong>Initialisation du VPS — cloud-init : opérations de configuration et messages techniques</strong> : conservation de <strong>178 archives quotidiennes au maximum</strong>, avec purge des archives dépassant <strong>178 jours</strong> et seuil supplémentaire de rotation de <strong>1 Mio</strong>, évalué lors des vérifications de rotation.</p>
+<p><strong>Copies des messages de démarrage du noyau — dmesg</strong> : suppression des fichiers recensés dont la dernière modification remonte à plus de <strong>178 jours</strong>, lors du nettoyage quotidien.</p>
+<p><strong>Statistiques techniques du serveur : utilisation du processeur, de la mémoire, du disque et activité système</strong> : suppression des fichiers recensés dont la dernière modification remonte à plus de <strong>178 jours</strong>, le nettoyage propre à l’outil pouvant intervenir plus tôt.</p>
+<p><strong>Données du TCG dans Supabase : pseudo Twitch, e-mail de contact, collection de cartes, progression et statistiques nécessaires au jeu</strong> : après <strong>deux ans sans activité volontaire</strong>, envoi d’un e-mail annonçant une <strong>suppression 30 jours plus tard</strong>, annulée par une reconnexion volontaire ou une confirmation du maintien du compte qui renouvelle le délai de deux ans, avec possibilité de suppression anticipée sur demande.</p>
+<p><strong>Sauvegardes et snapshots OVH, sauvegardes Supabase</strong>: conservation de <strong>7 archives quotidiennes par journal</strong></p>
+<p><strong>Préférences de consentement aux contenus externes</strong>: les choix d'acceptation ou de refus des contenus externes sont conservés dans le stockage local du navigateur pendant une durée maximale de 180 jours à compter de leur enregistrement. Le visiteur peut les modifier ou retirer son consentement à tout moment depuis « Gestion des cookies ».</p>
+<p><strong>Autres activités : Crewmongus, Pavillon Noir</strong>: après <strong>deux ans sans activité volontaire</strong>, annulée par une reconnexion volontaire qui renouvelle le délai de deux ans, avec possibilité de suppression anticipée sur demande.</p>
+<p>Une conservation séparée de certains éléments peut être nécessaire pour une obligation légale ou un litige identifié. Elle ne justifie pas de maintenir l’ensemble d’un profil en accès courant ou public.</p>
+<h2>6. Services externes, cookies et préférences de confidentialité</h2>
+<h3>Gestion des consentements</h3>
+<p>DeadelusTV propose un gestionnaire centralisé de préférences permettant aux visiteurs d'autoriser ou de refuser le chargement de certains contenus externes susceptibles d'utiliser des cookies ou d'autres traceurs.</p>
+<p>Les choix sont indépendants pour les services Twitch et YouTube. Trois possibilités sont proposées : « Tout accepter », « Tout refuser » et « Personnaliser ».</p>
+<p>Ces préférences s'appliquent aux rubriques du portail DeadelusTV accessibles sur le même domaine. Elles ne sont pas automatiquement partagées avec des sites hébergés sur d'autres domaines.</p>
+<p>Les choix sont conservés dans le stockage local du navigateur pendant une durée maximale de 180 jours à compter de leur enregistrement. Ils peuvent être modifiés à tout moment grâce au bouton « Gestion des cookies », accessible depuis le pied de page.</p>
+<p>Le refus des contenus externes ne bloque pas la consultation du site.</p>
+<h3>Lecteur Twitch</h3>
+<p>Lorsque le direct est disponible, le lecteur Twitch intégré est chargé uniquement après autorisation du visiteur.</p>
+<p>Le lecteur peut entraîner des échanges de données avec Twitch ainsi que l'utilisation de cookies ou d'autres traceurs par ce service.</p>
+<p>Le retrait du consentement entraîne la désactivation du lecteur intégré. Il ne garantit toutefois pas l'effacement des cookies déjà déposés ou des données précédemment traitées par Twitch.</p>
+<p>Politique de confidentialité : <a href="https://legal.twitch.com/fr-fr/legal/privacy-notice/" target="_blank" rel="noopener noreferrer">https://legal.twitch.com/fr-fr/legal/privacy-notice/</a></p>
+<h3>Lecteurs YouTube</h3>
+<p>Le portail prévoit l'affichage de vidéos YouTube intégrées, notamment dans les rubriques d'actualités et de tutoriels.</p>
+<p>Les lecteurs utilisant le dispositif commun de consentement ne sont activés qu'après autorisation de YouTube par le visiteur. Les intégrations concernées utilisent le domaine youtube-nocookie.com, dont l'emploi ne garantit pas l'absence de tout cookie ou autre stockage.</p>
+<p>En cas de refus, les lecteurs concernés restent désactivés. Les liens ordinaires permettant d'ouvrir YouTube restent disponibles.</p>
+<p>Politique de confidentialité : <a href="https://policies.google.com/privacy?hl=fr" target="_blank" rel="noopener noreferrer">https://policies.google.com/privacy?hl=fr</a></p>
+<h3>Ressources externes chargées lors de la navigation</h3>
+<p>Certaines ressources nécessaires à l'affichage des contenus du site sont récupérées directement auprès de prestataires externes, indépendamment de l'activation des lecteurs vidéo.</p>
+<p>Les miniatures des vidéos YouTube peuvent être téléchargées depuis le domaine i.ytimg.com.</p>
+<p>Certains avatars des joueurs présentés dans la rubrique Crewmong Us sont téléchargés depuis le domaine static-cdn.jtvnw.net, utilisé pour des images de profil Twitch.</p>
+<p>Les statistiques publiques de Crewmong Us sont récupérées directement auprès du service Supabase, qui héberge la base de données correspondante.</p>
+<p>Ces connexions peuvent communiquer aux prestataires concernés des informations techniques liées à la requête, notamment l'adresse IP utilisée pour établir la connexion. L'absence de cookie observé lors d'un test ne garantit pas l'absence de traitement de données par ces prestataires.</p>
+<p>Lors des vérifications techniques, une réponse Supabase a notamment comporté une instruction de dépôt d'un cookie de sécurité nommé __cf_bm. Son stockage effectif par le navigateur n'a pas été confirmé.</p>
+<p>Les traitements de données réalisés par DeadelusTV et par ses prestataires sont présentés dans la présente politique, selon leurs finalités respectives.</p>
+<h3>TikTok et autres services futurs</h3>
+<p>À ce jour, TikTok est accessible par un lien externe, sans lecteur intégré actif. Il apparaît dans le gestionnaire de préférences comme service non utilisé, sans possibilité d'autorisation préalable.</p>
+<p>L'ajout d'un nouveau lecteur ou service nécessitant un consentement entraînera une adaptation du gestionnaire et de la présente politique avant son activation.</p>
+<h2>7. Droits et contact</h2>
+<p>Selon le traitement et sa base légale, vous pouvez demander l’accès à vos données, leur rectification, leur effacement, la limitation de leur utilisation et, lorsque les conditions sont réunies, leur portabilité.</p>
+<p>Vous pouvez retirer un consentement pour l’avenir sans remettre en cause les traitements déjà effectués licitement. Vous pouvez vous opposer, pour des raisons tenant à votre situation, à un traitement fondé sur l’intérêt légitime, dans les conditions prévues par le RGPD.</p>
+<p>Pour exercer vos droits : <strong><a href="mailto:rg.twitch@hotmail.com">rg.twitch@hotmail.com</a></strong>. Indiquez le pseudo et la demande concernée, sans envoyer spontanément une pièce d’identité. Une vérification proportionnée peut être demandée si elle est nécessaire pour éviter d’agir sur les données d’un tiers.</p>
+<p>Une réponse est apportée dans les meilleurs délais et normalement dans le mois suivant la demande. Une prolongation légalement justifiée est expliquée dans ce délai.</p>
+<p>La suppression du compte peut empêcher de retrouver sa collection et ses récompenses ; ces conséquences sont expliquées avant la fermeture. La révocation de l’accès de l’application dans Twitch ne vaut pas nécessairement suppression des données déjà présentes sur le site.</p>
+<p>Vous pouvez également adresser une réclamation à la <strong>CNIL</strong>, sur <a href="https://www.cnil.fr/" target="_blank" rel="noopener noreferrer">https://www.cnil.fr/</a>.</p>
+<h2>8. Évolution</h2>
+<p>Cette politique est actualisée lorsque le fonctionnement évolue. Un nouvel usage nécessitant un consentement distinct ne sera pas couvert par le seul fait d’avoir accepté une ancienne version des CGU.</p>
+</article>
+ <!-- Fin du texte confidentialité et cookies intégré. -->
 </section>
 
 <section class="page legal-page" id="page-conditions-utilisation" data-page="conditions-utilisation" hidden aria-labelledby="cgu-title">
  <div class="breadcrumb"><a href="#accueil">Accueil</a><span>/</span><span>Conditions générales d'utilisation</span></div>
  <div class="legal-heading"><span class="eyebrow">RÈGLES D'UTILISATION</span><h1 id="cgu-title" tabindex="-1">Conditions générales d'utilisation (CGU)</h1></div>
- <!-- CGU À FOURNIR ET À VALIDER : remplacer ce bloc, puis enlever data-legal-pending. -->
- <article class="legal-document" data-legal-pending="true">
-  <h2>CGU en cours de préparation</h2>
-  <p>Cette rubrique accueillera les règles d'utilisation des services et fonctionnalités du site après leur validation. Aucun contenu contractuel n'est présenté comme accepté ou applicable à ce stade.</p>
- </article>
+ <article class="legal-document">
+<p class="legal-version"><strong>Version 1.1 du 26 octobre 2026</strong></p>
+<h2>1. Éditeur et portée</h2>
+<p>Le site <strong>DeadelusTV</strong>, accessible à <a href="https://deadelustv.com" target="_blank" rel="noopener noreferrer">https://deadelustv.com</a>, est édité par <strong>Rémy GRAFFEO, entrepreneur individuel</strong>, dont les coordonnées complètes figurent dans les mentions légales.</p>
+<p>Les présentes conditions encadrent l’utilisation du portail communautaire. Les dispositions relatives à une fonctionnalité ne s’appliquent que lorsqu’elle est mise à disposition. La présentation d’un service en préparation ne garantit pas une date de lancement.</p>
+<p>La consultation des contenus publics est gratuite. Avant la création d’un compte ou la première participation à une fonctionnalité qui le nécessite, les conditions applicables sont présentées à l’utilisateur pour acceptation. Cette acceptation est distincte des choix relatifs aux traceurs et aux publications facultatives de données.</p>
+<h2>2. Contenus et services proposés</h2>
+<p>Le site peut notamment proposer :</p>
+<ul>
+<li>Un lecteur du direct Twitch et des liens vers les dernières vidéos YouTube et publications TikTok ;</li>
+<li>Des actualités, guides, astuces et liens vers les tutoriels vidéo consacrés notamment à Phasmophobia et Dead by Daylight ;</li>
+<li>Des résumés, fiches de personnages et archives de campagnes de jeu de rôle, notamment Pavillon Noir ;</li>
+<li>Les statistiques de parties et classements communautaires de Crewmongus ;</li>
+<li>Un jeu de cartes à collectionner, ou TCG, avec collections, boosters, raretés et statistiques de jeu ;</li>
+<li>Des activités Bingophobia, votes, événements, tirages au sort et récompenses virtuelles ;</li>
+<li>Des activités DbD Builds, votes, événements, tirages au sort et récompenses virtuelles ;</li>
+<li>Un moyen de soutien financier facultatif, lorsqu’il est disponible.</li>
+</ul>
+<p>Les tutoriels et actualités reflètent les informations disponibles à leur date de publication. Une mise à jour d’un jeu peut modifier les mécaniques décrites. Les récits de jeu de rôle décrivent un univers fictif et ne doivent pas être interprétés comme des faits biographiques concernant les joueurs.</p>
+<h2>3. Connexion et compte</h2>
+<p>Certaines fonctionnalités nécessitent de se connecter avec un compte Twitch pour reconnaître le participant, retrouver sa collection et lui attribuer ses récompenses. L’authentification auprès de Twitch s’effectue dans le parcours prévu à cet effet ; le site ne demande pas de communiquer son mot de passe Twitch à l’équipe DeadelusTV.</p>
+<p>L’utilisateur doit utiliser un compte auquel il est autorisé à accéder. L’usurpation d’identité, le contournement des restrictions de participation et l’exploitation volontaire de failles pour obtenir un avantage sont interdits.</p>
+<p>Les utilisateurs mineurs doivent respecter les conditions d’accès des services utilisés et obtenir l’intervention de leur représentant légal lorsqu’elle est requise. Les éventuelles restrictions propres à un événement sont présentées avant la participation.</p>
+<h2>4. TCG, collections et boosters</h2>
+<p>Le TCG permet d’obtenir et de collectionner des éléments virtuels selon les règles affichées dans le jeu. Les conditions d’obtention des boosters, les éventuels délais, limites, critères de récompense et règles de rareté sont indiqués dans les rubriques concernées.</p>
+<p>La présence d’une rareté ne garantit pas l’obtention d’une carte précise après un nombre déterminé d’ouvertures, sauf mécanisme expressément annoncé. Les cartes constituent des éléments du jeu ; le site ne propose pas leur conversion en argent ni ne garantit une valeur de revente.</p>
+<p>La collection et les statistiques peuvent servir à des comparaisons communautaires selon les choix de visibilité décrits dans la politique de confidentialité. L’affichage public facultatif ne conditionne pas l’accès à la collection personnelle.</p>
+<p>Une erreur avérée de distribution ou un abus peut donner lieu à une correction proportionnée. L’utilisateur concerné peut demander un examen à <strong><a href="mailto:rg.twitch@hotmail.com">rg.twitch@hotmail.com</a></strong>. Les règles annoncées pour une récompense déjà attribuée ne sont pas modifiées arbitrairement.</p>
+<h2>5. Bingophobia, votes et événements</h2>
+<p>Les règles particulières de chaque activité précisent avant la participation les conditions d’accès, la période et le fuseau horaire, les limites de participation, la méthode de validation ou de désignation des gagnants, ainsi que la nature et les modalités d’attribution des récompenses.</p>
+<p>Un vote destiné à élire un personnage préféré n’équivaut pas, à lui seul, à une inscription à un tirage au sort. Si les deux sont associés, ce fonctionnement est annoncé. Les doublons, fraudes et tentatives de manipulation peuvent être écartés selon les règles de l’activité, avec possibilité de demander une vérification.</p>
+<p>Le soutien financier décrit à l’article 9 ne conditionne pas la participation et n’accorde aucune chance ou récompense supplémentaire. Les récompenses virtuelles sont rattachées au compte du bénéficiaire selon les règles de l’activité.</p>
+<h2>6. Crewmongus et Pavillon Noir</h2>
+<p>Crewmongus présente des résultats de parties, statistiques et comparaisons à partir de données fournies pour l’animation communautaire. Les participants sont informés des données utilisées et de leur visibilité.</p>
+<p>Les contenus Pavillon Noir présentent les campagnes, personnages et événements fictifs, avec les crédits et références aux participants autorisés.</p>
+<p>Une personne peut demander une correction d’une information ou exercer ses droits sur ses données en écrivant à <strong><a href="mailto:rg.twitch@hotmail.com">rg.twitch@hotmail.com</a></strong>. La transmission d’un fichier contenant les informations de plusieurs personnes ne permet pas de décider à leur place des usages de leurs données.</p>
+<h2>7. Propriété intellectuelle et contenus externes</h2>
+<p>Les textes, illustrations, vidéos, créations de jeu et autres éléments protégés appartiennent à leurs auteurs ou titulaires de droits respectifs. La consultation du site ne transfère aucun droit. Une réutilisation au-delà des autorisations accordées et des exceptions légales nécessite l’autorisation du titulaire concerné.</p>
+<p>Les marques et contenus des éditeurs de jeux restent soumis à leurs droits. Leur présence ne permet pas, à elle seule, de déduire un partenariat ou une validation du site.</p>
+<p>Le site comporte des liens vers des plateformes externes et peut intégrer un lecteur Twitch. Ces services relèvent également de leurs propres conditions. Toute réclamation relative à un contenu du site peut être adressée à <strong><a href="mailto:rg.twitch@hotmail.com">rg.twitch@hotmail.com</a></strong>, en indiquant la page concernée.</p>
+<h2>8. Données personnelles et traceurs</h2>
+<p>Les données nécessaires au compte et aux activités, les publications éventuelles, les durées de conservation, les prestataires et les modalités d’exercice des droits sont décrits dans la page <strong>Confidentialité et cookies</strong>.</p>
+<p>L’acceptation des présentes conditions ne vaut ni consentement général aux traceurs, ni autorisation de prospection, ni accord indifférencié pour rendre toutes les données publiques.</p>
+<h2>9. Soutien financier sans contrepartie</h2>
+<p>Lorsque cette possibilité est proposée, chacun peut soutenir volontairement DeadelusTV pour contribuer aux frais et au fonctionnement de ses activités, notamment à l’hébergement du site.</p>
+<p>Ce soutien n’est requis pour aucun des services gratuits. Il ne donne droit à aucun produit, contenu réservé, carte, booster, priorité ou avantage dans les votes, classements et tirages au sort.</p>
+<p>Le montant, le bénéficiaire, le prestataire et le caractère ponctuel ou récurrent du versement sont présentés avant la confirmation. Si des versements récurrents sont proposés, leur périodicité et la manière de les arrêter sont également précisées.</p>
+<p>Ce soutien à une entreprise individuelle n’ouvre pas droit à un reçu fiscal pour réduction d’impôt au titre du mécénat. Les informations sur le paiement, les réclamations et les éventuels remboursements figurent dans la rubrique <strong>Soutenir DeadelusTV</strong>, sans exclusion des droits légaux applicables.</p>
+<h2>10. Disponibilité, modération et évolution</h2>
+<p>Le site peut être interrompu pour maintenance ou incident. L’éditeur s’efforce de rétablir son fonctionnement et de corriger les erreurs signalées.</p>
+<p>Les mesures prises en cas de fraude ou de comportement perturbant le service sont adaptées à la situation. Une restriction de compte peut être contestée auprès du contact du site. Une mesure immédiate de protection peut être prise lorsqu’un incident l’exige.</p>
+<p>L’éditeur peut faire évoluer le site et ses conditions. Les utilisateurs sont informés des changements qui affectent substantiellement leur utilisation, selon leur nature et les obligations applicables. Les modifications ne suppriment pas les droits déjà acquis en méconnaissance de la loi.</p>
+<p>La responsabilité de chacun s’apprécie conformément au droit applicable. Aucune disposition des présentes conditions n’exclut les garanties ou droits auxquels il ne peut être dérogé.</p>
+<h2>11. Contact et droit applicable</h2>
+<p>Contact : <strong><a href="mailto:rg.twitch@hotmail.com">rg.twitch@hotmail.com</a></strong>.</p>
+<p>Le droit français s’applique, sous réserve des dispositions impératives protégeant l’utilisateur. Les juridictions compétentes sont déterminées par les règles légales applicables.</p>
+</article>
 </section>
 <section class="page legal-page" id="page-conditions-vente" data-page="conditions-vente" hidden aria-labelledby="cgv-title">
  <div class="breadcrumb"><a href="#accueil">Accueil</a><span>/</span><span>Conditions générales de vente</span></div>
@@ -314,16 +506,7 @@
   <p>Cette page est réservée aux éventuelles conditions de vente de produits ou de services. Aucun fonctionnement marchand ni vente n'est annoncé par cette rubrique.</p>
  </article>
 </section>
-<section class="page legal-page" id="page-politique-cookies" data-page="politique-cookies" hidden aria-labelledby="cookies-title">
- <div class="breadcrumb"><a href="#accueil">Accueil</a><span>/</span><span>Politique de cookies</span></div>
- <div class="legal-heading"><span class="eyebrow">TRACEURS ET CONFIDENTIALITÉ</span><h1 id="cookies-title" tabindex="-1">Politique de cookies</h1></div>
- <!-- NOTICE COOKIES À COMPLÉTER APRÈS INVENTAIRE DES TRACEURS, puis enlever data-legal-pending. -->
- <article class="legal-document" data-legal-pending="true">
-  <h2>Politique de cookies en préparation</h2>
-  <p>Les lecteurs intégrés Twitch et YouTube sont chargés uniquement avec votre accord. Vous pouvez refuser ou modifier les choix par service à tout moment grâce à « Gestion des cookies » dans le pied de page. Les miniatures et les autres ressources externes restent à décrire dans la notice définitive.</p>
-  <p>Pour connaître le traitement de vos données par le lecteur externe, consultez la <a href="https://legal.twitch.com/fr-fr/legal/privacy-notice/" target="_blank" rel="noopener noreferrer">notice de confidentialité de Twitch</a>.</p>
- </article>
-</section>
+
 
 <aside class="community-banner community-banner-home" data-community-banner="accueil" aria-labelledby="community-home-title">
   <div class="community-banner-overlay"></div>
@@ -354,19 +537,41 @@
 </aside>
 </main>
 <footer class="container site-footer"><div class="footer-top"><a href="#accueil" class="brand" aria-label="Retour à l’accueil"><img class="brand-avatar" src="assets/logo-chaine.png" alt="" width="42" height="42"><span class="brand-name">Deadelus<span>TV</span></span></a><nav class="socials" aria-label="Réseaux sociaux"><a data-link="twitch" href="https://www.twitch.tv/deadelustv" target="_blank" rel="noopener noreferrer"><svg class="icon tw" aria-hidden="true"><use href="#i-twitch"/></svg>Twitch</a><a data-link="youtube" href="https://www.youtube.com/@deadelustv" target="_blank" rel="noopener noreferrer"><svg class="icon youtube" aria-hidden="true"><use href="#i-youtube"/></svg>YouTube</a><a data-link="tiktok" href="https://www.tiktok.com/@deadelustv" target="_blank" rel="noopener noreferrer"><svg class="icon tiktok" aria-hidden="true"><use href="#i-tiktok"/></svg>TikTok</a><a data-link="discord" href="https://discord.gg/eMhE3uSHQS" target="_blank" rel="noopener noreferrer"><svg class="icon dc" aria-hidden="true"><use href="#i-discord"/></svg>Discord</a></nav></div><nav class="legal-links" aria-label="Informations légales">
- <!-- Liens réservés : enlever hidden lorsque les contenus correspondants sont validés. -->
- <a href="#mentions-legales" hidden>Mentions légales</a>
- <a href="#confidentialite" hidden>Politique de confidentialité</a>
- <a href="#conditions-utilisation" hidden>CGU</a>
+ <!-- Documents validés publiés ; CGV masquées. -->
+ <a href="#mentions-legales">Mentions légales</a>
+ <a href="#confidentialite">Confidentialité et cookies</a>
+ <a href="#conditions-utilisation">CGU</a>
  <a href="#conditions-vente" hidden>CGV</a>
- <a href="#politique-cookies" hidden>Politique de cookies</a>
  <!-- Doit rester visible en permanence pour pouvoir retirer son consentement. -->
  <button type="button" class="btn-quiet" data-consent-manage>Gestion des cookies</button>
 </nav><div class="footer-bottom"><p>DeadelusTV · Le repaire de la communauté</p><button class="btn-quiet back-top" id="back-top" type="button">Retour en haut <svg class="icon stroke" aria-hidden="true"><use href="#i-up"/></svg></button></div></footer>
+
+<dialog id="phasma-book-dialog" aria-labelledby="phasma-book-title" aria-describedby="phasma-book-description">
+ <div class="phasma-journal-embed">
+  <h2 class="sr-only" id="phasma-book-title">Journal interactif des enquêteurs</h2>
+  <p class="sr-only" id="phasma-book-description">Carnet brun avec cinq onglets et pages cliquables.</p>
+  <div class="phasma-journal-embed-toolbar">
+   <button type="button" data-phasma-home>⌂ Sommaire</button>
+   <span>Le carnet des enquêteurs</span>
+   <button type="button" class="phasma-book-close" data-phasma-close aria-label="Fermer le carnet">Fermer ×</button>
+  </div>
+  <div class="phasma-journal-zoom-toolbar" role="group" aria-label="Zoom du carnet">
+   <button type="button" data-phasma-zoom-out aria-label="Dézoomer le carnet" title="Dézoomer" disabled>−</button>
+   <output data-phasma-zoom-label aria-label="Niveau de zoom du carnet" aria-live="polite">100 %</output>
+   <button type="button" data-phasma-zoom-in aria-label="Zoomer le carnet" title="Zoomer">+</button>
+   <button type="button" data-phasma-zoom-reset title="Afficher le carnet en entier" disabled>Ajuster à l’écran</button>
+  </div>
+  <iframe class="phasma-journal-frame" id="phasma-book-frame" title="Carnet interactif Phasmophobia"
+    data-src="modules/phasmophobia/journal-editor.html?viewer=1&amp;publication=public" loading="lazy"></iframe>
+  <p class="phasma-journal-embed-note">Le carnet officiel apparaîtra après sa première publication validée.</p>
+ </div>
+</dialog>
 
 <dialog id="live-dialog" aria-labelledby="live-dialog-title"><button class="close-dialog" aria-label="Fermer" data-close><svg class="icon stroke" aria-hidden="true"><use href="#i-close"/></svg></button><span class="pill"><svg class="icon" aria-hidden="true"><use href="#i-twitch"/></svg>DEADELUSTV</span><h2 id="live-dialog-title">La suite se passe sur Twitch.</h2><p id="live-dialog-copy">Retrouve le live, le chat et les replays sur la chaîne DeadelusTV.</p><div class="dialog-actions"><a class="btn btn-gold" data-link="twitch" href="https://www.twitch.tv/deadelustv" target="_blank" rel="noopener noreferrer">Rejoindre la chaîne <svg class="icon stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a><button class="btn btn-outline" data-close>Continuer la visite</button></div></dialog>
 
 
 </body>
 </html>
+
+
 

@@ -1,0 +1,1601 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Éditeur du carnet Phasmophobia · DeadelusTV</title>
+<link rel="stylesheet" href="journal-image-zoom.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Caveat:wght@400;600;700&family=Gloria+Hallelujah&family=Indie+Flower&family=Kalam:wght@400;700&family=Patrick+Hand&display=swap');
+:root{font-family:Arial,Helvetica,sans-serif;--bg:#0e0f10;--surface:#19191a;--surface2:#242322;--line:#3c372f;--gold:#dec089;--muted:#b9ae9c;--text:#f3e7d7;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-size:13px}button,input,textarea,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.35;cursor:default}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,.item:focus-visible{outline:2px solid #deb56e;outline-offset:2px}
+header{min-height:69px;padding:12px 23px;border-bottom:1px solid #3c352c;display:flex;justify-content:space-between;align-items:center;gap:14px;background:#121313}
+.brand{display:flex;align-items:center;gap:13px}.sigil{height:39px;width:39px;display:grid;place-items:center;border:1px solid #9f8658;color:#e7c587;border-radius:8px;font:25px Georgia,serif}
+header h1{margin:0;font:600 19px Georgia,serif}header p{margin:5px 0 0;color:#ad9e88;font-size:11px}.header-right{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.pill{padding:6px 11px;border:1px solid #6b5537;border-radius:20px;color:#d8bb88;font-size:11px;white-space:nowrap}
+main{display:grid;grid-template-columns:362px minmax(0,1fr);height:calc(100dvh - 69px);min-height:580px}
+aside{background:#1a1a1a;border-right:1px solid #39342e;padding:18px 17px 28px;overflow-y:auto;scrollbar-color:#6f5a39 #1a1a1a}
+aside h2{font-size:12px;color:#e4c48c;text-transform:uppercase;letter-spacing:1.8px;margin:0 0 12px}
+aside p.lead{font-size:12px;color:#afa69b;line-height:1.6;margin:0 0 16px}
+.block{border-top:1px solid #3a352e;padding:14px 0}.block h3{font-size:12px;color:#e6d0ac;margin:0 0 12px;font-weight:700}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:11px}.field label{color:#cabba5;font-size:11px}.field input:not([type="color"]):not([type="checkbox"]):not([type="file"]),.field select,.field textarea{width:100%;min-height:35px;padding:8px;background:#101112;border:1px solid #5d513f;border-radius:5px;color:#f5e8d8}
+.field textarea{min-height:90px;resize:vertical;line-height:1.4}.field input[type="color"]{width:100%;height:34px;border-radius:5px;background:#151515;border:1px solid #5d513f;padding:2px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.inline{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.inline label{font-size:11px;color:#c7bba8}.buttons{display:flex;flex-wrap:wrap;gap:7px}.btn{border:1px solid #725938;background:#2c261e;color:#ead6b5;border-radius:5px;padding:9px 11px;font-size:12px}.btn:hover{background:#433424}.btn.solid{background:#bda071;color:#1f180e;font-weight:700}.btn.solid:hover{background:#d0b480}.btn.active{background:#e4c48c;color:#1e160d;font-weight:700;border-color:#eacb97}.btn.small{padding:6px 8px;font-size:11px}
+.tip{font-size:11px;line-height:1.55;color:#aea193;margin:7px 0}.warn{color:#e9c780}
+.item-list{display:flex;flex-direction:column;gap:5px;max-height:195px;overflow-y:auto;padding-right:4px}
+.item{display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid #41392f;border-radius:4px;background:#24221f;color:#d9c7ae;padding:8px;text-align:left;font-size:11px}.item:hover{border-color:#9d8056}.item.selected{border-color:#d4ac6e;background:#51412a;color:#f4e5c8}.item small{opacity:.62}
+.is-hidden{display:none!important}
+.workspace{display:flex;flex-direction:column;min-width:0;background:radial-gradient(ellipse at 50% 22%,#292423 0%,#0c0d0e 66%)}
+.workbar{border-bottom:1px solid #35302b;display:flex;align-items:center;gap:10px;padding:10px 18px;flex-wrap:wrap;min-height:58px}.workbar label{color:#bfb19d;font-size:11px}
+.workbar select{padding:7px;background:#171717;border:1px solid #63513c;color:#eee1ca;border-radius:5px;max-width:235px}.workbar .push{margin-left:auto}
+.stage-viewport{flex:1;min-height:0;overflow:auto;display:flex;align-items:flex-start;justify-content:flex-start;padding:32px 20px 40px}
+#stage-wrap{position:relative;margin:auto;flex:none}#book{width:1536px;height:1024px;position:absolute;left:0;top:0;transform-origin:top left;user-select:none;-webkit-user-select:none}
+#book .book-image{position:absolute;inset:0;display:block;width:100%;height:100%;pointer-events:none}
+#book .layer{position:absolute;z-index:3;margin:0;padding:2px;min-width:0;transform-origin:50% 50%;color:#26190c;font-family:'Kalam',cursive;white-space:pre-wrap;overflow-wrap:anywhere;touch-action:none}
+#book.edit-mode .layer.selected{outline:2px dashed #6fb0ff;outline-offset:3px}
+#book.edit-mode .layer.selected[data-kind="line"]{outline-offset:4px}
+#book .resize-handle{position:absolute;width:16px;height:16px;border-radius:50%;background:#78b7ff;border:2px solid #ffffff;box-shadow:0 1px 6px rgba(0,0,0,.4);pointer-events:auto;display:none;z-index:20}
+#book.edit-mode .layer.selected .resize-handle{display:block}
+#book .resize-handle[data-dir="nw"]{left:-10px;top:-10px;cursor:nwse-resize}
+#book .resize-handle[data-dir="ne"]{right:-10px;top:-10px;cursor:nesw-resize}
+#book .resize-handle[data-dir="sw"]{left:-10px;bottom:-10px;cursor:nesw-resize}
+#book .resize-handle[data-dir="se"]{right:-10px;bottom:-10px;cursor:nwse-resize}
+#book .layer[data-kind="heading"]{font-family:'Caveat',cursive;font-weight:700;line-height:1}
+#book .layer[data-kind="text"]{line-height:1.28}
+#book .layer[data-kind="list"]{line-height:1.18}
+#book .layer[data-kind="image"]{display:grid;place-items:center;overflow:hidden;border-radius:2px}
+#book .layer[data-kind="image"] img{height:100%;width:100%;object-fit:contain;pointer-events:none}
+#book.edit-mode .layer.selected[data-kind="image"]{overflow:visible}
+#book.edit-mode .layer[data-locked="true"]{pointer-events:none}
+#book.edit-mode .layer[data-kind="image"][data-locked="true"]{outline:1px dotted #a18860}
+#book .layer[data-kind="text"] .formatted, #book .layer[data-kind="heading"] .formatted{white-space:pre-wrap}
+#book .layer u{text-decoration:underline;text-decoration-thickness:.055em;text-underline-offset:.09em}
+#book .layer strong{font-weight:700}
+#book .layer em{font-style:italic}
+#book .layer[data-kind="hotspot"]{border:1px dashed transparent}
+#book .layer[data-kind="hotspot"] .hit-caption{position:absolute;left:0;top:0;background:#ac8155;color:#1b1004;font:600 19px Arial,sans-serif;border-radius:0 0 4px 0;padding:3px 7px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;pointer-events:none}
+#book .layer[data-kind="tab"]{display:flex;align-items:center;justify-content:center;font-family:'Caveat',cursive;font-weight:700;color:#2a1c0e;text-shadow:0 1px 1px #ffedce;white-space:nowrap}
+#book .layer[data-kind="line"]{border-top:3px solid #2b2119;height:4px!important;min-height:0!important}
+#book .layer[data-kind="list"] .words{display:grid;gap:0 12px;grid-auto-flow:column;align-items:start}
+#book .layer[data-kind="list"].paginated-list{display:flex;flex-direction:column;min-height:0;overflow:hidden}
+#book .layer[data-kind="list"].paginated-list .words{flex:1;min-height:0;overflow:hidden}
+#book .layer .list-pagination{display:flex;align-items:center;justify-content:space-between;flex:none;gap:8px;padding-top:3px;font:600 .76em/1.15 Arial,sans-serif}
+#book .layer .list-pagination button{border:1px solid #8a6e48;border-radius:4px;color:inherit;background:#efddb055;min-width:24px;min-height:25px;padding:2px 7px;cursor:pointer}
+#book .layer .list-pagination button:disabled{opacity:.35;cursor:default}
+#book .layer[data-kind="breadcrumb"]{display:flex;align-items:flex-start;gap:5px;flex-wrap:wrap;line-height:1.1}
+#book .layer[data-kind="breadcrumb"] button{font:inherit;color:inherit;border:0;background:none;padding:0 3px;cursor:pointer;text-decoration:underline}
+#book .layer[data-kind="breadcrumb"] button:focus-visible,#book .layer .list-pagination button:focus-visible{outline:3px solid #85541d}
+#book .layer[data-kind="list"] .words .word{display:block;min-width:0;width:100%;color:inherit;text-decoration:none;text-align:inherit;border:0;background:transparent;padding:0 2px;font:inherit;white-space:normal;overflow-wrap:anywhere;cursor:inherit}
+#book .layer[data-kind="list"] .words.single-line .word{white-space:nowrap;overflow-wrap:normal}
+#book .layer[data-kind="list"] .words.custom-list .word{width:fit-content;max-width:100%}
+#book .layer[data-kind="list"] .words .word[aria-disabled="true"]{cursor:default}
+#book .layer[data-kind="list"] .words .word[aria-disabled="true"]:hover{color:inherit;text-decoration:none}
+#book .layer[data-kind="list"] .words .word:hover{color:#76431c;text-decoration:underline}
+#book.edit-mode .layer{cursor:grab}#book.edit-mode .layer:hover{outline:2px dashed #9b6935a8;outline-offset:1px}
+#book.edit-mode .layer.selected{outline:3px dashed #68380f;outline-offset:2px;background:#e4a84021}
+#book.edit-mode .layer[data-kind="hotspot"]{background:#4fbad04a;border:2px dashed #0c7489}
+#book.edit-mode .layer[data-kind="hotspot"].selected{background:#4fbad074;border-color:#064e5b}
+#book.edit-mode .layer .word{pointer-events:none}
+#book.edit-mode .layer:active{cursor:grabbing}
+#book.test-mode .layer.interactive{cursor:pointer}
+#book.test-mode .layer.interactive:hover{outline:2px solid #7a4c23aa;border-radius:2px}
+#book.test-mode .layer[data-kind="hotspot"]{background:transparent!important;border-color:transparent!important}
+#book.test-mode .layer[data-kind="hotspot"]:hover{outline:2px solid #bb8d51a8}
+#book.test-mode .layer[data-kind="hotspot"] .hit-caption{display:none}
+#book.test-mode .layer[data-kind="list"] .word{cursor:pointer}
+#book.test-mode .layer[data-kind="list"] .word:focus-visible{outline:3px solid #85541d}
+#book.show-grid:after{position:absolute;inset:0;z-index:20;pointer-events:none;content:'';background-image:linear-gradient(to right,#966b3d32 1px,transparent 1px),linear-gradient(to bottom,#966b3d32 1px,transparent 1px);background-size:5% 5%}
+#book.show-grid:before{position:absolute;content:'';top:0;bottom:0;left:50%;border-left:1px dashed #90643789;z-index:21;pointer-events:none}
+.status{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;border-top:1px solid #36302a;padding:11px 18px;color:#a99b86;font-size:11px;min-height:43px}#message{color:#ebc990}
+#asset-input,#json-input,#font-input{display:none}
+@media(max-width:1050px){main{grid-template-columns:310px minmax(0,1fr)}aside{padding:14px 12px}.stage-viewport{padding:18px 10px}}
+@media(max-width:760px){header{padding:10px 14px}header h1{font-size:15px}header .pill{display:none}main{display:flex;flex-direction:column;height:auto;min-height:0}aside{order:2;overflow:visible}.workspace{order:1;height:65dvh;min-height:380px}.workbar{padding:8px}.stage-viewport{padding:12px}.status{padding:8px}}
+
+/* Fenêtre de confirmation interne, indépendante des confirm() de Chrome. */
+#delete-layer-dialog{background:#211b17;color:#f4e8d8;border:1px solid #b8965d;border-radius:12px;max-width:min(440px,calc(100vw - 32px));padding:24px;box-shadow:0 24px 90px #000d;font:14px/1.5 Arial,sans-serif}
+#delete-layer-dialog::backdrop{background:#0009;backdrop-filter:blur(2px)}
+#delete-layer-dialog h2{font:700 22px Georgia,serif;margin:0 0 12px;color:#ecd2a9}
+#delete-layer-dialog p{margin:0 0 22px;overflow-wrap:anywhere}
+#delete-layer-dialog .dialog-buttons{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+#delete-layer-dialog button{border-radius:5px;padding:9px 14px;border:1px solid #806b4b;background:#31281f;color:#f4e8d8;cursor:pointer}
+#delete-layer-dialog #confirm-delete-layer{background:#803528;border-color:#bf695b;color:#fff7f0}
+#delete-layer-dialog button:focus-visible{outline:2px solid #edc388;outline-offset:3px}
+#journal-publication-view-status{display:none}
+html.journal-publication-preview #book{visibility:hidden}
+html.journal-publication-preview #journal-publication-view-status{display:grid;place-items:center;text-align:center;position:fixed;inset:0;z-index:40;padding:30px;color:#f1ddbd;background:#0e0f10;font:17px/1.6 Arial,sans-serif}
+html.journal-publication-ready #journal-publication-view-status{display:none}
+html.journal-publication-ready #book{visibility:visible}
+/* Bibliothèque privée des images/polices existantes */
+#journal-asset-library{box-sizing:border-box;width:min(770px,calc(100vw - 24px));max-height:88dvh;padding:18px;border:1px solid #8c7151;border-radius:10px;background:#1e1b19;color:#f4e6d4;box-shadow:0 20px 80px #000e;overflow:auto;font:13px Arial,sans-serif}
+#journal-asset-library::backdrop{background:#000c}
+#journal-asset-library .journal-library-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#journal-asset-library h2{margin:0;font:600 20px Georgia,serif;color:#f4d7a9}
+#journal-asset-library button{cursor:pointer;border:1px solid #6d5840;background:#302821;color:#f0dfc9;border-radius:6px;padding:8px 11px;font:12px Arial,sans-serif}
+#journal-asset-library button:disabled{opacity:.5;cursor:default}
+#journal-asset-library button:focus-visible{outline:2px solid #f4c784;outline-offset:2px}
+#journal-library-info{margin:11px 0 13px;color:#b9ad9a;min-height:18px}
+#journal-library-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;max-height:56dvh;overflow:auto}
+#journal-library-grid .journal-media-choice{display:flex;flex-direction:column;gap:6px;min-height:125px;overflow:hidden;text-align:left;padding:8px;word-break:break-word}
+#journal-library-grid .journal-media-choice:hover{border-color:#d7ab68;background:#423326}
+#journal-library-grid .journal-media-preview{width:100%;height:100px;object-fit:contain;background:#120f0d;border-radius:4px;color:#d1b68f;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#journal-library-grid .journal-media-name{font-weight:600}
+#journal-library-grid .journal-media-details{font-size:11px;color:#b8a991}
+#journal-asset-library .journal-library-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:14px}
+@media(max-width:530px){#journal-asset-library{padding:12px}#journal-library-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}}
+
+/* Atelier V7 : commandes essentielles, scripts techniques conservés masqués */
+.journal-back-site{white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center}
+#journal-legacy-controls{display:none!important}
+#journal-simple-controls{display:flex;flex-direction:column;gap:12px}
+#journal-simple-controls>label{font-size:11px;color:#e8d5b4;font-weight:700}
+.journal-save-history{display:flex;gap:7px;align-items:stretch}
+.journal-save-history select{flex:1;min-width:0;padding:9px 8px;border:1px solid #68553e;border-radius:5px;background:#101112;color:#f5e8d8}
+.journal-save-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.journal-save-buttons .btn{min-width:0;padding:10px 5px}
+.journal-save-buttons #journal-simple-save{grid-column:span 2}
+.journal-save-buttons .journal-delete{grid-column:span 2;border-color:#884d45;color:#efb6aa}
+#journal-simple-status{min-height:32px;color:#edc891}
+.journal-editor-panel{border:1px solid #51442f;border-radius:8px;margin:8px 0;background:#211d18;overflow:visible}
+.journal-editor-panel>summary{display:flex;align-items:center;justify-content:space-between;gap:8px;list-style:none;padding:13px 12px;color:#f1d4a3;font-weight:700;font-size:12px;cursor:pointer}
+.journal-editor-panel>summary::-webkit-details-marker{display:none}
+.journal-editor-panel>summary::after{content:'⌄';font-size:18px;color:#d6b88b}
+.journal-editor-panel[open]>summary::after{transform:rotate(180deg)}
+.journal-editor-panel[open]>summary{border-bottom:1px solid #544634}
+.journal-editor-panel>.block{border:0;padding:13px 11px 15px}
+.journal-editor-panel>.block>h3:first-child{display:none}
+.journal-editor-panel .block{max-width:100%}
+.journal-editor-panel .field textarea{max-width:100%}
+@media(max-width:760px){.journal-save-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+
+<style id="journal-viewer-rules">
+html.journal-viewer,html.journal-viewer body{width:100%;height:100%;margin:0;overflow:hidden;background:transparent}
+html.journal-viewer header,html.journal-viewer aside,html.journal-viewer .workbar,html.journal-viewer .status,
+html.journal-viewer #delete-layer-dialog,html.journal-viewer #journal-editor-preview-notice{display:none!important}
+html.journal-viewer main{display:block;height:100%;min-height:0}
+html.journal-viewer .workspace{height:100%;min-height:0;background:transparent}
+html.journal-viewer #stage-viewport{height:100%;min-height:0;padding:0;overflow:hidden;display:block;position:relative;touch-action:none}
+html.journal-viewer #stage-wrap{position:absolute;left:50%;top:50%;margin:0;will-change:transform}
+html.journal-viewer #book{box-shadow:none}
+html.journal-viewer #book .layer{cursor:default}
+@media(max-width:700px){html.journal-viewer #stage-viewport{padding:0}}
+</style>
+</head>
+<body>
+<header><div class="brand"><div class="sigil">✦</div><div><h1>Atelier V7 du journal Phasmophobia</h1><p>DeadelusTV · Mise en page, images superposées, typographie et zones cliquables</p></div></div><div class="header-right"><a class="btn journal-back-site" href="/">← Retour au site</a><span class="pill">Phasmo V2 · Atelier</span></div></header>
+<main>
+<aside>
+  <h2>Atelier de mise en page</h2>
+  <div id="journal-editor-preview-notice" role="note" style="width:100%;margin-bottom:13px;line-height:1.5;padding:5px 12px;border:1px solid #7c623b;border-radius:5px;background:#32281f;color:#f0d9b0;font:12px Arial,sans-serif">Atelier privé : les modifications restent un brouillon tant que tu ne les enregistres pas. Rien n’est publié automatiquement.</div>
+  <p class="lead">En <b>Édition</b>, clique puis déplace un élément sur le livre. En <b>Test</b>, les onglets, flèches, noms et zones cliquables fonctionnent. Les coordonnées sont communes à toutes les tailles d'écran.</p>
+  <div class="block" style="padding-top:5px;border:0">
+    <h3>1 · Mode de travail</h3>
+    <div class="buttons"><button id="edit-mode" class="btn active" type="button">✎ Édition</button><button id="test-mode" class="btn" type="button">▶ Tester les clics</button><button class="btn" type="button" id="grid">Afficher la grille</button></div>
+  </div>
+  <div class="block">
+    <h3>2 · Calques de cette page</h3>
+    <div class="field"><label for="layers">Sélectionner un élément</label><div id="layers" class="item-list" role="listbox" aria-label="Éléments de la page"></div></div>
+    <div class="buttons" style="margin:8px 0 11px"><button id="remove-quick" class="btn small" type="button" title="Supprimer le calque sélectionné">🗑 Supprimer la sélection</button></div>
+    <div class="buttons"><button id="add-heading" class="btn small" type="button">+ Titre</button><button id="add-text" class="btn small" type="button">+ Texte</button><button id="add-list" class="btn small" type="button">+ Liste</button><button id="add-folders-list" class="btn small" type="button">+ Liste des rubriques</button><button id="add-breadcrumb" class="btn small" type="button">+ Fil d’Ariane</button><button id="add-tab" class="btn small" type="button">+ Onglet</button><button id="add-hotspot" class="btn small" type="button">+ Zone cliquable</button><button id="add-image" class="btn small" type="button">+ Image</button><button id="add-line" class="btn small" type="button">+ Trait</button></div>
+    <p class="tip">Les zones cliquables sont <b>bleues en édition</b> et <b>invisibles en test</b>. Les textes et les onglets peuvent aussi avoir leur propre action.</p>
+  </div>
+  <div class="block">
+    <h3>Calques d'images et fiche illustrée</h3>
+    <div class="buttons"><button id="add-background" class="btn small" type="button">+ Image de fond</button><button id="add-multi-image" class="btn small" type="button">+ Plusieurs images</button><button id="make-detail-template" class="btn small" type="button">＋ Modèle fiche illustrée</button></div>
+    <p class="tip">Pour une fiche comme Aswang : image fantomatique <b>derrière</b>, trois preuves <b>devant</b>, puis autant de titres et paragraphes que nécessaire. Sélectionne <b>Fiche · Les Entités</b> dans « Vue à travailler » avant de créer le modèle.</p>
+    <input id="multi-image-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden>
+  </div>
+  <div class="block" id="editor-panel">
+    <h3>3 · Réglages de l'élément sélectionné</h3>
+    <div class="field"><label for="el-name">Nom du calque (atelier)</label><input id="el-name" type="text" maxlength="100"></div>
+    <div class="field" id="list-mode-field"><label for="el-listmode">Contenu de cette liste</label>
+      <select id="el-listmode"><option value="records">Fiches de la catégorie</option><option value="folders">Sous-catégories / rubriques</option><option value="custom">Liste personnalisée (noms et liens)</option><option value="manual">Liste manuelle (texte)</option></select>
+      <p class="tip">Les listes « Fiches » et « Sous-catégories » sont des calques indépendants : déplace-les librement dans le livre. La même maquette sert pour toutes les profondeurs d'une catégorie.</p>
+    </div>
+    <div class="field" id="text-field"><label for="el-text">Texte à afficher (ou liste manuelle : un élément par ligne)</label><textarea id="el-text" rows="4"></textarea><p class="tip is-hidden" id="list-linked-help">La liste se remplit depuis les fiches et sous-menus. Modifie les noms dans « Organisation des pages » ou « Sous-menus », ou sélectionne « Liste manuelle » pour saisir tes propres noms.</p></div>
+    <div id="custom-list-editor" class="is-hidden">
+      <p class="tip">Compose cette liste librement : chaque nom possède sa destination. Tu peux créer plusieurs listes pour les mêmes entités sans modifier leurs fiches.</p>
+      <div class="field"><label for="custom-list-pick">Ajouter une fiche à cette liste</label><select id="custom-list-pick"></select></div>
+      <div class="buttons"><button id="custom-list-add-record" class="btn small" type="button">+ Ajouter la fiche</button><button id="custom-list-add-name" class="btn small" type="button">+ Nom libre</button></div>
+      <div id="custom-list-items" style="margin-top:12px"></div>
+      <p id="custom-list-count" class="tip" role="status"></p>
+    </div>
+    <div class="two">
+      <div class="field"><label for="el-x">Position X (%)</label><input id="el-x" type="number" step="0.1" min="0" max="99"></div>
+      <div class="field"><label for="el-y">Position Y (%)</label><input id="el-y" type="number" step="0.1" min="0" max="99"></div>
+      <div class="field"><label for="el-w">Largeur (%)</label><input id="el-w" type="number" step="0.1" min="0.5" max="100"></div>
+      <div class="field"><label for="el-h">Hauteur (%)</label><input id="el-h" type="number" step="0.1" min="0.5" max="100"></div>
+    </div>
+    <div class="two" id="text-controls">
+      <div class="field"><label for="el-size">Taille (px)</label><input id="el-size" type="number" min="8" max="120" step="1"></div>
+      <div class="field"><label for="el-font">Police</label><select id="el-font"></select></div>
+      <div class="field"><label for="el-color">Couleur</label><input id="el-color" type="color"></div>
+      <div class="field"><label for="el-align">Alignement</label><select id="el-align"><option value="left">Gauche</option><option value="center">Centré</option><option value="right">Droite</option></select></div>
+      <div class="field"><label for="el-columns">Colonnes (liste)</label><input id="el-columns" type="number" min="1" max="6" step="1"></div>
+      <div class="field"><label for="el-line">Hauteur de ligne (texte)</label><input id="el-line" type="number" min="0.75" max="2.6" step="0.05"><span class="tip">Hauteur des lignes de texte, y compris quand un nom est long.</span></div>
+      <div class="field" id="el-column-gap-field"><label for="el-column-gap">Espace entre les colonnes (px)</label><input id="el-column-gap" type="number" min="0" max="80" step="1"></div>
+      <div class="field" id="el-row-gap-field"><label for="el-row-gap">Espace entre les noms / lignes (px)</label><input id="el-row-gap" type="number" min="0" max="80" step="1"></div>
+      <div class="field"><label for="el-rotate">Inclinaison (°)</label><input id="el-rotate" type="number" min="-40" max="40" step="0.5"></div>
+      <div class="field"><label for="el-opacity">Opacité (%)</label><input id="el-opacity" type="number" min="0" max="100" step="1"></div>
+    </div>
+    <div class="block" style="border-top:1px solid #42392e;margin-top:9px">
+      <h3>Ordre et visibilité des calques</h3>
+      <div class="field"><label for="el-z">Profondeur (niveau du calque)</label><input id="el-z" type="number" step="1" min="-100" max="2000"></div>
+      <div class="buttons">
+        <button id="layer-bottom" class="btn small" type="button" title="Derrière les autres éléments de cette vue">Tout derrière</button>
+        <button id="layer-down" class="btn small" type="button">↓ Reculer</button>
+        <button id="layer-up" class="btn small" type="button">↑ Avancer</button>
+        <button id="layer-top" class="btn small" type="button">Tout devant</button>
+      </div>
+      <div class="inline" style="margin-top:12px"><label><input id="el-locked" type="checkbox"> Verrouiller le déplacement</label><label><input id="el-hidden" type="checkbox"> Masquer ce calque</label></div>
+      <p class="tip">Un fond peut être au niveau 1, les textes au niveau 20, les images des preuves au niveau 30. Même si un fond masque tout, son calque reste sélectionnable dans la liste.</p>
+    </div>
+    <div class="block" id="image-settings" style="border-top:1px solid #42392e;margin-top:9px">
+      <h3>Réglages d'image</h3>
+      <div class="two">
+        <div class="field"><label for="el-imagefit">Remplissage</label><select id="el-imagefit"><option value="contain">Image entière</option><option value="cover">Remplir / rogner</option><option value="fill">Étendre</option></select></div>
+        <div class="field"><label for="el-blend">Fusion avec le papier</label><select id="el-blend"><option value="normal">Normal</option><option value="multiply">Produit / encre</option><option value="screen">Écran</option><option value="darken">Assombrir</option></select></div>
+      </div>
+      <div class="two"><div class="field"><label for="el-imageopacity">Opacité de l'image (%)</label><input id="el-imageopacity" type="number" min="0" max="100" step="1"></div><div class="field"><label for="el-imagerotate">Inclinaison de l'image (°)</label><input id="el-imagerotate" type="number" min="-40" max="40" step="0.5"></div></div>
+      <div class="field"><label for="el-imagezoom">Agrandissement au clic</label><select id="el-imagezoom"><option value="auto">Automatique : images classiques uniquement</option><option value="yes">Autoriser le zoom sur cette image</option><option value="no">Ne pas agrandir cette image</option></select><p class="tip">En mode Test et en lecture. En automatique, les fonds, filigranes, images à opacité réduite et effets d’encre ne s’agrandissent pas.</p></div>
+      <p class="tip">Pour une silhouette spectrale en filigrane : <b>Produit / encre</b>, opacité 15 à 30 %, et calque derrière les textes. Les images transparentes PNG/WebP sont idéales.</p>
+    </div>
+    <div class="block" id="format-controls" style="border-top:1px solid #42392e;margin-top:9px">
+      <h3>Mise en forme du texte</h3>
+      <div class="inline"><label><input id="el-bold" type="checkbox"> Gras</label><label><input id="el-italic" type="checkbox"> Italique</label><label><input id="el-underline" type="checkbox"> Souligné</label></div>
+      <p class="tip">Ces cases agissent sur <b>tout le bloc</b>. Pour ne souligner que quelques mots : sélectionne-les dans « Texte à afficher », puis utilise les boutons ci-dessous.</p>
+      <div class="buttons"><button id="mark-bold" class="btn small" type="button">** Gras</button><button id="mark-italic" class="btn small" type="button">* Italique</button><button id="mark-underline" class="btn small" type="button"><u>Souligner</u></button></div>
+    </div>
+    <div class="field"><label for="el-scope">Sur quelles pages ?</label><select id="el-scope"><option value="page">Page actuellement choisie</option><option value="global">Toutes les pages (onglets, flèches…)</option></select></div>
+    <div class="field" id="action-field"><label for="el-action">Action au clic (en mode Test)</label><select id="el-action"><option value="none">Aucune</option><option value="home">Accueil du journal</option><option value="category">Ouvrir une catégorie</option><option value="detail">Ouvrir une fiche</option><option value="prev">Fiche / page précédente</option><option value="next">Fiche / page suivante</option><option value="back">Retour à la liste courante</option></select></div>
+    <div class="field" id="target-field"><label for="el-target">Catégorie ciblée</label><select id="el-target"><option value="entites">Entités</option><option value="cartes">Maps</option><option value="objets">Objets maudits</option><option value="equipements">Équipements</option><option value="divers">Divers</option></select></div>
+    <div class="field is-hidden" id="entry-field"><label for="el-entry">Fiche ciblée (nom ou identifiant)</label><input type="text" id="el-entry" placeholder="Ex. Obambo"></div>
+    <div class="buttons"><button class="btn small" id="clone" type="button">Dupliquer</button><button class="btn small" id="remove" type="button">Supprimer</button></div>
+    <p class="tip">Astuce : sélectionne une zone, puis utilise <b>Suppr</b> ou l'un des boutons <b>Supprimer</b> pour l'effacer. La touche Suppr ne s'active pas pendant la saisie d'un champ. Les flèches du clavier déplacent le calque sélectionné, Maj + flèche = déplacement plus grand. En V4, tu peux aussi <b>redimensionner visuellement</b> un élément grâce aux poignées bleues sur ses coins.</p>
+  </div>
+  <div class="block">
+    <h3>4 · Polices et images</h3>
+    <div class="buttons"><button id="import-font" class="btn small" type="button">Importer une police</button><button id="journal-library-fonts" class="btn small" type="button">Police déjà enregistrée</button></div>
+    <div class="buttons"><button id="import-image" class="btn small" type="button">Importer une image</button><button id="journal-library-images" class="btn small" type="button">Image déjà enregistrée</button></div>
+    <input id="font-input" type="file" accept=".ttf,.otf,.woff,.woff2"><input id="asset-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+    <p class="tip">Pour les images, sélectionne d'abord un calque « Image ». Pour les polices, sélectionne un calque de texte. La bibliothèque partagée affiche les fichiers privés déjà stockés, même s'ils ne figurent plus dans le brouillon. Aucun nouveau téléversement lors de la réutilisation. Polices TTF, OTF, WOFF, WOFF2 (max. 1,5 Mo). Images optimisées à l’import (jusqu’à 7 Mo par fichier source). Vérifie les droits avant publication.</p>
+  </div>
+  <div class="block" id="journal-record-manager">
+    <h3>5 · Organisation des pages</h3>
+    <div class="field"><label for="group-edit">Catégorie</label><select id="group-edit"></select></div>
+    <div class="field"><label for="record-folder">Sous-catégorie pour une nouvelle fiche</label><select id="record-folder"></select></div>
+    <div class="field"><label for="record-select">Fiches (archives incluses)</label><select id="record-select" size="7" style="width:100%" aria-label="Choisir une fiche"></select></div>
+    <div class="field"><label for="record-title">Nom à ajouter ou à modifier</label><input id="record-title" type="text" maxlength="100" placeholder="Nom de la fiche"></div>
+    <div class="buttons"><button type="button" class="btn small" id="record-add">+ Ajouter</button><button type="button" class="btn small" id="record-rename">Renommer</button><button type="button" class="btn small" id="record-edit">Ouvrir la fiche</button></div>
+    <p class="tip" id="record-location">Emplacement : catégorie principale</p>
+    <div class="buttons"><button type="button" class="btn small" id="record-up">↑ Monter</button><button type="button" class="btn small" id="record-down">↓ Descendre</button><button type="button" class="btn small" id="record-archive">Archiver</button><button type="button" class="btn small" id="record-delete">Supprimer…</button></div>
+    <div class="field"><label for="record-move-group">Déplacer la fiche vers</label><select id="record-move-group"></select></div>
+    <div class="field"><label for="record-move-folder">Sous-catégorie de destination</label><select id="record-move-folder"></select></div>
+    <div class="buttons"><button type="button" class="btn small" id="record-move">Déplacer la fiche</button></div>
+    <p class="tip">Chaque fiche possède un identifiant stable et ses propres calques. Les archives disparaissent des listes. Le brouillon partagé conserve les fiches et leur organisation.</p>
+  </div>
+<div class="block" id="journal-folder-manager">
+    <h3>6 · Sous-menus</h3>
+    <p class="tip">Crée des rubriques à l'intérieur des cinq onglets du carnet, avec des sous-catégories imbriquées.</p>
+    <div class="field"><label for="folder-select">Rubriques (archives incluses)</label><select id="folder-select" size="6" style="width:100%"></select></div>
+    <div class="field"><label for="folder-parent">Emplacement de création ou destination</label><select id="folder-parent"></select></div>
+    <div class="field"><label for="folder-title">Nom de la sous-catégorie</label><input id="folder-title" type="text" maxlength="100" placeholder="Ex. Petites cartes"></div>
+    <div class="buttons"><button type="button" class="btn small" id="folder-add">+ Créer</button><button type="button" class="btn small" id="folder-rename">Renommer</button><button type="button" class="btn small" id="folder-open">Ouvrir</button><button type="button" class="btn small" id="folder-move">Déplacer</button></div>
+    <div class="buttons"><button type="button" class="btn small" id="folder-up">↑ Monter</button><button type="button" class="btn small" id="folder-down">↓ Descendre</button><button type="button" class="btn small" id="folder-archive">Archiver</button><button type="button" class="btn small" id="folder-delete">Supprimer si vide</button></div>
+    <p class="tip">Archiver masque le contenu sans l'effacer. Les dossiers non vides ne peuvent pas être supprimés.</p>
+  </div>
+  <div class="block">
+    <h3>7 · Sauvegardes</h3>
+    <div id="journal-simple-controls">
+      <label for="journal-simple-history">Historique des modifications</label>
+      <div class="journal-save-history">
+        <select id="journal-simple-history" aria-label="Choisir une version enregistrée"><option value="current">Dernier brouillon partagé</option></select>
+        <button type="button" class="btn small" id="journal-simple-load">Charger</button>
+      </div>
+      <div class="journal-save-buttons">
+        <button type="button" class="btn solid" id="journal-simple-save">Enregistrer le brouillon</button>
+        <button type="button" class="btn" id="journal-simple-preview">Aperçu avant publication</button>
+        <button type="button" class="btn" id="journal-simple-publish" disabled>Publier</button>
+        <button type="button" class="btn" id="journal-simple-unpublish" disabled>Dépublier</button>
+        <button type="button" class="btn journal-delete" id="journal-simple-delete">Supprimer</button>
+      </div>
+      <p class="tip" id="journal-simple-status" role="status" aria-live="polite">Brouillon privé. Consulte l'historique ou charge le brouillon avant de l'enregistrer.</p>
+      <p class="tip" id="journal-simple-publish-note">La publication publique n'est pas encore autorisée. L'aperçu permet de tester le carnet sans le mettre en ligne.</p>
+    </div>
+    <div id="journal-legacy-controls">
+    <div class="field" id="journal-remote-sync">
+      <strong>Supabase · Brouillon partagé de Phasmo V2</strong>
+      <p id="journal-remote-status" class="tip" role="status" aria-live="polite">Connexion disponible après chargement…</p>
+      <div class="buttons">
+        <button type="button" class="btn small" id="journal-remote-load">Charger le brouillon partagé</button>
+        <button type="button" class="btn small" id="journal-remote-save">Enregistrer sur Supabase</button>
+      </div>
+      <p class="tip">Réservé aux comptes autorisés. Enregistrement manuel, uniquement sur la branche de test. Le JSON et le stockage local restent disponibles.</p>
+      <div class="field" id="journal-preview-publication">
+        <strong>Publication de test · privée</strong>
+        <p id="journal-publish-status" class="tip" role="status" aria-live="polite">Publie un instantané du dernier brouillon enregistré. Cette copie reste distincte de tes futurs changements.</p>
+        <div class="buttons">
+          <button type="button" class="btn small" id="journal-publish-preview">Publier pour test (admin)</button>
+          <a class="btn small" id="journal-published-preview-link" href="journal-editor.html?viewer=1&amp;publication=preview" target="_blank" rel="noopener noreferrer">Voir le livre publié en test</a>
+        </div>
+        <p class="tip">Ce test exige le rôle administrateur. Seule la révision enregistrée sur Supabase est publiée, jamais les modifications locales non sauvegardées. Ce contenu n'est visible ni sur main, ni pour les visiteurs anonymes.</p>
+      </div>
+      <div class="field" id="journal-official-release-controls">
+        <strong>Publication officielle · préparation uniquement</strong>
+        <p id="journal-official-status" class="tip" role="status" aria-live="polite">Aucune publication publique automatique. Le serveur vérifie la version privée validée et les médias avant de préparer un candidat.</p>
+        <div class="buttons">
+          <button class="btn small" id="journal-official-status-check" type="button">Vérifier l'état officiel</button>
+          <button class="btn small" id="journal-official-prepare" type="button">Préparer une version officielle (privée)</button>
+        </div>
+        <p class="tip">Cette étape ne publie rien et ne transfère aucun média vers le bucket public. La véritable mise en ligne reste verrouillée côté Supabase jusqu'à validation explicite.</p>
+        <div class="field" id="journal-official-admin-commands">
+          <strong>Commandes administrateur · publication et retour arrière</strong>
+          <p id="journal-admin-commands-status" class="tip" role="status" aria-live="polite">Chargement des droits et de l'historique officiel…</p>
+          <div class="field">
+            <label for="journal-official-rights-confirm">
+              <input type="checkbox" id="journal-official-rights-confirm">
+              Je confirme que tous les textes, images et polices du candidat disposent des droits nécessaires pour une diffusion publique.
+            </label>
+            <label for="journal-official-publish-phrase">Confirmation de publication</label>
+            <input id="journal-official-publish-phrase" type="text" autocomplete="off" spellcheck="false" placeholder="PUBLIER-OFFICIELLEMENT">
+            <button class="btn small" id="journal-official-publish" type="button" disabled>Publier officiellement</button>
+          </div>
+          <div class="field">
+            <strong>Historique et restauration</strong>
+            <label for="journal-official-history">Ancienne version officielle</label>
+            <select id="journal-official-history"><option value="">Aucune publication officielle enregistrée</option></select>
+            <label for="journal-official-restore-phrase">Confirmation de restauration</label>
+            <input id="journal-official-restore-phrase" type="text" autocomplete="off" spellcheck="false" placeholder="RESTAURER-OFFICIELLEMENT">
+            <button class="btn small" id="journal-official-restore" type="button" disabled>Restaurer cette version</button>
+          </div>
+          <div class="field">
+            <strong>Mise hors ligne d'urgence</strong>
+            <p class="tip">Ce bouton masque immédiatement une publication en ligne, même si de nouvelles publications sont verrouillées. Il ne supprime pas l'historique ni les médias déjà publiés.</p>
+            <button class="btn small" id="journal-official-offline" type="button" disabled>Mettre le carnet hors ligne</button>
+          </div>
+          <div class="buttons">
+            <button class="btn small" id="journal-official-commands-refresh" type="button">Actualiser les commandes et l'historique</button>
+          </div>
+          <p class="tip">La mise en ligne et la restauration ne seront activées qu'après validation explicite et ouverture du verrou sur le serveur, jamais par le formulaire seul.</p>
+        </div>
+        <div class="field" id="journal-staging-transfer-controls">
+          <strong>Test technique · Storage privé uniquement</strong>
+          <p class="tip" id="journal-staging-transfer-status" role="status" aria-live="polite">Copie physique temporaire de l'image et de la police du candidat préparé, vérification SHA-256, puis nettoyage. Aucun média publié.</p>
+          <div class="buttons">
+            <button class="btn small" id="journal-staging-transfer-test" type="button">Tester transfert privé</button>
+            <button class="btn small" id="journal-staging-transfer-fault" type="button">Tester échec et nettoyage</button>
+          </div>
+          <p class="tip">Les deux tests exigent les droits administrateur. Le bucket de test est privé ; les copies sont supprimées en fin de contrôle.</p>
+        </div>
+      </div>
+    </div>
+    <div class="buttons"><button id="export" class="btn solid" type="button">↓ Télécharger mes réglages</button><button id="import" class="btn" type="button">↑ Charger un JSON</button><button id="reset" class="btn" type="button">Réinitialiser l'atelier</button></div>
+    <input id="json-input" type="file" accept="application/json,.json"><p class="tip">Le JSON local reste exportable et contient les médias. Les fichiers du brouillon partagé sont stockés dans le bucket privé dédié de Supabase Storage. Les réglages se conservent aussi dans ce navigateur quand le stockage local est autorisé. <b>Le JSON est la sauvegarde fiable à transmettre ici.</b> Compatible avec les exports du premier Atelier Sommaire.</p>
+    </div>
+  </div>
+</aside>
+<section class="workspace" aria-label="Prévisualisation du livre">
+  <div class="workbar">
+    <label for="page-select">Vue à travailler :</label><select id="page-select"></select>
+    <button class="btn small" type="button" id="zoom-out">−</button><span id="zoom-label">100 %</span><button class="btn small" type="button" id="zoom-in">+</button>
+    <span class="push" style="font-size:11px;color:#ada28f" id="view-info">Édition des calques</span>
+  </div>
+  <div class="stage-viewport" id="stage-viewport"><div id="stage-wrap"><div id="book" class="edit-mode"><img class="book-image" alt="Carnet brun, pages vierges, cinq onglets et deux languettes latérales" src="../../assets/phasmo-carnet-brun.webp"><div id="element-surface"></div></div></div></div>
+  <div class="status"><span id="message" role="status" aria-live="polite">Prêt : sélectionne un bloc ou crée une zone cliquable.</span><span>Fond brun validé pour prototypage · 1536 × 1024 px · brouillons partagés en prévisualisation</span></div>
+</section>
+</main>
+<div id="journal-publication-view-status" role="status" aria-live="polite">Chargement du livre publié pour test…</div>
+<dialog id="delete-layer-dialog" aria-labelledby="delete-layer-heading" aria-describedby="delete-layer-description">
+ <h2 id="delete-layer-heading">Supprimer ce calque ?</h2>
+ <p id="delete-layer-description">Cette zone sera supprimée de ton prototype.</p>
+ <div class="dialog-buttons">
+  <button id="cancel-delete-layer" type="button">Annuler</button>
+  <button id="confirm-delete-layer" type="button">Supprimer définitivement</button>
+ </div>
+</dialog>
+<dialog id="journal-asset-library" aria-labelledby="journal-asset-library-title">
+  <div class="journal-library-head"><h2 id="journal-asset-library-title">Bibliothèque privée du carnet</h2><button type="button" id="journal-library-close" aria-label="Fermer la bibliothèque">✕</button></div>
+  <p id="journal-library-info" class="tip" role="status" aria-live="polite">Les médias enregistrés sont réservés aux éditeurs autorisés.</p>
+  <div id="journal-library-grid" aria-label="Fichiers disponibles"></div>
+  <div class="journal-library-foot"><button type="button" id="journal-library-prev">← Précédents</button><span id="journal-library-page">Page 1</span><button type="button" id="journal-library-next">Suivants →</button></div>
+</dialog>
+<dialog id="delete-record-dialog" aria-labelledby="delete-record-title">
+<h2 id="delete-record-title">Supprimer cette fiche ?</h2>
+<p id="delete-record-description"></p>
+<div class="dialog-buttons"><button type="button" id="record-delete-cancel">Annuler</button><button type="button" id="record-delete-confirm">Supprimer définitivement</button></div>
+</dialog>
+<script src="journal-records.js"></script>
+<script src="journal-folders.js"></script>
+<script src="journal-pagination.js"></script>
+<script src="journal-custom-lists.js"></script>
+<script src="journal-image-zoom.js"></script>
+
+<script src="journal-viewer-zoom.js"></script>
+<script>
+'use strict';
+(() => {
+const QUERY_PARAMS=new URLSearchParams(location.search);
+const VIEWER_ONLY=QUERY_PARAMS.get('viewer')==='1';
+const PUBLICATION_PREVIEW_VIEW=VIEWER_ONLY&&QUERY_PARAMS.get('publication')==='preview';
+const PUBLICATION_PUBLIC_VIEW=VIEWER_ONLY&&QUERY_PARAMS.get('publication')!=='preview';
+const PUBLICATION_REMOTE_VIEW=PUBLICATION_PREVIEW_VIEW||PUBLICATION_PUBLIC_VIEW;
+if(VIEWER_ONLY)document.documentElement.classList.add('journal-viewer');
+if(PUBLICATION_REMOTE_VIEW)document.documentElement.classList.add('journal-publication-preview');
+const $ = s => document.querySelector(s);
+const COPY = x => JSON.parse(JSON.stringify(x));
+const SAVE_KEY='deadelustv.phasmo.atelier.complet.v7.20261031';
+const RECORDS=window.PHASMO_JOURNAL_RECORDS;
+const FOLDERS=window.PHASMO_JOURNAL_FOLDERS;
+const PAGINATION=window.PHASMO_JOURNAL_PAGINATION;
+const CUSTOM_LISTS=window.PHASMO_JOURNAL_CUSTOM_LISTS;
+const IMAGE_ZOOM=window.PHASMO_JOURNAL_IMAGE_ZOOM;
+const RECORD_SCHEMA=7;
+const OLD_SAVE_KEY='deadelustv.phasmo.atelier.complet.v4_2';
+const OLDER_SAVE_KEY='deadelustv.phasmo.atelier.complet.v4_1';
+const OLDEST_SAVE_KEY='deadelustv.phasmo.atelier.complet.v4';
+const GROUP_ORDER=['entites','cartes','objets','equipements','divers'];
+const GROUPS={
+ entites:{label:'Les Entités',names:[]},
+ cartes:{label:'Les Maps',names:[]},
+ objets:{label:'Les Objets Maudits',names:[]},
+ equipements:{label:'Les Équipements',names:[]},
+ divers:{label:'Divers',names:[]}
+};
+const FONTS=[['Caveat','Caveat (manuscrite)'],['Kalam','Kalam (lisible)'],['Patrick Hand','Patrick Hand'],['Gloria Hallelujah','Gloria Hallelujah'],['Indie Flower','Indie Flower'],['Architects Daughter','Architects Daughter'],['Comic Sans MS','Comic Sans MS (locale)'],['Segoe Print','Segoe Print (locale)'],['Georgia','Georgia']];
+const VIEWS=[{id:'sommaire',label:'Accueil · Sommaire'}];
+for (const id of GROUP_ORDER) VIEWS.push({id:'category:'+id,label:'Liste · '+GROUPS[id].label});
+for (const id of GROUP_ORDER) VIEWS.push({id:'detail:'+id,label:'Fiche · '+GROUPS[id].label});
+let serial=1;
+function layer(page,kind,name,text,x,y,w,h,more={}){
+ return {id:'element-'+serial++,page,kind,name,text,x,y,w,h,size:kind==='heading'?57:kind==='list'?28:24,font:kind==='heading'?'Caveat':'Kalam',color:'#291d10',align:'left',columns:3,line:1.16,columnGap:12,rowGap:0,rotate:0,opacity:100,action:'none',target:'entites',entry:'',image:'',z:page==='*'?800:30,locked:false,hidden:false,bold:false,italic:false,underline:false,imageFit:'contain',blend:'normal',...more};
+}
+function buildDefault(){
+ const items=[];
+ const title=(key,x,y,w,size)=>items.push(layer('sommaire','heading','Titre '+GROUPS[key].label,GROUPS[key].label,x,y,w,7,{size,align:'center',action:'category',target:key}));
+ const list=(key,x,y,w,h,size,cols)=>items.push(layer('sommaire','list','Liste '+GROUPS[key].label,'',x,y,w,h,{size,columns:cols,source:key,listMode:'records'}));
+ title('entites',9.0,7.8,38.8,56);list('entites',9.5,15.0,38.0,35.5,27,3);
+ title('equipements',9,52,38.8,55);list('equipements',9.5,60,38,29,26,4);
+ title('cartes',52.0,7.8,39,56);list('cartes',52.5,15,38.3,17,27,4);
+ title('objets',52.0,33,39,56);list('objets',52.5,41,38.3,13,27,3);
+ title('divers',52.0,57,39,56);list('divers',52.5,65,38.3,17,27,3);
+ const pos={entites:[9.2,2.7,12.9],cartes:[22.8,1.5,13.4],objets:[36.7,3.1,9.7],equipements:[54.7,3.1,15.2],divers:[70.5,1.8,17.9]};
+ const labels={entites:'ENTITÉS',cartes:'MAPS',objets:'MAUDITS',equipements:'ÉQUIPEMENTS',divers:'DIVERS'};
+ for(const id of GROUP_ORDER){const [x,y,w]=pos[id];items.push(layer('*','tab','Onglet '+GROUPS[id].label,labels[id],x,y,w,5.9,{size:24,align:'center',font:'Caveat',action:'category',target:id}));}
+ items.push(layer('*','tab','Flèche précédente','‹',1.9,44,4.5,11,{size:80,action:'prev',align:'center'}));
+ items.push(layer('*','tab','Flèche suivante','›',93.5,44,4.5,11,{size:80,action:'next',align:'center'}));
+ items.push(layer('*','tab','Accueil du carnet','⌂',87,10,3.7,5,{size:45,action:'home',align:'center'}));
+ for(const group of GROUP_ORDER){
+   const page='category:'+group;
+   items.push(layer(page,'heading','Titre de la catégorie',GROUPS[group].label,11,12,35,8,{size:72,align:'center'}));
+   items.push(layer(page,'list','Liste cliquable des fiches','',10,23,38,63,{size:32,columns:3,source:group,listMode:'records'}));
+    items.push(layer(page,'list','Liste des sous-catégories','',55,76,34,17,{size:24,columns:2,source:group,listMode:'folders'}));
+
+   items.push(layer(page,'text','Retour au sommaire','← Sommaire général',55,65,33,7,{size:33,font:'Caveat',action:'home'}));
+   const detail='detail:'+group;
+   items.push(layer(detail,'heading','Nom de la fiche','{{nom}}',11,12,35,8,{size:72,align:'center'}));
+
+   items.push(layer(detail,'text','Retour à la liste','← '+GROUPS[group].label,11,78,35,7,{size:32,font:'Caveat',action:'back'}));
+
+ }
+ return {version:RECORD_SCHEMA,groups:COPY(GROUPS),folders:[],records:RECORDS.normalize(null,GROUPS,[]),elements:items,fonts:[],grid:false,zoom:100};
+}
+let state=buildDefault();
+const listPagePositions=new Map();
+let mode='edit',view={page:'sommaire',group:null,name:null,entryId:null,folderId:null},selected=state.elements[0]?.id,drag=null,resizeDrag=null,saveTimer=null,currentScale=1,pendingRecordDelete=null;
+const book=$('#book'),surface=$('#element-surface'),wrap=$('#stage-wrap'),viewport=$('#stage-viewport');
+function note(message){$('#message').textContent=message;}
+function safeNum(value,fallback,min,max){const n=Number(value);return Number.isFinite(n)?Math.max(min,Math.min(max,n)):fallback;}
+function getSelected(){return state.elements.find(e=>e.id===selected);}
+function currentGroup(){return view.group||'entites';}
+function pageForView(){return view.page;}
+function readable(s){return String(s??'').replaceAll('{{nom}}',view.name||'Fiche modèle').replaceAll('{{categorie}}',state.groups[currentGroup()].label);}
+function recordPage(id){return 'entry:'+id;}
+function recordList(group,archived=false){
+ return RECORDS.list(state.records,group,archived).filter(r=>archived||FOLDERS.available(state.folders,group,r.folderId));
+}
+function folderRecords(group,folderId=null){return recordList(group).filter(r=>(r.folderId||null)===(folderId||null));}
+function folderLabel(group,folderId){const f=FOLDERS.find(state.folders,folderId);return f&&f.group===group?f.title:state.groups[group].label;}
+function folderPath(group,folderId){return FOLDERS.lineage(state.folders,folderId).filter(f=>f.group===group).map(f=>f.title).join(' / ');}
+function ensureRecordPage(entry) {
+ const page=recordPage(entry.id);
+ if(state.elements.some(e=>e.page===page))return;
+ state.elements.push(...state.elements.filter(e=>e.page==='detail:'+entry.group)
+   .map(e=>({...COPY(e),id:'element-'+serial++,page})));
+}
+function syncRecordsToGroups(){for(const group of GROUP_ORDER)state.groups[group].names=recordList(group).map(r=>r.title);}
+function migrateSeparateLists(){
+ // Ajouter seulement lors d'une migration d'ancien atelier. Ne jamais
+ // recréer des calques supprimés volontairement par l'utilisateur en V7.
+ for(const group of GROUP_ORDER){
+  const page='category:'+group,legacy=state.elements.find(e=>e.page===page&&e.kind==='list'&&e.source===group);
+  if(legacy&&!legacy.listMode)legacy.listMode='records';
+  if(legacy&&!state.elements.some(e=>e.page===page&&e.kind==='list'&&e.source===group&&e.listMode==='folders')){
+    state.elements.push(layer(page,'list','Liste des sous-catégories','',55,76,34,17,
+     {size:24,columns:2,source:group,listMode:'folders'}));
+  }
+ }
+ for(const e of state.elements)
+  if(e.kind==='list'&&e.source&&!e.listMode)e.listMode='records';
+}
+function visibleLayers(){
+ const personal=view.entryId?recordPage(view.entryId):'';
+ const page=personal&&state.elements.some(e=>e.page===personal)?personal:view.page;
+ return state.elements.filter(e=>e.page==='*'||e.page===page).sort((a,b)=>(a.z??30)-(b.z??30));
+}
+function orderedLayers(){return visibleLayers().filter(e=>!e.hidden);}
+function sanitizeRich(text){
+ // Parser sûr : jamais d'insertion de HTML provenant de la saisie.
+ // Marqueurs accessibles aux champs : **gras**, __souligné__, *italique*.
+ const fragment=document.createDocumentFragment();
+ const regex=/(\*\*([^*\n]+)\*\*|__([^_\n]+)__|\*([^*\n]+)\*)/g;
+ let start=0, match;
+ while((match=regex.exec(text))){
+  if(match.index>start)fragment.append(document.createTextNode(text.slice(start,match.index)));
+  const tag=match[2]!==undefined?'strong':match[3]!==undefined?'u':'em';
+  const node=document.createElement(tag);node.textContent=match[2]??match[3]??match[4];fragment.append(node);
+  start=regex.lastIndex;
+ }
+ if(start<text.length)fragment.append(document.createTextNode(text.slice(start)));
+ return fragment;
+}
+function setView(page,name=null,requestedFolder=null){
+ const group=page.split(':')[1];
+ if(page!=='sommaire'&&!state.groups[group])return;
+ const entry=page.startsWith('detail:')&&name?RECORDS.find(state.records,group,name):null;
+ if(name&&page.startsWith('detail:')&&!entry)return;
+ if(entry&&(entry.status==='archived'||!FOLDERS.available(state.folders,group,entry.folderId)))return;
+ if(entry&&mode==='edit')ensureRecordPage(entry);
+ // Conserver le niveau depuis lequel la fiche est ouverte :
+ // la liste générale doit pouvoir ouvrir directement les fiches classées.
+ const contextFolder=entry?(arguments.length>=3?requestedFolder:entry.folderId):requestedFolder;
+ const folderId=(entry||page.startsWith('category:'))&&
+   FOLDERS.available(state.folders,group,contextFolder)?contextFolder:null;
+ view={page,group:group||null,name:entry?.title||null,entryId:entry?.id||null,folderId:folderId||null};
+ const visible=visibleLayers();
+ if(!visible.some(e=>e.id===selected))selected=visible.find(e=>e.page!=='*')?.id||visible[0]?.id||null;
+ $('#page-select').value=page;
+ if(group&&$('#group-edit').value!==group){$('#group-edit').value=group;renderRecordManager(entry?.id);renderFolderManager();}
+ else if(group&&entry)renderRecordManager(entry.id);
+ renderLayers();renderLayerList();renderEditor();updateInfo();
+}
+function performAction(action,target,entry){
+ if(action==='home')return setView('sommaire');
+ if(action==='category')return setView('category:'+target);
+ if(action==='detail')return setView('detail:'+target,entry);
+ if(action==='back'){
+   if(view.entryId)return setView('category:'+view.group,null,view.folderId);
+   if(view.folderId){const folder=FOLDERS.find(state.folders,view.folderId);return setView('category:'+view.group,null,folder?.parentId);}
+   return setView(view.group?'category:'+view.group:'sommaire');
+  }
+ if(action==='next'||action==='prev'){
+  const direction=action==='next'?1:-1;
+  if(view.page.startsWith('detail:')){
+    const list=view.folderId?folderRecords(view.group,view.folderId):recordList(view.group);
+    const ix=list.findIndex(e=>e.id===view.entryId)+direction;
+    if(view.entryId&&ix>=0&&ix<list.length)setView(view.page,list[ix].id,view.folderId);
+    else note(ix<0?'Début de cette catégorie.':'Fin de cette catégorie.');
+    return;
+  }
+  const i=view.page==='sommaire'?-1:GROUP_ORDER.indexOf(view.group);
+  const n=i+direction;
+  if(n===-1){setView('sommaire');return;}
+  if(n>=0&&n<GROUP_ORDER.length)setView('category:'+GROUP_ORDER[n]);
+ }
+}
+function drawList(node,e){
+ const linked=e.source&&state.groups[e.source];
+ const modeName=e.listMode||(linked?'records':'manual');
+ const inCategory=linked&&view.page==='category:'+e.source;
+ const back=modeName==='folders'&&inCategory&&!!view.folderId;
+ let entries=[];
+ if(modeName==='custom'){
+  entries=CUSTOM_LISTS.normalize(e.listItems).filter(item=>item.label).map(item=>({
+   title:item.label,kind:'custom',destination:CUSTOM_LISTS.resolve(item,state.records,state.folders,FOLDERS.available)
+  }));
+ }else if(linked&&modeName==='folders'){
+  entries=inCategory?FOLDERS.list(state.folders,e.source,view.folderId)
+    .map(f=>({title:f.title,id:f.id,kind:'folder'})):[];
+ }else if(linked&&modeName==='records'){
+  const records=inCategory&&view.folderId?folderRecords(e.source,view.folderId):recordList(e.source);
+  entries=records.map(r=>({title:r.title,id:r.id,kind:'record'}));
+ }else{
+  entries=String(e.text||'').split('\n').map(x=>x.trim()).filter(Boolean)
+    .map(title=>({title,id:null,kind:'manual'}));
+ }
+ // Les deux listes sont autonomes. Un calque fiches ne contient jamais de lien dossier.
+ // Chaque page possède sa propre pagination, qui ne déplace aucun calque.
+ node.classList.add('paginated-list');
+ node.style.height=e.h+'%';node.style.minHeight='0';
+ const columns=Math.max(1,Math.min(6,Math.round(Number(e.columns)||1)));
+ let canvas=null;
+ try{canvas=document.createElement('canvas').getContext('2d');}catch{}
+ if(canvas)canvas.font=(e.italic?'italic ':'')+(e.bold?'700 ':'')+e.size+'px '+(e.font||'Kalam');
+ const maxHeight=e.h/100*1024-(back?Math.max(25,e.size*.85):0);
+ const pages=PAGINATION.paginate(entries,{columns,width:e.w/100*1536,
+  height:maxHeight,size:e.size,line:e.line,
+  columnGap:safeNum(e.columnGap,12,0,80),rowGap:safeNum(e.rowGap,0,0,80),
+  measure:canvas?text=>canvas.measureText(text).width:null});
+ const key=[view.page,view.folderId||'root',view.entryId||'none',e.id].join('|');
+ const index=Math.max(0,Math.min(pages.length-1,listPagePositions.get(key)||0));
+ listPagePositions.set(key,index);
+ if(back){
+  const btn=document.createElement('button');btn.className='list-return';btn.type='button';
+  btn.textContent='← '+(FOLDERS.find(state.folders,view.folderId)?.parentId?
+    folderLabel(e.source,FOLDERS.find(state.folders,view.folderId).parentId):state.groups[e.source].label);
+  btn.style.cssText='color:inherit;font:inherit;font-size:.8em;text-align:left;background:none;border:0;cursor:pointer;min-height:25px';
+  btn.tabIndex=mode==='test'?0:-1;
+  btn.addEventListener('click',event=>{if(mode==='test'){event.stopPropagation();performAction('back');}});
+  node.append(btn);
+ }
+ const current=pages[index]||[];
+ const layout=PAGINATION.listLayout(current,columns,e.w/100*1536,e.size,
+  canvas?text=>canvas.measureText(text).width:null,safeNum(e.columnGap,12,0,80));
+ const rows=layout.rows;
+ const list=document.createElement('div');list.className='words';
+ list.classList.toggle('single-line',layout.singleLine);
+ list.classList.toggle('custom-list',modeName==='custom');
+ if(modeName==='custom')list.style.justifyItems=e.align==='center'?'center':e.align==='right'?'end':'start';
+ list.style.gridTemplateRows='repeat('+rows+',auto)';
+ list.style.columnGap=layout.columnGap+'px';
+ list.style.rowGap=safeNum(e.rowGap,0,0,80)+'px';
+ list.style.gridTemplateColumns=layout.widths.map(width=>width+'px').join(' ');
+ list.style.alignContent='start'; // Ne pas étirer les lignes pour remplir toute la hauteur du calque.
+ for(const entry of current){
+  const btn=document.createElement('button');btn.className='word';btn.type='button';
+  btn.textContent=(entry.kind==='folder'?'▸ ':'')+entry.title;
+  const inactive=entry.kind==='custom'&&!entry.destination;
+  btn.tabIndex=mode==='test'&&!inactive?0:-1;
+  if(inactive){btn.setAttribute('aria-disabled','true');btn.title='Aucune destination disponible pour ce nom.';}
+  if(entry.kind==='folder')btn.setAttribute('aria-label','Ouvrir la rubrique '+entry.title);
+  btn.addEventListener('click',ev=>{
+   if(mode!=='test')return;ev.stopPropagation();
+   if(entry.kind==='custom'){
+    const dest=entry.destination;
+    if(!dest)return;
+    if(dest.action==='folder')return setView('category:'+dest.group,null,dest.entry);
+    return performAction(dest.action,dest.group,dest.entry);
+   }
+   const group=e.source||view.group;
+   if(!group||!state.groups[group])return;
+   if(entry.kind==='folder')return setView('category:'+group,null,entry.id);
+   setView('detail:'+group,entry.id||entry.title,view.folderId);
+  });
+  list.append(btn);
+ }
+ node.append(list);
+ if(pages.length>1){
+  const pager=document.createElement('div');pager.className='list-pagination';
+  const before=document.createElement('button'),after=document.createElement('button'),label=document.createElement('span');
+  before.type=after.type='button';
+  before.textContent='‹';after.textContent='›';
+  before.title='Page précédente';after.title='Page suivante';
+  before.setAttribute('aria-label',e.name+' : page précédente');
+  after.setAttribute('aria-label',e.name+' : page suivante');
+  label.textContent=(index+1)+' / '+pages.length;
+  label.setAttribute('aria-label','Page '+(index+1)+' sur '+pages.length);
+  before.disabled=index===0||mode!=='test';
+  after.disabled=index===pages.length-1||mode!=='test';
+  const move=(delta,ev)=>{
+   if(mode!=='test')return;ev.stopPropagation();
+   listPagePositions.set(key,index+delta);
+   renderLayers();
+   const next=surface.querySelector('[data-id="'+e.id+'"] .list-pagination button'+(delta<0?':first-child':':last-child'));
+   next?.focus({preventScroll:true});
+  };
+  before.addEventListener('click',ev=>move(-1,ev));
+  after.addEventListener('click',ev=>move(1,ev));
+  pager.append(before,label,after);node.append(pager);
+ }
+}
+function drawBreadcrumb(node,e){
+ const group=view.group;
+ if(!group)return;
+ const groupButton=document.createElement('button');groupButton.type='button';
+ groupButton.textContent=state.groups[group].label;
+ groupButton.addEventListener('click',ev=>{if(mode==='test'){ev.stopPropagation();setView('category:'+group);}});
+ groupButton.tabIndex=mode==='test'?0:-1;node.append(groupButton);
+ const trail=FOLDERS.lineage(state.folders,view.folderId).filter(f=>f.group===group);
+ for(const folder of trail){
+  const divider=document.createElement('span');divider.textContent='›';node.append(divider);
+  const link=document.createElement('button');link.type='button';link.textContent=folder.title;
+  link.addEventListener('click',ev=>{if(mode==='test'){ev.stopPropagation();setView('category:'+group,null,folder.id);}});
+  link.tabIndex=mode==='test'?0:-1;node.append(link);
+ }
+ if(view.entryId){const label=document.createElement('span');label.textContent='› '+view.name;node.append(label);}
+}
+function applyLayerStyles(node,e){
+ node.style.left=e.x+'%';node.style.top=e.y+'%';node.style.width=e.w+'%';
+ node.style.zIndex=String(safeNum(e.z,30,-100,2000));
+ node.style.visibility=e.hidden?'hidden':'visible';
+ node.style.mixBlendMode=e.kind==='image'?(e.blend||'normal'):'normal';
+ node.style.minHeight=e.kind==='line'?'0':e.h+'%';
+ node.style.height=['image','hotspot','tab','line'].includes(e.kind)?e.h+'%':'auto';
+ node.style.fontSize=e.size+'px';node.style.lineHeight=String(e.line);
+ node.style.color=e.color;node.style.opacity=e.opacity/100;
+ node.style.textAlign=e.align;
+ node.style.transform=`rotate(${e.rotate}deg)`;
+ node.style.fontFamily=`'${e.font.replaceAll("'",'')}', cursive`;
+ node.style.fontWeight=e.bold||e.kind==='heading'||e.kind==='tab'?'700':'400';
+ node.style.fontStyle=e.italic?'italic':'normal';
+ node.style.textDecoration=e.underline?'underline':'none';
+ node.dataset.locked=String(!!e.locked);
+ if(e.kind==='hotspot')node.style.fontFamily='Arial,sans-serif';
+}
+function makeLayer(e){
+ const el=document.createElement('div');el.className='layer';el.dataset.id=e.id;el.dataset.kind=e.kind;el.tabIndex=mode==='edit'?0:(e.action!=='none'&&e.kind!=='list'&&e.kind!=='breadcrumb'?0:-1);
+ if(e.id===selected&&mode==='edit')el.classList.add('selected');
+ if(e.action!=='none'||e.kind==='list'||e.kind==='breadcrumb')el.classList.add('interactive');
+ el.setAttribute('aria-label',e.name+(e.action!=='none'?' · zone interactive':''));
+ applyLayerStyles(el,e);
+ if(e.kind==='list')drawList(el,e);
+ else if(e.kind==='breadcrumb')drawBreadcrumb(el,e);
+ else if(e.kind==='hotspot'){
+    const caption=document.createElement('span');caption.className='hit-caption';caption.textContent=e.name;el.append(caption);
+ }else if(e.kind==='image'){
+    if(e.image){const pic=document.createElement('img');pic.src=e.image;pic.alt=e.name;pic.style.objectFit=e.imageFit||'contain';el.append(pic);}else if(mode==='edit')el.textContent='[ Importer une image ]';
+ }else if(['text','heading'].includes(e.kind)){
+    el.classList.add('rich-block');
+    const value=view.folderId&&view.page.startsWith('category:')&&e.name==='Titre de la catégorie'?
+      folderLabel(view.group,view.folderId):readable(e.text);
+    const label=e.action==='back'&&e.name==='Retour à la liste'?
+      '← '+(view.folderId?folderLabel(view.group,view.folderId):state.groups[view.group].label):value;
+    el.append(sanitizeRich(label));
+  }
+ else if(e.kind!=='line')el.textContent=readable(e.text);
+ if(mode==='edit'){
+   if(!e.locked)el.addEventListener('pointerdown',ev=>startDrag(ev,e.id));
+   el.addEventListener('click',()=>selectLayer(e.id));
+   if(!e.locked&&e.kind!=='line'){
+     for(const dir of ['nw','ne','sw','se']){
+       const h=document.createElement('span');
+       h.className='resize-handle';
+       h.dataset.dir=dir;
+       h.title='Redimensionner';
+       h.addEventListener('pointerdown',ev=>startResize(ev,e.id,dir));
+       h.addEventListener('click',ev=>ev.stopPropagation());
+       el.append(h);
+     }
+   }
+ }else if(e.kind==='image'&&e.image&&IMAGE_ZOOM.enabled(e)){
+   IMAGE_ZOOM.attach(el,e);
+ }else if(e.action!=='none'){
+   el.addEventListener('click',()=>performAction(e.action,e.target,e.entry));
+   el.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();performAction(e.action,e.target,e.entry);}});
+ }
+ return el;
+}
+function renderLayers(){
+ surface.replaceChildren();book.classList.toggle('edit-mode',mode==='edit');book.classList.toggle('test-mode',mode==='test');book.classList.toggle('show-grid',state.grid);
+ for(const e of visibleLayers()) surface.append(makeLayer(e));
+}
+function renderLayerList(){
+ const list=$('#layers');list.replaceChildren();
+ const layers=visibleLayers().slice().reverse();
+ for(const e of layers){
+   const b=document.createElement('button');b.type='button';b.className='item'+(selected===e.id?' selected':'');b.setAttribute('role','option');b.setAttribute('aria-selected',String(selected===e.id));
+   const text=document.createElement('span');text.textContent=(e.hidden?'◌ ':e.locked?'🔒 ':'')+e.name;
+   const small=document.createElement('small');small.textContent='Niv. '+(e.z??30)+(e.page==='*'?' · global':' · '+e.kind);
+   b.append(text,small);b.addEventListener('click',()=>selectLayer(e.id));list.append(b);
+ }
+}
+function selectLayer(id){selected=id;renderLayerList();renderEditor();
+ for(const el of surface.querySelectorAll('.layer'))el.classList.toggle('selected',el.dataset.id===id&&mode==='edit');
+}
+function syncInput(id,val){const node=$('#'+id);if(node)node.value=val;}
+function customDestinationOptions(select){
+ select.add(new Option('Aucun lien','none'));
+ select.add(new Option('Accueil du journal','home'));
+ const categories=document.createElement('optgroup');categories.label='Listes des catégories';
+ for(const group of GROUP_ORDER)categories.append(new Option(state.groups[group].label,'category:'+group));
+ select.append(categories);
+ for(const group of GROUP_ORDER){
+  const section=document.createElement('optgroup');section.label='Fiches · '+state.groups[group].label;
+  for(const rec of recordList(group))section.append(new Option(rec.title,'detail:'+rec.id));
+  if(section.children.length)select.append(section);
+  const folders=document.createElement('optgroup');folders.label='Sous-menus · '+state.groups[group].label;
+  for(const {folder} of walkFolders(group))if(FOLDERS.available(state.folders,group,folder.id))
+   folders.append(new Option(folderPath(group,folder.id),'folder:'+folder.id));
+  if(folders.children.length)select.append(folders);
+ }
+}
+function renderCustomListEditor(e){
+ e.listItems=CUSTOM_LISTS.normalize(e.listItems);
+ const picker=$('#custom-list-pick'),previous=picker.value;
+ picker.replaceChildren();
+ for(const group of GROUP_ORDER){
+  const section=document.createElement('optgroup');section.label=state.groups[group].label;
+  for(const rec of recordList(group))section.append(new Option(rec.title,rec.id));
+  if(section.children.length)picker.append(section);
+ }
+ if(Array.from(picker.options).some(option=>option.value===previous))picker.value=previous;
+ else if(view.group||e.source){
+  const first=recordList(view.group||e.source)[0];if(first)picker.value=first.id;
+ }
+ const full=e.listItems.length>=240;
+ $('#custom-list-add-record').disabled=full||!picker.options.length;
+ $('#custom-list-add-name').disabled=full;
+ const root=$('#custom-list-items');root.replaceChildren();
+ e.listItems.forEach((item,index)=>{
+  const row=document.createElement('div');row.style.cssText='padding:10px 0;border-top:1px solid #51422e';
+  const makeField=(caption,control,suffix)=>{
+   const field=document.createElement('div');field.className='field';
+   const label=document.createElement('label');label.textContent=caption;
+   control.id='custom-list-'+suffix+'-'+index;label.htmlFor=control.id;
+   field.append(label,control);row.append(field);
+  };
+  const label=document.createElement('input');label.type='text';label.maxLength=100;label.value=item.label;label.placeholder='Nom à afficher dans le livre';
+  makeField('Nom affiché '+(index+1),label,'label');
+  label.addEventListener('input',()=>{item.label=label.value.slice(0,100);updateCurrentElement();});
+  const select=document.createElement('select');customDestinationOptions(select);
+  const selectedValue=CUSTOM_LISTS.value(item);
+  if(!Array.from(select.options).some(option=>option.value===selectedValue)){
+   const unavailable=new Option('Destination indisponible (supprimée ou archivée)',selectedValue);unavailable.disabled=true;select.add(unavailable);
+  }
+  select.value=selectedValue;makeField('Destination du nom '+(index+1),select,'destination');
+  select.addEventListener('change',()=>{
+   Object.assign(item,CUSTOM_LISTS.destination(select.value),{label:item.label});
+   if(!item.label&&select.value!=='none')item.label=select.selectedOptions[0].textContent;
+   listPagePositions.clear();updateCurrentElement();renderCustomListEditor(e);
+  });
+  const buttons=document.createElement('div');buttons.className='buttons';
+  const control=(title,caption,disabled,work)=>{
+   const button=document.createElement('button');button.type='button';button.className='btn small';button.textContent=caption;
+   button.setAttribute('aria-label',title+' '+(index+1));button.disabled=disabled;
+   button.addEventListener('click',()=>{work();listPagePositions.clear();updateCurrentElement();renderCustomListEditor(e);});
+   buttons.append(button);
+  };
+  control('Monter le nom','↑',index===0,()=>{[e.listItems[index-1],e.listItems[index]]=[e.listItems[index],e.listItems[index-1]];});
+  control('Descendre le nom','↓',index===e.listItems.length-1,()=>{[e.listItems[index+1],e.listItems[index]]=[e.listItems[index],e.listItems[index+1]];});
+  control('Retirer le nom','Retirer',false,()=>{e.listItems.splice(index,1);});
+  row.append(buttons);root.append(row);
+ });
+ $('#custom-list-count').textContent=e.listItems.length
+  ?e.listItems.length+' nom(s) · retirer un nom ne supprime jamais sa fiche.'
+  :'Liste vide : ajoute une fiche ou un nom libre, puis choisis sa destination.';
+}
+function addCustomListItem(item){
+ const e=getSelected();if(!e||e.kind!=='list'||e.listMode!=='custom')return;
+ e.listItems=CUSTOM_LISTS.normalize(e.listItems);if(e.listItems.length>=240)return;
+ e.listItems.push(CUSTOM_LISTS.normalize([item])[0]);
+ listPagePositions.clear();updateCurrentElement();renderCustomListEditor(e);
+}
+function renderEditor(){
+ const e=getSelected(), enabled=!!e;
+ $('#editor-panel').classList.toggle('is-hidden',!enabled);
+ if(!e)return;
+ const ids={name:'el-name',text:'el-text',x:'el-x',y:'el-y',w:'el-w',h:'el-h',size:'el-size',font:'el-font',color:'el-color',align:'el-align',columns:'el-columns',line:'el-line',columnGap:'el-column-gap',rowGap:'el-row-gap',rotate:'el-rotate',opacity:'el-opacity',z:'el-z',action:'el-action',target:'el-target',entry:'el-entry',imageFit:'el-imagefit',blend:'el-blend'};
+ for(const [key,id] of Object.entries(ids))syncInput(id,e[key]);
+ syncInput('el-scope',e.page==='*'?'global':'page');
+ syncInput('el-listmode',e.listMode||(e.source?'records':'manual'));
+ for(const p of ['locked','hidden','bold','italic','underline'])$('#el-'+p).checked=!!e[p];
+ syncInput('el-imageopacity',e.opacity);syncInput('el-imagerotate',e.rotate);
+ syncInput('el-imagezoom',typeof e.zoomable==='boolean'?(e.zoomable?'yes':'no'):'auto');
+ $('#image-settings').classList.toggle('is-hidden',e.kind!=='image');
+ $('#format-controls').classList.toggle('is-hidden',!['heading','text','tab'].includes(e.kind));
+ $('#list-mode-field').classList.toggle('is-hidden',e.kind!=='list');
+ $('#text-field').classList.toggle('is-hidden',['hotspot','image','line','breadcrumb'].includes(e.kind));
+ $('#text-controls').classList.toggle('is-hidden',['hotspot','image','line'].includes(e.kind));
+ $('#action-field').classList.toggle('is-hidden',['image','line','list','breadcrumb'].includes(e.kind));
+ $('#target-field').classList.toggle('is-hidden',!['category','detail'].includes(e.action));
+ $('#entry-field').classList.toggle('is-hidden',e.action!=='detail');
+ $('#import-image').disabled=e.kind!=='image';
+ $('#el-text').placeholder=e.kind==='list'?'Un nom par ligne. Les listes liées sont éditées plus bas.':'Texte de ton choix';
+ const custom=e.kind==='list'&&e.listMode==='custom';
+ $('#custom-list-editor').classList.toggle('is-hidden',!custom);
+ if(custom)renderCustomListEditor(e);
+ if(custom)$('#text-field').classList.add('is-hidden');
+ const linkedList=e.kind==='list'&&['records','folders'].includes(e.listMode)&&!!e.source;
+ $('#el-text').disabled=linkedList;
+ $('#list-linked-help').classList.toggle('is-hidden',!linkedList);
+ $('#el-column-gap-field').classList.toggle('is-hidden',e.kind!=='list');
+ $('#el-row-gap-field').classList.toggle('is-hidden',e.kind!=='list');
+}
+function fitStage(){
+ if(VIEWER_ONLY){
+  window.PHASMO_JOURNAL_VIEWER_ZOOM?.fit();
+  return;
+ }
+ // L'atelier conserve son zoom V4.3 indépendant.
+ const fit=Math.min(1,Math.max(.18,(viewport.clientWidth-48)/1536));
+ currentScale=fit*state.zoom/100;
+ book.style.transform=`scale(${currentScale})`;
+ wrap.style.width=1536*currentScale+'px';wrap.style.height=1024*currentScale+'px';
+ $('#zoom-label').textContent=state.zoom+' %';
+}
+function updateInfo(){
+ $('#view-info').textContent=(mode==='edit'?'Édition':'Test des clics')+' · '+(view.page==='sommaire'?'Sommaire':(view.name||(view.folderId?folderPath(view.group,view.folderId):state.groups[view.group].label)));
+}
+function save(){if(PUBLICATION_REMOTE_VIEW)return;clearTimeout(saveTimer);saveTimer=setTimeout(()=>{try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));}catch(e){/* Certains navigateurs bloquent le stockage local : exporter le JSON. */}},350);}
+function updateCurrentElement(){
+ const e=getSelected();if(!e)return;const old=surface.querySelector(`[data-id="${e.id}"]`);
+ if(old)old.replaceWith(makeLayer(e));renderLayerList();save();
+}
+function handleChange(key,value){
+ const e=getSelected();if(!e)return;
+ if(key==='listMode'){
+  if(value==='custom'&&!Array.isArray(e.listItems)){
+   const oldMode=e.listMode||(e.source?'records':'manual');
+   if(oldMode==='records'&&e.source)e.listItems=recordList(e.source).map(rec=>({label:rec.title,action:'detail',entry:rec.id}));
+   else if(oldMode==='folders'&&e.source)e.listItems=FOLDERS.list(state.folders,e.source,view.folderId).map(folder=>({label:folder.title,action:'folder',entry:folder.id}));
+   else e.listItems=String(e.text||'').split('\n').filter(label=>label.trim()).map(label=>({label,action:'none'}));
+   e.listItems=CUSTOM_LISTS.normalize(e.listItems);
+  }
+  e.listMode=['records','folders','manual','custom'].includes(value)?value:'manual';
+  if(e.listMode==='manual')e.source=null;
+  else if(e.listMode!=='custom')e.source=view.group||e.source||GROUP_ORDER[0];
+  listPagePositions.clear();updateCurrentElement();renderEditor();return;
+ }
+ if(['x','y','w','h','size','columns','line','columnGap','rowGap','rotate','opacity','z'].includes(key)){
+    const [min,max]=({x:[0,99],y:[0,99],w:[.5,100],h:[.5,100],size:[8,120],columns:[1,6],line:[.75,2.6],columnGap:[0,80],rowGap:[0,80],rotate:[-40,40],opacity:[0,100],z:[-100,2000]})[key];
+    e[key]=safeNum(value,e[key],min,max);
+ }else e[key]=String(value);
+ if(key==='action')renderEditor();
+ updateCurrentElement();
+}
+function startDrag(event,id){
+ if(mode!=='edit'||event.button!==0||state.elements.find(e=>e.id===id)?.locked)return;
+ selectLayer(id);
+ const el=event.currentTarget,bookRect=book.getBoundingClientRect(),e=getSelected();
+ el.focus({preventScroll:true});
+ drag={pointer:event.pointerId,id,node:el,startX:event.clientX,startY:event.clientY,x:e.x,y:e.y,w:bookRect.width,h:bookRect.height};
+ el.setPointerCapture(event.pointerId);
+ el.addEventListener('pointermove',moveDrag);el.addEventListener('pointerup',stopDrag);el.addEventListener('pointercancel',stopDrag);
+ event.preventDefault();
+}
+function moveDrag(ev){
+ if(!drag||ev.pointerId!==drag.pointer)return;
+ const e=getSelected();if(!e||e.id!==drag.id)return;
+ e.x=Math.round(safeNum(drag.x+(ev.clientX-drag.startX)/drag.w*100,drag.x,0,99)*10)/10;
+ e.y=Math.round(safeNum(drag.y+(ev.clientY-drag.startY)/drag.h*100,drag.y,0,99)*10)/10;
+ applyLayerStyles(drag.node,e);
+ syncInput('el-x',e.x);syncInput('el-y',e.y);
+}
+function stopDrag(ev){
+ if(!drag||ev.pointerId!==drag.pointer)return;
+ const node=drag.node;node.removeEventListener('pointermove',moveDrag);node.removeEventListener('pointerup',stopDrag);node.removeEventListener('pointercancel',stopDrag);drag=null;save();
+}
+function clampBox(box){
+ const minW=.5,minH=.5;
+ box.x=safeNum(box.x,0,0,99);
+ box.y=safeNum(box.y,0,0,99);
+ box.w=safeNum(box.w,minW,minW,100-box.x);
+ box.h=safeNum(box.h,minH,minH,100-box.y);
+ box.w=Math.min(box.w,100-box.x);
+ box.h=Math.min(box.h,100-box.y);
+ return box;
+}
+function startResize(event,id,dir){
+ if(mode!=='edit'||event.button!==0||state.elements.find(e=>e.id===id)?.locked)return;
+ event.stopPropagation();event.preventDefault();
+ selectLayer(id);
+ const el=event.currentTarget.closest('.layer'),bookRect=book.getBoundingClientRect(),e=getSelected();
+ resizeDrag={pointer:event.pointerId,id,dir,node:el,handle:event.currentTarget,startX:event.clientX,startY:event.clientY,x:e.x,y:e.y,w:e.w,h:e.h,bookW:bookRect.width,bookH:bookRect.height};
+ event.currentTarget.setPointerCapture(event.pointerId);
+ event.currentTarget.addEventListener('pointermove',moveResize);
+ event.currentTarget.addEventListener('pointerup',stopResize);
+ event.currentTarget.addEventListener('pointercancel',stopResize);
+}
+function moveResize(ev){
+ if(!resizeDrag||ev.pointerId!==resizeDrag.pointer)return;
+ const e=getSelected();if(!e||e.id!==resizeDrag.id)return;
+ const dx=(ev.clientX-resizeDrag.startX)/resizeDrag.bookW*100;
+ const dy=(ev.clientY-resizeDrag.startY)/resizeDrag.bookH*100;
+ let box={x:resizeDrag.x,y:resizeDrag.y,w:resizeDrag.w,h:resizeDrag.h};
+ if(resizeDrag.dir.includes('e')) box.w=resizeDrag.w+dx;
+ if(resizeDrag.dir.includes('s')) box.h=resizeDrag.h+dy;
+ if(resizeDrag.dir.includes('w')){ box.x=resizeDrag.x+dx; box.w=resizeDrag.w-dx; }
+ if(resizeDrag.dir.includes('n')){ box.y=resizeDrag.y+dy; box.h=resizeDrag.h-dy; }
+ box=clampBox(box);
+ e.x=Math.round(box.x*10)/10; e.y=Math.round(box.y*10)/10; e.w=Math.round(box.w*10)/10; e.h=Math.round(box.h*10)/10;
+ applyLayerStyles(resizeDrag.node,e);
+ syncInput('el-x',e.x);syncInput('el-y',e.y);syncInput('el-w',e.w);syncInput('el-h',e.h);
+}
+function stopResize(ev){
+ if(!resizeDrag||ev.pointerId!==resizeDrag.pointer)return;
+ const handle=resizeDrag.handle;
+ handle.removeEventListener('pointermove',moveResize);
+ handle.removeEventListener('pointerup',stopResize);
+ handle.removeEventListener('pointercancel',stopResize);
+ resizeDrag=null;save();
+}
+function setMode(next){mode=next;$('#edit-mode').classList.toggle('active',mode==='edit');$('#test-mode').classList.toggle('active',mode==='test');
+ if(mode==='edit'&&view.entryId){const entry=RECORDS.find(state.records,view.group,view.entryId);if(entry)ensureRecordPage(entry);}
+ if(!visibleLayers().some(e=>e.id===selected))selected=visibleLayers().find(e=>e.page!=='*')?.id||null;
+ renderLayers();renderLayerList();renderEditor();updateInfo();
+ note(mode==='test'?'Mode Test : clique sur les onglets, listes et flèches.':'Mode Édition : déplace ou redimensionne les calques sélectionnés.');
+}
+function add(kind){
+ if(mode!=='edit')setMode('edit');
+ const base={heading:['Nouveau titre',45,14,32,8],text:['Nouveau texte',45,26,32,10],list:['Nom 1\nNom 2\nNom 3',45,40,32,16],tab:['NOUVEL ONGLET',58,5,13,6],hotspot:['',60,55,15,10],image:['',55,35,25,25],line:['',22,62,22,1]}[kind];
+ const e=layer(view.entryId?recordPage(view.entryId):view.page,kind,(kind==='hotspot'?'Zone cliquable':kind==='tab'?'Onglet':kind==='image'?'Image':kind==='line'?'Trait':'Calque')+' '+serial,base[0],base[1],base[2],base[3],base[4],kind==='hotspot'?{action:'home'}:{});
+ if(kind==='tab')e.action='category';
+ if(kind==='list'){e.listMode='custom';e.listItems=[];e.text='';e.columns=1;}
+ state.elements.push(e);selected=e.id;renderLayers();renderLayerList();renderEditor();save();note('Calque ajouté. Glisse-le à l’endroit voulu.');
+}
+function addNavigationLayer(kind){
+ if(mode!=='edit')setMode('edit');
+ if(kind==='folders'&&!view.page.startsWith('category:')){
+  note('Choisis d’abord une « Liste · ... » dans le menu « Vue à travailler ».');return;
+ }
+ if(kind==='breadcrumb'&&!/^(category|detail):/.test(view.page)){
+  note('Choisis une catégorie ou un modèle de fiche pour ajouter son fil d’Ariane.');return;
+ }
+ const page=view.entryId?recordPage(view.entryId):view.page;
+ const e=kind==='folders'
+  ?layer(page,'list','Liste des sous-catégories','',55,76,34,17,{size:24,columns:2,source:view.group,listMode:'folders'})
+  :layer(page,'breadcrumb','Fil d’Ariane','',10,8,37,4,{size:24,font:'Kalam',z:38});
+ state.elements.push(e);selected=e.id;
+ renderLayers();renderLayerList();renderEditor();save();
+ note(kind==='folders'?'Liste des rubriques créée : tu peux la déplacer et la redimensionner librement.':'Fil d’Ariane créé : position et apparence libres.');
+}
+function cloneLayer(){const e=getSelected();if(!e)return;const newEl=COPY(e);newEl.id='element-'+serial++;newEl.name=e.name+' (copie)';newEl.x=Math.min(96,e.x+1.5);newEl.y=Math.min(96,e.y+1.5);state.elements.push(newEl);selectLayer(newEl.id);renderLayers();save();}
+let pendingDeleteId=null;
+function removeLayer(){
+ if(mode!=='edit'){note('Passe en mode Édition pour supprimer une zone.');return;}
+ const e=getSelected();
+ if(!e){note('Sélectionne d’abord une zone à supprimer.');return;}
+ pendingDeleteId=e.id;
+ $('#delete-layer-description').textContent='Supprimer « '+e.name+' » du prototype ?';
+ const modal=$('#delete-layer-dialog');
+ if(!modal.open)modal.showModal();
+ $('#confirm-delete-layer').focus();
+}
+function confirmDeleteLayer(){
+ const modal=$('#delete-layer-dialog');
+ const e=state.elements.find(item=>item.id===pendingDeleteId);
+ pendingDeleteId=null;
+ modal.close();
+ if(!e){note('Ce calque n’existe plus.');return;}
+ state.elements=state.elements.filter(item=>item.id!==e.id);
+ selected=visibleLayers().slice().reverse()[0]?.id||null;
+ renderLayers();renderLayerList();renderEditor();
+ save();
+ note('Zone supprimée : '+e.name+'.');
+}
+
+function walkFolders(group,parentId=null,depth=0){
+ if(depth>20)return [];
+ return FOLDERS.list(state.folders,group,parentId,true).flatMap(f=>[
+  {folder:f,depth},
+  ...walkFolders(group,f.id,depth+1)
+ ]);
+}
+function fillFolderSelect(node,group,currentId=null,withArchives=false){
+ node.replaceChildren();
+ node.add(new Option('Directement dans '+state.groups[group].label,''));
+ for(const row of walkFolders(group)){
+  const f=row.folder;
+  if(!withArchives&&!FOLDERS.available(state.folders,group,f.id))continue;
+  node.add(new Option('　'.repeat(row.depth+1)+f.title+(f.status==='archived'?' [Archive]':''),f.id));
+ }
+ node.value=currentId||'';
+ if(node.selectedIndex<0)node.value='';
+}
+function fillMoveFolderOptions(current){
+ fillFolderSelect($('#record-move-folder'),$('#record-move-group').value,current||null);
+}
+function renderRecordManager(wanted){
+ if(VIEWER_ONLY)return;
+ const group=$('#group-edit').value||GROUP_ORDER[0],select=$('#record-select');
+ const prior=wanted||select.value;
+ const selectedCreateFolder=$('#record-folder').value;
+ fillFolderSelect($('#record-folder'),group,selectedCreateFolder);
+ select.replaceChildren();
+ for(const rec of recordList(group,true)){
+  const where=rec.folderId?' · '+folderPath(group,rec.folderId):'';
+  select.add(new Option('['+(rec.status==='archived'?'Archive':rec.status==='demo'?'Exemple':'Brouillon')+'] '+rec.title+where,rec.id));
+ }
+ select.value=prior;
+ if(select.selectedIndex<0&&select.length)select.selectedIndex=0;
+ const rec=RECORDS.find(state.records,group,select.value);
+ $('#record-title').value=rec?.title||'';
+ $('#record-location').textContent=rec?
+  'Emplacement : '+(rec.folderId?folderPath(group,rec.folderId):state.groups[group].label):'Aucune fiche sélectionnée';
+ $('#record-archive').textContent=rec?.status==='archived'?'Restaurer':'Archiver';
+ for(const op of ['rename','edit','up','down','archive','delete','move'])$('#record-'+op).disabled=!rec;
+ $('#record-move-group').value=rec?.group||group;
+ fillMoveFolderOptions(rec?.folderId||null);
+}
+function renderFolderManager(wanted){
+ if(VIEWER_ONLY)return;
+ const group=$('#group-edit').value||GROUP_ORDER[0],select=$('#folder-select');
+ const prior=wanted||select.value;
+ const parentValue=$('#folder-parent').value;
+ fillFolderSelect($('#folder-parent'),group,parentValue,true);
+ select.replaceChildren();
+ for(const {folder:f,depth} of walkFolders(group)){
+  const title='　'.repeat(depth)+(f.status==='archived'?'[Archive] ':'')+f.title;
+  select.add(new Option(title,f.id));
+ }
+ select.value=prior;
+ if(select.selectedIndex<0&&select.length)select.selectedIndex=0;
+ const rec=FOLDERS.find(state.folders,select.value);
+ $('#folder-title').value=rec?.title||'';
+ if(rec)$('#folder-parent').value=rec.parentId||'';
+ else $('#folder-parent').value='';
+ $('#folder-archive').textContent=rec?.status==='archived'?'Restaurer':'Archiver';
+ for(const op of ['rename','open','move','up','down','archive','delete'])$('#folder-'+op).disabled=!rec;
+}
+function fillGroupEdit(){
+ if(!$('#group-edit').value)$('#group-edit').value=GROUP_ORDER[0];
+ renderRecordManager();renderFolderManager();
+}
+function manageFolder(action){
+ const group=$('#group-edit').value,id=$('#folder-select').value,title=$('#folder-title').value.trim(),parentId=$('#folder-parent').value||null;
+ try{
+  let folder=FOLDERS.find(state.folders,id);
+  if(action==='add')folder=FOLDERS.create(state.folders,group,parentId,title);
+  else if(action==='rename')folder=FOLDERS.rename(state.folders,id,title);
+  else if(action==='move')folder=FOLDERS.move(state.folders,id,parentId);
+  else if(action==='archive')folder=FOLDERS.archive(state.folders,id);
+  else if(action==='up'||action==='down')FOLDERS.reorder(state.folders,id,action==='up'?-1:1);
+  else if(action==='delete')folder=FOLDERS.remove(state.folders,state.records,id);
+  else if(action==='open'){
+   if(!folder||!FOLDERS.available(state.folders,group,id)){note('Restaure cette rubrique avant de l’ouvrir.');return;}
+   setView('category:'+group,null,id);note('Rubrique ouverte : '+folder.title);return;
+  }
+  const folderNotVisible=view.folderId&&!FOLDERS.available(state.folders,view.group,view.folderId);
+  if(folderNotVisible)setView('category:'+view.group);
+  renderFolderManager(action==='delete'?null:folder?.id||id);
+  renderRecordManager();
+  renderLayers();renderLayerList();renderEditor();updateInfo();save();
+  note('Sous-menu modifié localement. Enregistre le brouillon pour conserver ce changement.');
+ }catch(error){note('Sous-catégories : '+error.message);}
+}
+function manageRecord(action){
+ const group=$('#group-edit').value,id=$('#record-select').value,title=$('#record-title').value.trim();
+ try{
+  let rec=RECORDS.find(state.records,group,id);
+  if(action==='add')rec=RECORDS.create(state.records,group,title,$('#record-folder').value||null,state.folders);
+  else if(action==='rename'){
+   const oldTitle=rec?.title;
+   rec=RECORDS.rename(state.records,group,id,title);
+   if(oldTitle)for(const layer of state.elements)
+    if(layer.action==='detail'&&layer.target===group&&layer.entry===oldTitle)layer.entry=rec.id;
+  }else if(action==='edit'){
+   if(!rec||rec.status==='archived'||!FOLDERS.available(state.folders,group,rec.folderId)){
+    note('Restaure cette fiche et son dossier avant l’édition.');return;
+   }
+   if(mode!=='edit')setMode('edit');
+   setView('detail:'+group,rec.id);save();note('Fiche ouverte : '+rec.title+'.');return;
+  }else if(action==='move'){
+   if(!rec)return;
+   const destination=$('#record-move-group').value,folderId=$('#record-move-folder').value||null;
+   const previous=rec.group;
+   rec=RECORDS.move(state.records,state.folders,rec.id,destination,folderId);
+   if(previous!==rec.group){
+    for(const layer of state.elements)
+     if(layer.action==='detail'&&layer.target===previous&&(layer.entry===rec.id||layer.entry===rec.title)){layer.target=rec.group;layer.entry=rec.id;}
+   }
+   syncRecordsToGroups();
+   $('#group-edit').value=rec.group;
+   renderFolderManager();
+   renderRecordManager(rec.id);
+   if(view.entryId===rec.id)setView('detail:'+rec.group,rec.id);
+   else renderLayers();
+   renderEditor();
+   save();note('Fiche déplacée vers '+folderLabel(rec.group,rec.folderId)+'.');
+   return;
+  }else if(action==='archive')rec=RECORDS.archive(state.records,group,id);
+  else if(action==='up'||action==='down')RECORDS.reorder(state.records,group,id,action==='up'?-1:1);
+  else if(action==='delete'){
+   if(!rec)return;pendingRecordDelete=rec.id;
+   $('#delete-record-description').textContent='Supprimer « '+rec.title+' » et tous ses calques de ce navigateur ?';
+   $('#delete-record-dialog').showModal();return;
+  }
+  if(rec?.status==='archived'&&view.entryId===rec.id)setView('category:'+group,null,rec.folderId);
+  if(view.entryId===rec?.id)view.name=rec.title;
+  syncRecordsToGroups();renderRecordManager(rec?.id||id);renderLayers();renderEditor();updateInfo();save();
+  if(action==='add'){setView('detail:'+group,rec.id);save();}
+  note('Modification locale prête. Enregistre le brouillon pour la partager.');
+ }catch(err){note(err.message);}
+}
+function confirmRecordDeletion(){
+ const rec=state.records.find(e=>e.id===pendingRecordDelete);
+ $('#delete-record-dialog').close();pendingRecordDelete=null;if(!rec)return;
+ RECORDS.remove(state.records,rec.group,rec.id);
+ state.elements=state.elements.filter(e=>e.page!==recordPage(rec.id));
+ syncRecordsToGroups();
+ if(view.entryId===rec.id)setView('category:'+rec.group);
+ renderRecordManager();renderLayers();renderLayerList();renderEditor();save();note('Fiche supprimée du prototype local.');
+}
+
+function refreshFontSelects(){const select=$('#el-font'),current=select.value;select.replaceChildren();for(const [f,label] of FONTS)select.add(new Option(label,f));for(const entry of state.fonts||[])select.add(new Option('Importée · '+entry.label,entry.family));select.value=current||'Kalam';}
+async function fileData(file,limit){
+ if(file.size>limit)throw Error('Fichier trop volumineux.');
+ return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('Lecture du fichier impossible.'));reader.readAsDataURL(file);});
+}
+async function attachFont(file){
+ if(!/\.(ttf|otf|woff2?)$/i.test(file.name))throw Error('Police attendue : TTF, OTF, WOFF ou WOFF2.');
+ const data=await fileData(file,1_500_000);
+ const family='Atelier_'+Date.now().toString(36)+'_'+Math.floor(Math.random()*1e5).toString(36);
+ await registerFont({family,label:file.name.replace(/\.[^.]+$/,''),data});
+ const e=getSelected();if(e){e.font=family;renderLayers();renderEditor();}
+ save();note('Police importée : '+file.name+'.');
+}
+async function registerFont(spec){
+ if(!spec||typeof spec.family!=='string'||!/^Atelier(?:Font)?_[\w-]{1,90}$/.test(spec.family)||typeof spec.data!=='string'||!/^data:[^,]*;base64,[A-Za-z0-9+/=]+$/.test(spec.data)||spec.data.length>2_200_000)throw Error('Police non valide.');
+ if(state.fonts.some(f=>f.family===spec.family))return;
+ if(state.fonts.length>=8)throw Error('Maximum huit polices importées.');
+ const face=new FontFace(spec.family,`url("${spec.data}")`);await face.load();document.fonts.add(face);
+ state.fonts.push({family:spec.family,label:String(spec.label||'Police').slice(0,100),data:spec.data});refreshFontSelects();
+}
+async function attachImage(file){
+ const e=getSelected();if(!e||e.kind!=='image'){note('Sélectionne d’abord un calque « Image ».');return;}
+ if(!/^image\/(?:png|jpeg|webp|gif)$/.test(file.type))throw Error('Format accepté : PNG, JPG, WebP ou GIF.');
+ e.image=await mediaData(file);updateCurrentElement();note('Image optimisée et ajoutée. Tu peux déplacer, changer son ordre et redimensionner son calque.');
+}
+window.PHASMO_JOURNAL_REMOTE_BRIDGE = {
+ exportPayload: () => COPY(state),
+ resetLocalDraft: () => {
+  if(PUBLICATION_REMOTE_VIEW)throw Error('Réinitialisation indisponible en lecture.');
+  state=buildDefault();
+  listPagePositions.clear();
+  selected=state.elements[0]?.id||null;
+  fillGroupEdit();setView('sommaire');fitStage();save();
+  note('Brouillon local réinitialisé. Les versions enregistrées sur Supabase sont intactes.');
+ },
+ useLibraryAsset: async ({kind,path,data}) => {
+  const e=getSelected();
+  if(kind==='images'){
+   if(!e||e.kind!=='image')throw Error('Sélectionne un calque « Image » avant de choisir un fichier.');
+   if(!/^data:image\/(png|jpeg|webp|gif);base64,/.test(data))throw Error('Image de bibliothèque invalide.');
+   e.image=data;updateCurrentElement();
+   note('Image existante réutilisée sans nouvel import.');
+   return;
+  }
+  if(kind!=='fonts')throw Error('Catégorie de média inconnue.');
+  if(!e||!['heading','text','list','tab'].includes(e.kind))
+   throw Error('Sélectionne un calque de texte avant de choisir une police.');
+  if(!/^data:[^,]+;base64,/.test(data))throw Error('Police de bibliothèque invalide.');
+  const hash=/\/([a-f0-9]{64})\.(?:ttf|otf|woff|woff2)$/.exec(path)?.[1];
+  if(!hash)throw Error('Référence de police invalide.');
+  let font=state.fonts.find(f=>f.data===data);
+  if(!font){
+   const family='Atelier_Biblio_'+hash;
+   await registerFont({family,label:'Bibliothèque '+hash.slice(0,10),data});
+   font=state.fonts.find(f=>f.family===family);
+  }
+  e.font=font.family;
+  renderLayers();renderEditor();save();
+  note('Police existante appliquée sans nouvel import.');
+ },
+ importPayload: async payload => {
+  if (!payload || payload.version !== RECORD_SCHEMA) throw Error('Version de carnet incompatible.');
+  const blob = new Blob([JSON.stringify(payload)], {type:'application/json'});
+  await loadSettings(blob,true);
+ }
+};
+function exportSettings(){
+ const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);
+ const a=document.createElement('a');a.href=url;a.download='deadelustv-journal-reglages-complets.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);note('Réglages JSON exportés. À m’envoyer pour intégrer les valeurs au site.');
+}
+function importLegacy(data){
+ const s=buildDefault();s.grid=!!data.showGrid;s.zoom=safeNum(data.zoom,100,60,170);
+ const aliases={entites:'entites',equipements:'equipements',maps:'cartes',objets:'objets',divers:'divers'};
+ for(const [old,key] of Object.entries(aliases)){
+   if(data.groups[old])s.groups[key]={label:String(data.groups[old].label||s.groups[key].label).slice(0,90),names:(data.groups[old].names||[]).map(x=>String(x).slice(0,100)).slice(0,180)};
+   for(const mode of ['title','list']){
+     const p=data.blocks[old+':'+mode];if(!p)continue;
+     const e=s.elements.find(item=>item.page==='sommaire'&&item.name===(mode==='title'?'Titre ':'Liste ')+GROUPS[key].label);
+     if(!e)continue;
+     for(const f of ['x','y','w'])e[f]=safeNum(p[f],e[f],0,100);
+     e.size=safeNum(p.size,e.size,8,120);e.rotate=safeNum(p.rotate,e.rotate,-40,40);e.line=safeNum(p.line,e.line,.75,2.6);
+     if(mode==='list')e.columns=safeNum(data.groups[old]?.count,e.columns,1,6);
+     e.font=mode==='title'?data.titleFont||'Caveat':data.listFont||'Kalam';
+     if(mode==='title')e.text=s.groups[key].label;
+   }
+ }
+ if(/^#[0-9a-f]{6}$/i.test(data.inkColor))s.elements.filter(el=>el.page==='sommaire').forEach(el=>el.color=data.inkColor);
+ s._pendingFonts=Array.isArray(data.customFonts)?data.customFonts:[];
+ return s;
+}
+async function loadSettings(file,fromRemote=false){
+ if(file.size>(fromRemote?85_000_000:17_000_000))throw Error('JSON trop volumineux.');
+ const raw=JSON.parse(await file.text());
+ let incoming;
+ if(raw.version===1&&raw.blocks&&raw.groups)incoming=importLegacy(raw);
+ else if([2,3,4,5,6,RECORD_SCHEMA].includes(raw.version)&&Array.isArray(raw.elements)&&raw.groups&&Array.isArray(raw.fonts))incoming=raw;
+ else throw Error('Format non reconnu. Le JSON attendu vient de cet atelier ou du premier sommaire.');
+ if(incoming.elements.length>5000)throw Error('Trop de calques (maximum 5 000).');
+ const defaults=buildDefault();
+ const folders=FOLDERS.normalize(incoming.folders);
+ const records=RECORDS.normalize(incoming.records,incoming.groups,folders);
+ const recordPages=new Set(records.map(rec=>recordPage(rec.id)));
+ const permitted=['heading','text','list','hotspot','tab','image','line','breadcrumb'];
+ const cleaned=incoming.elements.filter(e=>e&&permitted.includes(e.kind)&&typeof e.name==='string'&&typeof e.page==='string'&&(e.page==='*'||VIEWS.some(v=>v.id===e.page)||recordPages.has(e.page))).map(e=>({
+   ...layer(e.page,e.kind,String(e.name).slice(0,100),String(e.text??'').slice(0,20000),0,0,12,8),
+   ...e,
+   name:String(e.name).slice(0,100),text:String(e.text??'').slice(0,20000),
+   x:safeNum(e.x,10,0,99),y:safeNum(e.y,10,0,99),w:safeNum(e.w,15,.5,100),h:safeNum(e.h,7,.5,100),
+   z:safeNum(e.z,e.page==='*'?800:30,-100,2000),locked:!!e.locked,hidden:!!e.hidden,bold:!!e.bold,italic:!!e.italic,underline:!!e.underline,
+   imageFit:['contain','cover','fill'].includes(e.imageFit)?e.imageFit:'contain',blend:['normal','multiply','screen','darken'].includes(e.blend)?e.blend:'normal',
+   zoomable:typeof e.zoomable==='boolean'?e.zoomable:undefined,
+   size:safeNum(e.size,24,8,120),columns:safeNum(e.columns,3,1,6),line:safeNum(e.line,1.16,.75,2.6),columnGap:safeNum(e.columnGap,12,0,80),rowGap:safeNum(e.rowGap,0,0,80),rotate:safeNum(e.rotate,0,-40,40),opacity:safeNum(e.opacity,100,0,100),
+   image:typeof e.image==='string'&&e.image.length<5_000_000&&/^data:image\/(?:png|jpeg|webp|gif);base64,/.test(e.image)?e.image:'',
+   source:GROUP_ORDER.includes(e.source)?e.source:null,
+   listMode:['records','folders','manual','custom'].includes(e.listMode)?e.listMode:(e.source?'records':'manual'),
+   ...(Array.isArray(e.listItems)?{listItems:CUSTOM_LISTS.normalize(e.listItems)}:{})
+ }));
+ if(cleaned.length===0)throw Error('Ce fichier ne contient aucun calque utilisable.');
+ state={...defaults,...incoming,version:RECORD_SCHEMA,folders,records,elements:cleaned,fonts:[],groups:defaults.groups};
+ for(const id of GROUP_ORDER){
+   const g=incoming.groups[id];if(!g)continue;
+   state.groups[id]={label:String(g.label||GROUPS[id].label).slice(0,90),names:(Array.isArray(g.names)?g.names:[]).slice(0,180).map(x=>String(x).slice(0,100))};
+ }
+ syncRecordsToGroups();
+ const incomingFonts=Array.isArray(incoming._pendingFonts)?incoming._pendingFonts:incoming.fonts||[];
+ for(const f of incomingFonts.slice(0,8)){
+  try{await registerFont(f);}
+  catch(error){
+   if(fromRemote)throw Error('Police enregistrée impossible à charger : '+(error?.message||'format invalide')+'. La publication reste masquée.');
+   note('Attention : une police n’a pas été chargée : '+(error?.message||'erreur inconnue'));
+  }
+ }
+ const loadedFontFamilies=new Set(state.fonts.map(f=>f.family));
+ const missingFonts=[...new Set(state.elements
+  .map(e=>e.font)
+  .filter(font=>typeof font==='string'&&/^Atelier(?:Font)?_[\w-]{1,90}$/.test(font)&&!loadedFontFamilies.has(font)))];
+ if(fromRemote&&missingFonts.length)
+  throw Error('Police personnalisée absente du document distant : '+missingFonts[0]+'. Recharge le brouillon partagé puis sauvegarde-le.');
+ // Aucune confiance dans les identifiants de l'import : recréation stable.
+ state.elements.forEach((e,i)=>e.id='element-'+(i+1));serial=state.elements.length+1;
+ if(raw.version<RECORD_SCHEMA)migrateSeparateLists();
+ listPagePositions.clear();
+ selected=state.elements[0]?.id;view={page:'sommaire',group:null,name:null,entryId:null,folderId:null};
+ $('#page-select').value=view.page;fillGroupEdit();renderLayers();renderLayerList();renderEditor();fitStage();save();note('Version chargée. Vérifie le carnet avant de l’enregistrer.');
+}
+
+function shiftLayer(direction){
+ const e=getSelected();if(!e)return;
+ const siblings=visibleLayers().filter(x=>x.id!==e.id&&x.page===e.page);
+ if(direction===-999)e.z=Math.max(-100,Math.min(0,...siblings.map(x=>Number(x.z??30)))-1);
+ else if(direction===999)e.z=Math.min(2000,Math.max(0,...siblings.map(x=>Number(x.z??30)))+1);
+ else{
+  const peers=siblings.map(x=>Number(x.z??30)).sort((a,b)=>a-b);
+  if(direction>0)e.z=Math.min(2000,peers.find(z=>z>(e.z??30))??(e.z??30))+1;
+  else e.z=Math.max(-100,peers.slice().reverse().find(z=>z<(e.z??30))??(e.z??30))-1;
+ }
+ renderLayers();renderLayerList();renderEditor();save();
+ note('Ordre modifié : '+e.name+' au niveau '+e.z+'.');
+}
+function markSelection(token){
+ const e=getSelected(),area=$('#el-text');
+ if(!e||!['text','heading','tab'].includes(e.kind))return;
+ const a=area.selectionStart,b=area.selectionEnd;
+ if(a===b){note('Sélectionne d’abord les mots à mettre en forme dans « Texte à afficher ».');area.focus();return;}
+ const selectedText=area.value.slice(a,b);
+ const next=area.value.slice(0,a)+token+selectedText+token+area.value.slice(b);
+ e.text=next;area.value=next;
+ area.focus();area.setSelectionRange(a+token.length,b+token.length);
+ updateCurrentElement();
+ note('Mise en forme ajoutée. Les marqueurs sont visibles dans le champ, mais pas sur le livre.');
+}
+function addBackground(){
+ if(mode!=='edit')setMode('edit');
+ const e=layer(view.entryId?recordPage(view.entryId):view.page,'image','Illustration en filigrane','',7,15,40,75,{opacity:25,z:1,blend:'multiply',imageFit:'contain'});
+ state.elements.push(e);selected=e.id;renderLayers();renderLayerList();renderEditor();save();
+ note('Fond ajouté : importe une image (PNG/WebP transparent conseillé), puis règle son opacité et verrouille-le.');
+}
+function mediaData(file){
+ if(!/^image\/(?:png|jpeg|webp|gif)$/.test(file.type))return Promise.reject(Error('Format accepté : PNG, JPG, WebP ou GIF.'));
+ if(file.size>7_000_000)return Promise.reject(Error('Image trop lourde (maximum 7 Mo avant optimisation).'));
+ return new Promise((resolve,reject)=>{
+  const blobUrl=URL.createObjectURL(file),img=new Image();
+  img.onload=()=>{
+    const maxDim=1600,scale=Math.min(1,maxDim/Math.max(img.naturalWidth,img.naturalHeight));
+    const cvs=document.createElement('canvas');
+    cvs.width=Math.max(1,Math.round(img.naturalWidth*scale));cvs.height=Math.max(1,Math.round(img.naturalHeight*scale));
+    const ctx=cvs.getContext('2d');ctx.drawImage(img,0,0,cvs.width,cvs.height);
+    const data=cvs.toDataURL('image/webp',.89);
+    URL.revokeObjectURL(blobUrl);
+    resolve(data.length<=4_000_000?data:cvs.toDataURL('image/webp',.75));
+  };
+  img.onerror=()=>{URL.revokeObjectURL(blobUrl);reject(Error('Image illisible.'));};
+  img.src=blobUrl;
+ });
+}
+async function importManyImages(files){
+ const candidates=files.slice(0,15);
+ if(!candidates.length)return;
+ if(mode!=='edit')setMode('edit');
+ const page=view.entryId?recordPage(view.entryId):view.page;
+ const usableSlots=state.elements.filter(e=>e.page===page&&e.kind==='image'&&!e.image&&e.role==='proof');
+ let count=0,last=null;
+ for(const [i,file] of candidates.entries()){
+  const data=await mediaData(file);
+  const e=usableSlots.shift()||layer(page,'image','Image '+file.name,'',8+((i%3)*13),44+Math.floor(i/3)*17,11,15,{z:55,opacity:100});
+  e.image=data;e.name=file.name.slice(0,90);
+  if(!state.elements.includes(e))state.elements.push(e);
+  last=e;count++;
+ }
+ selected=last.id;renderLayers();renderLayerList();renderEditor();save();
+ note(count+' images importées en calques indépendants, avec ordre et dimensions modifiables.');
+}
+function makeIllustratedTemplate(){
+ const group=(view.page.split(':')[1]||'entites');
+ if(!view.page.startsWith('detail:')){
+   note('Choisis d’abord une vue « Fiche · … » dans le menu au-dessus du livre.');return;
+ }
+ const page=view.entryId?recordPage(view.entryId):view.page;
+ const old=state.elements.filter(x=>x.page===page);
+ if(old.length&&!confirm('Remplacer les calques de cette vue par le modèle illustré ? Exporte d’abord ton JSON si nécessaire.'))return;
+ state.elements=state.elements.filter(x=>x.page!==page);
+ const put=(kind,name,text,x,y,w,h,extra={})=>state.elements.push(layer(page,kind,name,text,x,y,w,h,extra));
+ // Fond propre à une fiche. Son niveau est inférieur à tous les titres et icônes.
+ put('image','01 · Fantôme en filigrane (importer image)','',6,9,42,80,{role:'background',z:1,opacity:27,blend:'multiply',imageFit:'contain',locked:true});
+ put('heading','02 · Nom de l’entité','{{nom}}',7,5,40,11,{size:91,align:'center',z:31});
+ put('line','03 · Ligne après le nom','',5.4,17.3,41,1,{z:32});
+ put('text','04 · Seuil de chasse','Seuil de chasse :',5,22,29,8,{size:46,z:35});
+ put('text','05 · Pourcentage (à remplacer)','50 %',35,22,12,8,{size:56,z:35});
+ put('line','06 · Séparateur des preuves','',5.4,33,41,1,{z:32});
+ put('heading','07 · Preuves :','Preuves :',5,37,26,7,{size:52,align:'left',z:35});
+ for(let n=0;n<3;n++)put('image','Preuve '+(n+1)+' · importer image','',7.5+n*13.6,45,11,17,{role:'proof',z:55,opacity:100});
+ put('line','11 · Séparateur du pouvoir','',5.4,64.5,41,1,{z:32});
+ put('heading','12 · Pouvoir :','Pouvoir :',5,68,29,9,{size:52,align:'left',z:35});
+ put('text','13 · Description du pouvoir','Rédiger ici le pouvoir particulier de cette entité.',10,79,32,13,{size:38,align:'center',z:35});
+ put('heading','14 · Comportement hors chasse','Comportement Hors Chasse',52,6,41,8,{size:65,align:'center',z:35,underline:true});
+ put('text','15 · Texte hors chasse','Rédiger ici les observations hors chasse.\nAjoute ou duplique des zones si nécessaire.',52,16,40,15,{size:28,z:35,line:1.13});
+ put('heading','16 · Vitesse de chasse','Vitesse de Chasse',54,30,37,7,{size:61,align:'center',z:35,underline:true});
+ put('text','17 · Texte vitesse','Rédiger ici les informations sur la vitesse.',52,39,40,11,{size:28,z:35});
+ put('heading','18 · Comportement en chasse','Comportement en Chasse',52,51,41,7,{size:60,align:'center',z:35,underline:true});
+ put('text','19 · Texte en chasse','Rédiger ici le comportement pendant une chasse.',52,60,40,12,{size:28,z:35});
+ put('heading','20 · Astuces','Astuces',60,73,25,7,{size:65,align:'center',z:35,underline:true});
+ put('text','21 · Texte astuces','Rédiger ici les astuces utiles.',52,81,40,11,{size:27,z:35});
+ selected=state.elements.find(e=>e.name.startsWith('01 ·'))?.id;
+ renderLayers();renderLayerList();renderEditor();save();
+ note('Modèle illustré prêt : fond niveau 1, textes niveau 35 et preuves niveau 55. Sélectionne chaque calque pour importer tes images et rédiger.');
+}
+function setup(){
+ for(const v of VIEWS)$('#page-select').add(new Option(v.label,v.id));
+ for(const id of GROUP_ORDER){$('#group-edit').add(new Option(GROUPS[id].label,id));$('#record-move-group').add(new Option(GROUPS[id].label,id));}
+ refreshFontSelects();
+ $('#page-select').addEventListener('change',ev=>setView(ev.target.value));
+ $('#group-edit').addEventListener('change',fillGroupEdit);
+ $('#record-select').addEventListener('change',()=>renderRecordManager($('#record-select').value));
+ for(const action of ['add','rename','edit','up','down','archive','delete','move'])
+   $('#record-'+action).addEventListener('click',()=>manageRecord(action));
+ $('#record-move-group').addEventListener('change',()=>fillMoveFolderOptions());
+ $('#folder-select').addEventListener('change',()=>renderFolderManager($('#folder-select').value));
+ for(const action of ['add','rename','open','move','up','down','archive','delete'])
+   $('#folder-'+action).addEventListener('click',()=>manageFolder(action));
+ $('#record-delete-cancel').addEventListener('click',()=>$('#delete-record-dialog').close());
+ $('#record-delete-confirm').addEventListener('click',confirmRecordDeletion);
+ $('#delete-record-dialog').addEventListener('close',()=>{pendingRecordDelete=null;});
+ for(const key of ['name','text','x','y','w','h','size','font','color','align','columns','line','columnGap','rowGap','rotate','opacity','z','action','target','entry','imageFit','blend']){
+   $('#el-'+(key==='imageFit'?'imagefit':key==='columnGap'?'column-gap':key==='rowGap'?'row-gap':key)).addEventListener('input',ev=>{if(ev.target.value===''&&ev.target.type==='number')return;handleChange(key,ev.target.value);});
+ }
+ $('#el-listmode').addEventListener('change',ev=>handleChange('listMode',ev.target.value));
+ $('#custom-list-add-record').addEventListener('click',()=>{
+  const rec=state.records.find(rec=>rec.id===$('#custom-list-pick').value);
+  if(rec)addCustomListItem({label:rec.title,action:'detail',entry:rec.id});
+ });
+ $('#custom-list-add-name').addEventListener('click',()=>addCustomListItem({label:'',action:'none'}));
+ for(const field of ['locked','hidden','bold','italic','underline']){
+   $('#el-'+field).addEventListener('change',ev=>{const e=getSelected();if(!e)return;e[field]=ev.target.checked;renderLayers();renderLayerList();save();});
+ }
+ for(const [id,delta] of [['layer-down',-1],['layer-up',1],['layer-bottom',-999],['layer-top',999]]){
+   $('#'+id).addEventListener('click',()=>shiftLayer(delta));
+ }
+ for(const [id,token] of [['mark-bold','**'],['mark-italic','*'],['mark-underline','__']]){
+   $('#'+id).addEventListener('click',()=>markSelection(token));
+ }
+ $('#add-background').addEventListener('click',addBackground);
+ $('#add-multi-image').addEventListener('click',()=>$('#multi-image-input').click());
+ $('#multi-image-input').addEventListener('change',async ev=>{
+   try{await importManyImages(Array.from(ev.target.files));}catch(e){note('Images : '+e.message);}
+   ev.target.value='';
+ });
+ $('#make-detail-template')?.addEventListener('click',makeIllustratedTemplate);
+ for(const [id,key] of [['el-imageopacity','opacity'],['el-imagerotate','rotate']])$('#'+id).addEventListener('input',ev=>{if(ev.target.value!=='')handleChange(key,ev.target.value);});
+ $('#el-imagezoom').addEventListener('change',ev=>{
+  const e=getSelected();if(!e||e.kind!=='image')return;
+  if(ev.target.value==='auto')delete e.zoomable;else e.zoomable=ev.target.value==='yes';
+  updateCurrentElement();
+ });
+ $('#el-scope').addEventListener('change',ev=>{
+   const e=getSelected();if(!e)return;e.page=ev.target.value==='global'?'*':(view.entryId?recordPage(view.entryId):view.page);renderLayers();renderLayerList();save();
+ });
+ $('#edit-mode').addEventListener('click',()=>setMode('edit'));
+ $('#test-mode').addEventListener('click',()=>setMode('test'));
+ $('#grid').addEventListener('click',()=>{state.grid=!state.grid;renderLayers();save();$('#grid').classList.toggle('active',state.grid);});
+ for(const kind of ['heading','text','list','tab','hotspot','image','line'])$('#add-'+kind).addEventListener('click',()=>add(kind));
+ $('#add-folders-list').addEventListener('click',()=>addNavigationLayer('folders'));
+ $('#add-breadcrumb').addEventListener('click',()=>addNavigationLayer('breadcrumb'));
+ $('#clone').addEventListener('click',cloneLayer);$('#remove').addEventListener('click',removeLayer);$('#remove-quick').addEventListener('click',removeLayer);
+ $('#cancel-delete-layer').addEventListener('click',()=>$('#delete-layer-dialog').close());
+ $('#confirm-delete-layer').addEventListener('click',confirmDeleteLayer);
+ $('#delete-layer-dialog').addEventListener('close',()=>{pendingDeleteId=null;});
+ $('#zoom-in').addEventListener('click',()=>{state.zoom=safeNum(state.zoom+10,100,60,170);fitStage();save();});
+ $('#zoom-out').addEventListener('click',()=>{state.zoom=safeNum(state.zoom-10,100,60,170);fitStage();save();});
+ $('#export').addEventListener('click',exportSettings);
+ $('#import').addEventListener('click',()=>$('#json-input').click());
+ $('#json-input').addEventListener('change',async ev=>{const file=ev.target.files[0];if(!file)return;try{await loadSettings(file);}catch(err){note('Import : '+err.message);}ev.target.value='';});
+ $('#reset').addEventListener('click',()=>{if(!confirm('Réinitialiser l’atelier ? Exporte tes réglages avant si tu veux les conserver.'))return;state=buildDefault();listPagePositions.clear();selected=state.elements[0].id;fillGroupEdit();setView('sommaire');fitStage();save();note('Atelier réinitialisé.');});
+ $('#import-font').addEventListener('click',()=>$('#font-input').click());
+ $('#font-input').addEventListener('change',async ev=>{const f=ev.target.files[0];if(f)try{await attachFont(f);}catch(err){note('Police : '+err.message);}ev.target.value='';});
+ $('#import-image').addEventListener('click',()=>$('#asset-input').click());
+ $('#asset-input').addEventListener('change',async ev=>{const f=ev.target.files[0];if(f)try{await attachImage(f);}catch(err){note('Image : '+err.message);}ev.target.value='';});
+ window.addEventListener('resize',fitStage);
+ if(VIEWER_ONLY&&'ResizeObserver' in window){
+  const observer=new ResizeObserver(()=>fitStage());
+  observer.observe(viewport);
+ }
+ document.addEventListener('keydown',ev=>{
+   if(mode!=='edit')return;
+   if(ev.target.closest('input,textarea,select,[contenteditable="true"]')||ev.target.isContentEditable)return;
+   const e=getSelected();if(!e)return;
+   if(['Delete','Backspace','Del'].includes(ev.key)&&!ev.ctrlKey&&!ev.metaKey&&!ev.altKey){
+     ev.preventDefault();
+     removeLayer();
+     return;
+   }
+   if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(ev.key))return;
+   ev.preventDefault();
+   const n=ev.shiftKey?1:.1;const field=ev.key==='ArrowLeft'||ev.key==='ArrowRight'?'x':'y';
+   const sign=ev.key==='ArrowLeft'||ev.key==='ArrowUp'?-1:1;
+   e[field]=Math.round(safeNum(e[field]+n*sign,e[field],0,99)*10)/10;
+   updateCurrentElement();renderEditor();
+ });
+ renderLayers();renderLayerList();renderEditor();fitStage();fillGroupEdit();updateInfo();
+}
+async function init(){
+ if(!PUBLICATION_REMOTE_VIEW)try{
+   const previous=localStorage.getItem(SAVE_KEY);
+   if(previous){const data=JSON.parse(previous);if([2,3,4,5,6,RECORD_SCHEMA].includes(data?.version)&&Array.isArray(data.elements)){
+     const tmp=new Blob([JSON.stringify(data)],{type:'application/json'});
+     // Restore inline to avoid requiring File-compatible features in older browsers.
+     const parsed=JSON.parse(await tmp.text());
+     const migrated=parsed.version!==RECORD_SCHEMA||!Array.isArray(parsed.records)||!Array.isArray(parsed.folders);
+     state={...buildDefault(),...parsed,version:RECORD_SCHEMA,fonts:[]};
+      state.folders=FOLDERS.normalize(parsed.folders);
+      state.records=RECORDS.normalize(parsed.records,parsed.groups,state.folders);
+      syncRecordsToGroups();
+     state.elements=state.elements.map(e=>({...{z:e.page==='*'?800:30,locked:false,hidden:false,bold:false,italic:false,underline:false,imageFit:'contain',blend:'normal'},...e}));
+     serial=Math.max(1,...state.elements.map(e=>Number(String(e.id).split('-')[1])||0))+1;
+     if(parsed.version<RECORD_SCHEMA)migrateSeparateLists();
+     for(const font of (parsed.fonts||[]).slice(0,8)){try{await registerFont(font);}catch(e){}}
+     selected=state.elements[0]?.id;
+     if(migrated)save();
+   }}
+ }catch(err){}
+ setup();
+ // Recalculer les largeurs mesurées une fois les polices réellement disponibles.
+ document.fonts?.ready.then(()=>{renderLayers();fitStage();});
+ if (VIEWER_ONLY) {
+   setMode('test');
+   setView('sommaire');
+   window.PHASMO_JOURNAL_VIEWER_ZOOM?.init();
+   window.addEventListener('message', event => {
+     if (event.origin !== window.location.origin || event.source !== window.parent) return;
+     const command = event.data;
+     if (!command || !['deadelustv:journal-nav','deadelustv:journal-zoom'].includes(command.type)) return;
+     if (command.type === 'deadelustv:journal-zoom') {
+       window.PHASMO_JOURNAL_VIEWER_ZOOM?.setZoom(command.scale);
+       return;
+     }
+     if (command.category === 'sommaire') setView('sommaire');
+     else if (GROUP_ORDER.includes(command.category)) setView('category:' + command.category);
+   });
+   if(!PUBLICATION_REMOTE_VIEW)try { window.parent.postMessage({type:'deadelustv:journal-ready'}, window.location.origin); } catch {}
+ }
+}
+init();
+})();
+</script>
+<script src="journal-storage-media.js" defer></script>
+<script src="journal-asset-library.js" defer></script>
+<script src="journal-public-media.js" defer></script>
+<script src="journal-preview-sync.js" defer></script>
+<script src="journal-preview-publish.js" defer></script>
+<script src="journal-official-prepare.js" defer></script>
+<script src="journal-official-commands.js" defer></script>
+<script src="journal-storage-dryrun-ui.js" defer></script>
+<script src="journal-preview-publication-viewer.js" defer></script>
+<script src="journal-publication-viewer.js" defer></script>
+<script src="journal-editor-simplified.js" defer></script>
+</body></html>
+
+
+

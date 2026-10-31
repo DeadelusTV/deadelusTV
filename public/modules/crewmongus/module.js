@@ -23,6 +23,7 @@
     if (!window.DEADELUSTV_CREW_AUTH) return;
     const clean=new URL(location.href);
     clean.searchParams.delete('crew_auth');
+    ['code','error','error_code','error_description'].forEach(name=>clean.searchParams.delete(name));
     clean.hash='crewmongus/admin';
     history.replaceState(null,'',clean.pathname+clean.search+clean.hash);
     window.DEADELUSTV_CREW_AUTH=false;
@@ -75,3 +76,4 @@
 
   window.DEADELUSTV_CREW=Object.freeze({render,cancel(){generation++;root.removeAttribute('aria-busy');}});
 })();
+

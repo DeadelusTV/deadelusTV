@@ -1,6 +1,6 @@
 # DEADELUSTV — roadmap du site général
 
-Mise à jour : 28 octobre 2026. Les états ci-dessous sont ceux du site principal `DeadelusTV/deadelusTV`. Ils ne remplacent pas les suivis propres au TCG, à Crewmong Us, à Pavillon Noir ou à Bingophobia.
+Mise à jour : 31 octobre 2026. Les états ci-dessous sont ceux du site principal `DeadelusTV/deadelusTV`. Ils ne remplacent pas les suivis propres au TCG, à Crewmong Us, à Pavillon Noir ou à Bingophobia.
 
 | Sujet | État | Portée et limites |
 | --- | --- | --- |
@@ -12,7 +12,9 @@ Mise à jour : 28 octobre 2026. Les états ci-dessous sont ceux du site principa
 | Séparation éditoriale preview / production | **En place** | `phasmo_news_drafts` côté dev, `phasmo_news_drafts_production` côté main ; `phasmo_news_articles` filtré par `stage` et `status`. Aucun transfert de brouillons de test. |
 | TCG : page « À venir » | Publié | Univers TCG annoncé sans dévoiler les mécaniques ; site de jeu TCG distinct et encore en développement. |
 | Actualisation automatique des Shorts Phasmo | Publiée, première exécution réussie | YouTube Data API v3, secret `YOUTUBE_API_KEY`, quatre vérifications quotidiennes prévues ; premier transfert OVH réussi (run `40218578291`). Suivi des prochains déclenchements à poursuivre. |
-| Livre interactif Phasmo avancé | En développement, non validé | Prototype `developpement/phasmo-v2` : rendu, animation et données réelles des fiches restent à travailler. Aucun import du prototype dans `main`. |
+| Livre interactif Phasmo V7 | Interface validée ; code livré | Éditeur, listes libres, zoom et lecteur officiel ; départ vierge demandé, brouillon actif révision 14. Contenu non publié, verrou conservé. |
+| Compte Twitch commun et Crew | Code intégré | Menu partagé News/carnet/Crew, droits existants conservés ; associations et écritures Admin/Helper réelles à confirmer. |
+| Pages légales | Textes intégrés autorisés pour publication | Mentions, confidentialité/cookies et CGU sans note de relecture ; CGV masquées. |
 | Crewmong Us et Pavillon Noir | Intégrations existantes | Préserver leurs pages, données et décisions ; revue des chantiers séparément. |
 | Démo temporaire Cloudflare | Présentation validée, conservée | `preview/presentation-deadelus` ; elle peut être supprimée ultérieurement sans toucher à `main`. |
 | Webhook Discord des futures news Phasmo | Idée à étudier | Non développé, pas de publication automatique actuellement. |
@@ -37,3 +39,4 @@ Mise à jour : 28 octobre 2026. Les états ci-dessous sont ceux du site principa
 - [Guide technique et décisionnel](phasmo-news-editor.md)
 - [Documentation complète sur Drive](https://docs.google.com/document/d/1vqHaregg5l-UjjADw3qtzpt79vX0nfxGjt9LFng2kvI/edit)
 - Le Livre de preuves interactif reste un chantier indépendant de la livraison du blog.
+

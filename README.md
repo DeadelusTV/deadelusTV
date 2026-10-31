@@ -4,6 +4,10 @@ Site public : https://www.deadelustv.com/
 Dépôt : https://github.com/DeadelusTV/deadelusTV
 Roadmap : [docs/ROADMAP.md](docs/ROADMAP.md)
 
+## Livraison du 31 octobre 2026
+
+Journal V7 et lecteur officiel, carte TikTok animée, menu Twitch commun avec gestion Crew, textes légaux finalisés dans l'interface et nouvelle illustration Crew : voir [le détail de la livraison](docs/livraison-phasmo-main-20261031.md). Le carnet commence avec un brouillon vierge ; son contenu reste privé jusqu'à sa publication officielle. Les News, consentements, Twitch et mises à jour Pavillon Noir de main sont conservés.
+
 ## Architecture et publication
 
 Le portail est un site statique (HTML, CSS, JavaScript), servi depuis `public/` sur OVH. Aucun service Supabase supplémentaire n'est nécessaire pour les pages de présentation Phasmophobia et TCG. Les modules Crewmong Us et Pavillon Noir suivent leurs intégrations propres ; ne pas considérer leurs données ou leur administration comme celles du TCG.
@@ -15,7 +19,7 @@ Les branches de développement sont indépendantes. La démo `preview/presentati
 ## Pages actuellement publiées
 
 - **Accueil** : lecteur Twitch avec écran hors ligne personnalisé et texte néon ; dernière vidéo principale YouTube, rubrique TikTok, liens sociaux et accès aux univers. Conserver le fonctionnement et les ajustements du site officiel en faisant évoluer d'autres pages.
-- **Phasmophobia V2** (`#phasmophobia`) : bandeau visuel, galerie des tutoriels Shorts issus de la playlist officielle et présentation visuelle du carnet des enquêteurs. Galerie : `public/modules/phasmophobia/module.js`, styles : `public/modules/phasmophobia/style.css`, données : `public/data/phasmo-shorts.json`. Le carnet représenté sur la page n'est **pas** encore le livre interactif terminé.
+- **Phasmophobia V2** (`#phasmophobia`) : bandeau visuel, galerie des tutoriels Shorts issus de la playlist officielle et présentation visuelle du carnet des enquêteurs. Galerie : `public/modules/phasmophobia/module.js`, styles : `public/modules/phasmophobia/style.css`, données : `public/data/phasmo-shorts.json`. L'éditeur et le lecteur du livre interactif sont intégrés depuis la livraison du 31/10 ; le contenu démarre vierge et reste à publier.
 - **TCG** (`#tcg`) : page d'attente immersive « Un nouvel univers se prépare » avec cartes symboliques, sans révélation des mécaniques du futur jeu. Style isolé dans `public/assets/tcg-attente.css`. L'ancien booster fictif n'est plus proposé sur cette page.
 - **Crewmong Us / Pavillon Noir** : intégrations existantes, conservées lors de la publication ciblée des deux rubriques ci-dessus. Se référer aussi à `docs/crewmongus-integration.md` et `docs/pavillon-noir-integration.md` pour leur historique d'intégration.
 
@@ -65,3 +69,4 @@ En cas d'échec ou de réponse vide de YouTube, ne pas écraser le dernier JSON 
 Le livre interactif Phasmo, sa direction artistique avancée, son feuilletage et ses éventuelles fiches issues du bot Discord restent **en développement / à valider** sur `developpement/phasmo-v2`. Ils ne doivent pas être assimilés au carnet décoratif actuellement publié ni intégrés automatiquement sur `main`.
 
 Voir [la roadmap](docs/ROADMAP.md) pour le statut, les limites et les prochaines décisions.
+
