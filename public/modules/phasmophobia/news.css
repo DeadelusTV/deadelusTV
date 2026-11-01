@@ -303,6 +303,20 @@
 }
 
 
+/* Abonnement Discord public : indépendant des droits de rédaction et de Twitch. */
+#page-phasmophobia .phasma-news-public-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  margin: 14px 0 20px;
+}
+#page-phasmophobia .phasma-news-discord-link {
+  max-width: 100%;
+  font-size: 12px;
+  min-height: 38px;
+  border-color: #907044;
+}
+
 /* Accès rédaction conditionnel : discret et séparé du fil public. */
 #page-phasmophobia .phasma-news-editor-access[hidden],
 #page-phasmophobia .phasma-news-editor-access [hidden] {

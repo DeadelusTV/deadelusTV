@@ -111,3 +111,10 @@ Le bucket `phasmo-news-draft-images` est **privé** ; `phasmo-news-published-ima
 ## Clôture officielle — 28 octobre 2026
 
 28 octobre 2026 — clôture officielle : Yekelle déclare l’éditeur News officiellement terminé après validation de Mattarix. La mise en page publique est également validée. Le chantier passe en maintenance : corrections sur remontée de bugs et évolutions sur suggestion d’amélioration. Cette clôture concerne les News et leur éditeur ; elle ne clôt pas le chantier distinct du Livre de preuves. Le signalement antérieur sur les sous-listes numérotées reste une limite connue non bloquante, sans nouvelle confirmation de résolution.
+
+## Abonnement News sur Discord — 1er novembre 2026
+
+- Bouton public « Recevoir les news sur mon Discord » dans la rubrique News, sous la forme d’un lien standard avec l’icône Discord. Le visuel licorne et le bouton désactivé de prévisualisation sont retirés.
+- Destination : https://www.deadelustv.com/phasmophobia/discord-news ; la page d’abonnement est servie séparément sur le site officiel.
+- Le bouton est placé hors du conteneur privé de rédaction : visible sans connexion Twitch et sans rôle News. L’abonnement se poursuit sur Discord avec les autorisations nécessaires sur le serveur choisi.
+- Reprise ciblée sur main et alignement du bouton sur developpement/phasmo-v2 ; aucune modification des permissions de rédaction, des articles ou des brouillons.
