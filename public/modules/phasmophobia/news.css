@@ -303,39 +303,18 @@
 }
 
 
-/* Prévisualisation du futur bouton de partage Discord : aucune requête n'est effectuée. */
-#page-phasmophobia .phasma-news-discord-placeholder {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  min-height: 48px;
-  padding: 2px 10px 2px 4px;
-  border: 1px solid #8c7048;
-  border-radius: 7px;
-  background: linear-gradient(135deg, #242024, #17181a);
-  color: #eee2d5;
-  font: inherit;
+/* Abonnement Discord public : indépendant des droits de rédaction et de Twitch. */
+#page-phasmophobia .phasma-news-public-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  margin: 14px 0 20px;
+}
+#page-phasmophobia .phasma-news-discord-link {
+  max-width: 100%;
   font-size: 12px;
-  line-height: 1.2;
-  opacity: 1;
-  cursor: not-allowed;
-}
-#page-phasmophobia .phasma-news-discord-placeholder img {
-  display: block;
-  flex: none;
-  width: 44px;
-  height: 44px;
-  object-fit: contain;
-}
-#page-phasmophobia .phasma-news-discord-placeholder span {
-  text-align: left;
-}
-#page-phasmophobia .phasma-news-discord-placeholder small {
-  display: block;
-  margin-top: 3px;
-  color: #cdb68e;
-  font-size: 10px;
+  min-height: 38px;
+  border-color: #907044;
 }
 
 /* Accès rédaction conditionnel : discret et séparé du fil public. */
