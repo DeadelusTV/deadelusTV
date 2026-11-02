@@ -288,7 +288,7 @@ function syncEditorNavigation(){
   const canEdit=editorCanWrite();
 
   if(entryNav)entryNav.hidden=!canEdit;
-  if(importPanel)importPanel.hidden=!adminCanWrite();
+  if(importPanel)importPanel.hidden=!canEdit;
 
   if(!canEdit&&entryView?.classList.contains("active")){
     root.querySelectorAll(".nav").forEach(x=>x.classList.toggle("active",x.dataset.view==="admin"));
@@ -1524,7 +1524,7 @@ function crewtestImportData(preview){
   return {sessionId:sessionId,gameNumber:importedGame?importedGame.n:gameNumber};
 }
 async function importLoggerPreviewToSupabase(preview){
-  if(!requireAdmin())throw new Error("L’import JSON est réservé aux comptes Admin.");
+  if(!requireEditor())throw new Error("L’import JSON est réservé aux comptes Admin et Helper.");
 
   const matched=preview.match&&preview.match.info;
   let raw=preview.data;
