@@ -1,5 +1,14 @@
 # Phasmophobia V2 — suivi des travaux du carnet (branche de développement)
 
+## Correction du 02/11/2026 — enregistrer sans chargement préalable
+
+- Remontée : un éditeur ayant déjà modifié le carnet était bloqué par l'obligation de charger le brouillon partagé, ce qui risquait de remplacer son travail à l'écran.
+- « Enregistrer le brouillon » vérifie désormais uniquement le numéro de révision distant, sans charger ni importer de contenu. Le carnet affiché peut être sauvegardé directement, y compris après réouverture d'une copie locale ou import JSON.
+- La confirmation reste explicite ; si une révision connue a changé, elle prévient du remplacement et rappelle que les versions précédentes restent dans l'historique. L'écriture conserve le filtre atomique sur la révision : un changement pendant l'envoi des médias bloque cette tentative et permet de réessayer sans imposer de chargement.
+- Connexion Twitch, droits éditeur/admin, médias privés, limites de taille et historique restent contrôlés. Aucune modification de schéma, de droits ou de publication publique.
+- La clé de stockage local reste inchangée. Pour sécuriser une ancienne session avant actualisation, le bouton historique `export` déclenche un téléchargement JSON complet ; l'actualisation seule ne peut pas mettre à jour le gestionnaire déjà chargé dans cet onglet.
+- Vérification : scénarios de sauvegarde sans chargement, première création, annulation, refus de lecture/écriture, échec média, concurrence et reprise, chargement volontaire et mode lecteur dans `scripts/test_journal_direct_save.cjs`.
+
 **État au 31/10/2026 :** interface, listes et zoom validés par l'utilisatrice ; transfert du code vers main autorisé, avec remise à zéro explicite du brouillon actif (révision 14). Le nouveau carnet part sans contenu de test. Historique et médias privés préservés ; aucune publication officielle et verrou fermé. Voir [la livraison du 31 octobre](livraison-phasmo-main-20261031.md).
 
 **Statut : prototype en cours, non publié sur `main`.** Ce fichier rassemble les notes spécifiques de `developpement/phasmo-v2`, précédemment consignées dans son README, afin de ne pas les perdre lors de la synchronisation avec la documentation officielle. Il ne valide pas la publication du livre interactif.
@@ -948,4 +957,5 @@ Aucune modification du brouillon, de l'historique, des médias, des verrous de p
 **À FAIRE PLUS TARD — NE PAS MODIFIER MAINTENANT :** après une dépublication, remplacer le message public d'attente « livre bientôt » par un message expliquant le problème technique et le retour prochain du journal (intention utilisateur : « pb technique journal revient »). Ce changement de texte est seulement consigné ; aucun texte public d'attente ou de dépublication n'est modifié dans cette livraison. Distinguer à terme première publication et retrait d'un journal déjà publié.
 
 Travail limité à developpement/phasmo-v2 ; aucune publication du carnet, modification de main, de contenu partagé, de médias ou du verrou de diffusion.
+
 
