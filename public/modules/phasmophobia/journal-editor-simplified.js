@@ -166,7 +166,7 @@
   if(typeof bridge?.resetLocalDraft!=='function')throw Error('Réinitialisation locale indisponible.');
   bridge.resetLocalDraft();
   window.PHASMO_JOURNAL_REMOTE_SYNC?.invalidateLocalRevision?.();
-  show('Copie locale effacée. Les sauvegardes et versions partagées restent intactes. Charge un brouillon avant de réenregistrer.');
+  show('Copie locale effacée. Les sauvegardes et versions partagées restent intactes. Tu peux créer un nouveau brouillon ou en charger un depuis l’historique.');
  });});
  publish.addEventListener('click',()=>{void run(async()=>{
   const check=await request('status');
@@ -221,4 +221,5 @@
  });
  void refreshOfficial();
 })();
+
 

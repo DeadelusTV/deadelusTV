@@ -84,33 +84,46 @@
   update('Brouillon partagé chargé · révision '+loadedRevision+'.');
  }));
  save.addEventListener('click',()=>run(async()=>{
-  if(loadedRevision===null)
-   throw Error('Commence par « Charger le brouillon partagé » pour vérifier sa dernière révision.');
   const {client,user}=await authorized();
   const payload=bridge().exportPayload();
   if(payload?.version!==7)throw Error('Seul le format du carnet V7 peut être enregistré.');
-  if(!confirm('Enregistrer cette version du carnet dans le brouillon partagé ? Elle restera privée et ne sera pas publiée. Les images et polices seront transférées dans Storage privé.'))return;
+  // Lire uniquement le numéro distant : ne jamais importer le brouillon au
+  // moment de sauvegarder, car il remplacerait les modifications à l'écran.
+  update('Vérification de la dernière révision avant enregistrement…');
+  const {data:current,error:readError}=await client.from(TABLE)
+   .select('revision').eq('stage','preview').maybeSingle();
+  if(readError)throw Error('Impossible de vérifier le brouillon partagé : '+readError.message+'. Tes modifications locales sont conservées.');
+  const expected=current?.revision??0;
+  if(!Number.isSafeInteger(expected)||expected<0||(current&&expected===0))
+   throw Error('Révision distante invalide. Tes modifications locales sont conservées.');
+  const changed=loadedRevision!==null&&loadedRevision!==expected;
+  const warning=changed
+   ?'Le brouillon partagé a changé depuis ta dernière lecture ou sauvegarde. Ta version remplacera le brouillon actuel ; les anciennes versions resteront dans l’historique. '
+   :'';
+  if(!confirm(warning+'Enregistrer cette version du carnet dans le brouillon partagé ? Elle restera privée et ne sera pas publiée. Les images et polices seront transférées dans Storage privé. Les versions précédentes restent dans l’historique.')){
+   update('Enregistrement annulé. Tes modifications locales sont conservées.');
+   return;
+  }
+  loadedRevision=expected;
   const media=window.PHASMO_JOURNAL_STORAGE_MEDIA;
   if(!media)throw Error('Module Storage du carnet absent. Actualise la page.');
   const remotePayload=await media.prepareForSave(payload,client,user.id,update);
   const bytes=new TextEncoder().encode(JSON.stringify(remotePayload)).byteLength;
   if(bytes>7500000)throw Error('Le JSON distant dépasse 7,5 Mo malgré Storage. Aucun brouillon n’a été écrasé.');
-  if(loadedRevision===0){
+  if(expected===0){
    const {error}=await client.from(TABLE).insert({stage:'preview',payload:remotePayload,revision:1,updated_by:user.id});
    if(error){
-    loadedRevision=null;
-    throw Error('Le brouillon a peut-être été créé ailleurs. Recharge sa dernière version avant d’enregistrer.');
+    if(error.code==='23505')
+     throw Error('Le brouillon a été créé pendant cet enregistrement. Tes modifications locales sont conservées. Clique de nouveau sur « Enregistrer le brouillon » pour réessayer.');
+    throw Error('Enregistrement Supabase refusé : '+error.message+'. Tes modifications locales sont conservées.');
    }
    loadedRevision=1;
   }else{
-   const expected=loadedRevision;
    const {data,error}=await client.from(TABLE)
     .update({payload:remotePayload,revision:expected+1,updated_by:user.id,updated_at:new Date().toISOString()})
     .eq('stage','preview').eq('revision',expected).select('revision').maybeSingle();
-   if(error||!data){
-    loadedRevision=null;
-    throw Error('Conflit de sauvegarde : un autre éditeur a enregistré depuis ton dernier chargement. Tes données locales sont conservées. Recharge le brouillon partagé avant de réessayer.');
-   }
+   if(error)throw Error('Enregistrement Supabase refusé : '+error.message+'. Tes modifications locales sont conservées.');
+   if(!data)throw Error('Le brouillon a changé pendant cet enregistrement. Tes modifications locales sont conservées. Clique de nouveau sur « Enregistrer le brouillon » pour réessayer.');
    loadedRevision=data.revision;
   }
   update('Brouillon privé enregistré sur Supabase · révision '+loadedRevision+'.');
@@ -154,5 +167,6 @@
   },
   invalidateLocalRevision:()=>{loadedRevision=null;}
  });
- update('Mode local actif. Le brouillon partagé envoie images et polices vers Storage privé. Charge sa dernière révision avant d’enregistrer.');
+ update('Tu peux enregistrer directement le carnet affiché. Sa révision est vérifiée automatiquement ; le brouillon, ses images et ses polices restent privés.');
 })();
+
