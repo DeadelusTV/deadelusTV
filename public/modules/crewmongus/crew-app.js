@@ -102,7 +102,7 @@ async function refreshAdminAuth(sessionOverride=null){
   renderAdminAccess();
   renderAccountSetup();
   syncEditorNavigation();
-  if(editorCanWrite())renderAdmin();
+  if(adminCanWrite())renderAdmin();
   // Uniquement pendant la vie du module ; les droits temporaires expirent aussi en base.
   if(authUser)crewAuthTimer=setTimeout(()=>refreshAdminAuth(),nextCheck);
 }
@@ -143,6 +143,9 @@ async function handleLegacyLogin(){
   }
   portalCrewSession=false;
   await refreshAdminAuth(data?.session||null);
+  if(adminCanWrite()){
+    showCrewView('admin',true);
+  }
   if(!editorCanWrite()){
     await supabaseClient.auth.signOut();
     authUser=null;authRole=null;renderAdminAccess();syncEditorNavigation();
@@ -251,6 +254,11 @@ function bindLegacyAccountForm(){
 function renderAdminAccess(){
   const panel=crewById("admin-auth-panel"),protectedBox=crewById("admin-protected");
   if(!panel||!protectedBox)return;
+  // Le panneau d'association d'un ancien compte suit le Helper dans Saisie,
+  // sans ouvrir la console de Gestion.
+  const entrySlot=crewById('entry-auth-slot');
+  if(editorCanWrite()&&!adminCanWrite()&&entrySlot)entrySlot.append(panel);
+  else protectedBox.parentNode.insertBefore(panel,protectedBox);
   if(authLoading){
     panel.innerHTML=`<h3>Accès Gestion</h3><p class="muted">Vérification de la session…</p>`;
     protectedBox.hidden=true;
@@ -262,7 +270,7 @@ function renderAdminAccess(){
     const name=portalCrewSession?portalCrewName:(authUser.user_metadata?.preferred_username||authUser.user_metadata?.user_name||authUser.email||'compte');
     panel.innerHTML=`<div class="admin-auth-user"><div><h3>${isAdmin?"Administration":"Accès modération / Helper"} déverrouillé</h3><p class="muted">Connecté avec <strong>${esc(name)}</strong> • rôle ${isAdmin?"Admin":"Helper"}${isAdmin?"":" • saisie et modification des fiches"}</p></div><button id="admin-logout-btn" class="secondary" type="button">Se déconnecter</button></div><div class="admin-auth-actions">${twitch?'<button id="admin-twitch-login" class="secondary" type="button">Renouveler Twitch via le compte du site</button>':'<button id="admin-link-twitch" class="primary" type="button">Associer au compte Twitch du site</button>'}</div><span id="admin-auth-status" class="muted admin-auth-status"></span>${portalCrewSession?legacyAccountForm():''}`;
     bindLegacyAccountForm();
-    protectedBox.hidden=false;
+    protectedBox.hidden=!isAdmin;
     crewById("admin-logout-btn")?.addEventListener("click",handleAdminLogout);
     crewById('admin-twitch-login')?.addEventListener('click',()=>handleTwitchLogin());
     crewById('admin-link-twitch')?.addEventListener('click',()=>handleTwitchLogin(true));
@@ -283,18 +291,18 @@ function adminCanWrite(){return authRole==="admin"&&!!authUser}
 
 function syncEditorNavigation(){
   const entryNav=root.querySelector('.nav[data-view="entry"]');
+  const adminNav=root.querySelector('.nav[data-view="admin"]');
   const entryView=crewById("view-entry");
+  const adminView=crewById("view-admin");
   const importPanel=crewById("json-import-file")?.closest(".subpanel");
   const canEdit=editorCanWrite();
 
   if(entryNav)entryNav.hidden=!canEdit;
+  if(adminNav)adminNav.hidden=!adminCanWrite();
   if(importPanel)importPanel.hidden=!canEdit;
 
-  if(!canEdit&&entryView?.classList.contains("active")){
-    root.querySelectorAll(".nav").forEach(x=>x.classList.toggle("active",x.dataset.view==="admin"));
-    root.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-admin"));
-    renderAdminAccess();
-  }
+  if(adminView?.classList.contains('active')&&canEdit&&!adminCanWrite())showCrewView('entry',true);
+  if(!canEdit&&entryView?.classList.contains('active'))showCrewView('stats',true);
 }
 function requireEditor(){
   return editorCanWrite();
@@ -309,7 +317,7 @@ async function reloadPublicData(){
   await loadFromSupabase();
   if(adminCanWrite())await loadLoggerImportsFromSupabase();
   refreshSessionSelectors();populateGameSelect();syncEntryPlayerOptions();refreshEventPlayerOptions();renderAll();
-  if(editorCanWrite())renderAdmin();
+  if(adminCanWrite())renderAdmin();
 }
 async function insertAdminPlayerToSupabase(player){
   const {data,error}=await supabaseClient.from("players").insert({
@@ -2903,7 +2911,7 @@ async function deleteAdminGame(gameId){
 }
 
 function renderAdmin(){
-  if(!editorCanWrite()){renderAdminAccess();return}
+  if(!adminCanWrite()){renderAdminAccess();return}
   const isAdmin=adminCanWrite();
   root.querySelectorAll("#view-admin [data-admin-only]").forEach(el=>{el.hidden=!isAdmin});
   if(!isAdmin&&currentAdminTab==="streamers")currentAdminTab="sessions";
@@ -3066,10 +3074,12 @@ async function startApp(){
   function showCrewView(requested='stats',navigate=false) {
     const views=['stats','sessions','players','entry','admin'];
     let view=views.includes(requested)?requested:'stats';
-    if(view==='entry'&&!editorCanWrite())view='admin';
+    if(view==='entry'&&!editorCanWrite())view='stats';
+    // Un Helper ne peut pas entrer dans Gestion, même avec une URL directe.
+    if(view==='admin'&&editorCanWrite()&&!adminCanWrite())view='entry';
     root.querySelectorAll('.nav').forEach(b=>{const active=b.dataset.view===view;b.classList.toggle('active',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
     root.querySelectorAll('.view').forEach(el=>el.classList.toggle('active',el.id==='view-'+view));
-    if(view==='admin'){renderAdminAccess();if(editorCanWrite())renderAdmin();}
+    if(view==='admin'){renderAdminAccess();if(adminCanWrite())renderAdmin();}
     if(view==='stats')scheduleFrontStatFit();
     const heading=root.querySelector('#view-'+view+' h1,#view-'+view+' h2');
     if(heading)heading.setAttribute('tabindex','-1');
@@ -3080,6 +3090,7 @@ async function startApp(){
   }
   const ready=startApp();
   return {ready,show:showCrewView,resize:scheduleFrontStatFit,
+    preferredAccountView(){return adminCanWrite()?'admin':editorCanWrite()?'entry':'stats';},
     destroy(){window.removeEventListener('deadelustv:auth-change',onPortalAuthChange);++authRequest;clearTimeout(crewAuthTimer);crewAuthSubscription?.data?.subscription?.unsubscribe();supabaseClient?.auth.stopAutoRefresh();window.removeEventListener('resize',scheduleFrontStatFit);}};
 };
 
