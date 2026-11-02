@@ -3085,7 +3085,7 @@ async function startApp(){
     if(heading)heading.setAttribute('tabindex','-1');
     const labels={stats:'Statistiques',sessions:'Sessions',players:'Joueurs',entry:'Saisie',admin:'Gestion'};
     document.title='DeadelusTV — Crewmong Us — '+labels[view];
-    if(navigate)onNavigate(view);
+    if(navigate||view!==requested)onNavigate(view);
     return heading;
   }
   const ready=startApp();
