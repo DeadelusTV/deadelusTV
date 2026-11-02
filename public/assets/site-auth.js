@@ -188,6 +188,8 @@
         const crew = await getCrewAccess();
         if(currentRequest !== requestNumber)return;
         crewLink.hidden = !['admin','helper'].includes(crew.role);
+        crewLink.href = crew.role === 'admin' ? '#crewmongus/admin' : '#crewmongus/entry';
+        crewLink.textContent = crew.role === 'admin' ? 'Gestion Crew’mong Us' : 'Saisie Crew’mong Us';
         if(crew.notice === 'twitch_reconnect_required' && !crew.role)
           showNote('Reconnecte Twitch pour vérifier ton accès Crew.');
       } catch {
