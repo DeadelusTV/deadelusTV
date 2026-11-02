@@ -30,7 +30,7 @@
   <button class="nav" data-view="sessions"><span>▦</span>Sessions</button>
   <button class="nav" data-view="players"><span>♟</span>Joueurs</button>
   <button class="nav" data-view="entry" hidden><span>✎</span>Saisie</button>
-  <button class="nav" data-view="admin"><span>⚙</span>Gestion</button>
+  <button class="nav" data-view="admin" hidden><span>⚙</span>Gestion</button>
 </nav>
 
 
@@ -227,6 +227,7 @@
 
   <section id="view-entry" class="view">
     <article class="glass-panel content-panel">
+      <div id="entry-auth-slot"></div>
       <div class="subpanel">
         <div class="subpanel-head">
           <div>
@@ -300,7 +301,7 @@
   <section id="view-admin" class="view">
     <article class="glass-panel content-panel">
       <div class="section-head">
-        <div><div class="section-title"><span class="section-icon">⚙</span><h2>Gestion</h2></div><p>Les sessions et leurs games sont regroupées ici pour éviter de parcourir toute la page. Les réglages structurels restent réservés aux Admins.</p></div>
+        <div><div class="section-title"><span class="section-icon">⚙</span><h2>Gestion</h2></div><p>Espace de gestion réservé aux administrateurs Crew.</p></div>
         <button id="admin-reset" class="secondary">Recharger les données</button>
       </div>
 
