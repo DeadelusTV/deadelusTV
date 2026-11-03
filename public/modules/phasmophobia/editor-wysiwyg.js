@@ -300,16 +300,17 @@
     previewEditor.commands.setContent(d.doc,{emitUpdate:false});
     if(d.translator)foot.append(el('p','','Traduction française : '+d.translator));
     const source=normalizedUrl(d.sourceUrl,'link');
-    if(source&&new URL(source).hostname.match(/^(?:www\.)?kineticgames\.co\.uk$/)){
-      const a=el('a','','Consulter la source originale chez Kinetic Games ↗');
+    if(source){
+      const isKinetic=['kineticgames.co.uk','www.kineticgames.co.uk'].includes(new URL(source).hostname);
+      const a=el('a','',isKinetic?'Consulter la source originale chez Kinetic Games ↗':'Consulter la source ↗');
       a.href=source;a.target='_blank';a.rel='noopener noreferrer';
       foot.append(a);
-    }else foot.append(el('p','','Lien de source à compléter.'));
+    }
     const missing=[];
     if(!d.title.trim())missing.push('titre');
     if(!d.excerpt.trim())missing.push('résumé');
     if(!d.slug.trim())missing.push('identifiant');
-    if(!source)missing.push('lien source');
+    if(d.sourceUrl.trim()&&(!source||!source.startsWith('https://')))missing.push('lien HTTPS valide');
     if(missing.length)foot.append(el('p','phasma-editor-image-error',
       'Avant publication : renseignez '+missing.join(', ')+'.'));
   }
