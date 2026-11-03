@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Gestion des accès | DeadelusTV V2</title>
+  <link rel="stylesheet" href="access-center.css?v=1">
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.76.1"></script>
+  <script defer src="access-center.js?v=1"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a href="../#accueil" class="back">← DeadelusTV</a>
+    <span>Administration V2</span>
+  </header>
+  <main>
+    <section id="gate" class="gate" aria-live="polite">
+      <p class="eyebrow">Espace privé</p>
+      <h1>Gestion des accès</h1>
+      <p id="gate-status">Vérification de l'autorisation…</p>
+      <p class="muted">L'accès est réservé à Deadelus et Yekelle. La connexion Twitch seule ne suffit pas.</p>
+      <a href="../#accueil" class="return-link">Retour au site et à la connexion Twitch</a>
+    </section>
+    <section id="workspace" hidden>
+      <div class="heading">
+        <div>
+          <p class="eyebrow">Centre d'administration</p>
+          <h1>Gestion des accès</h1>
+          <p class="muted">Accès par fonctionnalité, catégories extensibles, aucun droit global automatique pour les modérateurs Twitch.</p>
+        </div>
+        <div class="heading-actions">
+          <span id="mode" class="mode"></span>
+          <button id="reload" type="button">Actualiser</button>
+        </div>
+      </div>
+      <nav class="tabs" aria-label="Sections d'administration">
+        <button type="button" data-tab="rights" aria-selected="true">Droits des personnes</button>
+        <button type="button" data-tab="catalog" aria-selected="false">Catégories et permissions</button>
+      </nav>
+      <p id="notice" class="notice" role="status" aria-live="polite"></p>
+      <section id="rights" aria-label="Droits des personnes">
+        <div class="tools">
+          <label for="filter">Rechercher un compte Twitch</label>
+          <input id="filter" type="search" autocomplete="off" placeholder="Pseudo Twitch">
+        </div>
+        <div id="rights-tables"></div>
+        <p class="muted footnote">Les changements réels ne prennent effet qu'après confirmation du serveur et des contrôles du module concerné.</p>
+      </section>
+      <section id="catalog" aria-label="Configuration des permissions" hidden>
+        <div id="catalog-tree"></div>
+        <div class="forms">
+          <form id="add-category">
+            <h2>Nouvelle catégorie</h2>
+            <label for="category-name">Nom de l'univers</label>
+            <input id="category-name" name="label" maxlength="70" required placeholder="Ex. Jeux de rôle">
+            <button type="submit">Ajouter la catégorie</button>
+          </form>
+          <form id="add-section">
+            <h2>Nouvelle sous-catégorie</h2>
+            <label for="section-category">Catégorie</label>
+            <select id="section-category" name="category_id" required></select>
+            <label for="section-name">Nom</label>
+            <input id="section-name" name="label" maxlength="70" required placeholder="Ex. Sessions">
+            <button type="submit">Ajouter la sous-catégorie</button>
+          </form>
+          <form id="add-permission">
+            <h2>Nouvelle permission</h2>
+            <label for="permission-section">Sous-catégorie</label>
+            <select id="permission-section" name="section_ref" required></select>
+            <label for="permission-name">Libellé du droit</label>
+            <input id="permission-name" name="label" maxlength="70" required placeholder="Ex. Rédacteur">
+            <label for="permission-code">Code technique stable</label>
+            <input id="permission-code" name="code" maxlength="90" pattern="[a-z][a-z0-9]*(\.[a-z][a-z0-9_-]*){2,}" required placeholder="exemple.sessions.edit">
+            <button type="submit">Ajouter la permission</button>
+          </form>
+        </div>
+        <p class="muted footnote">Créer une permission ne crée pas automatiquement son contrôle de sécurité dans un module. Une permission nouvelle ne doit être activée qu'après raccordement et tests côté serveur.</p>
+      </section>
+    </section>
+  </main>
+</body>
+</html>
