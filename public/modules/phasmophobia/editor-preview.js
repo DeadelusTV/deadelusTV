@@ -296,7 +296,12 @@
     const missing = [];
     if (!d.title.trim()) missing.push('titre');
     if (!d.excerpt.trim()) missing.push('résumé');
-    if (!/^https:\/\/(?:www\.)?kineticgames\.co\.uk\/news(?:\/|$)/.test(d.sourceUrl)) missing.push('source Kinetic');
+    if (d.sourceUrl.trim()) {
+      try {
+        const source = new URL(d.sourceUrl.trim());
+        if (source.protocol !== 'https:' || source.username || source.password) missing.push('lien HTTPS valide');
+      } catch { missing.push('lien HTTPS valide'); }
+    }
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(d.slug)) missing.push('identifiant');
     if (missing.length) {
       previewRoot.append(node('p', 'phasma-editor-preview-hint',
@@ -334,8 +339,8 @@
     previewRoot.append(body);
     const credits = node('div','phasma-news-credits');
     if (d.translator) credits.append(node('p','','Traduction française : ' + d.translator));
-    credits.append(node('span','','Source : ' + (d.sourceUrl || 'à renseigner')));
-    previewRoot.append(credits);
+    if (d.sourceUrl.trim()) credits.append(node('span','','Source : ' + d.sourceUrl));
+    if (credits.childNodes.length) previewRoot.append(credits);
   }
 
   $('#editor-new').addEventListener('click', () => {
