@@ -129,7 +129,7 @@ export function createHandler(env, http = fetch) {
       if (snapshot?.authorized !== true || snapshot?.rights_effective !== false ||
           !Array.isArray(snapshot.categories) || !Array.isArray(snapshot.people))
         return respond(503,{error:'invalid_registry_response'});
-      return respond(200,snapshot);
+      return respond(200,{...snapshot,mutations_enabled:mutationsEnabled});
     } catch {
       return respond(503,{error:'temporarily_unavailable'});
     }
