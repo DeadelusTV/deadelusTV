@@ -9,7 +9,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const TWITCH_ID = /^[0-9]{1,32}$/;
 const SLUG = /^[a-z][a-z0-9-]{1,60}$/;
 const CODE = /^[a-z][a-z0-9]*(\.[a-z][a-z0-9_-]*){2,}$/;
-const ACTIONS = new Set(['bootstrap', 'addCategory', 'addSection', 'addPermission', 'setGrant']);
+const ACTIONS = new Set(['bootstrap', 'previewModerators', 'syncModerators', 'addCategory', 'addSection', 'addPermission', 'setGrant']);
 const LABEL_LIMIT = 70;
 
 function slug(value) {
@@ -20,7 +20,7 @@ function slug(value) {
 
 function verifyAction(action, payload) {
   if (!ACTIONS.has(action)) return null;
-  if (action === 'bootstrap') return {};
+  if (action === 'bootstrap' || action === 'previewModerators' || action === 'syncModerators') return {};
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return null;
   const label = typeof payload.label === 'string' ? payload.label.trim() : '';
   if (action === 'setGrant') {
@@ -51,6 +51,62 @@ function verifyAction(action, payload) {
   return null;
 }
 
+
+const BROADCASTER_ID = '99977368';
+const MAX_PAGES = 20; // 100 modérateurs/page : une liste au-delà du plafond échoue, jamais tronquée.
+const DISPLAY_LIMIT = 70;
+
+/** Liste Twitch complète, vérifiée côté serveur. Ne journaliser ni jeton ni réponse OAuth. */
+export async function getTwitchModerators(env, http = fetch) {
+  const token = env.SITE_ACCESS_TWITCH_BROADCASTER_TOKEN || '';
+  const clientId = env.SITE_ACCESS_TWITCH_CLIENT_ID || '';
+  if (!/^[A-Za-z0-9_-]{20,4096}$/.test(token) || !/^[a-z0-9]{10,64}$/i.test(clientId))
+    throw new Error('twitch_not_configured');
+
+  const checkedResponse = await http('https://id.twitch.tv/oauth2/validate', {
+    headers: {Authorization: 'OAuth '+token},
+    signal: AbortSignal.timeout(7000)
+  });
+  if (!checkedResponse.ok) throw new Error('twitch_token_unavailable');
+  const checked = await checkedResponse.json();
+  if (checked?.user_id !== BROADCASTER_ID ||
+      checked.client_id !== clientId ||
+      !Array.isArray(checked.scopes) || !checked.scopes.includes('moderation:read') ||
+      !Number.isInteger(checked.expires_in) || checked.expires_in < 30)
+    throw new Error('twitch_authorization_invalid');
+
+  const moderators = [], ids = new Set(), cursors = new Set();
+  let cursor = '';
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const query = 'broadcaster_id='+BROADCASTER_ID+'&first=100'+
+      (cursor ? '&after='+encodeURIComponent(cursor) : '');
+    const result = await http('https://api.twitch.tv/helix/moderation/moderators?'+query,{
+      headers:{Authorization:'Bearer '+token,'Client-Id':clientId},
+      signal:AbortSignal.timeout(7000)
+    });
+    if (!result.ok) throw new Error('twitch_mod_list_unavailable');
+    const body = await result.json();
+    if (!Array.isArray(body?.data) || body.data.length > 100)
+      throw new Error('twitch_invalid_response');
+    for (const entry of body.data) {
+      const id = entry?.user_id, name = entry?.user_name;
+      if (typeof id !== 'string' || !TWITCH_ID.test(id) ||
+          typeof name !== 'string' || !name.trim() || name.trim().length > DISPLAY_LIMIT ||
+          ids.has(id)) throw new Error('twitch_invalid_response');
+      ids.add(id);
+      moderators.push({user_id:id,user_name:name.trim()});
+    }
+    const next = body.pagination?.cursor;
+    if (next === undefined || next === null || next === '') return moderators;
+    if (typeof next !== 'string' || next.length > 2048 ||
+        cursors.has(next) || page === MAX_PAGES-1)
+      throw new Error('twitch_pagination_incomplete');
+    cursors.add(next);
+    cursor=next;
+  }
+  throw new Error('twitch_pagination_incomplete');
+}
+
 export function createHandler(env, http = fetch) {
   const owners = (env.SITE_ACCESS_ADMIN_TWITCH_IDS || '').split(',').map(v => v.trim()).filter(Boolean);
   const origins = (env.SITE_ACCESS_ALLOWED_ORIGINS || '').split(',').map(v => v.trim()).filter(Boolean);
@@ -61,6 +117,7 @@ export function createHandler(env, http = fetch) {
     origins.every(v => /^https:\/\/[a-z0-9.-]+(?::[0-9]+)?$/i.test(v)) &&
     base === PORTAL_URL && !!serviceKey;
   const mutationsEnabled = env.SITE_ACCESS_WRITES_ENABLED === 'true';
+  const twitchConfigured = Boolean(env.SITE_ACCESS_TWITCH_BROADCASTER_TOKEN && env.SITE_ACCESS_TWITCH_CLIENT_ID);
 
   return async function handle(req) {
     const origin = req.headers.get('origin') || '';
@@ -111,14 +168,33 @@ export function createHandler(env, http = fetch) {
       if (typeof twitchId !== 'string' || !TWITCH_ID.test(twitchId) || !owners.includes(twitchId))
         return respond(403,{error:'forbidden'});
 
+      // L'aperçu et la synchronisation lisent Twitch UNIQUEMENT après l'autorisation du propriétaire.
+      // Le navigateur ne fournit ni token ni liste de modérateurs au serveur.
+      let moderators = null;
+      if (action === 'previewModerators' || action === 'syncModerators') {
+        try {moderators = await getTwitchModerators(env,http);}
+        catch (error) {
+          const msg=String(error?.message||'');
+          const code=['twitch_not_configured','twitch_authorization_invalid','twitch_token_unavailable',
+            'twitch_mod_list_unavailable','twitch_invalid_response',
+            'twitch_pagination_incomplete'].includes(msg)?msg:'twitch_unavailable';
+          return respond(503,{error:code});
+        }
+        // Interdire de convertir une réponse accidentellement vide en "tous anciens modérateurs".
+        if (action === 'syncModerators' && moderators.length===0)
+          return respond(409,{error:'empty_moderator_list_requires_review'});
+      }
+      const rpcAction = action === 'previewModerators' ? 'bootstrap' : action;
+      const rpcPayload = action === 'syncModerators' ? {moderators} : checkedPayload;
+
       // Seul le serveur détient la clé service role. RPC SECURITY INVOKER :
       // les changements sont atomiques avec leur entrée dans l'audit.
       const rpc = await http(base+'/rest/v1/rpc/site_access_admin_action',{
         method:'POST',
         headers:{apikey:serviceKey,Authorization:'Bearer '+serviceKey,'Content-Type':'application/json'},
         body:JSON.stringify({
-          p_action:action,
-          p_payload:checkedPayload,
+          p_action:rpcAction,
+          p_payload:rpcPayload,
           p_actor_twitch_id:twitchId
         }),
         signal:AbortSignal.timeout(8000)
@@ -129,7 +205,13 @@ export function createHandler(env, http = fetch) {
       if (snapshot?.authorized !== true || snapshot?.rights_effective !== false ||
           !Array.isArray(snapshot.categories) || !Array.isArray(snapshot.people))
         return respond(503,{error:'invalid_registry_response'});
-      return respond(200,{...snapshot,mutations_enabled:mutationsEnabled});
+      return respond(200,{
+        ...snapshot,
+        mutations_enabled:mutationsEnabled,
+        twitch_configured:twitchConfigured,
+        ...(moderators && action==='previewModerators' ? {moderators_preview:moderators} : {}),
+        ...(moderators && action==='syncModerators' ? {sync_count:moderators.length} : {})
+      });
     } catch {
       return respond(503,{error:'temporarily_unavailable'});
     }
