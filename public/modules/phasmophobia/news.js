@@ -50,12 +50,11 @@
   }
 
   function sourceUrl(value) {
+    if (typeof value !== 'string' || value.length > 2048) return null;
     try {
       const url = new URL(value);
-      return url.protocol === 'https:' &&
-        ['kineticgames.co.uk', 'www.kineticgames.co.uk'].includes(url.hostname) &&
-        (url.pathname === '/news' || url.pathname.startsWith('/news/'))
-        ? url.href : null;
+      return url.protocol === 'https:' && !url.username && !url.password &&
+        !/\.svg$/i.test(url.pathname) ? url.href : null;
     } catch { return null; }
   }
 
@@ -68,7 +67,6 @@
         typeof raw.title !== 'string' || !raw.title.trim() ||
         typeof raw.excerpt !== 'string' ||
         !/^\d{4}-\d{2}-\d{2}$/.test(raw.publishedAt || '') ||
-        !sourceUrl(raw.sourceUrl) ||
         (!Array.isArray(raw.blocks) && !(raw.document?.type==='doc'&&Array.isArray(raw.document.content)))) return null;
     return {
       slug: raw.slug,
@@ -345,14 +343,19 @@
     if(item.document)renderRichArticle(article,item.document);
     else item.blocks.forEach(block => addBlock(article, block));
     reader.append(article);
-    const credits = el('div', 'phasma-news-credits');
-    if (item.translator) credits.append(el('p', '', 'Traduction française : ' + item.translator));
-    const source = el('a', '', 'Lire l’article original chez Kinetic Games ↗');
-    source.href = item.sourceUrl;
-    source.target = '_blank';
-    source.rel = 'noopener noreferrer';
-    credits.append(source);
-    reader.append(credits);
+    if (item.translator || item.sourceUrl) {
+      const credits = el('div', 'phasma-news-credits');
+      if (item.translator) credits.append(el('p', '', 'Traduction française : ' + item.translator));
+      if (item.sourceUrl) {
+        const isKinetic = ['kineticgames.co.uk', 'www.kineticgames.co.uk'].includes(new URL(item.sourceUrl).hostname);
+        const source = el('a', '', isKinetic ? 'Lire l’article original chez Kinetic Games ↗' : 'Consulter la source ↗');
+        source.href = item.sourceUrl;
+        source.target = '_blank';
+        source.rel = 'noopener noreferrer';
+        credits.append(source);
+      }
+      reader.append(credits);
+    }
     const bottomBack = backLink('← Retour aux news');
     bottomBack.classList.add('btn', 'btn-outline', 'phasma-news-back--bottom');
     reader.append(bottomBack);
