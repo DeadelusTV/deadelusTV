@@ -101,6 +101,6 @@ Références primaires : https://dev.twitch.tv/docs/api/reference/#get-moderator
 
 ### Vérifications et points ouverts
 
-- Contrôles simulés exécutés dans l'environnement de développement de l'assistant : 14 cas positifs sur 15 contrôles initialement, un contrôle structurel a détecté une insertion SQL corrompue ; script reconstruit proprement depuis son commit antérieur, puis validation statique du bloc SQL et des protections. Aucun SQL exécuté sur PostgreSQL.
+- Contrôles simulés et statiques exécutés dans l'environnement de développement de l'assistant : une insertion SQL malformée a été détectée et corrigée avant toute exécution ; une nouvelle série de 19 contrôles a ensuite réussi (19/19). Aucun SQL exécuté sur PostgreSQL, aucun test Node réalisé sur un clone du dépôt.
 - Les tests Node sont committés mais leur exécution en environnement Node avec les fichiers du dépôt reste à faire ; les vérifications côté assistant ont utilisé des simulations isolées et une compilation JavaScript statique.
 - Tests réels encore nécessaires : vraie autorisation de Deadelus, entrée dans le panneau depuis une session des deux propriétaires, vérification avec la liste Twitch complète, erreurs de token/rate-limit, application du script SQL sur base de recette, règles RLS, journal d'audit et restauration.
