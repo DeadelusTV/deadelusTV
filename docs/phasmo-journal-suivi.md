@@ -1,5 +1,14 @@
 # Phasmophobia V2 — suivi des travaux du carnet (branche de développement)
 
+## Dupliquer une fiche complète — 03/11/2026
+
+- Dans « 5 · Organisation des pages », sélectionner une fiche puis « Dupliquer la fiche ». Une fenêtre demande le nom de la nouvelle fiche et l’ouvre après création.
+- La copie reprend les deux pages, les textes, images, styles, positions, ordre, verrouillage et visibilité des calques propres à la fiche. Elle reste dans la même catégorie et le même sous-menu ; les onglets globaux sont conservés sans être dupliqués.
+- Les identifiants de fiche et de calques sont nouveaux. Le titre exact de la fiche et ses liens vers elle-même suivent la copie ; les liens vers d’autres fiches sont conservés. Un titre utilisant `{{nom}}` s’adapte automatiquement. Les paragraphes et illustrations restent à personnaliser.
+- La fiche d’origine et ses données restent indépendantes. La duplication crée uniquement une modification locale : cliquer sur « Enregistrer le brouillon » pour la partager. Les médias privés existants restent réutilisables ; aucune publication automatique.
+- Les fiches et dossiers archivés doivent être restaurés avant duplication. Noms uniques et limites de 5 000 fiches/calques vérifiés avant toute création.
+- Vérification : 59 contrôles de duplication (5 catégories, images, liens, indépendance, erreurs sans mutation, dialogue et export/import V7), plus les 35 contrôles de listes et 25 de zoom existants.
+
 ## Accès au journal vérifiés le 03/11/2026
 
 - Administrateurs du carnet : DeadelusTV et Yekelle. Les modos Twitch, admins Crew et rédacteurs News ne reçoivent aucun accès automatique au journal.

@@ -101,6 +101,18 @@ aside p.lead{font-size:12px;color:#afa69b;line-height:1.6;margin:0 0 16px}
 #delete-layer-dialog button{border-radius:5px;padding:9px 14px;border:1px solid #806b4b;background:#31281f;color:#f4e8d8;cursor:pointer}
 #delete-layer-dialog #confirm-delete-layer{background:#803528;border-color:#bf695b;color:#fff7f0}
 #delete-layer-dialog button:focus-visible{outline:2px solid #edc388;outline-offset:3px}
+#duplicate-record-dialog{box-sizing:border-box;width:min(520px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto;padding:24px;background:#211b17;color:#f4e8d8;border:1px solid #b8965d;border-radius:12px;box-shadow:0 24px 90px #000d;font:14px/1.5 Arial,sans-serif}
+#duplicate-record-dialog::backdrop{background:#0009;backdrop-filter:blur(2px)}
+#duplicate-record-dialog h2{margin:0 0 12px;font:700 22px Georgia,serif;color:#ecd2a9}
+#duplicate-record-dialog p{margin:12px 0;overflow-wrap:anywhere}
+#duplicate-record-dialog label{display:block;margin-bottom:6px}
+#duplicate-record-dialog input{box-sizing:border-box;width:100%;padding:10px;border:1px solid #806b4b;border-radius:5px;background:#121211;color:#f4e8d8}
+#duplicate-record-dialog .dialog-buttons{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:20px}
+#duplicate-record-dialog button{border-radius:5px;padding:9px 14px;border:1px solid #806b4b;background:#31281f;color:#f4e8d8;cursor:pointer}
+#duplicate-record-dialog #record-duplicate-confirm{background:#bea16d;color:#17140f}
+#duplicate-record-dialog :focus-visible{outline:2px solid #edc388;outline-offset:3px}
+#duplicate-record-error{color:#ffb9a8}
+#duplicate-record-error:empty{display:none}
 #journal-publication-view-status{display:none}
 html.journal-publication-preview #book{visibility:hidden}
 html.journal-publication-preview #journal-publication-view-status{display:grid;place-items:center;text-align:center;position:fixed;inset:0;z-index:40;padding:30px;color:#f1ddbd;background:#0e0f10;font:17px/1.6 Arial,sans-serif}
@@ -267,7 +279,7 @@ html.journal-viewer #book .layer{cursor:default}
     <div class="field"><label for="record-folder">Sous-catégorie pour une nouvelle fiche</label><select id="record-folder"></select></div>
     <div class="field"><label for="record-select">Fiches (archives incluses)</label><select id="record-select" size="7" style="width:100%" aria-label="Choisir une fiche"></select></div>
     <div class="field"><label for="record-title">Nom à ajouter ou à modifier</label><input id="record-title" type="text" maxlength="100" placeholder="Nom de la fiche"></div>
-    <div class="buttons"><button type="button" class="btn small" id="record-add">+ Ajouter</button><button type="button" class="btn small" id="record-rename">Renommer</button><button type="button" class="btn small" id="record-edit">Ouvrir la fiche</button></div>
+    <div class="buttons"><button type="button" class="btn small" id="record-add">+ Ajouter</button><button type="button" class="btn small" id="record-rename">Renommer</button><button type="button" class="btn small" id="record-edit">Ouvrir la fiche</button><button type="button" class="btn small" id="record-duplicate">Dupliquer la fiche</button></div>
     <p class="tip" id="record-location">Emplacement : catégorie principale</p>
     <div class="buttons"><button type="button" class="btn small" id="record-up">↑ Monter</button><button type="button" class="btn small" id="record-down">↓ Descendre</button><button type="button" class="btn small" id="record-archive">Archiver</button><button type="button" class="btn small" id="record-delete">Supprimer…</button></div>
     <div class="field"><label for="record-move-group">Déplacer la fiche vers</label><select id="record-move-group"></select></div>
@@ -410,8 +422,20 @@ html.journal-viewer #book .layer{cursor:default}
 <p id="delete-record-description"></p>
 <div class="dialog-buttons"><button type="button" id="record-delete-cancel">Annuler</button><button type="button" id="record-delete-confirm">Supprimer définitivement</button></div>
 </dialog>
+<dialog id="duplicate-record-dialog" aria-labelledby="duplicate-record-title">
+<form id="duplicate-record-form">
+<h2 id="duplicate-record-title">Dupliquer la fiche</h2>
+<p id="duplicate-record-description"></p>
+<label for="duplicate-record-name">Nom de la nouvelle fiche</label>
+<input id="duplicate-record-name" type="text" maxlength="100" required autocomplete="off">
+<p>La mise en page, les textes et les images seront copiés dans la même catégorie et le même sous-menu. Modifie ensuite le contenu de la copie et enregistre le brouillon.</p>
+<p id="duplicate-record-error" role="alert"></p>
+<div class="dialog-buttons"><button type="button" id="record-duplicate-cancel">Annuler</button><button type="submit" id="record-duplicate-confirm">Créer la copie</button></div>
+</form>
+</dialog>
 <script src="journal-records.js"></script>
 <script src="journal-folders.js"></script>
+<script src="journal-record-duplicate.js?v=20261103.1"></script>
 <script src="journal-pagination.js"></script>
 <script src="journal-custom-lists.js"></script>
 <script src="journal-image-zoom.js"></script>
@@ -432,6 +456,7 @@ const COPY = x => JSON.parse(JSON.stringify(x));
 const SAVE_KEY='deadelustv.phasmo.atelier.complet.v7.20261031';
 const RECORDS=window.PHASMO_JOURNAL_RECORDS;
 const FOLDERS=window.PHASMO_JOURNAL_FOLDERS;
+const DUPLICATE=window.PHASMO_JOURNAL_RECORD_DUPLICATE;
 const PAGINATION=window.PHASMO_JOURNAL_PAGINATION;
 const CUSTOM_LISTS=window.PHASMO_JOURNAL_CUSTOM_LISTS;
 const IMAGE_ZOOM=window.PHASMO_JOURNAL_IMAGE_ZOOM;
@@ -487,7 +512,7 @@ function buildDefault(){
 }
 let state=buildDefault();
 const listPagePositions=new Map();
-let mode='edit',view={page:'sommaire',group:null,name:null,entryId:null,folderId:null},selected=state.elements[0]?.id,drag=null,resizeDrag=null,saveTimer=null,currentScale=1,pendingRecordDelete=null;
+let mode='edit',view={page:'sommaire',group:null,name:null,entryId:null,folderId:null},selected=state.elements[0]?.id,drag=null,resizeDrag=null,saveTimer=null,currentScale=1,pendingRecordDelete=null,pendingRecordDuplicate=null;
 const book=$('#book'),surface=$('#element-surface'),wrap=$('#stage-wrap'),viewport=$('#stage-viewport');
 function note(message){$('#message').textContent=message;}
 function safeNum(value,fallback,min,max){const n=Number(value);return Number.isFinite(n)?Math.max(min,Math.min(max,n)):fallback;}
@@ -1099,6 +1124,7 @@ function renderRecordManager(wanted){
   'Emplacement : '+(rec.folderId?folderPath(group,rec.folderId):state.groups[group].label):'Aucune fiche sélectionnée';
  $('#record-archive').textContent=rec?.status==='archived'?'Restaurer':'Archiver';
  for(const op of ['rename','edit','up','down','archive','delete','move'])$('#record-'+op).disabled=!rec;
+ $('#record-duplicate').disabled=!rec||rec.status==='archived'||!FOLDERS.available(state.folders,group,rec.folderId);
  $('#record-move-group').value=rec?.group||group;
  fillMoveFolderOptions(rec?.folderId||null);
 }
@@ -1153,6 +1179,18 @@ function manageRecord(action){
  try{
   let rec=RECORDS.find(state.records,group,id);
   if(action==='add')rec=RECORDS.create(state.records,group,title,$('#record-folder').value||null,state.folders);
+  else if(action==='duplicate'){
+   if(!rec||rec.status==='archived'||!FOLDERS.available(state.folders,group,rec.folderId)){
+    note('Sélectionne une fiche active à dupliquer.');return;
+   }
+   pendingRecordDuplicate=rec.id;
+   $('#duplicate-record-description').textContent='Créer une copie indépendante de « '+rec.title+' ».';
+   $('#duplicate-record-name').value=DUPLICATE.suggestedTitle(state.records,rec);
+   $('#duplicate-record-error').textContent='';
+   $('#duplicate-record-dialog').showModal();
+   $('#duplicate-record-name').focus();$('#duplicate-record-name').select();
+   return;
+  }
   else if(action==='rename'){
    const oldTitle=rec?.title;
    rec=RECORDS.rename(state.records,group,id,title);
@@ -1204,6 +1242,19 @@ function confirmRecordDeletion(){
  syncRecordsToGroups();
  if(view.entryId===rec.id)setView('category:'+rec.group);
  renderRecordManager();renderLayers();renderLayerList();renderEditor();save();note('Fiche supprimée du prototype local.');
+}
+function confirmRecordDuplicate(){
+ if(!pendingRecordDuplicate||VIEWER_ONLY)return;
+ try{
+  const rec=DUPLICATE.duplicate({records:state.records,elements:state.elements,folders:state.folders,
+   recordId:pendingRecordDuplicate,title:$('#duplicate-record-name').value.trim(),nextLayerId:()=> 'element-'+serial++});
+  $('#duplicate-record-dialog').close();pendingRecordDuplicate=null;
+  syncRecordsToGroups();$('#group-edit').value=rec.group;
+  renderRecordManager(rec.id);
+  if(mode!=='edit')setMode('edit');
+  setView('detail:'+rec.group,rec.id);save();
+  note('Copie créée : '+rec.title+'. Modifie son contenu puis enregistre le brouillon.');
+ }catch(error){$('#duplicate-record-error').textContent=error.message;}
 }
 
 function refreshFontSelects(){const select=$('#el-font'),current=select.value;select.replaceChildren();for(const [f,label] of FONTS)select.add(new Option(label,f));for(const entry of state.fonts||[])select.add(new Option('Importée · '+entry.label,entry.family));select.value=current||'Kalam';}
@@ -1459,7 +1510,7 @@ function setup(){
  $('#page-select').addEventListener('change',ev=>setView(ev.target.value));
  $('#group-edit').addEventListener('change',fillGroupEdit);
  $('#record-select').addEventListener('change',()=>renderRecordManager($('#record-select').value));
- for(const action of ['add','rename','edit','up','down','archive','delete','move'])
+ for(const action of ['add','rename','edit','duplicate','up','down','archive','delete','move'])
    $('#record-'+action).addEventListener('click',()=>manageRecord(action));
  $('#record-move-group').addEventListener('change',()=>fillMoveFolderOptions());
  $('#folder-select').addEventListener('change',()=>renderFolderManager($('#folder-select').value));
@@ -1468,6 +1519,9 @@ function setup(){
  $('#record-delete-cancel').addEventListener('click',()=>$('#delete-record-dialog').close());
  $('#record-delete-confirm').addEventListener('click',confirmRecordDeletion);
  $('#delete-record-dialog').addEventListener('close',()=>{pendingRecordDelete=null;});
+ $('#record-duplicate-cancel').addEventListener('click',()=>$('#duplicate-record-dialog').close());
+ $('#duplicate-record-form').addEventListener('submit',ev=>{ev.preventDefault();confirmRecordDuplicate();});
+ $('#duplicate-record-dialog').addEventListener('close',()=>{pendingRecordDuplicate=null;});
  for(const key of ['name','text','x','y','w','h','size','font','color','align','columns','line','columnGap','rowGap','rotate','opacity','z','action','target','entry','imageFit','blend']){
    $('#el-'+(key==='imageFit'?'imagefit':key==='columnGap'?'column-gap':key==='rowGap'?'row-gap':key)).addEventListener('input',ev=>{if(ev.target.value===''&&ev.target.type==='number')return;handleChange(key,ev.target.value);});
  }
@@ -1601,6 +1655,7 @@ init();
 <script src="journal-publication-viewer.js" defer></script>
 <script src="journal-editor-simplified.js?v=20261102.1" defer></script>
 </body></html>
+
 
 
 
