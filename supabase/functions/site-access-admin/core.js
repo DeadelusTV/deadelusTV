@@ -150,7 +150,7 @@ export function createHandler(env, http = fetch) {
     if (!ACTIONS.has(action)) return respond(400,{error:'unknown_action'});
     const checkedPayload = verifyAction(action,payload);
     if (!checkedPayload) return respond(400,{error:'invalid_fields'});
-    if (action !== 'bootstrap' && !mutationsEnabled)
+    if (action !== 'bootstrap' && action !== 'previewModerators' && !mutationsEnabled)
       return respond(403,{error:'registry_writes_disabled'});
 
     try {
