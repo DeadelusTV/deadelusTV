@@ -149,76 +149,15 @@ begin
     insert into public.site_access_audit(action,actor_twitch_id,subject,details)
       values(p_action,p_actor_twitch_id,v_code,jsonb_build_object('label',v_label,'connected',false));
   elsif p_action = 'syncModerators' then
-    -- Import EXCLUSIVEMENT fourni par la fonction serveur après OAuth du diffuseur.
-    -- L'appelant SQL est service_role ; jamais une requête client directe.
+    -- Import fourni par la fonction serveur après validation du compte du diffuseur.
+    -- Ne pas accepter de liste provenant du navigateur.
     if jsonb_typeof(p_payload->'moderators') <> 'array'
        or jsonb_array_length(p_payload->'moderators') not between 1 and 2000 then
       raise exception 'invalid_moderator_snapshot';
     end if;
     if exists(
       select 1 from jsonb_to_recordset(p_payload->'moderators') as m(user_id text,user_name text)
-      where m.user_id is null or m.user_id !~ '^[0-9]{1,32}
-    v_person := p_payload->>'user_id'; v_code := p_payload->>'code';
-    if jsonb_typeof(p_payload->'enabled') <> 'boolean' then
-      raise exception 'invalid_grant';
-    end if;
-    v_enabled := (p_payload->>'enabled')::boolean;
-    if v_person is null or v_person !~ '^[0-9]{1,32}$'
-       or not exists(select 1 from public.site_access_people where twitch_user_id=v_person)
-       or not exists(select 1 from public.site_access_permissions where code=v_code and active) then
-      raise exception 'invalid_grant';
-    end if;
-    insert into public.site_access_grants(twitch_user_id,permission_code,enabled,changed_by_twitch_id)
-    values(v_person,v_code,v_enabled,p_actor_twitch_id)
-    on conflict(twitch_user_id,permission_code) do update
-    set enabled=excluded.enabled,changed_by_twitch_id=excluded.changed_by_twitch_id,changed_at=now();
-    insert into public.site_access_audit(action,actor_twitch_id,subject,details)
-      values(p_action,p_actor_twitch_id,v_person||'/'||v_code,jsonb_build_object('enabled',v_enabled,'effective',false));
-  else
-    raise exception 'invalid_action';
-  end if;
-
-  return jsonb_build_object(
-    'authorized',true, 'phase','draft_registry', 'rights_effective',false,
-    'categories',coalesce((
-      select jsonb_agg(jsonb_build_object(
-        'id',c.id,'label',c.label,
-        'sections',coalesce((
-          select jsonb_agg(jsonb_build_object(
-            'id',s.id,'label',s.label,
-            'permissions',coalesce((
-              select jsonb_agg(jsonb_build_object('code',p.code,'label',p.label,'connected',p.connected)
-                               order by p.position,p.code)
-              from public.site_access_permissions p
-              where p.category_id=s.category_id and p.section_id=s.id and p.active
-            ),'[]'::jsonb)
-          ) order by s.position,s.id)
-          from public.site_access_sections s
-          where s.category_id=c.id and s.active
-        ),'[]'::jsonb)
-      ) order by c.position,c.id)
-      from public.site_access_categories c where c.active
-    ),'[]'::jsonb),
-    'people',coalesce((
-      select jsonb_agg(jsonb_build_object(
-        'id',pe.twitch_user_id,'name',pe.display_name,'is_moderator',pe.is_moderator,
-        'rights',coalesce((
-          select jsonb_agg(g.permission_code order by g.permission_code)
-          from public.site_access_grants g
-          where g.twitch_user_id=pe.twitch_user_id and g.enabled
-        ),'[]'::jsonb)
-      ) order by pe.display_name,pe.twitch_user_id)
-      from public.site_access_people pe
-    ),'[]'::jsonb)
-  );
-end
-$function$;
-
-revoke all on function public.site_access_admin_action(text,jsonb,text) from public, anon, authenticated;
-grant execute on function public.site_access_admin_action(text,jsonb,text) to service_role;
-
-commit;
-
+      where m.user_id is null or m.user_id !~ '^[0-9]{1,32}$'
          or m.user_name is null or length(btrim(m.user_name)) not between 1 and 70
     ) then
       raise exception 'invalid_moderator_snapshot';
@@ -230,17 +169,15 @@ commit;
       raise exception 'duplicate_moderator_id';
     end if;
 
-    -- Empêche deux listes concurrentes de se réécrire sans ordre déterministe.
+    -- Sérialisation de deux synchronisations concurrentes.
     perform pg_catalog.pg_advisory_xact_lock(99977368);
     update public.site_access_people pe
       set is_moderator=false,last_twitch_sync=now()
       where is_moderator
         and not exists (
-          select 1
-          from jsonb_to_recordset(p_payload->'moderators') as m(user_id text,user_name text)
+          select 1 from jsonb_to_recordset(p_payload->'moderators') as m(user_id text,user_name text)
           where m.user_id=pe.twitch_user_id
         );
-
     insert into public.site_access_people
       (twitch_user_id,display_name,is_moderator,last_twitch_sync)
     select m.user_id,btrim(m.user_name),true,now()
@@ -248,6 +185,7 @@ commit;
     on conflict(twitch_user_id) do update
       set display_name=excluded.display_name,is_moderator=true,last_twitch_sync=now();
 
+    -- Les attributions site_access_grants ne sont ni effacées ni activées.
     insert into public.site_access_audit(action,actor_twitch_id,subject,details)
     values(p_action,p_actor_twitch_id,'deadelustv',
       jsonb_build_object('count',jsonb_array_length(p_payload->'moderators'),
