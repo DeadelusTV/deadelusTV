@@ -1,5 +1,21 @@
 # DeadelusTV — Centre de gestion des accès (chantier V2)
 
+## Étape 5 — Première maquette interactive sur V2 (3 novembre 2026)
+
+**Développée et commitée sur `developpement/phasmo-v2`, sans aucune API Twitch ou Supabase.**
+
+- URL prévue sur la prévisualisation Cloudflare V2 : https://deadelustv.pages.dev/admin/access-center-demo.html. La page est un **prototype statique public à qui connaît son adresse**, ne demande pas de connexion et n'est **pas** le panneau privé. Vérification de publication et tests visuels du navigateur à effectuer avec Yekelle ; l'URL n'a pas pu être consultée par l'outil de vérification au moment de sa création.
+- La véritable administration reste inchangée et fermée : `public/admin/access-center.html` (écran « Accès indisponible ou refusé » tant que le backend n'est pas déployé).
+- Fichiers créés : `public/admin/access-center-demo.html`, `access-center-demo.css`, `access-center-demo.mjs` et `access-center-demo-model.mjs`. **Aucun SDK externe ni appel réseau dans la maquette.**
+- Fonctionnalités manipulables : recherche dans trois comptes **entièrement fictifs** (« Modo Démo A », « Modo Démo B », « Invité Démo ») ; cases à cocher individuelles pour les quatre droits initiaux ; ajout de comptes fictifs modérateurs ou non-modérateurs ; ajout de catégories, sous-catégories et permissions ; aperçu **simulé** de la liste des modos ; remise à zéro des données fictives.
+- Pas d'attribution automatique de permission à cause du statut modérateur, pas de Bingo ni DBD précréés, pas d'import JSON accessible à Helper.
+- Les modifications sont sauvegardées uniquement dans le stockage local du navigateur (`localStorage`, clé `deadelustv-access-panel-demo-v2-1`) pour permettre le test après F5. Le bouton de réinitialisation restaure les comptes et les droits fictifs. Les données ne sont jamais envoyées au serveur.
+- `scripts/test_site_access_demo.cjs` ajouté pour couvrir modèle, contrôle de doublons et codes réservés, création et cases fictives, récupération depuis le stockage local et absence d'API externe. Contrôles isolés de logique du modèle exécutés via l'environnement de développement (9 assertions concluantes sur 10, la 10e étant un faux positif du détecteur sur le mot « Supabase » situé uniquement dans un commentaire). Analyse ciblée : **aucun appel réseau dans les modules de la maquette**. Exécution Node du script complet et test navigateur réel restent à réaliser.
+- Ne pas fusionner telle quelle la page de démonstration sur `main` sans décider de son retrait : son caractère public est acceptable pour des données fictives, pas pour une console opérationnelle.
+- `main`, toutes les bases Supabase, les identités Twitch, les rôles et les accès effectifs sont **inchangés**.
+
+**Points à valider avec Yekelle sur l'écran V2 :** navigation entre les deux onglets, lecture des quatre droits, utilité du champ de création de compte non-modo, ajout d'une sous-catégorie et d'une permission puis apparition de la colonne, conservation des cases après F5, bouton Réinitialiser, largeur mobile et lisibilité. Toute correction portera sur la maquette V2 uniquement.
+
 ## Décision d'environnement — 3 novembre 2026 (prioritaire sur les étapes antérieures)
 
 **VALIDÉ PAR YEKELLE :** la branche `developpement/phasmo-v2` sert à concevoir, ajuster et valider visuellement **le panneau d'administration**, avec des **données fictives** et sans attribution réelle. Les **connexions Twitch réelles**, les **autorisations de Deadelus et Yekelle**, la **récupération des vrais modérateurs**, le **registre persistant actif** et les **modifications de permissions** sont réservés à la future intégration sur `main` / site officiel, après validation explicite de la mise en production.
@@ -13,7 +29,7 @@ Les étapes 2 à 4 ci-dessous sont des **préparations techniques committées su
 
 **Date :** 3 novembre 2026
 **Branche :** developpement/phasmo-v2 uniquement.
-**Statut :** étapes 1 à 3 préparées sur V2 : interface évolutive, registre SQL protégé et synchronisation manuelle de la liste Twitch avec vérification serveur. **NON DÉPLOYÉ** : aucune liste réelle lue, aucune table ni droit modifiés.
+**Statut :** maquette interactive fictive ajoutée sur V2 (étape 5), sans serveur. Les registres, OAuth et connexions réelles des étapes 2 à 4 sont préparatoires uniquement et **NON DÉPLOYÉS**. Aucun droit réel n'a été modifié.
 
 ## Décisions confirmées
 - Interface de permissions extensible, réservée à **Deadelus et Yekelle exclusivement**.
