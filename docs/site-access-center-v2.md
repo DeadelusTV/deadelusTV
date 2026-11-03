@@ -1,5 +1,16 @@
 # DeadelusTV — Centre de gestion des accès (chantier V2)
 
+## Décision d'environnement — 3 novembre 2026 (prioritaire sur les étapes antérieures)
+
+**VALIDÉ PAR YEKELLE :** la branche `developpement/phasmo-v2` sert à concevoir, ajuster et valider visuellement **le panneau d'administration**, avec des **données fictives** et sans attribution réelle. Les **connexions Twitch réelles**, les **autorisations de Deadelus et Yekelle**, la **récupération des vrais modérateurs**, le **registre persistant actif** et les **modifications de permissions** sont réservés à la future intégration sur `main` / site officiel, après validation explicite de la mise en production.
+
+Les étapes 2 à 4 ci-dessous sont des **préparations techniques committées sur V2**, pas des fonctionnalités à activer sur Cloudflare V2. Tout conseil antérieur proposant d'autoriser OAuth ou de déployer la gestion réelle sur V2 est **remplacé par cette décision**. Les URL de retour OAuth de prévisualisation écrites dans le prototype sont historiques et devront être corrigées et revérifiées pour l'environnement officiel avant un déploiement. **Ne pas configurer de jetons, secrets, tables ni fonctions réelles sur V2.**
+
+**Point important :** `main` et V2 sont des branches de code, pas des bases Supabase distinctes. Même si un script SQL est exécuté « pour main », il peut toucher les services partagés du TCG / Phasmo / Crew ; aucune migration ne doit être appliquée sans revue des projets, sauvegarde et tests adaptés. Une recette technique SQL peut rester locale/isolée sans ouverture des connexions réelles sur V2. Sur main, procéder progressivement : verrou d'identité → consultation → attribution préparatoire → raccordement des permissions des modules → validation finale.
+
+**Périmètre constant :** Phasmo Livre/News et Crew Helper/Admin uniquement. Le panneau d'administration reste réservé à Deadelus et Yekelle ; une éventuelle maquette visible sur V2 ne doit pas afficher de comptes ou droits réels ni être confondue avec un panneau opérationnel. Aucune action sur `main` n'est autorisée par cette décision de planification seule.
+
+
 **Date :** 3 novembre 2026
 **Branche :** developpement/phasmo-v2 uniquement.
 **Statut :** étapes 1 à 3 préparées sur V2 : interface évolutive, registre SQL protégé et synchronisation manuelle de la liste Twitch avec vérification serveur. **NON DÉPLOYÉ** : aucune liste réelle lue, aucune table ni droit modifiés.
