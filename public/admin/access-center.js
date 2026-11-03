@@ -162,6 +162,8 @@
   function renderTwitch() {
     const holder = $('twitch-preview');
     holder.replaceChildren();
+    $('authorize-twitch').hidden = state.can_authorize_twitch !== true;
+    $('authorize-twitch').disabled = busy;
     $('preview-mods').disabled = state.twitch_configured !== true || busy;
     $('sync-mods').disabled = state.twitch_configured !== true ||
       state.mutations_enabled !== true || !Array.isArray(lastPreview) ||
@@ -209,6 +211,19 @@
       render();
       message(LOCAL?'Démonstration accessible uniquement depuis localhost. Données fictives, sans sauvegarde.':
         'Les attributions du registre ne sont PAS des droits effectifs dans Phasmo ou Crew.');
+    if(!LOCAL) {
+      const url=new URL(window.location.href);
+      const result=url.searchParams.get('twitch_oauth');
+      if(result==='connected'||result==='failed'||result==='cancelled'){
+        url.searchParams.delete('twitch_oauth');
+        window.history.replaceState(null,'',url.pathname+url.search+url.hash);
+        message(result==='connected'?
+          'Autorisation Twitch reçue. Vérifie la liste pour confirmer le fonctionnement.':
+          result==='cancelled'?'Autorisation Twitch annulée.':
+          'Autorisation Twitch non terminée. Aucun accès accordé.',result!=='connected');
+      }
+    }
+
     } catch (error) {
       $('workspace').hidden=true;
       $('gate').hidden=false;
@@ -221,7 +236,28 @@
     $('catalog').hidden=button.dataset.tab!=='catalog';
     message('');
   }));
-  $('preview-mods').addEventListener('click',async()=>{
+  $('authorize-twitch').addEventListener('click',async()=>{
+    if (busy || !state || state.can_authorize_twitch !== true || LOCAL) return;
+    busy=true;renderTwitch();message('Préparation de l’autorisation Twitch…');
+    try {
+      if(!client)throw Error('Session absente.');
+      const {data:{session},error:sessionError}=await client.auth.getSession();
+      if(sessionError||!session)throw Error('Reconnecte-toi avec Twitch.');
+      const {data,error}=await client.functions.invoke('site-access-twitch-oauth',{
+        body:{action:'begin'}
+      });
+      if(error||typeof data?.authorization_url!=='string')
+        throw Error('Autorisation du diffuseur indisponible.');
+      const url=new URL(data.authorization_url);
+      if(url.origin!=='https://id.twitch.tv'||url.pathname!=='/oauth2/authorize'||
+        url.searchParams.get('scope')!=='moderation:read'||
+        url.searchParams.get('response_type')!=='code')
+        throw Error('Destination d’autorisation invalide.');
+      window.location.assign(url.href);
+    }catch(error){message(error.message||'Autorisation Twitch indisponible.',true);}
+    finally{busy=false;if(state)renderTwitch();}
+  });
+    $('preview-mods').addEventListener('click',async()=>{
     if(busy || !state || state.twitch_configured !== true)return;
     busy=true;renderTwitch();message('Vérification de la liste Twitch…');
     try {
