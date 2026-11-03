@@ -13,6 +13,7 @@
   let client, state = null, busy = false;
   const localData = {
     authorized: true,
+    phase: 'local_demo', rights_effective: false, mutations_enabled: true,
     categories: [
       {id:'phasmo',label:'Phasmophobia',sections:[
         {id:'livre',label:'Livre',permissions:[{code:'phasmo.livre.edit',label:'Éditeur du livre'}]},
@@ -41,7 +42,8 @@
     return el;
   }
   function validSnapshot(data) {
-    return !!(data?.authorized === true && Array.isArray(data.categories) && Array.isArray(data.people));
+    return !!(data?.authorized === true && data?.rights_effective === false &&
+      Array.isArray(data.categories) && Array.isArray(data.people));
   }
   function localAction(action, data) {
     if (action === 'bootstrap') return localData;
@@ -88,7 +90,8 @@
       if (!validSnapshot(next)) throw Error('Réponse serveur invalide');
       state = next;
       render();
-      message(LOCAL ? 'Démonstration locale mise à jour. Aucune donnée réelle modifiée.' : 'Modification confirmée par le serveur.');
+      message(LOCAL ? 'Démonstration locale mise à jour. Aucune donnée réelle modifiée.' :
+        'Enregistré dans le registre préparatoire. Aucun droit effectif ajouté aux modules.');
     } catch(error) { message(error.message || 'Action impossible.',true); }
     finally {busy=false;}
   }
@@ -114,6 +117,7 @@
         for (const p of permissions) {
           const td=node('td'),input=node('input');
           input.type='checkbox';input.checked=person.rights.includes(p.code);
+          input.disabled=state.mutations_enabled !== true;
           input.setAttribute('aria-label',person.name+' : '+p.label);
           input.addEventListener('change',()=>transaction('setGrant',{user_id:person.id,code:p.code,enabled:input.checked}));
           td.append(input);row.append(td);
@@ -150,10 +154,13 @@
       }
       holder.append(card);
     }
-    $('add-section').querySelector('button[type=submit]').disabled=!state.categories.length;
-    $('add-permission').querySelector('button[type=submit]').disabled=!permSelect.options.length;
+    $('add-section').querySelector('button[type=submit]').disabled=!state.categories.length || state.mutations_enabled !== true;
+    $('add-permission').querySelector('button[type=submit]').disabled=!permSelect.options.length || state.mutations_enabled !== true;
   }
-  function render() {renderRights();renderCatalog();}
+  function render() {
+    renderRights();renderCatalog();
+    $('add-category').querySelector('button[type=submit]').disabled=state.mutations_enabled !== true;
+  }
   async function initialize() {
     try {
       if (!LOCAL) {
@@ -168,9 +175,11 @@
       if (!validSnapshot(result)) throw Error('Autorisation serveur non confirmée.');
       state=result;
       $('gate').hidden=true;$('workspace').hidden=false;
-      $('mode').textContent=LOCAL?'Démo locale, aucune écriture':'Accès vérifié côté serveur';
+      $('mode').textContent=LOCAL?'Démo locale, aucune écriture':
+        (state.mutations_enabled ? 'Registre de préparation actif' : 'Registre en lecture seule');
       render();
-      message(LOCAL?'Démonstration accessible uniquement depuis localhost. Données fictives, sans sauvegarde.':'');
+      message(LOCAL?'Démonstration accessible uniquement depuis localhost. Données fictives, sans sauvegarde.':
+        'Les attributions du registre ne sont PAS des droits effectifs dans Phasmo ou Crew.');
     } catch (error) {
       $('workspace').hidden=true;
       $('gate').hidden=false;
