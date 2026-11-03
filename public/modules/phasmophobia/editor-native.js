@@ -520,6 +520,15 @@
     if(publishButton)publishButton.textContent=d.publishedId?'Mettre à jour sur la démo':'Publier sur la démo';
     if(save)store();
   }
+  function safeSourceUrl(value){
+    const raw=String(value||'').trim();
+    if(!raw)return '';
+    if(raw.length>2048)return null;
+    try{
+      const u=new URL(raw);
+      return u.protocol==='https:'&&!u.username&&!u.password&&!/\.svg$/i.test(u.pathname)?u.href:null;
+    }catch{return null;}
+  }
   function showPreview(on){
     $('#editor-form').hidden=on;$('#editor-preview').hidden=!on;
     for(const [id,state] of [['editor-mode-edit',!on],['editor-mode-preview',on]]){
@@ -536,7 +545,13 @@
     if(coverUrl())picture(head,coverUrl(),'phasma-news-article-cover');
     const surface=el('div','tiptap');buildDoc(surface,d.doc);body.append(surface);
     if(d.translator)foot.append(el('p','','Traduction française : '+d.translator));
-    foot.append(el('p','','Source : '+(d.sourceUrl||'à compléter')));
+    const source=safeSourceUrl(d.sourceUrl);
+    if(source){
+      const isKinetic=['kineticgames.co.uk','www.kineticgames.co.uk'].includes(new URL(source).hostname);
+      const link=el('a','',isKinetic?'Lire l’article original chez Kinetic Games ↗':'Consulter la source ↗');
+      link.href=source;link.target='_blank';link.rel='noopener noreferrer';
+      foot.append(link);
+    }
   }
   function command(command,value){
     root.focus({preventScroll:true});
@@ -867,14 +882,7 @@
       ['title','Indiquez le titre de l’article.',v=>!!v.trim()&&v.trim().length<=160],
       ['excerpt','Indiquez un résumé pour la vignette.',v=>!!v.trim()&&v.trim().length<=350],
       ['publishedAt','Choisissez une date de publication.',v=>/^\d{4}-\d{2}-\d{2}$/.test(v)],
-      ['sourceUrl','Indiquez le lien HTTPS de l’annonce originale Kinetic Games (rubrique /news).',v=>{
-        try{
-          const u=new URL(v.trim());
-          return u.protocol==='https:'&&!u.username&&!u.password&&
-            ['kineticgames.co.uk','www.kineticgames.co.uk'].includes(u.hostname)&&
-            (u.pathname==='/news'||u.pathname.startsWith('/news/'));
-        }catch{return false;}
-      }],
+      ['sourceUrl','Indiquez un lien HTTPS valide ou laissez ce champ vide.',v=>safeSourceUrl(v)!==null],
       ['slug','L’identifiant de l’article doit contenir uniquement des minuscules, chiffres et tirets.',v=>/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(v)&&v.length<=100]
     ];
     for(const [key,message,test] of fields){
