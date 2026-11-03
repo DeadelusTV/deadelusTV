@@ -300,6 +300,11 @@ html.journal-viewer #book .layer{cursor:default}
         <button type="button" class="btn" id="journal-simple-unpublish" disabled>Dépublier</button>
         <button type="button" class="btn journal-delete" id="journal-simple-delete">Supprimer</button>
       </div>
+      <div class="buttons">
+        <button id="import" class="btn" type="button">Importer un JSON</button>
+        <input id="json-input" type="file" accept="application/json,.json">
+      </div>
+      <p class="tip">Le fichier remplace la copie locale affichée. Clique ensuite sur « Enregistrer le brouillon » pour sauvegarder cette version.</p>
       <p class="tip" id="journal-simple-status" role="status" aria-live="polite">Brouillon privé. Tu peux enregistrer directement tes modifications ; l’historique permet de retrouver les versions précédentes.</p>
       <p class="tip" id="journal-simple-publish-note">La publication publique n'est pas encore autorisée. L'aperçu permet de tester le carnet sans le mettre en ligne.</p>
     </div>
@@ -370,8 +375,8 @@ html.journal-viewer #book .layer{cursor:default}
         </div>
       </div>
     </div>
-    <div class="buttons"><button id="export" class="btn solid" type="button">↓ Télécharger mes réglages</button><button id="import" class="btn" type="button">↑ Charger un JSON</button><button id="reset" class="btn" type="button">Réinitialiser l'atelier</button></div>
-    <input id="json-input" type="file" accept="application/json,.json"><p class="tip">Le JSON local reste exportable et contient les médias. Les fichiers du brouillon partagé sont stockés dans le bucket privé dédié de Supabase Storage. Les réglages se conservent aussi dans ce navigateur quand le stockage local est autorisé. <b>Le JSON est la sauvegarde fiable à transmettre ici.</b> Compatible avec les exports du premier Atelier Sommaire.</p>
+    <div class="buttons"><button id="export" class="btn solid" type="button">↓ Télécharger mes réglages</button><button id="reset" class="btn" type="button">Réinitialiser l'atelier</button></div>
+    <p class="tip">Le JSON local reste exportable et contient les médias. Les fichiers du brouillon partagé sont stockés dans le bucket privé dédié de Supabase Storage. Les réglages se conservent aussi dans ce navigateur quand le stockage local est autorisé. <b>Le JSON est la sauvegarde fiable à transmettre ici.</b> Compatible avec les exports du premier Atelier Sommaire.</p>
     </div>
   </div>
 </aside>

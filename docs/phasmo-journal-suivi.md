@@ -1,5 +1,9 @@
 # Phasmophobia V2 — suivi des travaux du carnet (branche de développement)
 
+## Correction du 03/11/2026 — import JSON accessible
+
+Le bouton « Importer un JSON » est de nouveau visible dans « 7 · Sauvegardes ». Le sélecteur de fichier et le traitement d’import existants sont conservés ; le JSON remplace la copie locale, puis « Enregistrer le brouillon » permet de sauvegarder cette version. Aucun chargement de brouillon distant n'est nécessaire. Les outils de diagnostic restent masqués.
+
 ## Correction du 02/11/2026 — enregistrer sans chargement préalable
 
 - Remontée : un éditeur ayant déjà modifié le carnet était bloqué par l'obligation de charger le brouillon partagé, ce qui risquait de remplacer son travail à l'écran.
