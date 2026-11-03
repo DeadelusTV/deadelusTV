@@ -2,7 +2,7 @@
 
 **Date :** 3 novembre 2026
 **Branche :** developpement/phasmo-v2 uniquement.
-**Statut :** première structure développée sur V2, **prototype UI et verrou serveur en lecture seule**. Pas de droits réels modifiables, pas de synchronisation Twitch et pas de SQL appliqué.
+**Statut :** étape 2 codée sur V2 : schéma SQL de registre persistant préparé, RPC atomique avec audit, intégration à la fonction serveur et interface adaptée. **NON DÉPLOYÉ** ; le registre n'existe pas encore dans la base et aucun droit effectif n'est modifié.
 
 ## Décisions confirmées
 - Interface de permissions extensible, réservée à **Deadelus et Yekelle exclusivement**.
@@ -47,3 +47,23 @@
 V2 inspectée et comparée à main : 13 commits sur main absents de V2 lors de l'audit ; aucune fusion effectuée. Syntaxe JS du prototype et du cœur serveur vérifiée. Tests simulés du handler : configuration manquante, mauvaise origine, compte propriétaire, non-propriétaire, tentative de modification refusée ; résultats conformes. Ces tests ne prouvent pas encore la connexion réelle de Deadelus/Yekelle ni la sécurité du futur backend d'écriture.
 
 Documents spécialisés de référence : docs/crew-twitch-auth.md ; docs/phasmo-news-editor.md ; docs/phasmo-journal-supabase-architecture-v7.md. Banque d'idées : https://docs.google.com/document/d/1JQC2rytjpIE-U96w3H5S_f4VdQ1ys5tshDdehTBBNjc/edit.
+
+
+## Étape 2 — Registre configurable et attribution préparatoire (3 novembre 2026)
+
+**Nouveaux fichiers et changements réellement committés sur V2 :**
+- docs/site-access-registry-v2.sql : **script de création non appliqué**, six tables dédiées uniquement à l'administration (catégories, sous-catégories, permissions, personnes Twitch, attributions préparatoires, journal d'audit). Catalogue semé avec exactement quatre permissions validées : livre/news/crew helper/admin, toutes non raccordées.
+- RPC site_access_admin_action : fonctions bootstrap, addCategory, addSection, addPermission, setGrant. **SECURITY INVOKER** avec droit EXECUTE accordé seulement à service_role, transaction unique pour mutation + audit. Aucun droit du TCG, News, Journal ou Crew n'est changé par cette RPC.
+- supabase/functions/site-access-admin/core.js : autorisation serveur d'un des deux Twitch IDs propriétaires via le JWT Auth portail, projet Supabase fixe, validation des entrées, délégation à la RPC avec la clé serveur (jamais exposée au navigateur). Préparation avec SITE_ACCESS_WRITES_ENABLED = true obligatoire pour autoriser les écritures ; valeur absente ou différente = **lecture seule**. Origines et deux IDs obligatoires ; refus en cas de mauvaise base ou de configuration incomplète.
+- public/admin/access-center.js / .html : libellé « Attributions préparatoires » et avertissement explicite « aucune permission effective ». Désactivation des cases/formulaires lorsque mutations_enabled n'est pas vrai ; démo locale en mémoire inchangée dans son principe.
+- scripts/test_site_access_admin.cjs : tests simulés actualisés (JWT, propriété, origine, clé absente, actions autorisées, valeurs malformées, écriture désactivée, défaut de base, réponse SQL indisponible).
+
+**Points de sécurité déjà vérifiés :** syntaxe du JavaScript et du test, simulations de propriétaire / non-propriétaire / origine / tentative d'écriture, persistance désactivée par défaut, création d'identifiant technique stable et interdiction des codes réservés du portail. Lecture seule de la liste des tables existantes sur le projet Supabase eodtxlhnfzyapkyvvxdi : aucune table site_access_* n'existait lors du contrôle.
+
+**Non vérifié / non réalisé :** le SQL n'a PAS été exécuté ni validé dans un PostgreSQL de recette ; aucune politique, séquence ou RPC créée en base. La fonction Edge n'est pas déployée, aucune clé ou variable serveur configurée, aucune session utilisateur réelle testée et aucun droit administré. La réponse serveurs aurait people=[] tant que la synchronisation Twitch n'est pas développée. La vue peut donc paraître vide même après déploiement en lecture seule ; il ne s'agit pas d'une liste réelle de modérateurs.
+
+**Risques à traiter AVANT déploiement :** tests d'accès explicites pour anon/authenticated/service_role sur le script SQL (RLS plus révocation des GRANT), audit de la RPC et de la fonction, tests de concurrence et de doublons ; confirmer les deux Twitch IDs de Deadelus/Yekelle à partir des connexions réelles. Vérifier la compatibilité des appels RPC avec la configuration Data API de Supabase, notamment les grants explicites après le changement de 2026. Ne pas appliquer ce script au projet portail utilisé en production sans une phase de validation adaptée.
+
+**Étape suivante proposée :** validation du schéma sur une base de test isolée, puis lecture sécurisée et pagination de la vraie liste Twitch des modérateurs par le serveur, sans stocker de jeton Twitch dans le navigateur. Ensuite seulement, raccorder les permissions existantes News/Livre et les rôles Crew, garder la distinction de leurs projets Supabase. L'historique du site ne doit pas être modifié par une attribution préparatoire.
+
+Référence sécurité Supabase : https://supabase.com/docs/guides/api/securing-your-api.
