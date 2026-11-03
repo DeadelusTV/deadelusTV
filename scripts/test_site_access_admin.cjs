@@ -2,12 +2,11 @@
  * Aucun accès au réseau ou à Supabase. N'exécute aucune migration.
  */
 const assert=require('node:assert/strict');
-const fs=require('node:fs');
+const {pathToFileURL}=require('node:url');
 const path=require('node:path');
 
 (async()=>{
-  const src=fs.readFileSync(path.join(__dirname,'../supabase/functions/site-access-admin/core.js'),'utf8');
-  const {createHandler}=await import('data:text/javascript;base64,'+Buffer.from(src).toString('base64'));
+  const {createHandler}=await import(pathToFileURL(path.join(__dirname,'../supabase/functions/site-access-admin/core.js')).href);
   const origin='https://deadelustv.pages.dev',base='https://eodtxlhnfzyapkyvvxdi.supabase.co';
   const valid={
     SITE_ACCESS_ADMIN_TWITCH_IDS:'12345,67890',
