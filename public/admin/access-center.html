@@ -40,6 +40,15 @@
       </nav>
       <p id="notice" class="notice" role="status" aria-live="polite"></p>
       <section id="rights" aria-label="Droits des personnes">
+        <div class="twitch-block" aria-labelledby="twitch-heading">
+          <h2 id="twitch-heading">Modérateurs Twitch de Deadelus</h2>
+          <p class="muted">Vérification manuelle de la liste de la chaîne. Les cases du registre ne sont pas des droits réels dans les modules.</p>
+          <div class="twitch-actions">
+            <button id="preview-mods" type="button">Vérifier la liste Twitch</button>
+            <button id="sync-mods" type="button" disabled>Enregistrer la synchronisation</button>
+          </div>
+          <div id="twitch-preview" hidden aria-live="polite"></div>
+        </div>
         <div class="tools">
           <label for="filter">Rechercher un compte Twitch</label>
           <input id="filter" type="search" autocomplete="off" placeholder="Pseudo Twitch">
