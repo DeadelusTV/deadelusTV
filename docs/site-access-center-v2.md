@@ -104,3 +104,47 @@ Références primaires : https://dev.twitch.tv/docs/api/reference/#get-moderator
 - Contrôles simulés et statiques exécutés dans l'environnement de développement de l'assistant : une insertion SQL malformée a été détectée et corrigée avant toute exécution ; une nouvelle série de 19 contrôles a ensuite réussi (19/19). Aucun SQL exécuté sur PostgreSQL, aucun test Node réalisé sur un clone du dépôt.
 - Les tests Node sont committés mais leur exécution en environnement Node avec les fichiers du dépôt reste à faire ; les vérifications côté assistant ont utilisé des simulations isolées et une compilation JavaScript statique.
 - Tests réels encore nécessaires : vraie autorisation de Deadelus, entrée dans le panneau depuis une session des deux propriétaires, vérification avec la liste Twitch complète, erreurs de token/rate-limit, application du script SQL sur base de recette, règles RLS, journal d'audit et restauration.
+
+## Étape 4 — OAuth Deadelus et renouvellement chiffré (3 novembre 2026)
+
+**État : CODE PRÉPARÉ SUR V2, NON DÉPLOYÉ, NON TESTÉ AVEC UN VRAI COMPTE OU UN VRAI JETON.** Aucun SQL exécuté. Les tables créées aux étapes précédentes sont elles-mêmes toujours absentes de la base active. La branche Supabase isolée n'existe pas encore (consultation en lecture seule de list_branches : 0 branche).
+
+### Choix techniques du prototype
+- Autorisation Twitch distincte de la connexion commune OAuth du portail. Le diffuseur Deadelus seul peut effectuer le consentement pour **moderation:read**. Yekelle reste propriétaire du panneau, sans pouvoir accorder elle-même ce scope pour la chaîne de Deadelus.
+- Flux OAuth **Authorization Code Grant** avec client secret serveur et paramètre state aléatoire SHA-256 (5 minutes, stockage du hash, consommation atomique à usage unique). Callback spécifique : https://eodtxlhnfzyapkyvvxdi.supabase.co/functions/v1/site-access-twitch-oauth. À enregistrer explicitement comme Redirect URL dans l'application Twitch à utiliser.
+- Réponse à l'utilisateur via une redirection fixe vers la page V2, contenant uniquement un indicateur connecté/annulé/échec, **jamais de code ni de jeton**. Un retour OAuth non conforme échoue fermé.
+- Jeton d'accès et refresh token conservés uniquement sous forme d'un paquet **AES-256-GCM chiffré** dans une table serveur dédiée ; clé 32 octets en secret Edge Function exclusivement. La base ne conserve aucun refresh token en clair.
+- Sur 401 de Twitch, demande de renouvellement avec le refresh token en x-www-form-urlencoded ; validation de l'identité, du Client ID et de moderation:read ; conservation du nouveau refresh token par comparaison atomique de révision. Sur 401 durant une page de modérateurs, nouvelle lecture depuis la première page après renouvellement. Les erreurs bloquent la synchronisation et n'effacent aucune attribution.
+- Le code d'autorisation est préparé avec un interrupteur **SITE_ACCESS_TWITCH_OAUTH_ENABLED=true** à activer en recette uniquement. Le droit d'écrire au registre reste indépendant, protégé par **SITE_ACCESS_WRITES_ENABLED=true** (désactivé par défaut).
+- Aucun affichage du bouton de consentement pour Yekelle : le serveur retourne can_authorize_twitch uniquement si identité Twitch vérifiée du diffuseur et configuration OAuth activée. La fonction de consentement vérifie à nouveau cette identité avant toute action.
+
+### Fichiers de l'étape 4
+- supabase/functions/_shared/site-access-twitch-credentials.js : chiffrement/déchiffrement AES-GCM, validation de jeton, lecture serveur, refresh réactif et gestion du conflit de version.
+- supabase/functions/site-access-twitch-oauth/core.js et index.ts : initiation privée et callback Twitch sécurisé à state unique.
+- docs/site-access-twitch-credentials-v2.sql : deux tables isolées et trois RPC privées, réservées au rôle serveur. Schéma non exécuté.
+- supabase/functions/site-access-admin/core.js : retrait du jeton statique ; récupération depuis le stockage chiffré, renouvellement sur 401 ; blocage de l'accès sans autorisation.
+- public/admin/access-center.html et .js : bouton « Autoriser la lecture Twitch (Deadelus) » conditionnel et message de retour sans données sensibles.
+- scripts/test_site_access_twitch_oauth.cjs : test Node simulé du consentement, state, rappel, refus, chiffrement et renouvellement.
+- scripts/test_site_access_twitch.cjs et scripts/test_site_access_admin.cjs : imports et mocks adaptés au nouveau composant serveur.
+
+### Variables préparatoires (à configurer en recette, jamais dans Git)
+- SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY : adresse fixe et clé serveur du projet de test, avec stockage côté Edge Function uniquement. **Le code actuel cible encore l'URL du portail existant** : pour une vraie branche de recette, adapter les URLs / clés après revue ; NE PAS déployer le code sur le projet actif en prétendant qu'il pointe déjà vers une base isolée.
+- SITE_ACCESS_ADMIN_TWITCH_IDS : exactement les deux identifiants Twitch vérifiés des propriétaires.
+- SITE_ACCESS_ALLOWED_ORIGINS : origine V2 de prévisualisation explicitement autorisée.
+- SITE_ACCESS_TWITCH_CLIENT_ID et SITE_ACCESS_TWITCH_CLIENT_SECRET : application Twitch *confidentielle*, secret jamais fourni dans cette conversation.
+- SITE_ACCESS_TWITCH_CALLBACK_URL : URL fixe de la fonction OAuth qui doit correspondre à la configuration Twitch.
+- SITE_ACCESS_TWITCH_RETURN_URL : URL fixe V2 https://deadelustv.pages.dev/admin/access-center.html.
+- SITE_ACCESS_TWITCH_ENCRYPTION_KEY_B64 : secret **aléatoire de 32 octets en base64**, conservé uniquement au niveau des secrets serveur. Ne pas enregistrer dans une conversation, un log ou un dépôt Git.
+- SITE_ACCESS_TWITCH_OAUTH_ENABLED : false par défaut ; true après recette, pour activer l'autorisation.
+- SITE_ACCESS_WRITES_ENABLED : false par défaut ; true seulement après validation complète des écritures du registre.
+
+### Contrôles obligatoires avant la recette réelle
+1. Vérifier le SQL (syntaxe PostgreSQL, SECURITY INVOKER, privilèges service_role et RLS) **sur un projet ou une branche Supabase isolée** ; puis exécuter des tests des rôles anon/authenticated/service_role, d'écrasement concurrent, du state expiré/rejoué et des restaurations. La création de branche Supabase peut être payante : aucune branche créée à ce stade.
+2. Vérifier et autoriser la bonne application Twitch, son redirect_uri exact, son Client ID et le compte diffuseur. Jamais de partage de client secret ou de jeton par le chat.
+3. Déployer les deux Edge Functions **sur une recette isolée**, avec contrôle verify_jwt=false pour le callback (la fonction vérifie elle-même les JWT des opérations POST et le state du callback), HTTPS, CORS d'origine stricte, limitation du trafic, journalisation sans secrets et procédure de révocation.
+4. Exécuter les scripts Node de tests du dépôt ; les scénarios cryptographiques et OAuth sont **écrits mais leur exécution réelle dans Node reste à confirmer**. Les contrôles de syntaxe JavaScript ont été effectués, mais ce n'est pas une validation d'intégration.
+5. Réaliser la recette avec Deadelus et Yekelle : consentement seulement Deadelus, refus non-propriétaire et Yekelle au consentement, lecture autorisée aux deux, expiration et refresh, déconnexion/révocation, échec Twitch, restauration après erreur, aucune régression News/Livre/Crew.
+
+**À confirmer :** droits réels et association des comptes, environnement de recette, décision sur la conservation des permissions des anciens modérateurs, rotation de la clé de chiffrement et procédures de retrait de l'autorisation Twitch. Les quatre permissions initiales seulement restent prévues. Aucun déploiement ni changement de main/production/Supabase effectué.
+
+Références : Twitch Authorization Code https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/ ; refresh https://dev.twitch.tv/docs/authentication/refresh-tokens/ ; Supabase secrets https://supabase.com/docs/guides/functions/secrets.
