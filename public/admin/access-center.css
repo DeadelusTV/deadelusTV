@@ -12,3 +12,11 @@ input,select{display:block;width:100%;background:#171819;color:#f0e8da;border:1p
 .module{border:1px solid #504637;background:#191a1b;border-radius:11px;margin:0 0 24px;overflow:hidden}.module h2{padding:18px 20px;margin:0;border-bottom:1px solid #504637}.table-scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:460px}th,td{padding:12px 15px;text-align:center;border-bottom:1px solid #332f29;font-size:.87rem}th{color:#d4bb91;font-weight:600}td:first-child,th:first-child{text-align:left;min-width:170px}.account-name{font-weight:600}.person-note{font-size:.72rem;color:#ad9e89}td input[type=checkbox]{width:19px;height:19px;margin:auto;accent-color:#d0ad70;cursor:pointer}td input[type=checkbox]:disabled{cursor:wait}.empty{padding:24px;color:#baad99}
 .forms{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:17px}form,.tree-card{border:1px solid #514535;border-radius:11px;background:#1b1b1c;padding:20px}form label{display:block;color:#d8c9b0;margin:11px 0 5px;font-size:.85rem}form button{margin-top:18px;width:100%}.tree-card{margin-bottom:18px}.tree-item{padding:10px 12px;margin:7px 0;background:#25231f;border-left:3px solid #a7844e}.tree-item strong{color:#d9c39f}.tree-permission{display:block;padding:3px 0 0 18px;color:#c7b7a0;font-size:.85rem}.code{color:#a69a89;font: .76rem ui-monospace,Consolas,monospace}.footnote{font-size:.81rem;margin:20px 0 0}
 @media(max-width:700px){main{padding-top:30px}.heading{flex-direction:column}.heading-actions{width:100%;justify-content:space-between}}
+
+/* Synchronisation manuelle Twitch, distincte des attributions de droits. */
+.twitch-block{border:1px solid #61513a;border-radius:11px;background:#1a1b1d;padding:22px;margin:0 0 24px}
+.twitch-block h2{margin-bottom:8px}
+.twitch-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}
+#twitch-preview{margin-top:16px;border-top:1px solid #514638;padding-top:15px}
+#twitch-preview ul{display:flex;flex-wrap:wrap;gap:8px;list-style:none;padding:0;margin:10px 0}
+#twitch-preview li{padding:5px 10px;border-radius:30px;background:#2d2922;color:#e5d2b0;font-size:.8rem}
