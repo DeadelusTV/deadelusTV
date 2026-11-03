@@ -101,18 +101,24 @@ aside p.lead{font-size:12px;color:#afa69b;line-height:1.6;margin:0 0 16px}
 #delete-layer-dialog button{border-radius:5px;padding:9px 14px;border:1px solid #806b4b;background:#31281f;color:#f4e8d8;cursor:pointer}
 #delete-layer-dialog #confirm-delete-layer{background:#803528;border-color:#bf695b;color:#fff7f0}
 #delete-layer-dialog button:focus-visible{outline:2px solid #edc388;outline-offset:3px}
-#duplicate-record-dialog{box-sizing:border-box;width:min(520px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto;padding:24px;background:#211b17;color:#f4e8d8;border:1px solid #b8965d;border-radius:12px;box-shadow:0 24px 90px #000d;font:14px/1.5 Arial,sans-serif}
-#duplicate-record-dialog::backdrop{background:#0009;backdrop-filter:blur(2px)}
-#duplicate-record-dialog h2{margin:0 0 12px;font:700 22px Georgia,serif;color:#ecd2a9}
-#duplicate-record-dialog p{margin:12px 0;overflow-wrap:anywhere}
-#duplicate-record-dialog label{display:block;margin-bottom:6px}
+#duplicate-record-dialog,#template-record-dialog{box-sizing:border-box;width:min(520px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto;padding:24px;background:#211b17;color:#f4e8d8;border:1px solid #b8965d;border-radius:12px;box-shadow:0 24px 90px #000d;font:14px/1.5 Arial,sans-serif}
+#duplicate-record-dialog::backdrop,#template-record-dialog::backdrop{background:#0009;backdrop-filter:blur(2px)}
+#duplicate-record-dialog h2,#template-record-dialog h2{margin:0 0 12px;font:700 22px Georgia,serif;color:#ecd2a9}
+#duplicate-record-dialog p,#template-record-dialog p{margin:12px 0;overflow-wrap:anywhere}
+#duplicate-record-dialog label,#template-record-dialog label{display:block;margin-bottom:6px}
 #duplicate-record-dialog input{box-sizing:border-box;width:100%;padding:10px;border:1px solid #806b4b;border-radius:5px;background:#121211;color:#f4e8d8}
-#duplicate-record-dialog .dialog-buttons{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:20px}
-#duplicate-record-dialog button{border-radius:5px;padding:9px 14px;border:1px solid #806b4b;background:#31281f;color:#f4e8d8;cursor:pointer}
-#duplicate-record-dialog #record-duplicate-confirm{background:#bea16d;color:#17140f}
-#duplicate-record-dialog :focus-visible{outline:2px solid #edc388;outline-offset:3px}
-#duplicate-record-error{color:#ffb9a8}
-#duplicate-record-error:empty{display:none}
+#duplicate-record-dialog .dialog-buttons,#template-record-dialog .dialog-buttons{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:20px}
+#duplicate-record-dialog button,#template-record-dialog button{border-radius:5px;padding:9px 14px;border:1px solid #806b4b;background:#31281f;color:#f4e8d8;cursor:pointer}
+#duplicate-record-dialog #record-duplicate-confirm,#template-record-dialog #record-template-confirm{background:#bea16d;color:#17140f}
+#duplicate-record-dialog :focus-visible,#template-record-dialog :focus-visible{outline:2px solid #edc388;outline-offset:3px}
+#duplicate-record-error,#template-record-error{color:#ffb9a8}
+#duplicate-record-error:empty,#template-record-error:empty{display:none}
+#template-record-dialog .journal-template-targets{display:grid;gap:10px;max-height:240px;overflow:auto;margin:12px 0;padding:12px;border:1px solid #806b4b;border-radius:5px}
+#template-record-dialog .journal-template-targets label{display:flex;align-items:flex-start;gap:9px;margin:0;cursor:pointer}
+#template-record-dialog .journal-template-targets input{flex:none;width:auto;margin:4px 0}
+#template-record-dialog .journal-template-targets span{overflow-wrap:anywhere}
+#template-record-summary{color:#f0c078}
+#record-template-confirm:disabled{opacity:.5;cursor:not-allowed}
 #journal-publication-view-status{display:none}
 html.journal-publication-preview #book{visibility:hidden}
 html.journal-publication-preview #journal-publication-view-status{display:grid;place-items:center;text-align:center;position:fixed;inset:0;z-index:40;padding:30px;color:#f1ddbd;background:#0e0f10;font:17px/1.6 Arial,sans-serif}
@@ -280,6 +286,7 @@ html.journal-viewer #book .layer{cursor:default}
     <div class="field"><label for="record-select">Fiches (archives incluses)</label><select id="record-select" size="7" style="width:100%" aria-label="Choisir une fiche"></select></div>
     <div class="field"><label for="record-title">Nom à ajouter ou à modifier</label><input id="record-title" type="text" maxlength="100" placeholder="Nom de la fiche"></div>
     <div class="buttons"><button type="button" class="btn small" id="record-add">+ Ajouter</button><button type="button" class="btn small" id="record-rename">Renommer</button><button type="button" class="btn small" id="record-edit">Ouvrir la fiche</button><button type="button" class="btn small" id="record-duplicate">Dupliquer la fiche</button></div>
+    <div class="buttons"><button type="button" class="btn small" id="record-template">Appliquer comme modèle…</button></div>
     <p class="tip" id="record-location">Emplacement : catégorie principale</p>
     <div class="buttons"><button type="button" class="btn small" id="record-up">↑ Monter</button><button type="button" class="btn small" id="record-down">↓ Descendre</button><button type="button" class="btn small" id="record-archive">Archiver</button><button type="button" class="btn small" id="record-delete">Supprimer…</button></div>
     <div class="field"><label for="record-move-group">Déplacer la fiche vers</label><select id="record-move-group"></select></div>
@@ -433,9 +440,24 @@ html.journal-viewer #book .layer{cursor:default}
 <div class="dialog-buttons"><button type="button" id="record-duplicate-cancel">Annuler</button><button type="submit" id="record-duplicate-confirm">Créer la copie</button></div>
 </form>
 </dialog>
+<dialog id="template-record-dialog" aria-labelledby="template-record-title">
+<form id="template-record-form">
+<h2 id="template-record-title">Appliquer le modèle</h2>
+<p id="template-record-description"></p>
+<fieldset>
+<legend>Fiches existantes à mettre en page</legend>
+<div class="buttons"><button type="button" id="record-template-all">Tout sélectionner</button><button type="button" id="record-template-none">Tout désélectionner</button></div>
+<div id="template-record-targets" class="journal-template-targets"></div>
+</fieldset>
+<p><strong>Le contenu actuel des fiches cochées sera remplacé</strong> : textes, images et mise en page. Leurs noms et emplacements sont conservés, ainsi que les liens qui mènent vers elles. La fiche modèle reste intacte.</p>
+<p id="template-record-summary" aria-live="polite"></p>
+<p id="template-record-error" role="alert"></p>
+<div class="dialog-buttons"><button type="button" id="record-template-cancel">Annuler</button><button type="submit" id="record-template-confirm" disabled>Appliquer le modèle</button></div>
+</form>
+</dialog>
 <script src="journal-records.js"></script>
 <script src="journal-folders.js"></script>
-<script src="journal-record-duplicate.js?v=20261103.1"></script>
+<script src="journal-record-duplicate.js?v=20261103.2"></script>
 <script src="journal-pagination.js"></script>
 <script src="journal-custom-lists.js"></script>
 <script src="journal-image-zoom.js"></script>
@@ -512,7 +534,7 @@ function buildDefault(){
 }
 let state=buildDefault();
 const listPagePositions=new Map();
-let mode='edit',view={page:'sommaire',group:null,name:null,entryId:null,folderId:null},selected=state.elements[0]?.id,drag=null,resizeDrag=null,saveTimer=null,currentScale=1,pendingRecordDelete=null,pendingRecordDuplicate=null;
+let mode='edit',view={page:'sommaire',group:null,name:null,entryId:null,folderId:null},selected=state.elements[0]?.id,drag=null,resizeDrag=null,saveTimer=null,currentScale=1,pendingRecordDelete=null,pendingRecordDuplicate=null,pendingTemplateSource=null;
 const book=$('#book'),surface=$('#element-surface'),wrap=$('#stage-wrap'),viewport=$('#stage-viewport');
 function note(message){$('#message').textContent=message;}
 function safeNum(value,fallback,min,max){const n=Number(value);return Number.isFinite(n)?Math.max(min,Math.min(max,n)):fallback;}
@@ -1125,6 +1147,7 @@ function renderRecordManager(wanted){
  $('#record-archive').textContent=rec?.status==='archived'?'Restaurer':'Archiver';
  for(const op of ['rename','edit','up','down','archive','delete','move'])$('#record-'+op).disabled=!rec;
  $('#record-duplicate').disabled=!rec||rec.status==='archived'||!FOLDERS.available(state.folders,group,rec.folderId);
+ $('#record-template').disabled=$('#record-duplicate').disabled||!recordList(group).some(target=>target.id!==rec.id);
  $('#record-move-group').value=rec?.group||group;
  fillMoveFolderOptions(rec?.folderId||null);
 }
@@ -1191,6 +1214,12 @@ function manageRecord(action){
    $('#duplicate-record-name').focus();$('#duplicate-record-name').select();
    return;
   }
+  else if(action==='template'){
+   if(!rec||rec.status==='archived'||!FOLDERS.available(state.folders,group,rec.folderId)){
+    note('Sélectionne une fiche active à utiliser comme modèle.');return;
+   }
+   openRecordTemplate(rec);return;
+  }
   else if(action==='rename'){
    const oldTitle=rec?.title;
    rec=RECORDS.rename(state.records,group,id,title);
@@ -1255,6 +1284,42 @@ function confirmRecordDuplicate(){
   setView('detail:'+rec.group,rec.id);save();
   note('Copie créée : '+rec.title+'. Modifie son contenu puis enregistre le brouillon.');
  }catch(error){$('#duplicate-record-error').textContent=error.message;}
+}
+function templateTargetInputs(){return Array.from($('#template-record-targets').querySelectorAll('input[type="checkbox"]'));}
+function updateTemplateSummary(){
+ const count=templateTargetInputs().filter(input=>input.checked).length;
+ $('#record-template-confirm').disabled=count===0;
+ $('#record-template-confirm').textContent=count?'Appliquer à '+count+' fiche'+(count>1?'s':''):'Appliquer le modèle';
+ $('#template-record-summary').textContent=count
+  ?'Le contenu actuel de '+count+' fiche'+(count>1?'s sera remplacé.':' sera remplacé.')
+  :'Coche au moins une fiche de destination.';
+}
+function openRecordTemplate(source){
+ const targets=recordList(source.group).filter(rec=>rec.id!==source.id);
+ if(!targets.length){note('Ajoute d’abord une autre fiche dans cette catégorie.');return;}
+ pendingTemplateSource=source.id;
+ $('#template-record-description').textContent='Utiliser « '+source.title+' » comme base pour les fiches cochées.';
+ $('#template-record-error').textContent='';
+ const list=$('#template-record-targets');list.replaceChildren();
+ for(const rec of targets){
+  const label=document.createElement('label'),input=document.createElement('input'),name=document.createElement('span');
+  input.type='checkbox';input.value=rec.id;
+  name.textContent=rec.title+(rec.folderId?' · '+folderPath(rec.group,rec.folderId):'');
+  label.append(input,name);list.append(label);
+ }
+ updateTemplateSummary();$('#template-record-dialog').showModal();
+}
+function confirmRecordTemplate(){
+ if(!pendingTemplateSource||VIEWER_ONLY)return;
+ try{
+  const targets=DUPLICATE.applyTemplate({records:state.records,elements:state.elements,folders:state.folders,
+   sourceId:pendingTemplateSource,targetIds:templateTargetInputs().filter(input=>input.checked).map(input=>input.value),
+   nextLayerId:()=> 'element-'+serial++});
+  $('#template-record-dialog').close();pendingTemplateSource=null;
+  const first=targets[0];$('#group-edit').value=first.group;renderRecordManager(first.id);
+  if(mode!=='edit')setMode('edit');setView('detail:'+first.group,first.id);save();
+  note('Modèle appliqué à '+targets.length+' fiche'+(targets.length>1?'s':'')+'. Personnalise le contenu puis enregistre le brouillon.');
+ }catch(error){$('#template-record-error').textContent=error.message;}
 }
 
 function refreshFontSelects(){const select=$('#el-font'),current=select.value;select.replaceChildren();for(const [f,label] of FONTS)select.add(new Option(label,f));for(const entry of state.fonts||[])select.add(new Option('Importée · '+entry.label,entry.family));select.value=current||'Kalam';}
@@ -1510,7 +1575,7 @@ function setup(){
  $('#page-select').addEventListener('change',ev=>setView(ev.target.value));
  $('#group-edit').addEventListener('change',fillGroupEdit);
  $('#record-select').addEventListener('change',()=>renderRecordManager($('#record-select').value));
- for(const action of ['add','rename','edit','duplicate','up','down','archive','delete','move'])
+ for(const action of ['add','rename','edit','duplicate','template','up','down','archive','delete','move'])
    $('#record-'+action).addEventListener('click',()=>manageRecord(action));
  $('#record-move-group').addEventListener('change',()=>fillMoveFolderOptions());
  $('#folder-select').addEventListener('change',()=>renderFolderManager($('#folder-select').value));
@@ -1522,6 +1587,12 @@ function setup(){
  $('#record-duplicate-cancel').addEventListener('click',()=>$('#duplicate-record-dialog').close());
  $('#duplicate-record-form').addEventListener('submit',ev=>{ev.preventDefault();confirmRecordDuplicate();});
  $('#duplicate-record-dialog').addEventListener('close',()=>{pendingRecordDuplicate=null;});
+ $('#record-template-cancel').addEventListener('click',()=>$('#template-record-dialog').close());
+ $('#template-record-form').addEventListener('submit',ev=>{ev.preventDefault();confirmRecordTemplate();});
+ $('#template-record-dialog').addEventListener('close',()=>{pendingTemplateSource=null;});
+ $('#template-record-targets').addEventListener('change',updateTemplateSummary);
+ $('#record-template-all').addEventListener('click',()=>{for(const input of templateTargetInputs())input.checked=true;updateTemplateSummary();});
+ $('#record-template-none').addEventListener('click',()=>{for(const input of templateTargetInputs())input.checked=false;updateTemplateSummary();});
  for(const key of ['name','text','x','y','w','h','size','font','color','align','columns','line','columnGap','rowGap','rotate','opacity','z','action','target','entry','imageFit','blend']){
    $('#el-'+(key==='imageFit'?'imagefit':key==='columnGap'?'column-gap':key==='rowGap'?'row-gap':key)).addEventListener('input',ev=>{if(ev.target.value===''&&ev.target.type==='number')return;handleChange(key,ev.target.value);});
  }
@@ -1655,6 +1726,7 @@ init();
 <script src="journal-publication-viewer.js" defer></script>
 <script src="journal-editor-simplified.js?v=20261102.1" defer></script>
 </body></html>
+
 
 
 

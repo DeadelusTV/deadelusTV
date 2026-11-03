@@ -1,5 +1,14 @@
 # Phasmophobia V2 — suivi des travaux du carnet (branche de développement)
 
+## Appliquer un modèle aux fiches existantes — 03/11/2026
+
+- Dans « 5 · Organisation des pages », sélectionner la fiche source, puis « Appliquer comme modèle… ». Choisir une ou plusieurs fiches existantes de la même catégorie, avec sélection de toutes les destinations possible.
+- La confirmation annonce le remplacement du contenu actuel des fiches cochées : textes, images et mise en page des deux pages. La source et les fiches non cochées restent intactes.
+- Les fiches de destination ne sont ni supprimées ni recréées : UUID, noms, dossiers, ordre et statut sont préservés. Les liens qui pointent vers elles restent valides. Les liens de la source vers elle-même et son titre exact sont adaptés à chaque destination ; les autres liens du modèle sont repris.
+- Les copies de calques sont indépendantes. Toutes les destinations et la limite de 5 000 calques sont vérifiées avant le moindre remplacement. Les fiches et dossiers archivés sont exclus.
+- L'opération concerne la copie locale affichée : personnaliser le résultat, puis « Enregistrer le brouillon ». Aucun enregistrement partagé ni publication automatique, aucun changement de droits ou de schéma.
+- Vérification : 73 contrôles dédiés (5 catégories, identités et liens entrants, application groupée, indépendance, erreurs sans mutation, limites, dialogue et import/export V7) et les 59 contrôles de duplication existants.
+
 ## Dupliquer une fiche complète — 03/11/2026
 
 - Dans « 5 · Organisation des pages », sélectionner une fiche puis « Dupliquer la fiche ». Une fenêtre demande le nom de la nouvelle fiche et l’ouvre après création.
@@ -977,5 +986,6 @@ Aucune modification du brouillon, de l'historique, des médias, des verrous de p
 **À FAIRE PLUS TARD — NE PAS MODIFIER MAINTENANT :** après une dépublication, remplacer le message public d'attente « livre bientôt » par un message expliquant le problème technique et le retour prochain du journal (intention utilisateur : « pb technique journal revient »). Ce changement de texte est seulement consigné ; aucun texte public d'attente ou de dépublication n'est modifié dans cette livraison. Distinguer à terme première publication et retrait d'un journal déjà publié.
 
 Travail limité à developpement/phasmo-v2 ; aucune publication du carnet, modification de main, de contenu partagé, de médias ou du verrou de diffusion.
+
 
 
