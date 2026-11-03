@@ -1,5 +1,5 @@
 'use strict';
-/* Copie locale d'une fiche et de ses calques. Aucun accès au brouillon distant. */
+/* Copie locale de fiches et application de modèles. Aucun accès au brouillon distant. */
 (() => {
  const copy=value=>JSON.parse(JSON.stringify(value));
  const page=id=>'entry:'+id;
@@ -28,7 +28,12 @@
   const record=R.create(records.slice(),source.group,title,source.folderId,folders);
   while(records.some(rec=>rec.id===record.id))record.id=R.create([],source.group,title,source.folderId,folders).id;
   const used=new Set(elements.map(layer=>layer.id));
-  const clones=layers.map(original=>{
+  const clones=copyLayers(layers,source,record,nextLayerId,used);
+  records.push(record);elements.push(...clones);
+  return record;
+ }
+ function copyLayers(layers,source,record,nextLayerId,used){
+  return layers.map(original=>{
    const layer=copy(original);
    layer.id=nextLayerId();
    if(typeof layer.id!=='string'||!layer.id||used.has(layer.id))throw Error('Identifiant de calque déjà utilisé.');
@@ -48,8 +53,34 @@
    }
    return layer;
   });
-  records.push(record);elements.push(...clones);
-  return record;
  }
- window.PHASMO_JOURNAL_RECORD_DUPLICATE=Object.freeze({suggestedTitle,duplicate});
+ function applyTemplate({records,elements,folders,sourceId,targetIds,nextLayerId}){
+  const F=window.PHASMO_JOURNAL_FOLDERS;
+  const source=records.find(rec=>rec.id===sourceId);
+  if(!source||source.status==='archived'||!F.available(folders,source.group,source.folderId))
+   throw Error('La fiche modèle doit être disponible et non archivée.');
+  const ids=[...new Set(Array.isArray(targetIds)?targetIds:[])];
+  if(!ids.length)throw Error('Choisis au moins une fiche de destination.');
+  const targets=ids.map(id=>{
+   const target=records.find(rec=>rec.id===id);
+   if(!target||target.id===source.id||target.group!==source.group||target.status==='archived'||!F.available(folders,target.group,target.folderId))
+    throw Error('Une fiche de destination est indisponible, archivée ou située dans une autre catégorie.');
+   return target;
+  });
+  const own=elements.filter(layer=>layer.page===page(source.id));
+  const layers=own.length?own:elements.filter(layer=>layer.page==='detail:'+source.group);
+  if(!layers.length)throw Error('Cette fiche modèle ne contient aucun calque à copier.');
+  const replacedPages=new Set(targets.map(target=>page(target.id)));
+  const retained=elements.filter(layer=>!replacedPages.has(layer.page));
+  if(retained.length+layers.length*targets.length>5000)
+   throw Error('L’application du modèle dépasserait la limite de 5 000 calques.');
+  const used=new Set(elements.map(layer=>layer.id));
+  const clones=targets.flatMap(target=>copyLayers(layers,source,target,nextLayerId,used));
+  // Préparer toutes les copies avant de remplacer le moindre calque. Les noms,
+  // UUID, classements et dossiers des fiches existantes restent inchangés.
+  elements.splice(0,elements.length,...retained,...clones);
+  return targets;
+ }
+ window.PHASMO_JOURNAL_RECORD_DUPLICATE=Object.freeze({suggestedTitle,duplicate,applyTemplate});
 })();
+
