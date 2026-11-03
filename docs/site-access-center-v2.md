@@ -2,7 +2,7 @@
 
 **Date :** 3 novembre 2026
 **Branche :** developpement/phasmo-v2 uniquement.
-**Statut :** étape 2 codée sur V2 : schéma SQL de registre persistant préparé, RPC atomique avec audit, intégration à la fonction serveur et interface adaptée. **NON DÉPLOYÉ** ; le registre n'existe pas encore dans la base et aucun droit effectif n'est modifié.
+**Statut :** étapes 1 à 3 préparées sur V2 : interface évolutive, registre SQL protégé et synchronisation manuelle de la liste Twitch avec vérification serveur. **NON DÉPLOYÉ** : aucune liste réelle lue, aucune table ni droit modifiés.
 
 ## Décisions confirmées
 - Interface de permissions extensible, réservée à **Deadelus et Yekelle exclusivement**.
@@ -25,7 +25,7 @@
 - La démo ne contient que trois comptes **fictifs**, sans accès enregistré ; F5 efface les changements.
 - La démo est réservée à localhost / 127.0.0.1, et ne s'active pas à distance.
 - Sur Cloudflare/OVH, l'absence de fonction serveur ou de session autorisée **bloque le panneau**.
-- Le serveur préparé ne récupère pas encore la liste Twitch des modérateurs, ne dispose d'aucun registre de permissions et n'écrit dans aucune base.
+- Le code serveur sait préparer une lecture paginée de la liste Twitch, mais aucune autorisation du diffuseur n'a encore été configurée ; sans déploiement, il ne lit aucun vrai modérateur et n'écrit dans aucune base.
 - Aucune fonction serveur n'a été déployée, aucune variable serveur ni table Supabase modifiée, aucun vrai droit changé, pas de changement sur main.
 
 ## Vérification serveur envisagée
@@ -67,3 +67,40 @@ Documents spécialisés de référence : docs/crew-twitch-auth.md ; docs/phasmo-
 **Étape suivante proposée :** validation du schéma sur une base de test isolée, puis lecture sécurisée et pagination de la vraie liste Twitch des modérateurs par le serveur, sans stocker de jeton Twitch dans le navigateur. Ensuite seulement, raccorder les permissions existantes News/Livre et les rôles Crew, garder la distinction de leurs projets Supabase. L'historique du site ne doit pas être modifié par une attribution préparatoire.
 
 Référence sécurité Supabase : https://supabase.com/docs/guides/api/securing-your-api.
+
+## Étape 3 — Liste des modérateurs Twitch (3 novembre 2026)
+
+**État : codé sur la branche V2, non déployé, aucun jeton réel configuré, tests simulés uniquement.**
+
+### Parcours prévu
+
+1. Deadelus ou Yekelle s'authentifie avec le compte Twitch commun du portail. La fonction site-access-admin vérifie à chaque requête l'identité du fournisseur OAuth renvoyée par Supabase Auth et la compare aux **deux IDs Twitch propriétaires** stockés dans SITE_ACCESS_ADMIN_TWITCH_IDS (liste serveur).
+2. Bouton **Vérifier la liste Twitch** : le serveur utilise un jeton d'accès utilisateur autorisé par **Deadelus, diffuseur de la chaîne**, pour interroger Get Moderators. L'aperçu affiche les vrais comptes sans aucune écriture, même quand SITE_ACCESS_WRITES_ENABLED est désactivé.
+3. Bouton **Enregistrer la synchronisation**, après confirmation : seulement si SITE_ACCESS_WRITES_ENABLED=true et après nouvelle lecture Twitch vérifiée, la RPC site_access_admin_action('syncModerators') ajoute/actualise les comptes, marque les anciens modérateurs comme inactifs et journalise l'opération. **Elle ne touche à aucune attribution** et n'accorde aucun droit d'édition.
+4. Les comptes Twitch identifiés par un ID stable restent dans le registre même s'ils quittent la modération ; leurs attributions préparatoires restent enregistrées. La règle de révocation effective des droits est encore à décider.
+
+### Autorisation Twitch exigée (non disponible actuellement)
+
+- SITE_ACCESS_TWITCH_CLIENT_ID : identifiant de l'application Twitch utilisée pour autoriser le diffuseur, à configurer côté serveur.
+- SITE_ACCESS_TWITCH_BROADCASTER_TOKEN : jeton d'accès utilisateur du compte Deadelus avec **moderation:read**, à provisionner **côté serveur seulement**, après son autorisation explicite.
+- L'ID diffuseur attendu dans le code est 99977368, issu de l'intégration Crew existante ; à revérifier dans la phase OAuth réelle.
+- Le serveur appelle https://id.twitch.tv/oauth2/validate avant la liste, contrôle user_id, client_id, scope et expiration. Toute incohérence bloque la lecture/synchronisation ; jamais de jeton ou résultat OAuth dans les logs ou dans le navigateur.
+- L'API Get Moderators utilise GET https://api.twitch.tv/helix/moderation/moderators avec broadcaster_id, first=100 et after ; maximum 20 pages (2000 comptes). Pagination tronquée, doublon, mauvais curseur, erreur Twitch ou liste vide lors d'une synchronisation : refus sans modification de la base.
+- **Limite du prototype :** renouvellement OAuth automatique et stockage sûr du jeton de rafraîchissement non réalisés. Le jeton actuel, s'il est ultérieurement configuré, expirera ; il faudra concevoir la rotation sécurisée avant l'usage durable. La connexion courante des modérateurs ne fournit pas le scope de lecture de la liste de la chaîne.
+- Une autorisation 'channel:manage:moderators' serait plus puissante et inutile : ne pas la demander pour ce seul affichage.
+
+Références primaires : https://dev.twitch.tv/docs/api/reference/#get-moderators ; https://dev.twitch.tv/docs/authentication/validate-tokens/ ; https://dev.twitch.tv/docs/authentication/refresh-tokens/.
+
+### Modifications V2
+
+- supabase/functions/site-access-admin/core.js : actions previewModerators (lecture seule) et syncModerators (mutation explicitement activée) ; validation indépendante du jeton Twitch et de la session propriétaire du portail.
+- docs/site-access-registry-v2.sql : action de synchronisation transactionnelle, verrou contre deux synchronisations concurrentes, conservation de toutes les attributions.
+- public/admin/access-center.html / .css / .js : boutons de prévisualisation/synchronisation, affichage de la liste, blocage de la synchro en absence d'autorisation et confirmation requise.
+- scripts/test_site_access_twitch.cjs : tests Node simulés (deux pages, portée du token, mauvais diffuseur/Client ID, expiration, erreur Twitch, doublon, liste vide, refus non-propriétaire, absence d'écriture à l'aperçu et origine serveur de la liste).
+- **main, Supabase et Cloudflare inchangés**. La page n'a toujours pas d'entrée dans le menu et ne peut pas servir de console administrative réelle avant déploiement et recette.
+
+### Vérifications et points ouverts
+
+- Contrôles simulés exécutés dans l'environnement de développement de l'assistant : 14 cas positifs sur 15 contrôles initialement, un contrôle structurel a détecté une insertion SQL corrompue ; script reconstruit proprement depuis son commit antérieur, puis validation statique du bloc SQL et des protections. Aucun SQL exécuté sur PostgreSQL.
+- Les tests Node sont committés mais leur exécution en environnement Node avec les fichiers du dépôt reste à faire ; les vérifications côté assistant ont utilisé des simulations isolées et une compilation JavaScript statique.
+- Tests réels encore nécessaires : vraie autorisation de Deadelus, entrée dans le panneau depuis une session des deux propriétaires, vérification avec la liste Twitch complète, erreurs de token/rate-limit, application du script SQL sur base de recette, règles RLS, journal d'audit et restauration.
