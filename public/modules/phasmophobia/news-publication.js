@@ -17,13 +17,6 @@
       return u.protocol==='https:'&&!u.username&&!u.password&&!/\.svg$/i.test(u.pathname)?u.href:'';
     }catch{return '';}
   };
-  function isKineticNews(value){
-    const url=cleanHttps(value);
-    if(!url)return false;
-    const u=new URL(url);
-    return ['www.kineticgames.co.uk','kineticgames.co.uk'].includes(u.hostname)
-      &&(u.pathname==='/news'||u.pathname.startsWith('/news/'));
-  }
   const privatePath=src=>{
     if(typeof src!=='string'||!src.startsWith('phasmo-media:'))return null;
     const path=src.slice(13);
@@ -102,7 +95,7 @@
       if(!slugValid(draft.slug))throw new Error('Identifiant d’article invalide. Utilisez uniquement minuscules, chiffres et tirets.');
       if(!draft.title?.trim()||draft.title.trim().length>160)throw new Error('Titre obligatoire (160 caractères maximum).');
       if(!draft.excerpt?.trim()||draft.excerpt.trim().length>350)throw new Error('Résumé obligatoire (350 caractères maximum).');
-      if(!isKineticNews(draft.sourceUrl))throw new Error('Ajoutez le lien vers l’annonce originale de Kinetic Games.');
+      if(String(draft.sourceUrl||'').trim()&&!cleanHttps(draft.sourceUrl))throw new Error('Le lien de source doit être une URL HTTPS valide, ou rester vide.');
       if(!/^\d{4}-\d\d-\d\d$/.test(draft.publishedAt||''))throw new Error('Date de publication invalide.');
       if(draft.publishedId&&(!UUID.test(draft.publishedId)||draft.publishedSlug!==draft.slug))
         throw new Error('Le lien d’un article publié ne peut pas être modifié. Conservez son identifiant.');
