@@ -1,5 +1,12 @@
 # Phasmophobia V2 — suivi des travaux du carnet (branche de développement)
 
+## Accès au journal vérifiés le 03/11/2026
+
+- Administrateurs du carnet : DeadelusTV et Yekelle. Les modos Twitch, admins Crew et rédacteurs News ne reçoivent aucun accès automatique au journal.
+- Herminerva : compte Twitch existant identifié et accès éditeur activé individuellement dans `phasmo_journal_editors`. Elle peut charger, modifier et enregistrer le brouillon, consulter son historique et utiliser les médias privés. Elle n'est pas administratrice du carnet ; publication et dépublication restent réservées aux administrateurs, avec les verrous serveur existants.
+- Le menu Compte affiche « Gérer le carnet » aux administrateurs et éditeurs actifs du carnet ; il n'utilise ni le statut modo Twitch ni les métadonnées utilisateur pour accorder ce droit.
+- Vérification Supabase sous le rôle `authenticated` du compte concerné : accès éditeur actif, brouillon/historique lisibles, droit d'UPDATE existant et aucun rôle administrateur du journal. Neuf scénarios du menu vérifient aussi la séparation des permissions.
+
 ## Correction du 03/11/2026 — import JSON accessible
 
 Le bouton « Importer un JSON » est de nouveau visible dans « 7 · Sauvegardes ». Le sélecteur de fichier et le traitement d’import existants sont conservés ; le JSON remplace la copie locale, puis « Enregistrer le brouillon » permet de sauvegarder cette version. Aucun chargement de brouillon distant n'est nécessaire. Les outils de diagnostic restent masqués.

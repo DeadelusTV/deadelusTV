@@ -140,11 +140,14 @@
     return admins.data?.enabled === true;
   }
   async function canManageJournal(auth, userId) {
-    // Table dédiée à créer via migration validée ; en son absence, aucun droit accordé.
-    const {data,error} = await auth.from('phasmo_journal_admins')
-      .select('enabled').eq('user_id',userId).maybeSingle();
-    if (error) return false;
-    return data?.enabled === true;
+    // Droits du carnet attribués individuellement, indépendants de Twitch/Crew/News.
+    // Les RLS et le serveur gardent la publication réservée aux admins du carnet.
+    const [admins, editors] = await Promise.all([
+      auth.from('phasmo_journal_admins').select('enabled').eq('user_id',userId).maybeSingle(),
+      auth.from('phasmo_journal_editors').select('enabled').eq('user_id',userId).maybeSingle()
+    ]);
+    if (admins.error || editors.error) return false;
+    return admins.data?.enabled === true || editors.data?.enabled === true;
   }
   async function refresh() {
     const currentRequest = ++requestNumber;
