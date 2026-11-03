@@ -10,10 +10,10 @@
   const PUBLISHABLE = 'sb_publishable_HwLsESqtQglS7FoSTxBX-Q_GzxyLX_Z';
   const CODE = /^[a-z][a-z0-9]*(\.[a-z][a-z0-9_-]*){2,}$/;
   const PROTECTED = /^(portal|site|system)\./;
-  let client, state = null, busy = false;
+  let client, state = null, busy = false, lastPreview = null;
   const localData = {
     authorized: true,
-    phase: 'local_demo', rights_effective: false, mutations_enabled: true,
+    phase: 'local_demo', rights_effective: false, mutations_enabled: true, twitch_configured: true,
     categories: [
       {id:'phasmo',label:'Phasmophobia',sections:[
         {id:'livre',label:'Livre',permissions:[{code:'phasmo.livre.edit',label:'Éditeur du livre'}]},
@@ -47,6 +47,8 @@
   }
   function localAction(action, data) {
     if (action === 'bootstrap') return localData;
+    if (action === 'previewModerators') return {...localData,moderators_preview:localData.people.map(p=>({user_id:p.id,user_name:p.name}))};
+    if (action === 'syncModerators') return {...localData,sync_count:localData.people.length};
     if (action === 'setGrant') {
       const person = localData.people.find(p=>p.id===data.user_id);
       if (!person) throw Error('Compte inconnu');
@@ -157,8 +159,35 @@
     $('add-section').querySelector('button[type=submit]').disabled=!state.categories.length || state.mutations_enabled !== true;
     $('add-permission').querySelector('button[type=submit]').disabled=!permSelect.options.length || state.mutations_enabled !== true;
   }
+  function renderTwitch() {
+    const holder = $('twitch-preview');
+    holder.replaceChildren();
+    $('preview-mods').disabled = state.twitch_configured !== true || busy;
+    $('sync-mods').disabled = state.twitch_configured !== true ||
+      state.mutations_enabled !== true || !Array.isArray(lastPreview) ||
+      lastPreview.length === 0 || busy;
+    if (state.twitch_configured !== true) {
+      holder.hidden = false;
+      holder.append(node('p','Autorisation du diffuseur non configurée côté serveur.','muted'));
+      return;
+    }
+    if (!Array.isArray(lastPreview)) {holder.hidden=true;return;}
+    holder.hidden=false;
+    holder.append(node('p',lastPreview.length+' modérateur(s) dans la vérification Twitch.','muted'));
+    if (lastPreview.length===0) {
+      holder.append(node('p','Liste vide : la synchronisation est volontairement bloquée.','muted'));
+      return;
+    }
+    const list=node('ul');
+    for(const person of lastPreview){
+      list.append(node('li',person.user_name));
+    }
+    holder.append(list);
+    holder.append(node('p','Il s’agit d’un aperçu. Aucun changement enregistré dans les droits.', 'muted'));
+  }
+
   function render() {
-    renderRights();renderCatalog();
+    renderRights();renderCatalog();renderTwitch();
     $('add-category').querySelector('button[type=submit]').disabled=state.mutations_enabled !== true;
   }
   async function initialize() {
@@ -192,8 +221,36 @@
     $('catalog').hidden=button.dataset.tab!=='catalog';
     message('');
   }));
+  $('preview-mods').addEventListener('click',async()=>{
+    if(busy || !state || state.twitch_configured !== true)return;
+    busy=true;renderTwitch();message('Vérification de la liste Twitch…');
+    try {
+      const result=await request('previewModerators');
+      if(!Array.isArray(result.moderators_preview) ||
+          result.moderators_preview.some(p=>typeof p.user_id!=='string' || typeof p.user_name!=='string'))
+        throw Error('Réponse Twitch incomplète.');
+      state=result;lastPreview=result.moderators_preview;
+      render();message(LOCAL?'Aperçu fictif local : aucune donnée enregistrée.':
+        'Liste Twitch vérifiée. Aucune donnée enregistrée.');
+    }catch(error){lastPreview=null;renderTwitch();message(error.message||'Lecture Twitch indisponible.',true);}
+    finally{busy=false;if(state)renderTwitch();}
+  });
+  $('sync-mods').addEventListener('click',async()=>{
+    if(busy || !state || state.mutations_enabled !== true ||
+      !Array.isArray(lastPreview) || lastPreview.length===0)return;
+    if(!window.confirm('Enregistrer la liste des modérateurs Twitch dans le registre préparatoire ? Aucun droit Phasmo ou Crew ne sera modifié.'))return;
+    busy=true;renderTwitch();message('Synchronisation du registre en cours…');
+    try {
+      const result=await request('syncModerators');
+      state=result;lastPreview=null;render();
+      message(LOCAL?'Simulation locale terminée, sans sauvegarde.':
+        'Synchronisation du registre confirmée pour '+result.sync_count+' modérateur(s). Aucun droit effectif modifié.');
+    }catch(error){message(error.message||'Synchronisation indisponible.',true);}
+    finally{busy=false;if(state)renderTwitch();}
+  });
+
   $('filter').addEventListener('input',()=>{if(state)renderRights();});
-  $('reload').addEventListener('click',async()=>{try{const r=await request('bootstrap');state=r;render();message('Données actualisées.');}catch{message('Impossible de recharger les permissions.',true);}});
+  $('reload').addEventListener('click',async()=>{try{const r=await request('bootstrap');state=r;lastPreview=null;render();message('Données actualisées.');}catch{message('Impossible de recharger les permissions.',true);}});
   const formAction=(id,action,makePayload)=>$(id).addEventListener('submit',async ev=>{
     ev.preventDefault();const form=ev.currentTarget;const payload=makePayload(new FormData(form));
     if(!String(payload.label||'').trim()){message('Saisis un nom.',true);return;}
