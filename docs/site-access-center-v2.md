@@ -148,3 +148,14 @@ Références primaires : https://dev.twitch.tv/docs/api/reference/#get-moderator
 **À confirmer :** droits réels et association des comptes, environnement de recette, décision sur la conservation des permissions des anciens modérateurs, rotation de la clé de chiffrement et procédures de retrait de l'autorisation Twitch. Les quatre permissions initiales seulement restent prévues. Aucun déploiement ni changement de main/production/Supabase effectué.
 
 Références : Twitch Authorization Code https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/ ; refresh https://dev.twitch.tv/docs/authentication/refresh-tokens/ ; Supabase secrets https://supabase.com/docs/guides/functions/secrets.
+
+### Contrôle utilisateur de l'interface (3 novembre 2026)
+
+Yekelle a ouvert https://deadelustv.pages.dev/admin/access-center.html et a obtenu l'écran « Gestion des accès / Accès indisponible ou refusé par le serveur ». Ce contrôle **visuel est validé** : la page publique de refus se charge et ne révèle ni la matrice ni la liste des comptes. Il ne prouve pas encore les RLS ni l'autorisation réelle des deux propriétaires, lesquelles devront être testées après déploiement en recette.
+
+### Contrôles de développement de l'étape 4
+
+- Vérifications de syntaxe des nouveaux modules OAuth/chiffrement, du serveur d'administration, du navigateur et des fichiers de tests : conformes (les exports ES modules sont analysés hors du contexte de chargement).
+- Huit simulations isolées de la fonction d'administration : récupération de modérateurs, reprise après 401, compte propriétaire/tiers, refus du scope absent, refus de synchronisation lorsque les écritures sont coupées et contrôle d'origine : 8/8 réussies.
+- Un script Node supplémentaire reproduisant le code Twitch, le state OAuth, l'échange, le callback, AES-GCM et la rotation est présent dans scripts/test_site_access_twitch_oauth.cjs. **Ce script n'a pas encore été exécuté sur un clone local du dépôt.** Ne pas le présenter comme un test cryptographique passé.
+- Aucun essai de sécurité sur un véritable projet Supabase de recette et aucune vraie autorisation Twitch à ce stade.
