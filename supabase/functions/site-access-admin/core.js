@@ -1,3 +1,5 @@
+import {getBroadcasterToken,BROADCASTER_ID} from '../_shared/site-access-twitch-credentials.js';
+
 /* DeadelusTV V2 : registre des autorisations en PRÉPARATION.
  * Le registre ne modifie PAS les droits réels des modules.
  * Identité du propriétaire vérifiée à chaque appel, jamais via user_metadata.
@@ -52,21 +54,20 @@ function verifyAction(action, payload) {
 }
 
 
-const BROADCASTER_ID = '99977368';
 const MAX_PAGES = 20; // 100 modérateurs/page : une liste au-delà du plafond échoue, jamais tronquée.
 const DISPLAY_LIMIT = 70;
 
 /** Liste Twitch complète, vérifiée côté serveur. Ne journaliser ni jeton ni réponse OAuth. */
-export async function getTwitchModerators(env, http = fetch) {
-  const token = env.SITE_ACCESS_TWITCH_BROADCASTER_TOKEN || '';
+async function fetchTwitchModerators(env,http,token) {
   const clientId = env.SITE_ACCESS_TWITCH_CLIENT_ID || '';
-  if (!/^[A-Za-z0-9_-]{20,4096}$/.test(token) || !/^[a-z0-9]{10,64}$/i.test(clientId))
+  if (!/^[A-Za-z0-9_-]{10,4096}$/.test(token) || !/^[a-z0-9]{10,64}$/i.test(clientId))
     throw new Error('twitch_not_configured');
 
   const checkedResponse = await http('https://id.twitch.tv/oauth2/validate', {
     headers: {Authorization: 'OAuth '+token},
     signal: AbortSignal.timeout(7000)
   });
+  if (checkedResponse.status===401)throw Error('twitch_auth_expired');
   if (!checkedResponse.ok) throw new Error('twitch_token_unavailable');
   const checked = await checkedResponse.json();
   if (checked?.user_id !== BROADCASTER_ID ||
@@ -84,6 +85,7 @@ export async function getTwitchModerators(env, http = fetch) {
       headers:{Authorization:'Bearer '+token,'Client-Id':clientId},
       signal:AbortSignal.timeout(7000)
     });
+    if (result.status===401)throw Error('twitch_auth_expired');
     if (!result.ok) throw new Error('twitch_mod_list_unavailable');
     const body = await result.json();
     if (!Array.isArray(body?.data) || body.data.length > 100)
@@ -107,7 +109,20 @@ export async function getTwitchModerators(env, http = fetch) {
   throw new Error('twitch_pagination_incomplete');
 }
 
-export function createHandler(env, http = fetch) {
+export async function getTwitchModerators(env,http=fetch,loadToken=getBroadcasterToken) {
+  for(let attempt=0;attempt<2;attempt++){
+    const token=await loadToken(env,http,{forceRefresh:attempt===1});
+    try {return await fetchTwitchModerators(env,http,token);}
+    catch(error){
+      if(error?.message!=='twitch_auth_expired'||attempt===1)throw error;
+      // L'API vient de refuser le jeton : recommencer depuis la première page
+      // avec un nouveau jeton, sans utiliser une liste partiellement lue.
+    }
+  }
+  throw Error('twitch_reauthorization_required');
+}
+
+export function createHandler(env,http=fetch,loadToken=getBroadcasterToken) {
   const owners = (env.SITE_ACCESS_ADMIN_TWITCH_IDS || '').split(',').map(v => v.trim()).filter(Boolean);
   const origins = (env.SITE_ACCESS_ALLOWED_ORIGINS || '').split(',').map(v => v.trim()).filter(Boolean);
   const base = (env.SUPABASE_URL || '').replace(/\/+$/, '');
@@ -117,7 +132,9 @@ export function createHandler(env, http = fetch) {
     origins.every(v => /^https:\/\/[a-z0-9.-]+(?::[0-9]+)?$/i.test(v)) &&
     base === PORTAL_URL && !!serviceKey;
   const mutationsEnabled = env.SITE_ACCESS_WRITES_ENABLED === 'true';
-  const twitchConfigured = Boolean(env.SITE_ACCESS_TWITCH_BROADCASTER_TOKEN && env.SITE_ACCESS_TWITCH_CLIENT_ID);
+  const twitchConfigured=Boolean(env.SITE_ACCESS_TWITCH_CLIENT_ID&&env.SITE_ACCESS_TWITCH_CLIENT_SECRET&&env.SITE_ACCESS_TWITCH_ENCRYPTION_KEY_B64);
+  const oauthReady=Boolean(twitchConfigured&&env.SITE_ACCESS_TWITCH_OAUTH_ENABLED==='true'&&
+    env.SITE_ACCESS_TWITCH_CALLBACK_URL&&env.SITE_ACCESS_TWITCH_RETURN_URL);
 
   return async function handle(req) {
     const origin = req.headers.get('origin') || '';
@@ -172,10 +189,10 @@ export function createHandler(env, http = fetch) {
       // Le navigateur ne fournit ni token ni liste de modérateurs au serveur.
       let moderators = null;
       if (action === 'previewModerators' || action === 'syncModerators') {
-        try {moderators = await getTwitchModerators(env,http);}
+        try {moderators = await getTwitchModerators(env,http,loadToken);}
         catch (error) {
           const msg=String(error?.message||'');
-          const code=['twitch_not_configured','twitch_authorization_invalid','twitch_token_unavailable',
+          const code=['twitch_not_configured','twitch_authorization_invalid','twitch_token_unavailable','twitch_reauthorization_required','twitch_authorization_missing',
             'twitch_mod_list_unavailable','twitch_invalid_response',
             'twitch_pagination_incomplete'].includes(msg)?msg:'twitch_unavailable';
           return respond(503,{error:code});
@@ -209,6 +226,7 @@ export function createHandler(env, http = fetch) {
         ...snapshot,
         mutations_enabled:mutationsEnabled,
         twitch_configured:twitchConfigured,
+        can_authorize_twitch:oauthReady&&twitchId===BROADCASTER_ID,
         ...(moderators && action==='previewModerators' ? {moderators_preview:moderators} : {}),
         ...(moderators && action==='syncModerators' ? {sync_count:moderators.length} : {})
       });
