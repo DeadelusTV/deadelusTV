@@ -290,7 +290,10 @@
   // Ne charge pas le fournisseur chez un visiteur anonyme tant qu'il n'ouvre pas
   // le compte/News, sauf au retour d'une redirection OAuth.
   const authQuery = new URLSearchParams(window.location.search);
-  if (authQuery.get('crew_auth') !== '1' && (returning || authQuery.has('code'))) refresh();
-  window.DEADELUSTV_AUTH = Object.freeze({ getClient, refresh, signIn, signOut, getCrewAccess, canManageNews, canManageJournal });
+  let savedSession = false;
+  try { savedSession = Boolean(localStorage.getItem('sb-eodtxlhnfzyapkyvvxdi-auth-token')); } catch { /* Stockage indisponible. */ }
+  if (authQuery.get('crew_auth') !== '1' && (returning || authQuery.has('code') || savedSession)) refresh();
+  window.DEADELUSTV_AUTH = Object.freeze({ get userId(){return lastIdentity;}, getClient, refresh, signIn, signOut, getCrewAccess, canManageNews, canManageJournal });
 })();
+
 
