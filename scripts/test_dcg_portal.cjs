@@ -36,7 +36,7 @@ function setup({hash='#tcg',user=null,getSession,withAuth=true}={}){
 }
 test('DCG replaces only its own waiting page and is mounted by the real site router',()=>{
  const s=setup();assert.equal(s.sections.find(n=>n.dataset.page==='tcg').hidden,false);assert.equal(s.sections.find(n=>n.dataset.page==='accueil').hidden,true);
- assert.match(s.root.innerHTML,/Collectionne Les/);assert.match(s.root.innerHTML,/Connexion Pass/);assert.match(s.root.innerHTML,/data-dcg="deadelustv"/);
+ assert.match(s.root.innerHTML,/Collectionne les/);assert.match(s.root.innerHTML,/Connexion Pass/);assert.match(s.root.innerHTML,/data-dcg="deadelustv"/);
  assert.equal(s.navNodes.find(n=>n.dataset.nav==='tcg').getAttribute('aria-current'),'page');assert.equal(s.heading.id,'tcg-title');
  assert.match(s.context.document.title,/DCG/);assert.equal(s.signins,0);
 });
