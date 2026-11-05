@@ -1,0 +1,36 @@
+name: Verifier la structure du portail DCG
+
+on:
+  push:
+    branches:
+      - developpement/tcg-attente
+  pull_request:
+    paths:
+      - public/index.html
+      - public/assets/app.js
+      - public/modules/dcg/**
+      - scripts/test_dcg_portal.cjs
+      - .github/workflows/check-dcg-portal.yml
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Recuperer la branche de test
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          lfs: true
+      - name: Verifier les fichiers statiques
+        run: python3 scripts/verify-static.py
+      - name: Verifier la syntaxe
+        run: |
+          node --check public/modules/dcg/config.js
+          node --check public/modules/dcg/portal.js
+          node --check public/assets/app.js
+      - name: Tester portail, routage et consentements existants
+        run: node --test scripts/test_dcg_portal.cjs scripts/test_frontend_consent.cjs scripts/test_twitch_floating.cjs

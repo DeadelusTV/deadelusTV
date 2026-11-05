@@ -8,6 +8,10 @@ Roadmap : [docs/ROADMAP.md](docs/ROADMAP.md)
 
 Journal V7 et lecteur officiel, carte TikTok animée, menu Twitch commun avec gestion Crew, textes légaux finalisés dans l'interface et nouvelle illustration Crew : voir [le détail de la livraison](docs/livraison-phasmo-main-20261031.md). Le carnet commence avec un brouillon vierge ; son contenu reste privé jusqu'à sa publication officielle. Les News, consentements, Twitch et mises à jour Pavillon Noir de main sont conservés.
 
+## Branche de test — portail DCG, 5 novembre 2026
+
+La branche `developpement/tcg-attente`, réalignée avec `main`, prépare le portail commun à la place de la page d’attente : annuaire, règles, Mon compte et emplacements du Pass et des collections communes. Le DCG DeadelusTV reste relié au jeu Workers existant. [Parcours, fichiers et vérifications](docs/dcg-portal-structure.md). Ce lot n’est pas fusionné sur `main` et ne modifie pas le site officiel OVH.
+
 ## Architecture et publication
 
 Le portail est un site statique (HTML, CSS, JavaScript), servi depuis `public/` sur OVH. Aucun service Supabase supplémentaire n'est nécessaire pour les pages de présentation Phasmophobia et TCG. Les modules Crewmong Us et Pavillon Noir suivent leurs intégrations propres ; ne pas considérer leurs données ou leur administration comme celles du TCG.
@@ -69,4 +73,5 @@ En cas d'échec ou de réponse vide de YouTube, ne pas écraser le dernier JSON 
 Le livre interactif Phasmo, sa direction artistique avancée, son feuilletage et ses éventuelles fiches issues du bot Discord restent **en développement / à valider** sur `developpement/phasmo-v2`. Ils ne doivent pas être assimilés au carnet décoratif actuellement publié ni intégrés automatiquement sur `main`.
 
 Voir [la roadmap](docs/ROADMAP.md) pour le statut, les limites et les prochaines décisions.
+
 
