@@ -10,6 +10,7 @@
 <link rel="icon" href="assets/logo-chaine.png" type="image/png">
 <link rel="stylesheet" href="assets/styles.css">
 <link rel="stylesheet" href="assets/site-auth.css">
+<link rel="stylesheet" href="assets/contact-centre.css?rev=contact-1">
 <link rel="stylesheet" href="assets/legal.css">
 <link rel="stylesheet" href="modules/phasmophobia/style.css">
 <link rel="stylesheet" href="modules/phasmophobia/news.css?v=20261101-discord1">
@@ -36,6 +37,7 @@
 <script src="modules/dcg/config.js?rev=20261105-structure" defer></script>
 <script src="modules/dcg/portal.js?rev=20261105-structure" defer></script>
 <script src="assets/app.js?rev=20261105-dcg-structure" defer></script>
+<script src="assets/contact-centre.js?rev=contact-1" data-contact-host="site" defer></script>
 </head>
 <body>
 <a class="skip" href="#main-content">Aller au contenu</a>
@@ -77,6 +79,8 @@
          href="modules/phasmophobia/journal-editor.html" hidden>Gérer le carnet</a>
       <a id="site-account-crew-link" class="site-account-link"
          href="#crewmongus/admin" hidden>Gestion Crew’mong Us</a>
+      <a class="site-account-link" href="#mes-demandes" data-contact-mine-open hidden>Mes demandes <span data-contact-unread hidden></span></a>
+      <a class="site-account-link" href="#administration" data-contact-admin-open hidden>Administration du site</a>
       <button id="site-account-signin" class="site-account-action" type="button">Connexion Twitch</button>
       <button id="site-account-signout" class="site-account-action" type="button" hidden>Se déconnecter</button>
       <p id="site-account-note" class="site-account-note" role="status" hidden></p>
@@ -510,6 +514,7 @@
 </main>
 <footer class="container site-footer"><div class="footer-top"><a href="#accueil" class="brand" aria-label="Retour à l’accueil"><img class="brand-avatar" src="assets/logo-chaine.png" alt="" width="42" height="42"><span class="brand-name">Deadelus<span>TV</span></span></a><nav class="socials" aria-label="Réseaux sociaux"><a data-link="twitch" href="https://www.twitch.tv/deadelustv" target="_blank" rel="noopener noreferrer"><svg class="icon tw" aria-hidden="true"><use href="#i-twitch"/></svg>Twitch</a><a data-link="youtube" href="https://www.youtube.com/@deadelustv" target="_blank" rel="noopener noreferrer"><svg class="icon youtube" aria-hidden="true"><use href="#i-youtube"/></svg>YouTube</a><a data-link="tiktok" href="https://www.tiktok.com/@deadelustv" target="_blank" rel="noopener noreferrer"><svg class="icon tiktok" aria-hidden="true"><use href="#i-tiktok"/></svg>TikTok</a><a data-link="discord" href="https://discord.gg/eMhE3uSHQS" target="_blank" rel="noopener noreferrer"><svg class="icon dc" aria-hidden="true"><use href="#i-discord"/></svg>Discord</a></nav></div><nav class="legal-links" aria-label="Informations légales">
  <!-- Documents validés publiés ; CGV masquées. -->
+ <a href="#contact" data-contact-open>Contact</a>
  <a href="#mentions-legales">Mentions légales</a>
  <a href="#confidentialite">Confidentialité et cookies</a>
  <a href="#conditions-utilisation">CGU</a>
@@ -544,6 +549,7 @@
 
 </body>
 </html>
+
 
 
 
