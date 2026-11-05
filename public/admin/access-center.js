@@ -54,6 +54,7 @@
  });
  window.addEventListener('hashchange',()=>{if(!choose(route(),false)&&tab)history.replaceState(null,'','#'+tab);});
  window.addEventListener('site:support-busy-change',disabled);
+ $('#site-account-crew-link').addEventListener('click',e=>{if(e.currentTarget.hash)e.currentTarget.href='../'+e.currentTarget.hash;});
  window.addEventListener('deadelustv:auth-change',()=>{wipe();gate('Vérification de la connexion…');void check();});
  window.addEventListener('site:support-access-change',e=>{const access=e.detail;if(!actor||access.actorId!==actor)return;if(!access.staff){wipe();gate('Votre accès à ce panneau n’est plus actif.');return;}const wasManager=caps?.permissions;caps=access;$('#request-count').textContent=(access.new_count||0)+(access.updates_count||0)||'';if(wasManager!==access.permissions){if(!access.permissions){generation++;busy=false;pending=null;registry=null;}show();if(access.permissions)void check();}});
  window.addEventListener('focus',()=>{if(!locked()&&!pending)void check();});
