@@ -19,9 +19,9 @@ class Node{
  closest(selector){return this.selector===selector?this:null;}
  querySelector(selector){return this.nodes?.[selector]||null;}
 }
-function setup({hash='#tcg',user=null,getSession,withAuth=true}={}){
- const root=new Node(),heading=new Node(),list=new Node(),search=new Node(),directory=new Node(),nav=new Node(),menu=new Node(),back=new Node(),main=new Node(),brand=new Node();
- search.selector='[data-portal-search]';root.nodes={'h1':heading,'[data-portal-spaces]':list,'[data-portal-search]':search,'#dcg-annuaire':directory};
+function setup({hash='#tcg',user=null,getSession,withAuth=true,registered=true,getUser,getMembership,spaces,showSingle=true,random}={}){
+ const root=new Node(),heading=new Node(),list=new Node(),search=new Node(),searchForm=new Node(),directory=new Node(),discoveryRoot=new Node(),rail=new Node(),nav=new Node(),menu=new Node(),back=new Node(),main=new Node(),brand=new Node();
+ search.selector='[data-portal-search]';root.nodes={'h1':heading,'[data-portal-spaces]':list,'[data-portal-search]':search,'#dcg-annuaire':directory,'#dcg-decouverte':discoveryRoot,'[data-portal-carousel]':rail,'[data-portal-search-form]':searchForm};rail.clientWidth=500;rail.scrollBy=options=>rail.scrolled=options;
  const pageNames=['accueil','tcg','phasmophobia','crewmongus','pavillon-noir','mentions-legales','confidentialite','conditions-utilisation','conditions-vente'];
  const sections=pageNames.map(name=>{const n=new Node();n.dataset.page=name;n.nodes={h1:heading};return n;});
  const navNodes=['accueil','tcg','phasmophobia','crewmongus','jeux-de-role'].map(name=>{const n=new Node();n.dataset.nav=name;return n;});
@@ -29,14 +29,14 @@ function setup({hash='#tcg',user=null,getSession,withAuth=true}={}){
  const known={'#main-nav':nav,'.menu-toggle':menu,'#back-top':back,'#main-content':main,'.brand':brand,'#dcg-portal-root':root};
  const document={hidden:false,body:{classList:{add(){},remove(){}}},getElementById:id=>known['#'+id]||null,querySelector(selector){if(known[selector])return known[selector];const match=selector.match(/^\[data-page="(.+)"\] h1$/);if(match)return heading;return null;},querySelectorAll(selector){if(selector==='[data-page]')return sections;if(selector==='[data-nav]')return navNodes;return [];},addEventListener(name,fn){(documentListeners[name]??=[]).push(fn);}};
  const context={document,location,console,URL,URLSearchParams,Object,setTimeout,clearTimeout,setInterval:()=>1,innerWidth:1200,scrollTo(){},matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(name,fn){(windowListeners[name]??=[]).push(fn);},DEADELUSTV_CONFIG:{},DEADELUSTV_CREW:{render:(...args)=>calls.push(['crew',...args]),cancel:()=>{}},DEADELUSTV_PAVILLON:{render:(...args)=>calls.push(['pavillon',...args]),cancel:()=>{}},DEADELUSTV_TWITCH:{sync(){}}};
- let currentUser=user,signins=0;
- if(withAuth)context.DEADELUSTV_AUTH={getClient:async()=>({auth:{getSession:getSession||(async()=>({data:{session:currentUser?{user:currentUser}:null}}))}}),signIn:()=>{signins++;}};
- context.window=context;vm.createContext(context);vm.runInContext(config,context);vm.runInContext(source,context);vm.runInContext(router,context);
- return {root,heading,list,search,directory,menu,nav,sections,calls,context,navNodes,get signins(){return signins;},async go(value){location.hash=value;for(const fn of windowListeners.hashchange||[])fn();await tick();},async auth(user){currentUser=user;for(const fn of windowListeners['deadelustv:auth-change']||[])fn();await tick();},click(selector){const n=new Node();n.selector=selector;return root.emit('click',n);}};
+ let currentUser=user,signins=0;const reads=[];const storage=new Map(user?[['sb-eodtxlhnfzyapkyvvxdi-auth-token','session-present']]:[]);context.localStorage={getItem:k=>storage.get(k)??null};if(random)context.Math=Object.assign(Object.create(Math),{random});
+ if(withAuth)context.DEADELUSTV_AUTH={getClient:async()=>({auth:{getSession:getSession||(async()=>({data:{session:currentUser?{user:currentUser}:null}})),getUser:getUser||(async()=>({data:{user:currentUser}}))},from(table){reads.push({table});return {select(columns){reads.at(-1).columns=columns;return this;},eq(column,value){reads.at(-1).filter={column,value};return this;},async maybeSingle(){return getMembership?getMembership():{data:registered&&currentUser?{user_id:currentUser.id}:null};}};}}),signIn:()=>{signins++;}};
+ context.window=context;vm.createContext(context);vm.runInContext(config,context);context.DEADELUSTV_DCG_CONFIG={...context.DEADELUSTV_DCG_CONFIG,...(spaces?{spaces}:{}),showDiscoveryWithSingleStreamer:showSingle};vm.runInContext(source,context);vm.runInContext(router,context);
+ return {root,heading,list,search,searchForm,directory,rail,reads,discoveryRoot,menu,nav,sections,calls,context,navNodes,get signins(){return signins;},async go(value){location.hash=value;for(const fn of windowListeners.hashchange||[])fn();await tick();},async auth(user){currentUser=user;if(user)storage.set('sb-eodtxlhnfzyapkyvvxdi-auth-token','session-present');else storage.clear();for(const fn of windowListeners['deadelustv:auth-change']||[])fn({detail:{authenticated:!!user}});await tick();},click(selector){const n=new Node();n.selector=selector;return root.emit('click',n);}};
 }
 test('DCG replaces only its own waiting page and is mounted by the real site router',()=>{
  const s=setup();assert.equal(s.sections.find(n=>n.dataset.page==='tcg').hidden,false);assert.equal(s.sections.find(n=>n.dataset.page==='accueil').hidden,true);
- assert.match(s.root.innerHTML,/Collectionne les/);assert.match(s.root.innerHTML,/Connexion Pass/);assert.match(s.root.innerHTML,/data-dcg="deadelustv"/);
+ assert.match(s.root.innerHTML,/Collectionne les/);assert.match(s.root.innerHTML,/Connexion Pass/);assert.match(s.root.innerHTML,/data-discovery-dcg="deadelustv"/);assert.match(s.root.innerHTML,/Mes DCG/);
  assert.equal(s.navNodes.find(n=>n.dataset.nav==='tcg').getAttribute('aria-current'),'page');assert.equal(s.heading.id,'tcg-title');
  assert.match(s.context.document.title,/DCG/);assert.equal(s.signins,0);
 });
@@ -50,11 +50,11 @@ test('the logo and directory lead to the existing Workers boosters, with no embe
  const s=setup();assert.equal((s.root.innerHTML.match(/href="https:\/\/tcg\.yekelle-boulet\.workers\.dev\/#\/boosters"/g)||[]).length,2);
  assert.doesNotMatch(s.root.innerHTML,/<iframe|<script/);assert.doesNotMatch(source,/createClient|service_role|rpc\(|fetch\(/);
 });
-test('directory input searches case and accents without replacing the input node',()=>{
- const s=setup();s.search.value='DÉADELUS';s.root.emit('input',s.search);assert.match(s.list.innerHTML,/data-dcg="deadelustv"/);
- s.search.value='<img src=x>';s.root.emit('input',s.search);assert.match(s.list.innerHTML,/Aucun DCG/);assert.doesNotMatch(s.list.innerHTML,/<img/);
+test('directory input searches only joined DCG, handling case and accents without replacing the input node',async()=>{
+ const s=setup({user:{id:'player'}});await tick();s.search.value='DÉADELUS';s.root.emit('input',s.search);assert.match(s.list.innerHTML,/data-dcg="deadelustv"/);
+ s.search.value='<img src=x>';s.root.emit('input',s.search);assert.match(s.list.innerHTML,/Aucun de tes DCG/);assert.doesNotMatch(s.list.innerHTML,/<img/);
  s.search.value='';s.root.emit('input',s.search);assert.match(s.list.innerHTML,/DeadelusTV/);assert.equal(s.root.nodes['[data-portal-search]'],s.search);
- assert.equal(s.click('[data-portal-directory]'),true);assert.equal(s.search.focused,true);
+ assert.equal(s.click('[data-portal-directory]'),true);assert.equal(s.rail.focused,true);
 });
 test('anonymous account access reuses the common Twitch login',async()=>{
  const s=setup({hash:'#tcg/mon-compte'});await tick();assert.match(s.root.innerHTML,/data-portal-login/);s.click('[data-portal-login]');assert.equal(s.signins,1);
@@ -88,3 +88,39 @@ test('markup and scripts are integrated once, and all portal CSS selectors are s
  assert.ok(selectors.length>40);for(const group of selectors)for(const selector of group.split(','))assert.ok(selector.trim().startsWith('#page-tcg ' )||selector.trim()==='#page-tcg',selector);
  assert.match(css,/@media.*max-width:\s*600px/);assert.match(css,/prefers-reduced-motion/);
 });
+
+test('Mes DCG reads only the signed-in player account, without joining a game or requiring a Viewer card',async()=>{
+ const s=setup({user:{id:'admin-player'}});await tick();assert.match(s.list.innerHTML,/data-dcg="deadelustv"/);assert.equal(s.searchForm.hidden,false);
+ assert.deepEqual(s.reads,[{table:'tcg_accounts',columns:'user_id',filter:{column:'user_id',value:'admin-player'}}]);assert.doesNotMatch(source,/\.insert\(|\.update\(|\.upsert\(|\.rpc\(|\.functions\./);
+});
+test('anonymous and unregistered visitors retain public discovery but have no personal DCG',async()=>{
+ const anonymous=setup({withAuth:false});await tick();assert.match(anonymous.list.innerHTML||anonymous.root.innerHTML,/Connecte-toi avec Twitch/);assert.equal(anonymous.reads.length,0);
+ const player=setup({user:{id:'new-player'},registered:false});await tick();assert.match(player.list.innerHTML,/pas encore rejoint/);assert.doesNotMatch(player.list.innerHTML,/data-dcg=/);assert.equal(player.searchForm.hidden,true);assert.match(player.root.innerHTML,/data-discovery-dcg="deadelustv"/);
+ const mismatched=setup({user:{id:'player'},getMembership:async()=>({data:{user_id:'someone-else'}})});await tick();assert.doesNotMatch(mismatched.list.innerHTML,/data-dcg=/);
+});
+test('late membership responses cannot restore Mes DCG after sign-out or leaving the portal',async()=>{
+ let release;const s=setup({user:{id:'old'},getMembership:()=>new Promise(r=>release=r)});await tick();await s.auth(null);assert.match(s.list.innerHTML,/Connecte-toi/);release({data:{user_id:'old'}});await tick();assert.doesNotMatch(s.list.innerHTML,/data-dcg=/);
+ let finish;const other=setup({user:{id:'old'},getMembership:()=>new Promise(r=>finish=r)});await tick();await other.go('#phasmophobia');finish({data:{user_id:'old'}});await tick();assert.equal(other.root.innerHTML,'');
+});
+test('membership failures show a retry and never promote a public DCG to Mes DCG',async()=>{
+ let fail=true;const s=setup({user:{id:'player'},getMembership:async()=>fail?{error:{message:'PRIVATE DATABASE DIAGNOSTIC'}}:{data:{user_id:'player'}}});await tick();assert.match(s.list.innerHTML,/data-portal-my-retry/);assert.doesNotMatch(s.list.innerHTML,/PRIVATE|data-dcg=/);fail=false;s.click('[data-portal-my-retry]');await tick();assert.match(s.list.innerHTML,/data-dcg="deadelustv"/);
+});
+const manySpaces=()=>Array.from({length:35},(_,i)=>({id:'streamer-'+i,name:'Streamer '+i,avatar:'https://images.example/'+i+'.png',gameBase:'https://game.example/'+i+'/'}));
+const discoveryIds=s=>[...s.root.innerHTML.matchAll(/data-discovery-dcg="([^"]+)"/g)].map(m=>m[1]);
+test('public discovery is capped at twenty unique streamers, with only avatar and name inside each pill',()=>{
+ const s=setup({spaces:manySpaces(),random:()=>.25});const ids=discoveryIds(s);assert.equal(ids.length,20);assert.equal(new Set(ids).size,20);
+ const pills=[...s.root.innerHTML.matchAll(/<a class="portal-streamer-pill"[^>]*>(.*?)<\/a>/g)].map(m=>m[1]);assert.equal(pills.length,20);for(const pill of pills){assert.match(pill,/<img[^>]*><span>Streamer \d+<\/span>$/);assert.doesNotMatch(pill,/carte|exemplaire|Version de test/);}
+});
+test('discovery reshuffles on a new page load and stays stable on navigation, search and auth changes',async()=>{
+ const s=setup({spaces:manySpaces(),random:()=>0});const before=discoveryIds(s);const other=setup({spaces:manySpaces(),random:()=>.99});assert.notDeepEqual(before,discoveryIds(other));
+ await s.go('#tcg/regles');await s.go('#tcg');assert.deepEqual(discoveryIds(s),before);await s.auth({id:'player'});assert.deepEqual(discoveryIds(s),before);s.search.value='absent';s.root.emit('input',s.search);assert.deepEqual(discoveryIds(s),before);
+});
+test('single-streamer discovery is visible in the test config and can be hidden independently of Mes DCG',async()=>{
+ const preview=setup();assert.match(preview.root.innerHTML,/id="dcg-discovery-title">Les DCG/);
+ const hidden=setup({user:{id:'player'},showSingle:false});await tick();assert.doesNotMatch(hidden.root.innerHTML,/id="dcg-discovery-title"/);assert.match(hidden.list.innerHTML,/data-dcg="deadelustv"/);
+});
+test('carousel controls scroll horizontally and honor reduced-motion preferences',()=>{
+ const s=setup({spaces:manySpaces()});const button=new Node();button.selector='[data-portal-carousel-direction]';button.dataset.portalCarouselDirection='next';s.root.emit('click',button);assert.equal(s.rail.scrolled.left,400);assert.equal(s.rail.scrolled.behavior,'smooth');
+ s.context.matchMedia=()=>({matches:true});button.dataset.portalCarouselDirection='previous';s.root.emit('click',button);assert.equal(s.rail.scrolled.left,-400);assert.equal(s.rail.scrolled.behavior,'instant');
+});
+

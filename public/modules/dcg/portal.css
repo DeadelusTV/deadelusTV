@@ -15,6 +15,16 @@
 #page-tcg .portal-eyebrow{font-size: 9px; letter-spacing: .18em; font-weight: 750; color: #bba16d;}
 #page-tcg .portal-featured .portal-eyebrow{margin-top: 14px;}
 #page-tcg .portal-directory{border-top: 1px solid var(--border); padding-top: 32px; scroll-margin-top: 110px;}
+#page-tcg .portal-discovery{margin-top:38px;border-top:1px solid var(--border);padding-top:28px;scroll-margin-top:110px;}
+#page-tcg .portal-carousel-controls{display:flex;gap:8px;flex-shrink:0;}
+#page-tcg .portal-carousel-controls button{width:38px;height:38px;border-radius:50%;border:1px solid var(--border);background:#17181d;color:var(--gold-light);font-size:20px;cursor:pointer;}
+#page-tcg .portal-carousel{display:flex;gap:14px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;scroll-padding-inline:4px;list-style:none;margin:0;padding:6px 4px 14px;scrollbar-width:thin;scrollbar-color:#8b7345 #16171b;}
+#page-tcg .portal-carousel>li{flex:0 0 auto;scroll-snap-align:start;}
+#page-tcg .portal-streamer-pill{display:inline-flex;align-items:center;gap:10px;max-width:260px;min-height:58px;padding:7px 19px 7px 8px;border:1px solid #84704455;border-radius:999px;background:#17181c;color:var(--ink);text-decoration:none;transition:border-color .2s,background .2s;}
+#page-tcg .portal-streamer-pill:hover{border-color:#d9b46c;background:#22201c;}
+#page-tcg .portal-streamer-pill img{width:42px;height:42px;flex:0 0 42px;border-radius:50%;object-fit:cover;background:#292a30;}
+#page-tcg .portal-streamer-pill span{font-size:14px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#page-tcg .portal-carousel:focus-visible{outline:2px solid var(--gold-light);outline-offset:4px;}
 #page-tcg .portal-section-top{display: flex; align-items: flex-end; justify-content: space-between; gap: 25px; margin-bottom: 24px;}
 #page-tcg .portal-section-top h2{font: 600 35px Georgia,serif; margin: 12px 0;}
 #page-tcg .portal-section-top p{font-size: 13px; line-height: 1.7; color: var(--muted); margin: 0;}
@@ -123,6 +133,9 @@
 #page-tcg .portal-account-actions{flex-direction: column; align-items: stretch;}
 }
 @media (prefers-reduced-motion:reduce){
-#page-tcg .portal-featured img,#page-tcg .portal-space{transition: none;}
+#page-tcg .portal-featured img,#page-tcg .portal-space,#page-tcg .portal-streamer-pill{transition: none;}
 #page-tcg .portal-featured:hover img{transform: none;}
 }
+
+
+#page-tcg [hidden]{display:none!important;}
