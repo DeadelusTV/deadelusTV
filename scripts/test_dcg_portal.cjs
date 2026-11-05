@@ -5,23 +5,26 @@ const base=path.resolve(__dirname,'..'),read=p=>fs.readFileSync(path.join(base,p
 const html=read('public/index.html'),source=read('public/modules/dcg/portal.js'),config=read('public/modules/dcg/config.js'),router=read('public/assets/app.js'),css=read('public/modules/dcg/portal.css');
 const tick=async()=>{for(let i=0;i<5;i++)await new Promise(r=>setImmediate(r));};
 class Node{
- constructor(){this.listeners={};this.attributes={};this.dataset={};this.hidden=false;this._html='';this.textContent='';this.value='';this.focused=false;const classes=new Set();this.classList={add:s=>classes.add(s),remove:s=>classes.delete(s),contains:s=>classes.has(s),toggle(s,force){const next=force??!classes.has(s);if(next)classes.add(s);else classes.delete(s);return next;}};}
+ constructor(){this.isConnected=true;this.open=false;this.listeners={};this.attributes={};this.dataset={};this.hidden=false;this._html='';this.textContent='';this.value='';this.focused=false;const classes=new Set();this.classList={add:s=>classes.add(s),remove:s=>classes.delete(s),contains:s=>classes.has(s),toggle(s,force){const next=force??!classes.has(s);if(next)classes.add(s);else classes.delete(s);return next;}};}
  addEventListener(name,fn){(this.listeners[name]??=[]).push(fn);}
- emit(name,target=this){let prevented=false;for(const fn of this.listeners[name]||[])fn({target,preventDefault(){prevented=true;}});return prevented;}
+ emit(name,target=this,extra={}){let prevented=false;for(const fn of this.listeners[name]||[])fn({...extra,target,preventDefault(){prevented=true;},stopPropagation(){}});return prevented;}
  setAttribute(name,value){this.attributes[name]=String(value);}
  getAttribute(name){return this.attributes[name]??null;}
  removeAttribute(name){delete this.attributes[name];}
  set innerHTML(value){this._html=value;}get innerHTML(){return this._html;}
  replaceChildren(){this._html='';}
  focus(){this.focused=true;}
+ showModal(){this.open=true;}
+ close(){this.open=false;this.onClose?.();}
+ getBoundingClientRect(){return {left:100,right:700,top:100,bottom:600};}
  scrollIntoView(options){this.scroll=options;}
  matches(selector){return this.selector===selector;}
  closest(selector){return this.selector===selector?this:null;}
  querySelector(selector){return this.nodes?.[selector]||null;}
 }
 function setup({hash='#tcg',user=null,getSession,withAuth=true,registered=true,getUser,getMembership,spaces,showSingle=true,random}={}){
- const root=new Node(),heading=new Node(),list=new Node(),search=new Node(),searchForm=new Node(),directory=new Node(),discoveryRoot=new Node(),rail=new Node(),nav=new Node(),menu=new Node(),back=new Node(),main=new Node(),brand=new Node();
- search.selector='[data-portal-search]';root.nodes={'h1':heading,'[data-portal-spaces]':list,'[data-portal-search]':search,'#dcg-annuaire':directory,'#dcg-decouverte':discoveryRoot,'[data-portal-carousel]':rail,'[data-portal-search-form]':searchForm};rail.clientWidth=500;rail.scrollBy=options=>rail.scrolled=options;
+ const root=new Node(),heading=new Node(),list=new Node(),search=new Node(),searchForm=new Node(),searchDialog=new Node(),searchResults=new Node(),directory=new Node(),discoveryRoot=new Node(),rail=new Node(),nav=new Node(),menu=new Node(),back=new Node(),main=new Node(),brand=new Node();
+ search.selector='[data-portal-search]';searchDialog.selector='[data-portal-search-dialog]';searchDialog.onClose=()=>root.emit('close',searchDialog);searchForm.nodes={input:search};root.nodes={'h1':heading,'[data-portal-spaces]':list,'[data-portal-search]':search,'#dcg-annuaire':directory,'#dcg-decouverte':discoveryRoot,'[data-portal-carousel]':rail,'[data-portal-search-form]':searchForm,'[data-portal-search-dialog]':searchDialog,'[data-portal-search-results]':searchResults};rail.clientWidth=500;rail.scrollBy=options=>rail.scrolled=options;
  const pageNames=['accueil','tcg','phasmophobia','crewmongus','pavillon-noir','mentions-legales','confidentialite','conditions-utilisation','conditions-vente'];
  const sections=pageNames.map(name=>{const n=new Node();n.dataset.page=name;n.nodes={h1:heading};return n;});
  const navNodes=['accueil','tcg','phasmophobia','crewmongus','jeux-de-role'].map(name=>{const n=new Node();n.dataset.nav=name;return n;});
@@ -32,7 +35,7 @@ function setup({hash='#tcg',user=null,getSession,withAuth=true,registered=true,g
  let currentUser=user,signins=0;const reads=[];const storage=new Map(user?[['sb-eodtxlhnfzyapkyvvxdi-auth-token','session-present']]:[]);context.localStorage={getItem:k=>storage.get(k)??null};if(random)context.Math=Object.assign(Object.create(Math),{random});
  if(withAuth)context.DEADELUSTV_AUTH={getClient:async()=>({auth:{getSession:getSession||(async()=>({data:{session:currentUser?{user:currentUser}:null}})),getUser:getUser||(async()=>({data:{user:currentUser}}))},from(table){reads.push({table});return {select(columns){reads.at(-1).columns=columns;return this;},eq(column,value){reads.at(-1).filter={column,value};return this;},async maybeSingle(){return getMembership?getMembership():{data:registered&&currentUser?{user_id:currentUser.id}:null};}};}}),signIn:()=>{signins++;}};
  context.window=context;vm.createContext(context);vm.runInContext(config,context);context.DEADELUSTV_DCG_CONFIG={...context.DEADELUSTV_DCG_CONFIG,...(spaces?{spaces}:{}),showDiscoveryWithSingleStreamer:showSingle};vm.runInContext(source,context);vm.runInContext(router,context);
- return {root,heading,list,search,searchForm,directory,rail,reads,discoveryRoot,menu,nav,sections,calls,context,navNodes,get signins(){return signins;},async go(value){location.hash=value;for(const fn of windowListeners.hashchange||[])fn();await tick();},async auth(user){currentUser=user;if(user)storage.set('sb-eodtxlhnfzyapkyvvxdi-auth-token','session-present');else storage.clear();for(const fn of windowListeners['deadelustv:auth-change']||[])fn({detail:{authenticated:!!user}});await tick();},click(selector){const n=new Node();n.selector=selector;return root.emit('click',n);}};
+ return {root,heading,list,search,searchForm,searchDialog,searchResults,directory,rail,reads,discoveryRoot,menu,nav,sections,calls,context,navNodes,get signins(){return signins;},async go(value){location.hash=value;for(const fn of windowListeners.hashchange||[])fn();await tick();},async auth(user){currentUser=user;if(user)storage.set('sb-eodtxlhnfzyapkyvvxdi-auth-token','session-present');else storage.clear();for(const fn of windowListeners['deadelustv:auth-change']||[])fn({detail:{authenticated:!!user}});await tick();},click(selector){const n=new Node();n.selector=selector;return root.emit('click',n);}};
 }
 test('DCG replaces only its own waiting page and is mounted by the real site router',()=>{
  const s=setup();assert.equal(s.sections.find(n=>n.dataset.page==='tcg').hidden,false);assert.equal(s.sections.find(n=>n.dataset.page==='accueil').hidden,true);
@@ -47,15 +50,17 @@ test('each common subpage is a real DCG route; unknown DCG subpages safely retur
  await s.go('#tcg/inconnu');assert.match(s.root.innerHTML,/data-portal-search/);
 });
 test('the logo and directory lead to the existing Workers boosters, with no embedded game or copied auth client',()=>{
- const s=setup();assert.equal((s.root.innerHTML.match(/href="https:\/\/tcg\.yekelle-boulet\.workers\.dev\/#\/boosters"/g)||[]).length,2);
+ const s=setup();assert.equal((s.root.innerHTML.match(/href="https:\/\/tcg\.yekelle-boulet\.workers\.dev\/#\/boosters"/g)||[]).length,3);
  assert.doesNotMatch(s.root.innerHTML,/<iframe|<script/);assert.doesNotMatch(source,/createClient|service_role|rpc\(|fetch\(/);
 });
-test('directory input searches only joined DCG, handling case and accents without replacing the input node',async()=>{
- const s=setup({user:{id:'player'}});await tick();s.search.value='DÉADELUS';s.root.emit('input',s.search);assert.match(s.list.innerHTML,/data-dcg="deadelustv"/);
- s.search.value='<img src=x>';s.root.emit('input',s.search);assert.match(s.list.innerHTML,/Aucun de tes DCG/);assert.doesNotMatch(s.list.innerHTML,/<img/);
- s.search.value='';s.root.emit('input',s.search);assert.match(s.list.innerHTML,/DeadelusTV/);assert.equal(s.root.nodes['[data-portal-search]'],s.search);
+test('global streamer search handles accents without filtering personal DCG or replacing the input',async()=>{
+ const s=setup({user:{id:'player'}});await tick();s.click('[data-portal-search-open]');assert.equal(s.searchDialog.open,true);assert.equal(s.search.focused,true);
+ s.search.value='DÉADELUS';s.root.emit('input',s.search);assert.match(s.searchResults.innerHTML,/data-portal-search-result="deadelustv"/);
+ s.search.value='<img src=x>';s.root.emit('input',s.search);assert.match(s.searchResults.innerHTML,/Aucun streamer/);assert.doesNotMatch(s.searchResults.innerHTML,/<img/);assert.match(s.list.innerHTML,/data-dcg="deadelustv"/);
+ s.search.value='';s.root.emit('input',s.search);assert.match(s.searchResults.innerHTML,/DeadelusTV/);assert.equal(s.root.nodes['[data-portal-search]'],s.search);
  assert.equal(s.click('[data-portal-directory]'),true);assert.equal(s.rail.focused,true);
 });
+
 test('anonymous account access reuses the common Twitch login',async()=>{
  const s=setup({hash:'#tcg/mon-compte'});await tick();assert.match(s.root.innerHTML,/data-portal-login/);s.click('[data-portal-login]');assert.equal(s.signins,1);
 });
@@ -90,12 +95,12 @@ test('markup and scripts are integrated once, and all portal CSS selectors are s
 });
 
 test('Mes DCG reads only the signed-in player account, without joining a game or requiring a Viewer card',async()=>{
- const s=setup({user:{id:'admin-player'}});await tick();assert.match(s.list.innerHTML,/data-dcg="deadelustv"/);assert.equal(s.searchForm.hidden,false);
+ const s=setup({user:{id:'admin-player'}});await tick();assert.match(s.list.innerHTML,/data-dcg="deadelustv"/);assert.match(s.root.innerHTML,/data-portal-search-open/);
  assert.deepEqual(s.reads,[{table:'tcg_accounts',columns:'user_id',filter:{column:'user_id',value:'admin-player'}}]);assert.doesNotMatch(source,/\.insert\(|\.update\(|\.upsert\(|\.rpc\(|\.functions\./);
 });
 test('anonymous and unregistered visitors retain public discovery but have no personal DCG',async()=>{
  const anonymous=setup({withAuth:false});await tick();assert.match(anonymous.list.innerHTML||anonymous.root.innerHTML,/Connecte-toi avec Twitch/);assert.equal(anonymous.reads.length,0);
- const player=setup({user:{id:'new-player'},registered:false});await tick();assert.match(player.list.innerHTML,/pas encore rejoint/);assert.doesNotMatch(player.list.innerHTML,/data-dcg=/);assert.equal(player.searchForm.hidden,true);assert.match(player.root.innerHTML,/data-discovery-dcg="deadelustv"/);
+ const player=setup({user:{id:'new-player'},registered:false});await tick();assert.match(player.list.innerHTML,/pas encore rejoint/);assert.doesNotMatch(player.list.innerHTML,/data-dcg=/);assert.match(player.root.innerHTML,/data-portal-search-open/);assert.match(player.root.innerHTML,/data-discovery-dcg="deadelustv"/);
  const mismatched=setup({user:{id:'player'},getMembership:async()=>({data:{user_id:'someone-else'}})});await tick();assert.doesNotMatch(mismatched.list.innerHTML,/data-dcg=/);
 });
 test('late membership responses cannot restore Mes DCG after sign-out or leaving the portal',async()=>{
@@ -122,5 +127,29 @@ test('single-streamer discovery is visible in the test config and can be hidden 
 test('carousel controls scroll horizontally and honor reduced-motion preferences',()=>{
  const s=setup({spaces:manySpaces()});const button=new Node();button.selector='[data-portal-carousel-direction]';button.dataset.portalCarouselDirection='next';s.root.emit('click',button);assert.equal(s.rail.scrolled.left,400);assert.equal(s.rail.scrolled.behavior,'smooth');
  s.context.matchMedia=()=>({matches:true});button.dataset.portalCarouselDirection='previous';s.root.emit('click',button);assert.equal(s.rail.scrolled.left,-400);assert.equal(s.rail.scrolled.behavior,'instant');
+});
+test('the floating search includes unjoined DCG outside the random carousel and works anonymously',()=>{
+ const s=setup({spaces:manySpaces(),withAuth:false,random:()=>0});s.click('[data-portal-search-open]');assert.equal(s.searchDialog.open,true);assert.equal((s.searchResults.innerHTML.match(/data-portal-search-result=/g)||[]).length,35);assert.equal(discoveryIds(s).length,20);
+ const outside=manySpaces().find(space=>!discoveryIds(s).includes(space.id));s.search.value=outside.name;s.root.emit('input',s.search);assert.match(s.searchResults.innerHTML,new RegExp('data-portal-search-result="'+outside.id+'"'));assert.equal(s.reads.length,0);assert.equal(s.signins,0);
+});
+test('closing the floating search returns focus to its trigger and opening it twice is harmless',()=>{
+ const s=setup(),trigger=new Node();trigger.selector='[data-portal-search-open]';s.root.emit('click',trigger);s.root.emit('click',trigger);assert.equal(s.searchDialog.open,true);assert.equal(s.search.focused,true);
+ s.click('[data-portal-search-close]');assert.equal(s.searchDialog.open,false);assert.equal(trigger.focused,true);
+ trigger.focused=false;s.root.emit('click',trigger);s.search.value='Deadelus';assert.equal(s.root.emit('keydown',s.search,{key:'Escape'}),true);assert.equal(s.searchDialog.open,false);assert.equal(s.search.value,'Deadelus');assert.equal(trigger.focused,true);
+});
+test('backdrop clicks close the search while clicks on padding inside the dialog keep it open',()=>{
+ const s=setup();s.click('[data-portal-search-open]');s.root.emit('click',s.searchDialog,{clientX:300,clientY:200});assert.equal(s.searchDialog.open,true);s.root.emit('click',s.searchDialog,{clientX:20,clientY:20});assert.equal(s.searchDialog.open,false);
+});
+test('changing account keeps the public query and its results without filtering Mes DCG',async()=>{
+ const s=setup();s.click('[data-portal-search-open]');s.search.value='Deadelus';s.root.emit('input',s.search);const before=s.searchResults.innerHTML;
+ await s.auth({id:'player'});assert.equal(s.searchDialog.open,true);assert.equal(s.search.value,'Deadelus');assert.equal(s.searchResults.innerHTML,before);assert.match(s.list.innerHTML,/data-dcg="deadelustv"/);
+ await s.auth(null);assert.equal(s.searchDialog.open,true);assert.equal(s.search.value,'Deadelus');assert.equal(s.searchResults.innerHTML,before);assert.match(s.list.innerHTML,/Connecte-toi/);
+});
+test('leaving the portal closes the modal and choosing a result closes it before navigation',async()=>{
+ const s=setup(),trigger=new Node();trigger.selector='[data-portal-search-open]';s.root.emit('click',trigger);await s.go('#phasmophobia');assert.equal(s.searchDialog.open,false);assert.equal(trigger.focused,false);
+ await s.go('#tcg');s.root.emit('click',trigger);s.click('[data-portal-search-result]');assert.equal(s.searchDialog.open,false);assert.equal(trigger.focused,false);assert.match(s.searchResults.innerHTML,/href="https:\/\/tcg\.yekelle-boulet\.workers\.dev\/#\/boosters"/);
+});
+test('streamer names in search results are escaped and unsafe destinations never become links',()=>{
+ const s=setup({spaces:[{id:'safe',name:'<svg onload=bad> & Viewer',avatar:'https://images.example/a.png',gameBase:'https://game.example/'},{id:'unsafe',name:'Unsafe',avatar:'https://images.example/a.png',gameBase:'javascript:bad()'}]});s.click('[data-portal-search-open]');assert.match(s.searchResults.innerHTML,/&lt;svg onload=bad&gt; &amp; Viewer/);assert.doesNotMatch(s.searchResults.innerHTML,/<svg|javascript:|>Unsafe</);assert.match(s.root.innerHTML,/aria-labelledby="dcg-search-title"/);
 });
 
