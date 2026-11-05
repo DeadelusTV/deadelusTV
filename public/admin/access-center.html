@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>Administration du site | DeadelusTV</title>
+  <link rel="stylesheet" href="../assets/site-auth.css?v=20261103.journal-editors">
+  <link rel="stylesheet" href="access-center.css?v=3">
+  <link rel="stylesheet" href="access-center-layout.css?v=1">
+  <link rel="stylesheet" href="../assets/contact-centre.css?rev=admin-panel-1">
+  <script src="../assets/site-auth.js?v=20261103.journal-editors" defer></script>
+  <script src="../assets/contact-centre.js?rev=admin-panel-1" data-contact-host="site" data-contact-admin-page="access-center.html" defer></script>
+  <script src="access-center.js?v=1" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="back" href="../#accueil">← Retour au site</a>
+    <div class="site-account" id="site-account">
+      <button id="site-account-toggle" class="site-account-toggle" type="button" aria-controls="site-account-menu" aria-expanded="false">Mon compte</button>
+      <div id="site-account-menu" class="site-account-menu" hidden>
+        <p id="site-account-status" class="site-account-status" aria-live="polite">Non connecté</p>
+        <a id="site-account-news-link" class="site-account-link" href="../modules/phasmophobia/editor-private.html" hidden>Gérer les actualités Phasmo</a>
+        <a id="site-account-journal-link" class="site-account-link" href="../modules/phasmophobia/journal-editor.html" hidden>Gérer le carnet</a>
+        <a id="site-account-crew-link" class="site-account-link" href="../#crewmongus/admin" hidden>Gestion Crew’mong Us</a>
+        <a class="site-account-link" href="#mes-demandes" data-contact-mine-open hidden>Mes demandes <span data-contact-unread hidden></span></a>
+        <button id="site-account-signin" class="site-account-action" type="button">Connexion Twitch</button>
+        <button id="site-account-signout" class="site-account-action" type="button" hidden>Se déconnecter</button>
+        <p id="site-account-note" class="site-account-note" role="status" hidden></p>
+      </div>
+    </div>
+  </header>
+  <main class="demo-main">
+    <section id="access-gate" class="gate" aria-live="polite"><h1>Administration du site</h1><p>Vérification de la connexion…</p></section>
+    <div id="access-panel" hidden>
+      <div class="heading demo-heading"><div><p class="eyebrow">DeadelusTV</p><h1>Administration du site</h1><p class="muted">Gérer les accès et suivre les demandes des joueurs.</p></div><button id="panel-refresh" type="button" class="secondary-action">Actualiser</button></div>
+      <nav class="tabs" aria-label="Rubriques du panneau">
+        <button type="button" data-tab="acces" aria-controls="rights" aria-selected="false" hidden>Gestion des accès</button>
+        <button type="button" data-tab="configuration" aria-controls="catalog" aria-selected="false" hidden>Configuration des droits</button>
+        <button type="button" data-tab="demandes" aria-controls="requests" aria-selected="false">Demandes <span id="request-count"></span></button>
+      </nav>
+      <div id="panel-notice" class="notice" role="status" aria-live="polite"></div>
+      <section id="rights" hidden>
+        <p class="muted">Les droits « Site » sont actifs. Les autres colonnes préparent les accès aux modules ; leur attribution ne change pas encore les droits Phasmo ou Crew existants.</p>
+        <div id="panel-stats" class="demo-stats" aria-label="Résumé des accès"></div>
+        <div class="demo-tools">
+          <div class="tools"><label for="person-filter">Filtrer le tableau</label><input id="person-filter" type="search" maxlength="80" autocomplete="off" placeholder="Pseudo Twitch"></div>
+          <form id="person-search" class="inline-person"><div><label for="search-name">Ajouter un compte déjà connecté au site</label><input id="search-name" name="search" type="search" minlength="2" maxlength="80" autocomplete="off" required placeholder="Pseudo Twitch"></div><button type="submit">Rechercher</button></form>
+        </div>
+        <div id="people-results" aria-live="polite"></div>
+        <div id="rights-tables"></div>
+      </section>
+      <section id="catalog" hidden>
+        <p class="muted">Les nouvelles permissions sont enregistrées en préparation. Leur effet dans un module nécessite ensuite son raccordement. Les accès Site actifs sont conservés.</p>
+        <div id="catalog-tree" class="demo-tree"></div>
+        <div class="forms">
+          <form id="add-category"><h2>Nouvelle catégorie</h2><label for="category-name">Nom</label><input id="category-name" name="label" maxlength="70" required placeholder="Ex. Nouveau jeu"><button type="submit">Créer la catégorie</button></form>
+          <form id="add-section"><h2>Nouvelle sous-catégorie</h2><label for="section-category">Catégorie</label><select id="section-category" name="category_id" required></select><label for="section-name">Nom</label><input id="section-name" name="label" maxlength="70" required placeholder="Ex. Actualités"><button type="submit">Créer la sous-catégorie</button></form>
+          <form id="add-permission"><h2>Nouvelle permission</h2><label for="permission-section">Sous-catégorie</label><select id="permission-section" name="section_ref" required></select><label for="permission-name">Libellé</label><input id="permission-name" name="label" maxlength="70" required><label for="permission-code">Code unique</label><input id="permission-code" name="code" maxlength="90" pattern="[a-z][a-z0-9]*(\.[a-z][a-z0-9_-]*){2,}" required placeholder="exemple.news.edit"><button type="submit">Créer la permission</button></form>
+        </div>
+      </section>
+      <section id="requests" hidden><div id="requests-root"></div></section>
+    </div>
+    <footer class="demo-footer"><a href="../#faq">FAQ</a> · <a href="#contact" data-contact-open>Contact</a> · <a href="#mes-demandes" data-contact-mine-open hidden>Mes demandes</a></footer>
+  </main>
+</body>
+</html>
