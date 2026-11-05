@@ -16,7 +16,7 @@
       summary: 'Vidéos intégrées aux actualités et aux futurs univers.',
       policy: 'https://policies.google.com/privacy?hl=fr'},
     tiktok: {active: false, label: 'TikTok',
-      summary: 'Actuellement, les liens ouvrent TikTok. Aucun lecteur intégré n’est activé.',
+      summary: 'Un lien ouvre le profil TikTok. Un aperçu de la dernière vidéo est prévu, sans lecteur intégré.',
       policy: 'https://www.tiktok.com/legal/page/eea/privacy-policy/fr'}
   });
   let memoryRecord = null;
@@ -141,7 +141,7 @@
       controls[key] = input;
       const name = document.createElement('span');
       name.className = 'cookie-service-name';
-      name.textContent = service.label + (service.active ? '' : ' (non utilisé actuellement)');
+      name.textContent = service.label + (service.active ? '' : ' (aucun lecteur intégré)');
       label.append(input, name);
       const summary = document.createElement('p');
       summary.textContent = service.summary;
