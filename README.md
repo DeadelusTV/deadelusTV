@@ -12,6 +12,10 @@ Journal V7 et lecteur officiel, carte TikTok animée, menu Twitch commun avec ge
 
 La branche `developpement/tcg-attente`, réalignée avec `main`, prépare le portail commun à la place de la page d’attente : annuaire, règles, Mon compte et emplacements du Pass et des collections communes. Le DCG DeadelusTV reste relié au jeu Workers existant. [Parcours, fichiers et vérifications](docs/dcg-portal-structure.md). Ce lot n’est pas fusionné sur `main` et ne modifie pas le site officiel OVH.
 
+## Contact et suivi — branche de test
+
+La branche `developpement/tcg-attente` ajoute le lien Contact dans le pied de page, les conversations « Mes demandes » et le panneau d’administration du site. Connexion Twitch obligatoire ; suggestions, contestations et demandes de déblocage de DCG sont prises en charge. [Fonctionnement, permissions et vérification](docs/contact-support.md). Ce lot ne publie pas le site officiel OVH.
+
 ## Architecture et publication
 
 Le portail est un site statique (HTML, CSS, JavaScript), servi depuis `public/` sur OVH. Aucun service Supabase supplémentaire n'est nécessaire pour les pages de présentation Phasmophobia et TCG. Les modules Crewmong Us et Pavillon Noir suivent leurs intégrations propres ; ne pas considérer leurs données ou leur administration comme celles du TCG.
@@ -73,5 +77,6 @@ En cas d'échec ou de réponse vide de YouTube, ne pas écraser le dernier JSON 
 Le livre interactif Phasmo, sa direction artistique avancée, son feuilletage et ses éventuelles fiches issues du bot Discord restent **en développement / à valider** sur `developpement/phasmo-v2`. Ils ne doivent pas être assimilés au carnet décoratif actuellement publié ni intégrés automatiquement sur `main`.
 
 Voir [la roadmap](docs/ROADMAP.md) pour le statut, les limites et les prochaines décisions.
+
 
 
