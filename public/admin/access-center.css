@@ -1,0 +1,23 @@
+:root{color-scheme:dark;font:15px/1.55 system-ui,Arial,sans-serif;background:#111213;color:#f0e8da}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 86% 5%,#282219 0,transparent 35%),#111213;min-height:100vh}
+[hidden]{display:none!important}a{color:#e9ca91}.topbar{padding:15px clamp(18px,5vw,66px);border-bottom:1px solid #40382d;display:flex;justify-content:space-between;gap:20px;font-size:.86rem;color:#b7ad9c}.back{text-decoration:none}
+main{max-width:1300px;padding:48px clamp(16px,4vw,45px) 90px;margin:auto}h1{font:normal clamp(2rem,4vw,3rem)/1.15 Georgia,serif;margin:0 0 13px;color:#f5dcab}h2{font:normal 1.35rem Georgia,serif;margin:0 0 13px;color:#ecd1a2}p{margin:0 0 12px}
+.eyebrow{color:#d8b879;text-transform:uppercase;letter-spacing:.16em;font-size:.73rem;font-weight:700}.muted{color:#b5aa9a}.gate{max-width:580px;margin:10vh auto;padding:34px;border:1px solid #5b4e3a;background:#191a1b;border-radius:15px}.return-link{display:inline-flex;margin-top:14px}
+.heading{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin-bottom:28px}.heading-actions{display:flex;gap:12px;align-items:center}.mode{border:1px solid #6b5636;border-radius:30px;padding:5px 11px;font-size:.78rem;color:#e0c99c;white-space:nowrap}
+button,input,select{font:inherit}button{background:#372c1c;border:1px solid #9c7948;color:#f6e5c4;padding:10px 16px;border-radius:8px;cursor:pointer}button:hover{background:#4b3920}button:disabled{opacity:.5;cursor:not-allowed}
+input,select{display:block;width:100%;background:#171819;color:#f0e8da;border:1px solid #70604a;border-radius:7px;padding:10px 12px}input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid #f0cb84;outline-offset:3px}
+.tabs{display:flex;gap:8px;border-bottom:1px solid #5a4a36;margin:10px 0 24px;flex-wrap:wrap}.tabs button{border:0;border-bottom:3px solid transparent;background:none;border-radius:0;color:#b8ae9f}.tabs button[aria-selected=true]{border-bottom-color:#e4bf7b;color:#fff0d4}
+.notice{min-height:24px;color:#e6c896}.notice.error{color:#f4a49f}
+.tools{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:23px}.tools label{font-weight:600}.tools input{max-width:350px}
+.module{border:1px solid #504637;background:#191a1b;border-radius:11px;margin:0 0 24px;overflow:hidden}.module h2{padding:18px 20px;margin:0;border-bottom:1px solid #504637}.table-scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:460px}th,td{padding:12px 15px;text-align:center;border-bottom:1px solid #332f29;font-size:.87rem}th{color:#d4bb91;font-weight:600}td:first-child,th:first-child{text-align:left;min-width:170px}.account-name{font-weight:600}.person-note{font-size:.72rem;color:#ad9e89}td input[type=checkbox]{width:19px;height:19px;margin:auto;accent-color:#d0ad70;cursor:pointer}td input[type=checkbox]:disabled{cursor:wait}.empty{padding:24px;color:#baad99}
+.forms{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:17px}form,.tree-card{border:1px solid #514535;border-radius:11px;background:#1b1b1c;padding:20px}form label{display:block;color:#d8c9b0;margin:11px 0 5px;font-size:.85rem}form button{margin-top:18px;width:100%}.tree-card{margin-bottom:18px}.tree-item{padding:10px 12px;margin:7px 0;background:#25231f;border-left:3px solid #a7844e}.tree-item strong{color:#d9c39f}.tree-permission{display:block;padding:3px 0 0 18px;color:#c7b7a0;font-size:.85rem}.code{color:#a69a89;font: .76rem ui-monospace,Consolas,monospace}.footnote{font-size:.81rem;margin:20px 0 0}
+@media(max-width:700px){main{padding-top:30px}.heading{flex-direction:column}.heading-actions{width:100%;justify-content:space-between}}
+
+/* Synchronisation manuelle Twitch, distincte des attributions de droits. */
+.twitch-block{border:1px solid #61513a;border-radius:11px;background:#1a1b1d;padding:22px;margin:0 0 24px}
+.twitch-block h2{margin-bottom:8px}
+.twitch-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}
+#twitch-preview{margin-top:16px;border-top:1px solid #514638;padding-top:15px}
+#twitch-preview ul{display:flex;flex-wrap:wrap;gap:8px;list-style:none;padding:0;margin:10px 0}
+#twitch-preview li{padding:5px 10px;border-radius:30px;background:#2d2922;color:#e5d2b0;font-size:.8rem}
+

@@ -80,3 +80,9 @@ Voir [la roadmap](docs/ROADMAP.md) pour le statut, les limites et les prochaines
 
 
 
+
+## Administration du site sur la branche DCG
+
+Le panneau issu de V2 est repris sur `developpement/tcg-attente` à l’adresse `/admin/access-center.html` : Gestion des accès, Configuration des droits et Demandes. Il utilise la connexion Twitch commune et les accès Site existants. Les droits Phasmo/Crew affichés en préparation n’accordent aucun accès effectif à ces modules. Voir [Contact et administration](docs/contact-support.md).
+
+Vérifications : `node --test scripts/test_contact_centre.cjs` ; après installation de jsdom 27.0.1 pour les tests, `node --test scripts/test_access_center.cjs`. Les tests de base de données et les deux migrations se trouvent dans `Yekelle/TCG`. Aucun changement de `main` du site ni déploiement OVH n’est inclus.

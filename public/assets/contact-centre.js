@@ -2,6 +2,8 @@
 (() => {
  'use strict';
  const host=document.currentScript?.dataset.contactHost||'tcg';
+ const adminPage=document.currentScript?.dataset.contactAdminPage||'';
+ let embeddedRoot=null,savedAdminState=null,lastAccessSignal='';const boundRoots=new WeakSet();
  const topics={site:[['phasmophobia','La partie Phasmophobia'],['crewmongus','La partie Crewmong Us'],['pavillon_noir','La partie Pavillon noir'],['suggestion','Suggestions'],['appeal','Contester une suspension / sanction']],tcg:[['booster','Un booster'],['catalogue','Le catalogue'],['laboratory','Le Laboratoire'],['trade_market','Les échanges et/ou le Marché'],['bug','Remonter un bug'],['other','Autre'],['suggestion','Suggestions'],['appeal','Contester une suspension / sanction']]};
  const statuses={new:'Nouvelles',in_progress:'En cours',resolved:'Résolues'};
  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -15,7 +17,9 @@
  let actor=null,client=null,caps=null,epoch=0,accessRun=0,panelRun=0,trigger=null,identityReady=false;
  const fresh=()=>({mode:'new',requesterType:'viewer',area:host==='site'?'site':'tcg',topic:'',body:'',requestKey:null,busy:false,error:'',notice:'',list:null,detail:null,reply:'',replyKey:null,note:'',nextStatus:'new',awaiting:false,resolve:false,search:'',members:null,choices:{},unreadOnly:false,updatesOnly:false});
  let state=fresh();
- const isAdmin=()=>state.mode==='admin'||state.mode==='permissions';
+ const isAdmin=(mode=state.mode)=>mode==='admin'||mode==='permissions';
+ const surface=()=>embeddedRoot&&isAdmin()?embeddedRoot:dialog;
+ const visible=()=>dialog.open||!!(embeddedRoot?.isConnected&&isAdmin());
  function timed(p){let timer;return Promise.race([p,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('La réponse prend trop de temps. Réessayez : votre envoi ne sera pas dupliqué.')),20000);})]).finally(()=>clearTimeout(timer));}
  async function rpc(name,args){const e=epoch,u=actor,c=client;if(!u||!c)throw Error('Connexion Twitch requise.');const r=await timed(c.rpc(name,args));if(e!==epoch||u!==actor)throw Error('session_changed');if(r.error){if(r.error.code==='42501'&&isAdmin()){caps={...caps,staff:false,permissions:false};state.detail=null;state.list=null;state.members=null;paintAccess();}throw r.error;}return r.data;}
  function paintAccess(){
@@ -23,27 +27,30 @@
   document.querySelectorAll('[data-contact-mine-open]').forEach(el=>{el.hidden=!actor;const badge=el.querySelector('[data-contact-unread]');if(badge){badge.textContent=String(caps?.my_unread||0);badge.hidden=!caps?.my_unread;}});
   const html=(caps?.staff&&caps.new_count?'<button type="button" data-contact-admin-open>'+caps.new_count+' nouvelle(s) demande(s) à traiter</button>':'')+(caps?.staff&&caps.updates_count?'<button type="button" data-contact-admin-open data-contact-updates>'+caps.updates_count+' réponse(s) de joueurs</button>':'')+(caps?.my_unread?'<button type="button" data-contact-mine-open data-contact-unread-only>'+caps.my_unread+' réponse(s) à vos demandes</button>':'');
   if(alert.innerHTML!==html)alert.innerHTML=html;alert.hidden=!html;
+  if(!caps?.staff){savedAdminState=null;if(embeddedRoot)embeddedRoot.replaceChildren();}
+  const signal=JSON.stringify({actorId:actor,...caps});if(signal!==lastAccessSignal){lastAccessSignal=signal;window.dispatchEvent(new CustomEvent('site:support-access-change',{detail:{actorId:actor,...caps}}));}
  }
- function clearIdentity(){epoch++;accessRun++;panelRun++;actor=null;client=null;caps=null;identityReady=false;state=fresh();paintAccess();if(dialog.open)paint();}
+ function clearIdentity(){epoch++;accessRun++;panelRun++;actor=null;client=null;caps=null;identityReady=false;savedAdminState=null;if(embeddedRoot)embeddedRoot.replaceChildren();state=fresh();if(embeddedRoot&&!dialog.open)state.mode='admin';paintAccess();if(visible())paint();}
  async function sync(){
   const n=++accessRun,e=epoch,priorActor=actor;
   try{
    const c=host==='site'?await window.DEADELUSTV_AUTH?.getClient():window.TCGAuth?.client;
-   if(!c){identityReady=true;if(dialog.open)paint();return;}
+   if(!c){identityReady=true;if(visible())paint();return;}
    const r=await timed(c.auth.getUser());if(n!==accessRun||e!==epoch)return;
    const user=r.error?null:r.data?.user;
-   if(actor&&actor!==user?.id){epoch++;panelRun++;state=fresh();}
+   if(actor&&actor!==user?.id){epoch++;panelRun++;savedAdminState=null;if(embeddedRoot)embeddedRoot.replaceChildren();state=fresh();if(embeddedRoot&&!dialog.open)state.mode='admin';}
    actor=user?.id||null;client=c;identityReady=true;
-   if(!actor){caps=null;paintAccess();if(dialog.open)paint();return;}
+   if(!actor){caps=null;paintAccess();if(visible())paint();return;}
    const u=actor,result=await timed(c.rpc('site_support_access'));if(n!==accessRun||u!==actor)return;
    if(result.error)throw result.error;
-   const before=caps?.staff;caps=result.data;paintAccess();const live=dialog.querySelector('[data-contact-live]');if(live)live.hidden=!(state.mode==='admin'?caps.updates_count:caps.my_unread);
-   if(dialog.open&&before&&!caps?.staff&&isAdmin()){panelRun++;state.detail=null;state.list=null;state.members=null;state.error='Votre accès à l’administration a été retiré.';paint();}
-   else if(dialog.open&&priorActor!==actor){paint();if(state.mode!=='new'&&!state.busy)void loadList();}
-   else if(dialog.open&&state.mode!=='new'&&!state.busy&&!(state.mode==='permissions'?state.members:state.list||state.detail)){paint();void loadList();}
-  }catch(error){if(n!==accessRun)return;identityReady=true;if(dialog.open&&!actor){state.error='Connexion momentanément indisponible. Réessayez.';paint();}}
+   const before=caps?.staff;caps=result.data;paintAccess();const live=surface().querySelector('[data-contact-live]');if(live)live.hidden=!(state.mode==='admin'?caps.updates_count:caps.my_unread);
+   if(visible()&&before&&!caps?.staff&&isAdmin()){panelRun++;state.detail=null;state.list=null;state.members=null;state.error='Votre accès à l’administration a été retiré.';paint();}
+   else if(visible()&&priorActor!==actor){paint();if(state.mode!=='new'&&!state.busy)void loadList();}
+   else if(visible()&&isAdmin()&&!before&&caps?.staff){paint();if(!state.busy&&!state.list&&!state.detail)void loadList();}
+   else if(visible()&&state.mode!=='new'&&!state.busy&&!(state.mode==='permissions'?state.members:state.list||state.detail)){paint();void loadList();}
+  }catch(error){if(n!==accessRun)return;identityReady=true;if(visible()&&!actor){state.error='Connexion momentanément indisponible. Réessayez.';paint();}}
  }
- function top(){const admin=isAdmin();return '<div class="contact-heading"><div><span class="contact-overline">'+(admin?'ADMINISTRATION DU SITE':'CONTACT & SUIVI')+'</span><h2 id="contact-title">'+(admin?'Demandes et permissions':state.mode==='mine'?'Mes demandes':'Contacter l’équipe')+'</h2></div><button class="contact-close" type="button" data-contact-close aria-label="Fermer" '+(state.busy?'disabled':'')+'>×</button></div>'+
+ function top(){if(embeddedRoot&&isAdmin())return '<h2 id="contact-inline-title">Demandes</h2>';const admin=isAdmin();return '<div class="contact-heading"><div><span class="contact-overline">'+(admin?'ADMINISTRATION DU SITE':'CONTACT & SUIVI')+'</span><h2 id="contact-title">'+(admin?'Demandes et permissions':state.mode==='mine'?'Mes demandes':'Contacter l’équipe')+'</h2></div><button class="contact-close" type="button" data-contact-close aria-label="Fermer" '+(state.busy?'disabled':'')+'>×</button></div>'+
   '<nav class="contact-tabs" aria-label="'+(admin?'Administration du site':'Contact')+'">'+(admin?'<button data-contact-mode="admin" '+(state.mode==='admin'?'aria-current="page"':'')+'>Demandes</button>'+(caps?.permissions?'<button data-contact-mode="permissions" '+(state.mode==='permissions'?'aria-current="page"':'')+'>Permissions</button>':''):'<button data-contact-mode="new" '+(state.mode==='new'?'aria-current="page"':'')+'>Nouvelle demande</button><button data-contact-mode="mine" '+(state.mode==='mine'?'aria-current="page"':'')+'>Mes demandes</button>')+'</nav>';
  }
  function form(){return '<form data-contact-form><label>Je suis<select name="requesterType"><option value="viewer" '+(state.requesterType==='viewer'?'selected':'')+'>Viewer</option><option value="streamer" '+(state.requesterType==='streamer'?'selected':'')+'>Streamer</option></select></label><label>Votre demande concerne<select name="area" required><option value="site" '+(state.area==='site'?'selected':'')+'>Le site</option><option value="tcg" '+(state.area==='tcg'?'selected':'')+'>Le TCG</option></select></label><label>Cela concerne<select name="topic" required><option value="">Choisir un sujet</option>'+availableTopics().map(([v,l])=>'<option value="'+v+'" '+(state.topic===v?'selected':'')+'>'+l+'</option>').join('')+'</select></label><label>Votre message<textarea name="message" rows="7" minlength="10" maxlength="8000" required placeholder="Décrivez votre demande. Pour un DCG, précisez le streamer concerné.">'+esc(state.body)+'</textarea></label><p class="contact-help">Vous retrouverez la conversation et les réponses de l’équipe dans « Mes demandes ». Pour demander le retrait de votre carte, choisissez Le TCG → Autre et expliquez votre souhait.</p><button class="contact-primary" type="submit">Envoyer ma demande</button></form>';}
@@ -62,20 +69,23 @@
   (admin?'<details class="contact-internal"><summary>Traitement et notes internes</summary><form data-contact-treatment><label>Statut<select name="status">'+Object.entries(statuses).map(([v,l])=>'<option value="'+v+'" '+(state.nextStatus===v?'selected':'')+'>'+l+'</option>').join('')+'</select></label><label>Note interne · visible uniquement par l’équipe<textarea name="note" rows="3" maxlength="2000">'+esc(state.note)+'</textarea></label><button class="contact-secondary" type="submit">Enregistrer le traitement</button></form><ul class="contact-history">'+(d.history||[]).map(h=>'<li>'+esc(when(h.at))+' · '+esc(h.actor)+' · '+esc(statuses[h.status]||h.status)+(h.note?'<p>'+esc(h.note)+'</p>':'')+'</li>').join('')+'</ul></details>':'');}
  function memberRow(m){const chosen=state.choices[m.user_id]||{role:m.role||'support',enabled:m.enabled!==false};return '<article class="contact-member"><div><strong>'+esc(m.name)+'</strong>'+(m.role==='owner'?'<p>Administrateur fondateur · accès conservé</p>':'')+'</div>'+(m.role==='owner'?'':'<label>Accès<select data-contact-member-role="'+esc(m.user_id)+'"><option value="support" '+(chosen.role==='support'?'selected':'')+'>Traitement des demandes</option><option value="admin" '+(chosen.role==='admin'?'selected':'')+'>Administration du site</option></select></label><label><input type="checkbox" data-contact-member-enabled="'+esc(m.user_id)+'" '+(chosen.enabled?'checked':'')+'> Actif</label><button type="button" class="contact-secondary" data-contact-member-save="'+esc(m.user_id)+'">Enregistrer</button>')+'</article>';}
  function permissions(){if(!caps?.permissions)return '<p>Accès réservé aux administrateurs du site.</p>';return '<p>Gérez l’accès au traitement des demandes et au panneau d’administration du site. Les droits des autres espaces restent gérés séparément.</p><form class="contact-search" data-contact-search><label>Rechercher un compte Twitch déjà connecté<input name="search" minlength="2" maxlength="80" required value="'+esc(state.search)+'" autocomplete="off"></label><button class="contact-secondary" type="submit">Rechercher</button></form>'+(state.members?'<div class="contact-members">'+state.members.members.map(memberRow).join('')+'</div>'+ (state.search?'<h3>Résultats de recherche</h3><div class="contact-members">'+(state.members.matches.filter(m=>!state.members.members.some(n=>n.user_id===m.user_id)).map(memberRow).join('')||'<p>Aucun autre compte correspondant.</p>')+'</div>':''):'<p role="status">Chargement des permissions…</p>');}
- function paint(){if(!dialog.open)return;dialog.classList.toggle('contact-dialog-admin',isAdmin());let content;
+ function paint(){const pane=surface();if(pane===dialog&&!dialog.open)return;if(pane!==dialog&&!pane?.isConnected)return;pane.classList.toggle('contact-dialog-admin',isAdmin());let content;
   if(!identityReady)content='<p role="status">Vérification de la connexion…</p>';
   else if(!actor)content='<p>Connectez-vous avec Twitch pour envoyer et retrouver vos demandes.</p><button class="contact-primary" type="button" data-contact-signin>Connexion Twitch</button><button class="contact-secondary" type="button" data-contact-retry>Réessayer</button>';
   else if(isAdmin()&&!caps?.staff)content='<p>Accès réservé à l’équipe du site.</p>';
   else content=state.mode==='new'?form():state.mode==='permissions'?permissions():list();
-  dialog.innerHTML=top()+(state.error?'<p class="contact-error" role="alert">'+esc(state.error)+'</p>':'')+(state.notice?'<p class="contact-notice" role="status">'+esc(state.notice)+'</p>':'')+content;
-  dialog.querySelectorAll('input,textarea,select,button').forEach(el=>el.disabled=state.busy);
+  pane.innerHTML=top()+(state.error?'<p class="contact-error" role="alert">'+esc(state.error)+'</p>':'')+(state.notice?'<p class="contact-notice" role="status">'+esc(state.notice)+'</p>':'')+content;
+  pane.querySelectorAll('input,textarea,select,button').forEach(el=>el.disabled=state.busy);
  }
- function open(mode='new',options={}){if(state.busy)return;trigger=document.activeElement;state.error='';state.notice='';state.mode=mode;state.detail=null;state.list=null;state.members=null;state.nextStatus='new';panelRun++;
+ function open(mode='new',options={}){if(state.busy)return;
+  if(isAdmin(mode)&&adminPage&&!embeddedRoot){const url=new URL(adminPage,location.href);if(!['https:','http:'].includes(url.protocol))return;url.hash=mode==='permissions'?'acces':options.updates?'demandes-reponses':'demandes';location.assign(url.href);return;}
+  if(embeddedRoot&&isAdmin()&&!isAdmin(mode)){savedAdminState=state;state=fresh();}
+ trigger=document.activeElement;state.error='';state.notice='';state.mode=mode;state.detail=null;state.list=null;state.members=null;state.nextStatus='new';panelRun++;
   if(options.area&&topics[options.area]){state.area=options.area;state.topic=options.topic||'';}if(options.deletion){state.area='tcg';state.topic='other';state.body='Je souhaite demander la suppression de ma carte Viewer et de ses exemplaires. Je souhaite conserver mon compte joueur.';state.requestKey=null;}
   state.unreadOnly=!!options.unread;state.updatesOnly=!!options.updates;
-  if(!dialog.open)dialog.showModal();paint();if(actor&&mode!=='new')void loadList();else void sync();
+  if(!(embeddedRoot&&isAdmin())&&!dialog.open)dialog.showModal();paint();if(actor&&mode!=='new')void loadList();else void sync();
  }
- async function work(fn){if(state.busy)return;const n=++panelRun,e=epoch;state.busy=true;state.error='';state.notice='';paint();try{await fn(()=>n===panelRun&&e===epoch);}catch(error){if(n===panelRun&&e===epoch&&error?.message!=='session_changed')state.error=error?.message||'Action indisponible. Réessayez.';}finally{if(n===panelRun&&e===epoch){state.busy=false;paint();}}}
+ async function work(fn){if(state.busy)return;const n=++panelRun,e=epoch;state.busy=true;state.error='';state.notice='';window.dispatchEvent(new Event('site:support-busy-change'));paint();try{await fn(()=>n===panelRun&&e===epoch);}catch(error){if(n===panelRun&&e===epoch&&error?.message!=='session_changed')state.error=error?.message||'Action indisponible. Réessayez.';}finally{if(n===panelRun&&e===epoch){state.busy=false;window.dispatchEvent(new Event('site:support-busy-change'));paint();}}}
  async function loadList(append=false){if(!actor)return;await work(async valid=>{
   let result;if(state.mode==='permissions')result=await rpc('site_support_admin_members',{p_search:state.search});
   else result=await rpc(state.mode==='admin'?'site_support_admin_list':'site_support_my_requests',state.mode==='admin'?{p_status:state.nextStatus,p_before:append?state.list?.next_before:null,p_updates:state.updatesOnly}:{p_before:append?state.list?.next_before:null,p_unread:state.unreadOnly});
@@ -92,13 +102,13 @@
  async function sendReply(){await work(async valid=>{const admin=state.mode==='admin';state.replyKey ||=key();const args={p_id:state.detail.id,p_message:state.reply,p_request:state.replyKey};if(admin)Object.assign(args,{p_version:state.detail.version,p_awaiting:state.awaiting,p_resolve:state.resolve});const result=await rpc(admin?'site_support_admin_reply':'site_support_my_reply',args);if(!valid())return;state.detail=result;state.note=result.internal_note||'';state.nextStatus=result.status;state.reply='';state.replyKey=null;state.awaiting=false;state.resolve=false;state.notice='Réponse envoyée.';void sync();});}
  async function treatment(){await work(async valid=>{const r=await rpc('site_support_admin_update',{p_id:state.detail.id,p_version:state.detail.version,p_status:state.nextStatus,p_note:state.note});if(!valid())return;state.detail=r;state.notice='Traitement enregistré.';void sync();});}
  async function saveMember(id){await work(async valid=>{const known=state.members.members.find(m=>m.user_id===id),choice=state.choices[id]||{role:known?.role||'support',enabled:known?.enabled!==false};const r=await rpc('site_support_admin_set_role',{p_user:id,p_role:choice.role,p_enabled:choice.enabled,p_version:known?.version||null});if(!valid())return;state.members=r;state.search='';state.choices={};state.notice='Permission enregistrée.';void sync();});}
- dialog.addEventListener('input',e=>{const el=e.target;if(el.name==='message'){state.body=el.value;state.requestKey=null;}if(el.name==='reply'){state.reply=el.value;state.replyKey=null;}if(el.name==='note')state.note=el.value;if(el.name==='search')state.search=el.value;});
- dialog.addEventListener('change',e=>{const el=e.target;if(el.name==='area'){state.area=el.value;state.topic='';state.requestKey=null;paint();}if(el.name==='topic'){state.topic=el.value;state.requestKey=null;}if(el.name==='requesterType'){state.requesterType=el.value;if(!availableTopics().some(t=>t[0]===state.topic))state.topic='';state.requestKey=null;paint();}if(el.name==='status')state.nextStatus=el.value;
+ function onInput(e){const el=e.target;if(el.name==='message'){state.body=el.value;state.requestKey=null;}if(el.name==='reply'){state.reply=el.value;state.replyKey=null;}if(el.name==='note')state.note=el.value;if(el.name==='search')state.search=el.value;}
+ function onChange(e){const el=e.target;if(el.name==='area'){state.area=el.value;state.topic='';state.requestKey=null;paint();}if(el.name==='topic'){state.topic=el.value;state.requestKey=null;}if(el.name==='requesterType'){state.requesterType=el.value;if(!availableTopics().some(t=>t[0]===state.topic))state.topic='';state.requestKey=null;paint();}if(el.name==='status')state.nextStatus=el.value;
   if(el.name==='awaiting'||el.name==='resolve'){state[el.name]=el.checked;state[el.name==='awaiting'?'resolve':'awaiting']=false;state.replyKey=null;paint();}
   const id=el.dataset.contactMemberRole||el.dataset.contactMemberEnabled;if(id){const existing=state.members.members.find(m=>m.user_id===id);state.choices[id]||={role:existing?.role||'support',enabled:existing?.enabled!==false};if(el.dataset.contactMemberRole)state.choices[id].role=el.value;else state.choices[id].enabled=el.checked;}
- });
- dialog.addEventListener('submit',e=>{e.preventDefault();if(e.target.matches('[data-contact-form]'))void submit();if(e.target.matches('[data-contact-reply]'))void sendReply();if(e.target.matches('[data-contact-treatment]'))void treatment();if(e.target.matches('[data-contact-search]'))void loadList();});
- dialog.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||state.busy)return;
+ }
+ function onSubmit(e){e.preventDefault();if(e.target.matches('[data-contact-form]'))void submit();if(e.target.matches('[data-contact-reply]'))void sendReply();if(e.target.matches('[data-contact-treatment]'))void treatment();if(e.target.matches('[data-contact-search]'))void loadList();}
+ function onClick(e){const b=e.target.closest('button');if(!b||state.busy)return;
   if(b.hasAttribute('data-contact-close'))dialog.close();if(b.hasAttribute('data-contact-retry'))void sync();
   if(b.hasAttribute('data-contact-signin')){try{sessionStorage.setItem('site:contact:return',JSON.stringify({mode:state.mode,at:Date.now()}));}catch{}if(host==='site')void window.DEADELUSTV_AUTH?.signIn();else void window.TCGAuth?.signIn();}
   if(b.dataset.contactMode)open(b.dataset.contactMode);if(b.dataset.contactStatus){state.nextStatus=b.dataset.contactStatus;state.detail=null;state.list=null;state.updatesOnly=false;void loadList();}
@@ -106,15 +116,19 @@
   if(b.dataset.contactTicket)void loadTicket(b.dataset.contactTicket);if(b.hasAttribute('data-contact-more'))void loadList(true);
   if(b.hasAttribute('data-contact-back')){state.detail=null;state.list=null;state.error='';state.nextStatus='new';void loadList();}
   if(b.hasAttribute('data-contact-older'))void loadTicket(state.detail.id,true);if(b.hasAttribute('data-contact-refresh'))void loadTicket(state.detail.id,false,true);if(b.dataset.contactMemberSave)void saveMember(b.dataset.contactMemberSave);
- });
+ }
+ function bind(root){if(boundRoots.has(root))return;boundRoots.add(root);for(const [name,handler] of [['input',onInput],['change',onChange],['submit',onSubmit],['click',onClick]])root.addEventListener(name,handler);}
+ bind(dialog);
  dialog.addEventListener('cancel',e=>{if(state.busy)e.preventDefault();});
- dialog.addEventListener('close',()=>{panelRun++;state.error='';if(trigger?.isConnected)trigger.focus();});
+ dialog.addEventListener('close',()=>{panelRun++;state.error='';if(embeddedRoot?.isConnected&&savedAdminState){state=savedAdminState;savedAdminState=null;paint();}if(trigger?.isConnected)trigger.focus();});
  document.addEventListener('click',e=>{const el=e.target.closest('[data-contact-open],[data-contact-mine-open],[data-contact-admin-open]');if(!el)return;e.preventDefault();open(el.hasAttribute('data-contact-admin-open')?'admin':el.hasAttribute('data-contact-mine-open')?'mine':'new',{area:el.dataset.contactArea,topic:el.dataset.contactTopic,deletion:el.hasAttribute('data-contact-deletion'),unread:el.hasAttribute('data-contact-unread-only'),updates:el.hasAttribute('data-contact-updates')});});
  window.addEventListener(host==='site'?'deadelustv:auth-change':'tcg:auth-change',()=>{clearIdentity();void sync();});
  window.addEventListener('focus',()=>{if(actor)void sync();});document.addEventListener('visibilitychange',()=>{if(!document.hidden&&actor)void sync();});
  setInterval(()=>{if(actor&&!document.hidden)void sync();},45000);
  function route(){const h=location.hash.replace(/^#\/?/,'');if(h==='mes-demandes')open('mine');else if(h==='contact')open();else if(h==='administration')open('admin');}
- window.addEventListener('hashchange',route);window.SiteContact={open:options=>open('new',options),openMine:()=>open('mine'),openAdmin:()=>open('admin'),refresh:sync};
+ window.addEventListener('hashchange',route);window.SiteContact={open:options=>open('new',options),openMine:()=>open('mine'),openAdmin:()=>open('admin'),refresh:sync,get busy(){return state.busy;},
+ mountAdmin(root,options={}){if(state.busy||dialog.open)return false;embeddedRoot=root;root.classList.add('contact-dialog','contact-inline');root.setAttribute('role','region');root.setAttribute('aria-labelledby','contact-inline-title');bind(root);if(!isAdmin())state=savedAdminState||{...fresh(),mode:'admin'};savedAdminState=null;if(options.updatesOnly){state.updatesOnly=true;state.list=null;state.detail=null;}paint();if(actor&&!state.list&&!state.detail)void loadList();else if(!actor)void sync();return true;},
+ unmountAdmin(){if(state.busy)return false;if(embeddedRoot){if(isAdmin())savedAdminState=state;embeddedRoot.replaceChildren();embeddedRoot=null;if(isAdmin())state=fresh();panelRun++;}return true;}};
  let restored=false;try{const saved=sessionStorage.getItem('site:contact:return');if(saved){sessionStorage.removeItem('site:contact:return');const previous=JSON.parse(saved);if(previous.at<=Date.now()&&Date.now()-previous.at<15*60*1000){open(previous.mode==='mine'?'mine':'new');restored=true;}}}catch{}
  if(!restored){route();let saved=false;try{saved=localStorage.getItem('sb-eodtxlhnfzyapkyvvxdi-auth-token')!==null;}catch{}if(window.TCGAuth?.user||saved)void sync();}
 })();

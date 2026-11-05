@@ -21,14 +21,19 @@ Les demandes sont liées au compte Twitch et communes aux deux sites : elles son
 
 ## Administration du site
 
-Le panneau **Administration du site** du menu du compte comprend **Demandes** et **Permissions**. Les statuts sont **Nouvelles**, **En cours**, **Résolues** ; un filtre permet de retrouver les réponses de joueurs non lues. L’équipe peut répondre, demander des précisions, clôturer avec une réponse et prendre en charge une demande. Les notes de traitement sont distinctes des messages envoyés au joueur.
+Le panneau **Administration du site** du menu du compte ouvre désormais la page du site de test `/admin/access-center.html`, reprise du panneau V2, avec **Gestion des accès**, **Configuration des droits** et **Demandes**. Le lien depuis le DCG ouvre ce même panneau ; la connexion Twitch doit être active sur cette origine. Les statuts sont **Nouvelles**, **En cours**, **Résolues** ; un filtre permet de retrouver les réponses de joueurs non lues. L’équipe peut répondre, demander des précisions, clôturer avec une réponse et prendre en charge une demande. Les notes de traitement sont distinctes des messages envoyés au joueur.
 
 Les deux admins centraux déjà enregistrés au moment de la migration reçoivent une seule fois les accès fondateurs du site. Cette initialisation n’est pas une synchronisation des rôles TCG. Un administrateur du site peut attribuer ou désactiver **Traitement des demandes** ou **Administration du site** à un compte Twitch existant. Les accès fondateurs ne sont pas modifiables dans cette interface. Les droits TCG, News, carnet, Crew et Pavillon Noir restent inchangés.
+
+Le tableau utilise les vrais comptes Twitch déjà connectés, avec une recherche pour ajouter une personne. Les deux droits Site sont actifs : traiter les demandes et administrer le site. Les colonnes Phasmo, Crew et les nouvelles permissions sont enregistrées **en préparation** ; elles ne remplacent pas les droits des modules existants. Les catégories, sous-catégories et permissions peuvent être complétées. Les fondateurs restent protégés. Une personne avec seulement le droit de traitement voit uniquement les demandes.
+
+Les conversations sont intégrées dans l’onglet Demandes ; un changement d’onglet conserve le brouillon de réponse. Les alertes dirigent vers les nouvelles demandes ou les réponses de joueurs non lues. Contact et Mes demandes restent accessibles aux joueurs dans leur fenêtre de suivi.
 
 ## Technique et validation
 
 - Source partagée : `public/contact-centre.js` et `public/contact-centre.css`, copiée dans `public/assets/` du dépôt du site.
-- Migration : `20261105053257_site_contact_centre.sql` ; tables privées avec RLS, aucun accès direct aux données depuis le navigateur. Les fonctions publiques invoker délèguent aux fonctions privées gardées par l’identité Twitch et les rôles serveur.
+- Registre du panneau V2 : `20261105062757_site_access_panel.sql` (dépôt TCG), tables privées avec RLS, commandes versionnées, reprises idempotentes et journal administratif. Aucune synchronisation des modérateurs Twitch ni activation automatique des droits de modules.
+- Migration Contact : `20261105053257_site_contact_centre.sql` ; tables privées avec RLS, aucun accès direct aux données depuis le navigateur. Les fonctions publiques invoker délèguent aux fonctions privées gardées par l’identité Twitch et les rôles serveur.
 - Envois et réponses utilisent une référence stable pour résister aux reprises après une réponse réseau incertaine. Le serveur limite les envois rapprochés. Les modifications de statut et de permissions vérifient une révision et sont journalisées.
 - Tests PostgreSQL isolés : authentification, refus d’accès entre joueurs, catégories, idempotence, suivi et notifications, notes privées, pagination, révocation, demande Streamer sans déblocage et absence de droits automatiques.
 - Tests DOM : formulaire sur les deux hôtes, reprise d’envoi, conversation, réponse, filtres non lus, permissions, changement de compte et conservation des champs pendant les rafraîchissements.
