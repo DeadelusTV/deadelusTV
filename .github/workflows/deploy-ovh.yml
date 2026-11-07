@@ -169,10 +169,12 @@ jobs:
           import json, os, re
           from pathlib import Path
           receipt = json.loads((Path(os.environ['RUNNER_TEMP']) / 'backup-before.json').read_text())
-          assert receipt['verified'] is True and receipt['phase'] == 'avant'
-          assert receipt['operation'] == os.environ['GITHUB_RUN_ID'] + '-' + os.environ['GITHUB_RUN_ATTEMPT']
-          assert receipt['commit'] == os.environ['GITHUB_SHA']
-          assert re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]{0,99}', receipt['active_release'])
+          valid = (receipt.get('verified') is True and receipt.get('phase') == 'avant'
+              and receipt.get('operation') == os.environ['GITHUB_RUN_ID'] + '-' + os.environ['GITHUB_RUN_ATTEMPT']
+              and receipt.get('commit') == os.environ['GITHUB_SHA']
+              and re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]{0,99}', receipt.get('active_release', '')))
+          if not valid:
+              raise SystemExit('Recu de sauvegarde AVANT invalide : publication interdite')
           with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
               out.write('active_release=' + receipt['active_release'] + '\n')
           PY
@@ -229,7 +231,7 @@ jobs:
 
       - name: Sauvegarder et verifier la version active APRES publication
         id: backup_after
-        if: always() && steps.publish.outcome == 'success'
+        if: always() && steps.backup_before.outcome == 'success' && (steps.publish.outcome == 'success' || steps.publish.outcome == 'failure')
         env:
           GH_TOKEN: ${{ secrets.BACKUPS_REPOSITORY_TOKEN }}
         run: |
@@ -244,6 +246,11 @@ jobs:
           echo '::error::La nouvelle version est deja active, mais sa sauvegarde APRES a echoue. La sauvegarde AVANT est conservee. Aucun retour arriere automatique.'
           echo 'ATTENTION : version publiee, sauvegarde APRES non validee. Intervention requise.' >> "$GITHUB_STEP_SUMMARY"
           exit 1
+
+      - name: Signaler un etat de publication incertain apres une erreur de transfert
+        if: always() && steps.backup_before.outcome == 'success' && steps.publish.outcome == 'failure'
+        run: |
+          echo '::warning::Transfert ou activation en erreur : verifier current avant toute relance. La sauvegarde APRES a ete tentee en cas de bascule effective. La sauvegarde AVANT reste conservee.'
 
       - name: Effacer la cle de publication du runner
         if: always()
