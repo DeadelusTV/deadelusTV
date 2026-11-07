@@ -1,0 +1,58 @@
+name: Verifier acces au depot prive de sauvegardes
+
+on:
+  push:
+    branches: [securite/pre-tcg-20261107]
+    paths: ['.github/workflows/test-acces-backups.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verification:
+    if: github.repository == 'DeadelusTV/deadelusTV' && (github.ref == 'refs/heads/securite/pre-tcg-20261107' || github.ref == 'refs/heads/main')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ secrets.BACKUPS_REPOSITORY_TOKEN }}
+      BACKUP_REPO: DeadelusTV/DeadelusTV-backups
+      TEST_TAG: verification-acces-backups-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - name: Verifier le secret et le caractere prive du depot cible
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$GH_TOKEN" ]] || { echo '::error::BACKUPS_REPOSITORY_TOKEN absent du depot du site'; exit 1; }
+          private="$(gh api "repos/$BACKUP_REPO" --jq '.private')"
+          [[ "$private" == true ]] || { echo '::error::Le depot de sauvegarde doit etre prive'; exit 1; }
+
+      - name: Creer et relire une petite archive fictive
+        id: probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          work="$RUNNER_TEMP/verification-backups"
+          mkdir -p "$work/lecture"
+          printf 'Test de permission uniquement. Aucune donnee du site. Run %s\n' "$GITHUB_RUN_ID" > "$work/test.txt"
+          (cd "$work" && sha256sum test.txt > test.txt.sha256)
+          gh release create "$TEST_TAG" "$work/test.txt" "$work/test.txt.sha256" \
+            --repo "$BACKUP_REPO" --target main --draft --latest=false \
+            --title "TEST TEMPORAIRE - acces sauvegardes $GITHUB_RUN_ID" \
+            --notes 'Donnees fictives. Aucun acces OVH ou Supabase. Cette Release de test est supprimee apres verification.'
+          echo 'created=true' >> "$GITHUB_OUTPUT"
+          gh release download "$TEST_TAG" --repo "$BACKUP_REPO" -D "$work/lecture"
+          (cd "$work/lecture" && sha256sum -c test.txt.sha256)
+          cmp "$work/test.txt" "$work/lecture/test.txt"
+          echo 'Jeton valide : depot prive, creation, telechargement et integrite verifies sans acces a la production.' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Supprimer uniquement la Release fictive creee par ce test
+        if: always() && steps.probe.outputs.created == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$TEST_TAG" == "verification-acces-backups-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" ]]
+          draft="$(gh release view "$TEST_TAG" --repo "$BACKUP_REPO" --json isDraft --jq .isDraft)"
+          [[ "$draft" == true ]] || { echo '::error::La Release de test ne doit pas etre publiee'; exit 1; }
+          gh release delete "$TEST_TAG" --repo "$BACKUP_REPO" --yes --cleanup-tag
