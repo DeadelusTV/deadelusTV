@@ -26,6 +26,9 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Tester les archives et garde-fous de publication sans acces reseau
+        run: python3 -m unittest discover -s tests -p 'test_backup_publication.py' -v
+
       - name: Verifier les ressources HTML et fichiers publics
         run: python3 scripts/verify-static.py
 
