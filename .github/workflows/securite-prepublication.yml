@@ -1,0 +1,58 @@
+name: Securite pre-publication du portail
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - securite/pre-tcg-20261107
+
+permissions:
+  contents: read
+
+concurrency:
+  group: prepublication-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verification:
+    name: Controle portail avant fusion
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Lire les fichiers de la branche a tester
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Tester les archives et garde-fous de publication sans acces reseau
+        run: python3 -m unittest discover -s tests -p 'test_backup_publication.py' -v
+
+      - name: Verifier les ressources HTML et fichiers publics
+        run: python3 scripts/verify-static.py
+
+      - name: Verifier la syntaxe des JavaScript publics
+        shell: bash
+        run: |
+          set -euo pipefail
+          count=0
+          while IFS= read -r -d '' file; do
+            node --check "$file"
+            count=$((count + 1))
+          done < <(find public/assets public/modules -type f -name '*.js' -print0)
+          (( count > 0 )) || { echo '::error::Aucun fichier JavaScript detecte'; exit 1; }
+          echo "$count fichiers JavaScript verifies."
+
+      - name: Tester les consentements et le lecteur Twitch
+        run: node --test scripts/test_frontend_consent.cjs scripts/test_twitch_floating.cjs
+
+      - name: Verifier la presence des univers existants
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s public/index.html
+          test -f public/modules/phasmophobia/module.js
+          test -f public/modules/crewmongus/module.js
+          test -f public/modules/pavillon-noir/module.js
+          echo 'Entrees des univers preservees.'
