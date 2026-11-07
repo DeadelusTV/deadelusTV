@@ -55,4 +55,5 @@ jobs:
           [[ "$TEST_TAG" == "verification-acces-backups-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" ]]
           draft="$(gh release view "$TEST_TAG" --repo "$BACKUP_REPO" --json isDraft --jq .isDraft)"
           [[ "$draft" == true ]] || { echo '::error::La Release de test ne doit pas etre publiee'; exit 1; }
-          gh release delete "$TEST_TAG" --repo "$BACKUP_REPO" --yes --cleanup-tag
+          # Une Release brouillon n'a pas encore cree de tag Git.
+          gh release delete "$TEST_TAG" --repo "$BACKUP_REPO" --yes
