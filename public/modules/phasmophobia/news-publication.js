@@ -2,7 +2,7 @@
   'use strict';
   // Interface de publication isolée de la démo locale et des rôles TCG.
   // Les RLS Postgres/Storage sont les garde-fous réels, pas les boutons HTML.
-  const STAGE='preview';
+  const STAGE='production';
   const BUCKET_PUBLIC='phasmo-news-published-images';
   const BUCKET_PRIVATE='phasmo-news-draft-images';
   const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;

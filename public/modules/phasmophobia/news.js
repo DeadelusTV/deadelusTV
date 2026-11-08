@@ -1,5 +1,5 @@
 'use strict';
-/* Lecture du blog Phasmophobia, canal de prévisualisation de la branche de développement.
+/* Lecture du blog Phasmophobia, uniquement publications validées du site officiel.
    Seuls les articles au statut publié apparaissent aux visiteurs. DOM sans innerHTML. */
 (() => {
   const root = document.querySelector('#page-phasmophobia [data-phasma-section="news"]');
@@ -13,8 +13,8 @@
   const ORIGINAL_URL = 'https://www.kineticgames.co.uk/news';
   const SUPABASE_URL='https://eodtxlhnfzyapkyvvxdi.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY='sb_publishable_HwLsESqtQglS7FoSTxBX-Q_GzxyLX_Z';
-  // Les essais restent isolés des publications officielles pendant le travail du carnet.
-  const STAGE='preview';
+  // Ne jamais afficher des articles du canal preview sur le site officiel.
+  const STAGE='production';
   function mediaUrl(value){
     if(typeof value!=='string'||value.length>2048)return null;
     const local=asset(value);

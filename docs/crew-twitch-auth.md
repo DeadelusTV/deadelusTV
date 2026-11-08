@@ -83,3 +83,11 @@ Après correction de la lecture de l’identité (fonction v4), le navigateur re
 ## Préparation de la production — 31 octobre 2026
 
 L'utilisatrice demande maintenant l'intégration du parcours Crew commun dans main. La fonction v5 ajoute les deux origines officielles aux valeurs par défaut, sans changer les rôles ni la vérification des identités. Le menu et l'application Crew sont transférés avec la livraison Phasmo. Les essais OAuth et Admin/Helper sur comptes réels restent à confirmer séparément des tests simulés ; aucun compte ou rôle n'est associé automatiquement par l'agent pendant le transfert. Voir `livraison-phasmo-main-20261031.md`.
+
+## Rectification des accès — 3 novembre 2026
+
+Décision fonctionnelle clarifiée par Yekelle : l’onglet **Gestion Crew** est exclusivement réservé aux **Admins**. Les Helpers peuvent accéder uniquement à **Saisie** (dont l’import JSON GameLogger), en plus des pages publiques de statistiques, sessions et joueurs. L’ancienne interface proposant une version réduite de Gestion aux Helpers ne correspondait pas au fonctionnement voulu.
+
+Changement sur `main` : menu Compte du portail dirigé vers **Saisie Crew’mong Us** pour Helper et **Gestion Crew’mong Us** pour Admin ; onglet Gestion masqué hors Admin et route directe Gestion redirigée vers Saisie pour Helper ; panneau de transition de l’ancien compte déplacé dans Saisie pour les Helpers, afin de conserver la possibilité de récupérer un rôle Admin historique sans accès à Gestion. L’accès au brut des journaux historiques et les actions structurelles restent Admin. La fonction d’import JSON accepte Admin et Helper depuis la migration Supabase Crew `allow_crew_helper_logger_json_import` (2 novembre 2026).
+
+Commits associés : `a923b508` (import JSON Helper), `6cd6e7d`, `709cfba`, `22c5601`, `88b0ac3`, `5337fcd`. Vérifications réalisées : relecture du code GitHub et contrôle de syntaxe JavaScript des trois scripts concernés ; test de rôle Helper dans un navigateur réel, transition de compte après ce changement et confirmation du déploiement Cloudflare encore à effectuer. Les notes antérieures de ce document décrivent l’état historique de la mise en place et ne doivent pas être confondues avec cette rectification.

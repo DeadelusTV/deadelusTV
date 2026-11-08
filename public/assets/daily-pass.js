@@ -1,8 +1,7 @@
 /* Même module sur le portail et le TCG : le serveur choisit jour et bénéficiaires. */
 (() => {
   'use strict';
-  const root = document.getElementById('daily-pass-root');
-  if (!root) return;
+  let root = null, feedback = '';
   let owner = null, generation = 0, pending = null, snapshot = null, retryAt = 0, verifyAt = 0;
   const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const identity = () => window.TCGAuth ? {
@@ -10,24 +9,26 @@
   } : {id: window.DEADELUSTV_AUTH?.userId || null, client: null};
   const labels = {eligible:'Gain disponible', claimed:'Reçu', not_following:'Follow requis',
     verification_required:'Vérification du follow en attente', suspended:'Accès suspendu', not_playable:'TCG pas encore lancé', disabled:'Pass désactivé'};
-  function render(data, message = '') {
+  function render(data, message = feedback) {
+    feedback = message;
+    if (!root) return;
     if (!owner) {root.hidden = true; root.replaceChildren(); return;}
     const opened = root.querySelector('details')?.open;
     const rewards = data?.rewards || [];
     const preparation = ['disabled','configuration_pending','unavailable'].includes(data?.status);
-    const title = preparation ? 'En préparation' : data?.status === 'completed' ? 'Parcours terminé' :
+    const title = preparation ? 'En préparation' : data?.status === 'not_registered' ? 'Rejoins un DCG pour commencer' : data?.status === 'completed' ? 'Parcours terminé' :
       data?.step ? 'Jour ' + data.step : 'Ta visite compte aussi depuis le site général';
     const days = rewards.map((r, i) => '<li' + (data?.step === i + 1 ? ' aria-current="step"' : '') +
       '><span>J' + (i + 1) + '</span><strong>' + (r.kind === 'dust' ? '+' + escape(r.amount) + ' Alkahests' :
-        r.kind === 'booster' ? 'Booster · ' + escape(r.card_count) + ' cartes' : 'À définir') + '</strong>' +
-      (r.kind === 'booster' && preparation ? '<small>Proposition</small>' : '') + '</li>').join('');
-    const channels = (data?.channels || []).filter(c => c.status !== 'not_following').map(c =>
+        r.kind === 'booster' ? escape(r.booster_count) + ' booster' + (r.booster_count > 1 ? 's' : '') + ' de ' + escape(r.card_count) + ' cartes' : 'À définir') + '</strong></li>').join('');
+    const channels = (data?.channels || []).filter(c => !['not_following','not_participating'].includes(c.status)).map(c =>
       '<li><strong>' + escape(c.login) + '</strong><span>' + escape(labels[c.status] || 'En attente') +
       (c.status === 'claimed' && c.balance_after != null ? ' · Solde : ' + escape(c.balance_after) : '') + '</span></li>').join('');
     root.hidden = false;
     root.innerHTML = '<details class="daily-pass"' + (opened ? ' open' : '') + '><summary><strong>✧ Connexion Pass</strong>' +
       '<span>' + escape(title) + '</span></summary><div class="daily-pass-body">' +
-      '<p>Une visite sur le site suffit. Les poussières de J1 vont dans chaque TCG de streamer suivi : <strong>+5 chez chacun</strong>.</p>' +
+      '<p>Une connexion quotidienne au site suffit. Les récompenses vont dans chaque DCG auquel tu joues, avec des soldes séparés.</p>' +
+      '<p>Un jour manqué remet au J1. Le cycle reprend après J10 et la journée change à minuit, heure de Paris.</p>' +
       (preparation ? '<p>Le calendrier est en préparation. Les gains automatiques ne sont pas encore activés.</p>' : '') +
       (days ? '<ol class="daily-pass-days" aria-label="Récompenses du parcours">' + days + '</ol>' : '') +
       (channels ? '<ul class="daily-pass-channels" aria-label="Tes récompenses par streamer">' + channels + '</ul>' : '') +
@@ -38,6 +39,7 @@
     const session = identity();
     if (session.id !== owner) {
       owner = session.id; ++generation; snapshot = null; pending = null; retryAt = 0; verifyAt = 0;
+      render(null, '');
       if (!owner) {render(null); return;}
     }
     if (!owner || document.visibilityState === 'hidden' || pending || !force && Date.now() < retryAt) return;
@@ -79,8 +81,14 @@
       }
       retryAt = Date.now() + (['disabled','configuration_pending'].includes(snapshot.status) ? 300000 : 60000);
       const gains = snapshot.gains || [];
-      const message = gains.map(g => g.kind === 'dust' ? '+' + g.amount + ' Alkahests chez ' + g.login :
-        'Un booster de ' + g.card_count + ' cartes chez ' + g.login).join(' · ');
+      const grouped = new Map();
+      for (const g of gains) {
+        const key = JSON.stringify([g.broadcaster_id || g.login,g.kind,g.card_count]);
+        const entry = grouped.get(key) || {...g,quantity:0};
+        entry.quantity++; grouped.set(key,entry);
+      }
+      const message = [...grouped.values()].map(g => g.kind === 'dust' ? '+' + g.amount + ' Alkahests chez ' + g.login :
+        g.quantity + ' booster' + (g.quantity > 1 ? 's' : '') + ' de ' + g.card_count + ' cartes chez ' + g.login).join(' · ');
       render(snapshot, message);
       if (gains.length) {
         window.dispatchEvent(new CustomEvent('tcg:daily-pass-change', {detail:{gains}}));
@@ -93,10 +101,19 @@
       }
     } finally {if (pending === request) pending = null;}
   }
-  root.addEventListener('click', event => {if (event.target.closest('[data-daily-pass-refresh]')) void refresh(true);});
+  const onClick = event => {if (event.target.closest('[data-daily-pass-refresh]')) void refresh(true);};
+  // Monter une vue ne réclame pas une seconde fois : la présence reste active
+  // sur tout le site, même lorsqu'aucun élément du Pass n'est affiché.
+  function mount(element) {
+    if (root) root.removeEventListener('click', onClick);
+    root = element || null;
+    if (root) {root.addEventListener('click', onClick); render(snapshot);}
+  }
+  window.DCGDailyPass = Object.freeze({mount, unmount: () => mount(null), refresh: () => refresh(true)});
+  mount(document.getElementById('daily-pass-root'));
   window.addEventListener('tcg:auth-change', () => {void refresh();});
   window.addEventListener('deadelustv:auth-change', () => {void refresh();});
-  window.addEventListener('tcg:viewer-change', () => {if (snapshot?.channels?.some(c => c.status === 'verification_required')) void refresh(true);});
+  window.addEventListener('tcg:viewer-change', () => {if (snapshot?.status === 'not_registered' || snapshot?.channels?.some(c => ['verification_required','not_participating'].includes(c.status))) void refresh(true);});
   window.addEventListener('focus', () => {void refresh();});
   document.addEventListener('visibilitychange', () => {if (document.visibilityState !== 'hidden') void refresh();});
   // L'horloge locale ne choisit aucune récompense : chaque appel revalide la date serveur.

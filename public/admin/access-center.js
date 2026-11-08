@@ -1,303 +1,62 @@
-/* Centre d'accès V2 : accès fermé en absence du backend privé.
- * Mode démonstration UNIQUEMENT sur localhost, sans persistance ni données réelles.
- * Ne jamais attribuer un droit réel depuis le navigateur sans validation serveur.
- */
+/* V2 layout, live site access registry and shared support conversations. */
 (() => {
-  'use strict';
-  const $ = id => document.getElementById(id);
-  const LOCAL = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
-  const PROJECT = 'https://eodtxlhnfzyapkyvvxdi.supabase.co';
-  const PUBLISHABLE = 'sb_publishable_HwLsESqtQglS7FoSTxBX-Q_GzxyLX_Z';
-  const CODE = /^[a-z][a-z0-9]*(\.[a-z][a-z0-9_-]*){2,}$/;
-  const PROTECTED = /^(portal|site|system)\./;
-  let client, state = null, busy = false, lastPreview = null;
-  const localData = {
-    authorized: true,
-    phase: 'local_demo', rights_effective: false, mutations_enabled: true, twitch_configured: true,
-    categories: [
-      {id:'phasmo',label:'Phasmophobia',sections:[
-        {id:'livre',label:'Livre',permissions:[{code:'phasmo.livre.edit',label:'Éditeur du livre'}]},
-        {id:'news',label:'News',permissions:[{code:'phasmo.news.edit',label:'Rédacteur News'}]}
-      ]},
-      {id:'crew',label:'Crew’mong Us',sections:[
-        {id:'roles',label:'Rôles',permissions:[{code:'crew.roles.helper',label:'Helper (saisie)'},{code:'crew.roles.admin',label:'Admin (gestion)'}]}
-      ]}
-    ],
-    people: [
-      {id:'demo-1',name:'Herminerva',is_moderator:true,rights:[]},
-      {id:'demo-2',name:'Goge',is_moderator:true,rights:[]},
-      {id:'demo-3',name:'Mata',is_moderator:true,rights:[]}
-    ]
-  };
-  const slug = value => String(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim()
-    .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60);
-  function message(text, isError=false) {
-    $('notice').textContent = text;
-    $('notice').classList.toggle('error', isError);
-  }
-  function node(tag, text, className) {
-    const el = document.createElement(tag);
-    if (text !== undefined) el.textContent = text;
-    if (className) el.className = className;
-    return el;
-  }
-  function validSnapshot(data) {
-    return !!(data?.authorized === true && data?.rights_effective === false &&
-      Array.isArray(data.categories) && Array.isArray(data.people));
-  }
-  function localAction(action, data) {
-    if (action === 'bootstrap') return localData;
-    if (action === 'previewModerators') return {...localData,moderators_preview:localData.people.map(p=>({user_id:p.id,user_name:p.name}))};
-    if (action === 'syncModerators') return {...localData,sync_count:localData.people.length};
-    if (action === 'setGrant') {
-      const person = localData.people.find(p=>p.id===data.user_id);
-      if (!person) throw Error('Compte inconnu');
-      if (!localData.categories.some(c=>c.sections.some(s=>s.permissions.some(p=>p.code===data.code)))) throw Error('Permission inconnue');
-      person.rights = person.rights.filter(code=>code!==data.code);
-      if (data.enabled) person.rights.push(data.code);
-    } else if (action === 'addCategory') {
-      const id = slug(data.label);
-      if (!id || localData.categories.some(c=>c.id===id)) throw Error('Catégorie invalide ou déjà présente');
-      localData.categories.push({id,label:data.label,sections:[]});
-    } else if (action === 'addSection') {
-      const category = localData.categories.find(c=>c.id===data.category_id);
-      const id = slug(data.label);
-      if (!category || !id || category.sections.some(s=>s.id===id)) throw Error('Sous-catégorie invalide ou déjà présente');
-      category.sections.push({id,label:data.label,permissions:[]});
-    } else if (action === 'addPermission') {
-      if (!CODE.test(data.code) || PROTECTED.test(data.code)) throw Error('Code de permission interdit');
-      const section = localData.categories.find(c=>c.id===data.category_id)?.sections.find(s=>s.id===data.section_id);
-      if (!section || localData.categories.some(c=>c.sections.some(s=>s.permissions.some(p=>p.code===data.code)))) throw Error('Permission invalide ou déjà présente');
-      section.permissions.push({code:data.code,label:data.label});
-    } else throw Error('Action inconnue');
-    return localData;
-  }
-  async function request(action, payload={}) {
-    if (LOCAL) return localAction(action,payload);
-    if (!client) throw Error('Connexion non initialisée');
-    const {data:{session},error:sessionError} = await client.auth.getSession();
-    if (sessionError || !session) throw Error('Connecte-toi avec Twitch depuis le site avant d’ouvrir cette page.');
-    // La fonction doit vérifier JWT, identité Twitch et liste fermée des deux propriétaires à CHAQUE action.
-    // Elle n'est PAS encore déployée. Toute absence, erreur ou réponse incomplète bloque le panneau.
-    const {data,error} = await client.functions.invoke('site-access-admin', {body:{action,...payload}});
-    if (error || !validSnapshot(data)) throw Error('Accès indisponible ou refusé par le serveur.');
-    return data;
-  }
-  async function transaction(action,payload) {
-    if (busy) return;
-    busy = true;
-    message('Vérification côté serveur…');
-    try {
-      const next = await request(action,payload);
-      if (!validSnapshot(next)) throw Error('Réponse serveur invalide');
-      state = next;
-      render();
-      message(LOCAL ? 'Démonstration locale mise à jour. Aucune donnée réelle modifiée.' :
-        'Enregistré dans le registre préparatoire. Aucun droit effectif ajouté aux modules.');
-    } catch(error) { message(error.message || 'Action impossible.',true); }
-    finally {busy=false;}
-  }
-  function renderRights() {
-    const holder = $('rights-tables');
-    holder.replaceChildren();
-    const filter=$('filter').value.trim().toLowerCase();
-    const people=state.people.filter(p=>String(p.name).toLowerCase().includes(filter));
-    for (const cat of state.categories) {
-      const permissions=cat.sections.flatMap(s=>s.permissions.map(p=>({code:p.code,label:s.label+' · '+p.label})));
-      const wrapper=node('article',undefined,'module');
-      wrapper.append(node('h2',cat.label));
-      const scroll=node('div',undefined,'table-scroll'),table=node('table'),thead=node('thead'),tr=node('tr');
-      tr.append(node('th','Compte Twitch'));
-      for (const p of permissions) tr.append(node('th',p.label));
-      thead.append(tr);table.append(thead);
-      const tbody=node('tbody');
-      for (const person of people) {
-        const row=node('tr'),name=node('td');
-        name.append(node('div',person.name,'account-name'));
-        name.append(node('div',person.is_moderator?'Modérateur Twitch':'Compte ajouté','person-note'));
-        row.append(name);
-        for (const p of permissions) {
-          const td=node('td'),input=node('input');
-          input.type='checkbox';input.checked=person.rights.includes(p.code);
-          input.disabled=state.mutations_enabled !== true;
-          input.setAttribute('aria-label',person.name+' : '+p.label);
-          input.addEventListener('change',()=>transaction('setGrant',{user_id:person.id,code:p.code,enabled:input.checked}));
-          td.append(input);row.append(td);
-        }
-        tbody.append(row);
-      }
-      table.append(tbody);scroll.append(table);
-      if (!permissions.length || !people.length) scroll.append(node('p',!people.length?'Aucun compte dans cette liste.':'Aucune permission créée.','empty'));
-      wrapper.append(scroll);holder.append(wrapper);
-    }
-    if (!state.categories.length) holder.append(node('p','Aucune catégorie configurée.','empty'));
-  }
-  function renderCatalog() {
-    const holder=$('catalog-tree');
-    holder.replaceChildren();
-    const catSelect=$('section-category'),permSelect=$('permission-section');
-    catSelect.replaceChildren();permSelect.replaceChildren();
-    for (const cat of state.categories) {
-      const card=node('article',undefined,'tree-card');
-      card.append(node('h2',cat.label));
-      const opt=node('option',cat.label);opt.value=cat.id;catSelect.append(opt);
-      for (const section of cat.sections) {
-        const item=node('div',undefined,'tree-item');
-        item.append(node('strong',section.label));
-        for (const p of section.permissions) {
-          const line=node('span',undefined,'tree-permission');
-          line.append(node('span',p.label+' · '));
-          line.append(node('span',p.code,'code'));
-          item.append(line);
-        }
-        card.append(item);
-        const choice=node('option',cat.label+' / '+section.label);
-        choice.value=cat.id+'|'+section.id;permSelect.append(choice);
-      }
-      holder.append(card);
-    }
-    $('add-section').querySelector('button[type=submit]').disabled=!state.categories.length || state.mutations_enabled !== true;
-    $('add-permission').querySelector('button[type=submit]').disabled=!permSelect.options.length || state.mutations_enabled !== true;
-  }
-  function renderTwitch() {
-    const holder = $('twitch-preview');
-    holder.replaceChildren();
-    $('authorize-twitch').hidden = state.can_authorize_twitch !== true;
-    $('authorize-twitch').disabled = busy;
-    $('preview-mods').disabled = state.twitch_configured !== true || busy;
-    $('sync-mods').disabled = state.twitch_configured !== true ||
-      state.mutations_enabled !== true || !Array.isArray(lastPreview) ||
-      lastPreview.length === 0 || busy;
-    if (state.twitch_configured !== true) {
-      holder.hidden = false;
-      holder.append(node('p','Autorisation du diffuseur non configurée côté serveur.','muted'));
-      return;
-    }
-    if (!Array.isArray(lastPreview)) {holder.hidden=true;return;}
-    holder.hidden=false;
-    holder.append(node('p',lastPreview.length+' modérateur(s) dans la vérification Twitch.','muted'));
-    if (lastPreview.length===0) {
-      holder.append(node('p','Liste vide : la synchronisation est volontairement bloquée.','muted'));
-      return;
-    }
-    const list=node('ul');
-    for(const person of lastPreview){
-      list.append(node('li',person.user_name));
-    }
-    holder.append(list);
-    holder.append(node('p','Il s’agit d’un aperçu. Aucun changement enregistré dans les droits.', 'muted'));
-  }
-
-  function render() {
-    renderRights();renderCatalog();renderTwitch();
-    $('add-category').querySelector('button[type=submit]').disabled=state.mutations_enabled !== true;
-  }
-  async function initialize() {
-    try {
-      if (!LOCAL) {
-        if (!window.supabase?.createClient) throw Error('Bibliothèque de connexion indisponible.');
-        client=window.supabase.createClient(PROJECT,PUBLISHABLE,{
-          auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,flowType:'pkce'}
-        });
-        const {data,error}=await client.auth.getUser();
-        if (error || !data?.user) throw Error('Connexion Twitch requise.');
-      }
-      const result=await request('bootstrap');
-      if (!validSnapshot(result)) throw Error('Autorisation serveur non confirmée.');
-      state=result;
-      $('gate').hidden=true;$('workspace').hidden=false;
-      $('mode').textContent=LOCAL?'Démo locale, aucune écriture':
-        (state.mutations_enabled ? 'Registre de préparation actif' : 'Registre en lecture seule');
-      render();
-      message(LOCAL?'Démonstration accessible uniquement depuis localhost. Données fictives, sans sauvegarde.':
-        'Les attributions du registre ne sont PAS des droits effectifs dans Phasmo ou Crew.');
-    if(!LOCAL) {
-      const url=new URL(window.location.href);
-      const result=url.searchParams.get('twitch_oauth');
-      if(result==='connected'||result==='failed'||result==='cancelled'){
-        url.searchParams.delete('twitch_oauth');
-        window.history.replaceState(null,'',url.pathname+url.search+url.hash);
-        message(result==='connected'?
-          'Autorisation Twitch reçue. Vérifie la liste pour confirmer le fonctionnement.':
-          result==='cancelled'?'Autorisation Twitch annulée.':
-          'Autorisation Twitch non terminée. Aucun accès accordé.',result!=='connected');
-      }
-    }
-
-    } catch (error) {
-      $('workspace').hidden=true;
-      $('gate').hidden=false;
-      $('gate-status').textContent=error.message || 'Accès refusé.';
-    }
-  }
-  document.querySelectorAll('[data-tab]').forEach(button=>button.addEventListener('click',()=>{
-    for(const tab of document.querySelectorAll('[data-tab]'))tab.setAttribute('aria-selected',String(tab===button));
-    $('rights').hidden=button.dataset.tab!=='rights';
-    $('catalog').hidden=button.dataset.tab!=='catalog';
-    message('');
-  }));
-  $('authorize-twitch').addEventListener('click',async()=>{
-    if (busy || !state || state.can_authorize_twitch !== true || LOCAL) return;
-    busy=true;renderTwitch();message('Préparation de l’autorisation Twitch…');
-    try {
-      if(!client)throw Error('Session absente.');
-      const {data:{session},error:sessionError}=await client.auth.getSession();
-      if(sessionError||!session)throw Error('Reconnecte-toi avec Twitch.');
-      const {data,error}=await client.functions.invoke('site-access-twitch-oauth',{
-        body:{action:'begin'}
-      });
-      if(error||typeof data?.authorization_url!=='string')
-        throw Error('Autorisation du diffuseur indisponible.');
-      const url=new URL(data.authorization_url);
-      if(url.origin!=='https://id.twitch.tv'||url.pathname!=='/oauth2/authorize'||
-        url.searchParams.get('scope')!=='moderation:read'||
-        url.searchParams.get('response_type')!=='code')
-        throw Error('Destination d’autorisation invalide.');
-      window.location.assign(url.href);
-    }catch(error){message(error.message||'Autorisation Twitch indisponible.',true);}
-    finally{busy=false;if(state)renderTwitch();}
-  });
-    $('preview-mods').addEventListener('click',async()=>{
-    if(busy || !state || state.twitch_configured !== true)return;
-    busy=true;renderTwitch();message('Vérification de la liste Twitch…');
-    try {
-      const result=await request('previewModerators');
-      if(!Array.isArray(result.moderators_preview) ||
-          result.moderators_preview.some(p=>typeof p.user_id!=='string' || typeof p.user_name!=='string'))
-        throw Error('Réponse Twitch incomplète.');
-      state=result;lastPreview=result.moderators_preview;
-      render();message(LOCAL?'Aperçu fictif local : aucune donnée enregistrée.':
-        'Liste Twitch vérifiée. Aucune donnée enregistrée.');
-    }catch(error){lastPreview=null;renderTwitch();message(error.message||'Lecture Twitch indisponible.',true);}
-    finally{busy=false;if(state)renderTwitch();}
-  });
-  $('sync-mods').addEventListener('click',async()=>{
-    if(busy || !state || state.mutations_enabled !== true ||
-      !Array.isArray(lastPreview) || lastPreview.length===0)return;
-    if(!window.confirm('Enregistrer la liste des modérateurs Twitch dans le registre préparatoire ? Aucun droit Phasmo ou Crew ne sera modifié.'))return;
-    busy=true;renderTwitch();message('Synchronisation du registre en cours…');
-    try {
-      const result=await request('syncModerators');
-      state=result;lastPreview=null;render();
-      message(LOCAL?'Simulation locale terminée, sans sauvegarde.':
-        'Synchronisation du registre confirmée pour '+result.sync_count+' modérateur(s). Aucun droit effectif modifié.');
-    }catch(error){message(error.message||'Synchronisation indisponible.',true);}
-    finally{busy=false;if(state)renderTwitch();}
-  });
-
-  $('filter').addEventListener('input',()=>{if(state)renderRights();});
-  $('reload').addEventListener('click',async()=>{try{const r=await request('bootstrap');state=r;lastPreview=null;render();message('Données actualisées.');}catch{message('Impossible de recharger les permissions.',true);}});
-  const formAction=(id,action,makePayload)=>$(id).addEventListener('submit',async ev=>{
-    ev.preventDefault();const form=ev.currentTarget;const payload=makePayload(new FormData(form));
-    if(!String(payload.label||'').trim()){message('Saisis un nom.',true);return;}
-    await transaction(action,payload);
-    if(!busy && !$('notice').classList.contains('error'))form.reset();
-  });
-  formAction('add-category','addCategory',f=>({label:String(f.get('label')).trim()}));
-  formAction('add-section','addSection',f=>({label:String(f.get('label')).trim(),category_id:f.get('category_id')}));
-  formAction('add-permission','addPermission',f=>{
-    const [category_id,section_id]=String(f.get('section_ref')||'').split('|');
-    return {label:String(f.get('label')).trim(),code:String(f.get('code')).trim(),category_id,section_id};
-  });
-  initialize();
+ 'use strict';
+ const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const slug=v=>v.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,61);
+ let actor=null,client=null,caps=null,registry=null,tab='',generation=0,checkRun=0,busy=false,pending=null,search='';
+ function notice(text='',error=false){$('#panel-notice').classList.toggle('error',error);$('#panel-notice').replaceChildren(document.createTextNode(text));if(pending&&!busy){const b=document.createElement('button');b.textContent='Réessayer la même action';b.type='button';b.dataset.retry='';$('#panel-notice').append(' ',b);}}
+ function locked(){return busy||window.SiteContact?.busy;}
+ function disabled(){const lock=!!locked();$$('#access-panel button,#access-panel input,#access-panel select').forEach(el=>{if(el.closest('#requests-root'))return;el.disabled=lock||el.dataset.fixed==='true'||(pending&&!el.hasAttribute('data-retry')&&el.closest('form,#rights-tables,#people-results'));});}
+ function wipe(){generation++;actor=null;client=null;caps=null;registry=null;pending=null;busy=false;tab='';window.SiteContact?.unmountAdmin();$('#requests-root').replaceChildren();for(const id of ['rights-tables','catalog-tree','people-results','panel-stats'])$('#'+id).replaceChildren();$$('#access-panel form').forEach(f=>f.reset());$('#person-filter').value='';search='';$('#access-panel').hidden=true;$('#access-gate').hidden=false;notice();}
+ function gate(text,signin=false){$('#access-gate').innerHTML='<h1>Administration du site</h1><p>'+esc(text)+'</p>'+(signin?'<button type="button" data-signin>Connexion Twitch</button> ':'')+'<button type="button" data-check>Réessayer</button>';$('#access-gate').hidden=false;$('#access-panel').hidden=true;}
+ async function rpc(name,args){const g=generation,u=actor;let timer;try{const result=await Promise.race([client.rpc(name,args),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Réponse incertaine. Réessayez la même action pour vérifier son enregistrement.')),20000);})]);if(g!==generation||u!==actor)throw Error('session_changed');if(result.error)throw result.error;return result.data;}finally{clearTimeout(timer);}}
+ async function check(){const n=++checkRun,g=generation;try{
+   const c=await window.DEADELUSTV_AUTH.getClient(),r=await c.auth.getUser();if(n!==checkRun||g!==generation)return;
+   const id=r.error?null:r.data?.user?.id;if(!id){wipe();gate('Connectez-vous avec Twitch pour accéder au panneau.',true);return;}
+   if(actor&&actor!==id)wipe();actor=id;client=c;const stamp=generation,access=await rpc('site_support_access');if(n!==checkRun||stamp!==generation)return;
+   if(!access?.staff){wipe();gate('Cet espace est réservé à l’équipe du site.');return;}
+   const needRegistry=access.permissions&&(!registry||!caps?.permissions);caps=access;
+   if(needRegistry)registry=await rpc('site_access_registry_state',{p_search:''});
+   if(n!==checkRun||stamp!==generation)return;show();await window.SiteContact.refresh();
+  }catch(error){if(n!==checkRun||error.message==='session_changed')return;if(error.code==='42501'){wipe();gate('Votre accès à ce panneau n’est plus actif.');}else if(!caps)gate('Vérification indisponible. Réessayez.');else notice(error.message||'Chargement indisponible.',true);}
+ }
+ function show(){ $('#access-gate').hidden=true;$('#access-panel').hidden=false;$$('[data-tab]').forEach(b=>b.hidden=b.dataset.tab!=='demandes'&&!caps.permissions);$('#request-count').textContent=(caps.new_count||0)+(caps.updates_count||0)||'';if(!caps.permissions){registry=null;$('#rights-tables').replaceChildren();$('#catalog-tree').replaceChildren();$('#people-results').replaceChildren();$('#panel-stats').replaceChildren();}if(registry)renderRegistry();choose(route(),false);}
+ function route(){const h=location.hash.slice(1);return ['acces','configuration','demandes','demandes-reponses'].includes(h)?h:caps?.permissions?'acces':'demandes';}
+ function choose(next,update=true){if(locked()){notice('Attendez la fin de l’enregistrement en cours.',true);return false;}if(!caps)return false;if(!caps.permissions&&!next.startsWith('demandes'))next='demandes';if(tab===next)return true;
+   if(tab.startsWith('demandes')&&!window.SiteContact.unmountAdmin())return false;
+   if(next.startsWith('demandes')&&!window.SiteContact.mountAdmin($('#requests-root'),{updatesOnly:next==='demandes-reponses'}))return false;
+   tab=next;$('#rights').hidden=next!=='acces';$('#catalog').hidden=next!=='configuration';$('#requests').hidden=!next.startsWith('demandes');$$('[data-tab]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===(next.startsWith('demandes')?'demandes':next))));if(update)history.replaceState(null,'','#'+next);disabled();return true;
+ }
+ function renderTables(){if(!registry)return;const term=$('#person-filter').value.toLocaleLowerCase('fr'),people=registry.people.filter(p=>p.name.toLocaleLowerCase('fr').includes(term));
+   $('#rights-tables').innerHTML=registry.categories.map(c=>{const rights=c.sections.flatMap(s=>s.permissions.map(p=>({...p,section:s.label})));return '<section class="module"><h2>'+esc(c.label)+'</h2><div class="table-scroll"><table><thead><tr><th scope="col">Compte Twitch</th>'+rights.map(p=>'<th scope="col">'+esc(p.section)+'<br>'+esc(p.label)+'<small class="permission-state">'+(p.connected?'Actif':'En préparation')+'</small></th>').join('')+'</tr></thead><tbody>'+people.map(p=>'<tr><th scope="row"><span class="account-name">'+esc(p.name)+'</span>'+(p.founder?'<div class="person-note">Administrateur fondateur · protégé</div>':'')+'</th>'+rights.map(r=>'<td><input type="checkbox" data-grant="'+esc(r.code)+'" data-person="'+esc(p.id)+'" aria-label="'+esc(p.name+' : '+r.label)+'" '+(p.rights.includes(r.code)?'checked ':'')+(p.founder&&r.connected?'data-fixed="true" disabled ':'')+'></td>').join('')+'</tr>').join('')+'</tbody></table></div>'+(!people.length?'<p class="empty">Aucun compte dans ce tableau.</p>':'')+(!rights.length?'<p class="empty">Aucune permission configurée.</p>':'')+'</section>';}).join('');disabled();
+ }
+ function renderRegistry(){renderTables();const permissions=registry.categories.flatMap(c=>c.sections.flatMap(s=>s.permissions));$('#panel-stats').innerHTML=[[registry.categories.length,'Catégories'],[permissions.length,'Permissions'],[registry.people.length,'Comptes'],[registry.people.reduce((n,p)=>n+p.rights.length,0),'Droits attribués']].map(([n,label])=>'<div><strong>'+n+'</strong><span>'+label+'</span></div>').join('');
+   $('#catalog-tree').innerHTML=registry.categories.map(c=>'<section class="tree-card"><h2>'+esc(c.label)+'</h2>'+c.sections.map(s=>'<div class="tree-item"><strong>'+esc(s.label)+'</strong>'+s.permissions.map(p=>'<span class="tree-permission">'+esc(p.label)+' · '+(p.connected?'Actif':'En préparation')+' <span class="code">'+esc(p.code)+'</span></span>').join('')+'</div>').join('')+'</section>').join('');
+   const cat=$('#section-category'),section=$('#permission-section'),oldCat=cat.value,oldSection=section.value;cat.innerHTML=registry.categories.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.label)+'</option>').join('');section.innerHTML=registry.categories.flatMap(c=>c.sections.map(s=>'<option value="'+esc(c.id+'/'+s.id)+'">'+esc(c.label+' / '+s.label)+'</option>')).join('');if([...cat.options].some(o=>o.value===oldCat))cat.value=oldCat;if([...section.options].some(o=>o.value===oldSection))section.value=oldSection;
+   $('#people-results').innerHTML=search?'<h2>Résultats de recherche</h2>'+(registry.matches.filter(m=>!registry.people.some(p=>p.id===m.user_id)).map(m=>'<p class="person-result"><strong>'+esc(m.name)+'</strong> <button type="button" data-add-person="'+esc(m.user_id)+'">Ajouter au tableau</button></p>').join('')||'<p>Aucun autre compte correspondant. La personne doit s’être connectée avec Twitch au site ou au DCG.</p>'):'';disabled();
+ }
+ async function command(action,payload,form){if(locked()||pending||!registry)return;pending={action,payload,version:registry.version,request:crypto.randomUUID(),form};await sendCommand();}
+ async function sendCommand(){if(busy||!pending)return;const operation=pending,g=generation;busy=true;notice('Enregistrement…');disabled();try{
+   const data=await rpc('site_access_registry_command',{p_action:operation.action,p_payload:operation.payload,p_version:operation.version,p_request:operation.request});if(g!==generation)return;registry=data;pending=null;search='';operation.form?.reset();renderRegistry();notice('Modification enregistrée.');await window.SiteContact.refresh();
+  }catch(error){if(g!==generation||error.message==='session_changed')return;
+   if(error.code){pending=null;if(error.code==='42501'){wipe();gate('Votre accès à ce panneau n’est plus actif.');return;}try{registry=await rpc('site_access_registry_state',{p_search:search});}catch{}renderRegistry();}
+   notice(error.message||'Enregistrement indisponible. Réessayez.',true);
+  }finally{if(g===generation){busy=false;notice($('#panel-notice').textContent.replace(/Réessayer la même action$/,''),$('#panel-notice').classList.contains('error'));disabled();}}
+ }
+ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.hasAttribute('data-signin'))void window.DEADELUSTV_AUTH.signIn();if(b.hasAttribute('data-check'))void check();if(b.dataset.tab)choose(b.dataset.tab);if(b.hasAttribute('data-retry'))void sendCommand();if(b.dataset.addPerson)void command('add_person',{user_id:b.dataset.addPerson});if(b.id==='panel-refresh'&&!locked()&&!pending){if(registry){registry=null;}void check();}});
+ $('#person-filter').addEventListener('input',renderTables);
+ $('#rights-tables').addEventListener('change',e=>{const el=e.target;if(!el.dataset.grant)return;const p=registry.people.find(p=>p.id===el.dataset.person);const enabled=el.checked;el.checked=p.rights.includes(el.dataset.grant);void command('set_grant',{user_id:p.id,code:el.dataset.grant,enabled,member_version:p.member_version});});
+ document.addEventListener('submit',e=>{const f=e.target;if(!['person-search','add-category','add-section','add-permission'].includes(f.id))return;e.preventDefault();if(locked()||pending||!registry)return;const values=Object.fromEntries(new FormData(f));if(f.id==='person-search'){const g=generation;busy=true;disabled();search=values.search.trim();void rpc('site_access_registry_state',{p_search:search}).then(data=>{if(g===generation){registry=data;renderRegistry();notice();}}).catch(error=>{if(g===generation)notice(error.message||'Recherche indisponible.',true);}).finally(()=>{if(g===generation){busy=false;disabled();}});return;}
+   if(f.id==='add-category')void command('add_category',{id:slug(values.label),label:values.label.trim()},f);
+   if(f.id==='add-section')void command('add_section',{category_id:values.category_id,id:slug(values.label),label:values.label.trim()},f);
+   if(f.id==='add-permission'){const [category_id,section_id]=values.section_ref.split('/');void command('add_permission',{category_id,section_id,code:values.code.trim(),label:values.label.trim()},f);}
+ });
+ window.addEventListener('hashchange',()=>{if(!choose(route(),false)&&tab)history.replaceState(null,'','#'+tab);});
+ window.addEventListener('site:support-busy-change',disabled);
+ $('#site-account-crew-link').addEventListener('click',e=>{if(e.currentTarget.hash)e.currentTarget.href='../'+e.currentTarget.hash;});
+ window.addEventListener('deadelustv:auth-change',()=>{wipe();gate('Vérification de la connexion…');void check();});
+ window.addEventListener('site:support-access-change',e=>{const access=e.detail;if(!actor||access.actorId!==actor)return;if(!access.staff){wipe();gate('Votre accès à ce panneau n’est plus actif.');return;}const wasManager=caps?.permissions;caps=access;$('#request-count').textContent=(access.new_count||0)+(access.updates_count||0)||'';if(wasManager!==access.permissions){if(!access.permissions){generation++;busy=false;pending=null;registry=null;}show();if(access.permissions)void check();}});
+ window.addEventListener('focus',()=>{if(!locked()&&!pending)void check();});
+ void check();
 })();

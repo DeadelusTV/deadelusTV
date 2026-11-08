@@ -2,6 +2,8 @@
 
 Mise à jour : 31 octobre 2026. Les états ci-dessous sont ceux du site principal `DeadelusTV/deadelusTV`. Ils ne remplacent pas les suivis propres au TCG, à Crewmong Us, à Pavillon Noir ou à Bingophobia.
 
+**Branche de test du 5 novembre :** [portail DCG commun](dcg-portal-structure.md) préparé sur `developpement/tcg-attente`, sans publication sur `main`. Les statuts du tableau ci-dessous décrivent le site officiel ; sa page TCG d’attente reste publiée tant que ce lot de test n’est pas retenu.
+
 | Sujet | État | Portée et limites |
 | --- | --- | --- |
 | Site principal sur OVH | Publié | Déployé depuis `main` ; conserver l'accueil et les corrections existantes. |
@@ -39,4 +41,5 @@ Mise à jour : 31 octobre 2026. Les états ci-dessous sont ceux du site principa
 - [Guide technique et décisionnel](phasmo-news-editor.md)
 - [Documentation complète sur Drive](https://docs.google.com/document/d/1vqHaregg5l-UjjADw3qtzpt79vX0nfxGjt9LFng2kvI/edit)
 - Le Livre de preuves interactif reste un chantier indépendant de la livraison du blog.
+
 

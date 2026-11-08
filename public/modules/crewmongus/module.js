@@ -24,7 +24,8 @@
     const clean=new URL(location.href);
     clean.searchParams.delete('crew_auth');
     ['code','error','error_code','error_description'].forEach(name=>clean.searchParams.delete(name));
-    clean.hash='crewmongus/admin';
+    // Après un retour Auth, n'ouvre Gestion que si le rôle Admin est confirmé.
+    clean.hash='crewmongus/'+(api?.preferredAccountView?.()||'admin');
     history.replaceState(null,'',clean.pathname+clean.search+clean.hash);
     window.DEADELUSTV_CREW_AUTH=false;
   }

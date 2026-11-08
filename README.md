@@ -8,6 +8,14 @@ Roadmap : [docs/ROADMAP.md](docs/ROADMAP.md)
 
 Journal V7 et lecteur officiel, carte TikTok animée, menu Twitch commun avec gestion Crew, textes légaux finalisés dans l'interface et nouvelle illustration Crew : voir [le détail de la livraison](docs/livraison-phasmo-main-20261031.md). Le carnet commence avec un brouillon vierge ; son contenu reste privé jusqu'à sa publication officielle. Les News, consentements, Twitch et mises à jour Pavillon Noir de main sont conservés.
 
+## Branche de test — portail DCG, 5 novembre 2026
+
+La branche `developpement/tcg-attente`, réalignée avec `main`, prépare le portail commun à la place de la page d’attente : annuaire, règles, Mon compte et emplacements du Pass et des collections communes. Le DCG DeadelusTV reste relié au jeu Workers existant. [Parcours, fichiers et vérifications](docs/dcg-portal-structure.md). Ce lot n’est pas fusionné sur `main` et ne modifie pas le site officiel OVH.
+
+## Contact et suivi — branche de test
+
+La branche `developpement/tcg-attente` ajoute le lien Contact dans le pied de page, les conversations « Mes demandes » et le panneau d’administration du site. Connexion Twitch obligatoire ; suggestions, contestations et demandes de déblocage de DCG sont prises en charge. [Fonctionnement, permissions et vérification](docs/contact-support.md). Ce lot ne publie pas le site officiel OVH.
+
 ## Architecture et publication
 
 Le portail est un site statique (HTML, CSS, JavaScript), servi depuis `public/` sur OVH. Aucun service Supabase supplémentaire n'est nécessaire pour les pages de présentation Phasmophobia et TCG. Les modules Crewmong Us et Pavillon Noir suivent leurs intégrations propres ; ne pas considérer leurs données ou leur administration comme celles du TCG.
@@ -70,3 +78,11 @@ Le livre interactif Phasmo, sa direction artistique avancée, son feuilletage et
 
 Voir [la roadmap](docs/ROADMAP.md) pour le statut, les limites et les prochaines décisions.
 
+
+
+
+## Administration du site sur la branche DCG
+
+Le panneau issu de V2 est repris sur `developpement/tcg-attente` à l’adresse `/admin/access-center.html` : Gestion des accès, Configuration des droits et Demandes. Il utilise la connexion Twitch commune et les accès Site existants. Les droits Phasmo/Crew affichés en préparation n’accordent aucun accès effectif à ces modules. Voir [Contact et administration](docs/contact-support.md).
+
+Vérifications : `node --test scripts/test_contact_centre.cjs` ; après installation de jsdom 27.0.1 pour les tests, `node --test scripts/test_access_center.cjs`. Les tests de base de données et les deux migrations se trouvent dans `Yekelle/TCG`. Aucun changement de `main` du site ni déploiement OVH n’est inclus.

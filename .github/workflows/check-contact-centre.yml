@@ -1,0 +1,29 @@
+name: Verifier Contact et le suivi des demandes
+on:
+  push:
+    branches: [developpement/tcg-attente]
+  pull_request:
+    paths:
+      - public/index.html
+      - public/assets/contact-centre.*
+      - public/admin/access-center*
+      - scripts/test_access_center.cjs
+      - scripts/test_contact_centre.cjs
+      - .github/workflows/check-contact-centre.yml
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - run: node --check public/assets/contact-centre.js
+      - run: node --test scripts/test_contact_centre.cjs scripts/test_dcg_portal.cjs scripts/test_frontend_consent.cjs scripts/test_twitch_floating.cjs
+      - run: node --check public/admin/access-center.js
+      - run: npm install --prefix "$RUNNER_TEMP/access-center-test" --no-audit --no-fund jsdom@27.0.1
+      - run: node --test scripts/test_access_center.cjs
+        env:
+          NODE_PATH: ${{ runner.temp }}/access-center-test/node_modules

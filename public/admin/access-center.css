@@ -20,3 +20,4 @@ input,select{display:block;width:100%;background:#171819;color:#f0e8da;border:1p
 #twitch-preview{margin-top:16px;border-top:1px solid #514638;padding-top:15px}
 #twitch-preview ul{display:flex;flex-wrap:wrap;gap:8px;list-style:none;padding:0;margin:10px 0}
 #twitch-preview li{padding:5px 10px;border-radius:30px;background:#2d2922;color:#e5d2b0;font-size:.8rem}
+

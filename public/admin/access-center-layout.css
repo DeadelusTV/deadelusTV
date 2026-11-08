@@ -1,4 +1,4 @@
-/* Maquette V2, styles isolés de la véritable page privée. */
+/* V2 layout reused by the authenticated site administration panel. */
 .demo-main{max-width:1360px}
 .demo-banner{padding:20px 24px;border:1px solid #a37c48;border-left:4px solid #e7bb70;border-radius:12px;background:linear-gradient(115deg,#28241e,#1a1b1b);margin:0 0 34px}
 .demo-kicker{display:inline-block;font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;font-weight:800;color:#edca89;margin-bottom:8px}
@@ -39,3 +39,6 @@
 .demo-footer{border-top:1px solid #4d4132;color:#9d907b;padding-top:16px;margin-top:46px;font-size:.78rem;text-align:center}
 @media(max-width:800px){.demo-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.demo-heading{align-items:start}}
 @media(max-width:540px){.demo-banner{padding:16px}.demo-stats>div{padding:12px 14px}.inline-person{padding:16px;width:100%}.inline-person>button{width:100%}.demo-tools>.tools{flex-basis:100%}.demo-tree{grid-template-columns:1fr}}
+
+
+.permission-state{display:block;font-size:.72rem;color:#b8aa95;font-weight:400}.person-result{display:flex;align-items:center;gap:15px;flex-wrap:wrap}#panel-notice button{padding:5px 10px;margin-left:8px}.topbar{align-items:center}.topbar .site-account{position:relative}#requests .contact-dialog{color:#f0e8da}#requests .contact-dialog form{margin-top:20px}#requests .contact-dialog .contact-heading{margin:0}
