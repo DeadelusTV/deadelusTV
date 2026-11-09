@@ -33,7 +33,7 @@
     const tag=interactive&&ready?'button':'div';
     return '<'+tag+' class="dcg-xp'+(ready?' dcg-xp--ready':'')+'"'+(tag==='button'?' type="button" data-xp-claim="'+esc(scope)+'"'+(busy?' disabled':''):'')+
       ' style="--xp-progress:'+p.fraction+'" aria-label="'+esc(label+' : niveau '+p.level+'. '+text+'. Prochaine récompense : '+reward)+'">'+
-      '<span class="dcg-xp__medal" aria-hidden="true"><span class="dcg-xp__halo"></span><span class="dcg-xp__face"><span class="dcg-xp__nebula"></span><span class="dcg-xp__stars"></span></span><span class="dcg-xp__ring"></span><span class="dcg-xp__number">'+p.level+'</span><span class="dcg-xp__glint"></span></span>'+
+      '<span class="dcg-xp__medal" aria-hidden="true"><span class="dcg-xp__halo"></span><span class="dcg-xp__face"></span><span class="dcg-xp__ring"></span><span class="dcg-xp__number">'+p.level+'</span><span class="dcg-xp__glint"></span></span>'+
       '<span class="dcg-xp__copy"><span class="dcg-xp__label">'+esc(label)+'</span><strong>'+esc(text)+'</strong><span class="dcg-xp__reward">'+esc(ready?(busy?'Récupération…':interactive?'Récupérer · '+reward:'Récompense · '+reward):'Niveau '+p.next+' · '+reward)+'</span></span></'+tag+'>';
   }
   window.DCGXP=Object.freeze({threshold,levelFor,progress,markup});
