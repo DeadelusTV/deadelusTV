@@ -8,4 +8,4 @@ Le médaillon réutilise `dcg-xp.js`, `dcg-xp.css` et `dcg-xp-pass.js`, identiqu
 
 La migration correspondante est préparée dans `Yekelle/TCG`, `supabase/migrations/20261109020743_dcg_xp_pass.sql`. Elle ignore l'historique et les anciens lancements de test. Le routage et l'inscription autonome de plusieurs streamers ne sont pas ajoutés par cette évolution ; le scénario de cumul est testé avec plusieurs chaînes fictives côté serveur.
 
-Publication à coordonner avec la migration TCG. Tant qu'elle n'est pas installée, le widget propose de réessayer, sans inventer de niveau. Destination du code : branche de test du portail, sans fusion sur `main` ni déploiement OVH dans cette livraison.
+Migration TCG `20261109024814_dcg_xp_pass` appliquée le 9 novembre après autorisation explicite. Les lectures authentifiées retournent zéro, avec activation inactive. La publication des fichiers attend son autorisation explicite. Destination du code : branche de test du portail, sans fusion sur `main` ni déploiement OVH.
