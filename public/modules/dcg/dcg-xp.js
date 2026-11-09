@@ -50,6 +50,21 @@
     return{core,fog:degrees>=359.98?arc(0,359.999):core,starts:segments(12,true),tails:segments(18,false)};
   }
   const visibleSpark=(angle,fraction)=>fraction>0&&angle<=360*fraction&&(angle<360*fraction-12||fraction>=1||prng(angle)<.6);
+  // Used by the confirmed reward sequence to empty the old ring before repainting
+  // the next authoritative level (including any excess openings).
+  function setFraction(el,fraction){
+    if(!Number.isFinite(fraction))return;
+    fraction=Math.max(0,Math.min(1,fraction));
+    const g=geometry(fraction);
+    for(const [name,d] of [['core',g.core],['haze',g.fog],['highlight',g.core]])el.querySelector('.dcg-xp__arc-'+name)?.setAttribute('d',d);
+    for(const [items,name] of [[g.starts,'start'],[g.tails,'tail']])items.forEach((s,k)=>{
+      const node=el.querySelector('[data-xp-'+name+'="'+k+'"]'),glow=el.querySelector('[data-xp-'+name+'-glow="'+k+'"]');
+      node?.setAttribute('d',s.d);glow?.setAttribute('d',s.d);
+      if(node){node.style.opacity=s.alpha;node.style.strokeWidth=s.width;}
+      if(glow)glow.style.opacity=s.alpha*(name==='start'?.27:.25);
+    });
+    el.querySelectorAll('[data-xp-angle]').forEach(s=>{s.hidden=!visibleSpark(Number(s.dataset.xpAngle),fraction);});
+  }
   function nebulaStars(){
     return Array.from({length:46},(_,j)=>{
       const a=prng(j+1700)*Math.PI*2,r=j<18?.28+.11*prng(j+1770):.12+.31*prng(j+1770),major=j<16;
@@ -109,8 +124,8 @@
     const p=progress(state.total,state.level),ready=p.pending>0;
     const advance=previousState!==null&&previousState.level===p.level&&previousState.total<p.total;
     const from=advance?progress(previousState.total,previousState.level).fraction:p.fraction;
-    const text=ready?'Niveau '+p.next+' disponible':p.opened+' / '+p.required+' paquets';
-    const reward=scope==='general'?10*p.next+' Alkahests':Math.ceil(p.next/2)+' paquet'+(Math.ceil(p.next/2)>1?'s':'');
+    const text=ready?'Niveau '+p.next+' disponible':p.opened+' / '+p.required+' boosters';
+    const reward=scope==='general'?10*p.next+' Alkahests':Math.ceil(p.next/2)+' booster'+(Math.ceil(p.next/2)>1?'s':'');
     const tag=interactive&&ready?'button':'div';
     const accessible=label+' : niveau '+p.level+'. '+text+'. Prochaine récompense : '+reward+(ready&&interactive?'. Cliquer pour récupérer.':'');
     return '<'+tag+' class="dcg-xp'+(ready?' dcg-xp--ready':'')+(advance?' dcg-xp--advance':'')+(compact?' dcg-xp--compact':'')+'"'+(tag==='button'?' type="button" data-xp-claim="'+esc(scope)+'"'+(busy?' disabled':''):'')+
@@ -118,5 +133,5 @@
       '<span class="dcg-xp__medal" aria-hidden="true"><span class="dcg-xp__halo"></span><span class="dcg-xp__face"><span class="dcg-xp__nebula-stars">'+nebulaStars()+'</span></span>'+ring(p.fraction)+'<span class="dcg-xp__sparks">'+sparkles(p.fraction)+'</span><span class="dcg-xp__number">'+p.level+'</span></span>'+
       (compact?'':'<span class="dcg-xp__copy"><span class="dcg-xp__label">'+esc(label)+'</span><strong>'+esc(text)+'</strong><span class="dcg-xp__reward">'+esc(ready?(busy?'Récupération…':interactive?'Récupérer · '+reward:'Récompense · '+reward):'Niveau '+p.next+' · '+reward)+'</span></span>')+'</'+tag+'>';
   }
-  window.DCGXP=Object.freeze({threshold,levelFor,progress,markup,animate});
+  window.DCGXP=Object.freeze({threshold,levelFor,progress,markup,animate,setFraction});
 })();
