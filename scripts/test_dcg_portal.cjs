@@ -157,7 +157,7 @@ test('streamer names in search results are escaped and unsafe destinations never
 test('general XP mounts on the home with the shared authenticated client and clears on logout or leaving',async()=>{
  const mounts=[];let destroyed=0;
  const s=setup({user:{id:'xp-player'},xpMount:(host,options)=>{mounts.push(options);return {destroy(){destroyed++;},reload(){}};}});
- await tick();assert.match(s.root.innerHTML,/Ton niveau général/);assert.equal(mounts.length,1);assert.equal(mounts[0].scope,'general');assert.equal(mounts[0].userId,'xp-player');assert.equal(mounts[0].isCurrent(),true);
- await s.auth(null);assert.equal(destroyed,1);assert.equal(mounts[0].isCurrent(),false);assert.match(s.root.nodes['[data-general-xp]'].innerHTML,/Connecte-toi/);
+ await tick();assert.doesNotMatch(s.root.innerHTML,/Ton niveau général|class="portal-xp"/);assert.match(s.root.innerHTML,/portal-directory-actions/);assert.equal(mounts.length,1);assert.equal(mounts[0].scope,'general');assert.equal(mounts[0].compact,true);assert.equal(mounts[0].userId,'xp-player');assert.equal(mounts[0].isCurrent(),true);assert.equal(s.root.nodes['[data-general-xp]'].hidden,false);
+ await s.auth(null);assert.equal(destroyed,1);assert.equal(mounts[0].isCurrent(),false);assert.equal(s.root.nodes['[data-general-xp]'].innerHTML,'');assert.equal(s.root.nodes['[data-general-xp]'].hidden,true);
  await s.auth({id:'other'});assert.equal(mounts.length,2);await s.go('#phasmophobia');assert.equal(destroyed,2);assert.equal(mounts[1].isCurrent(),false);
 });
