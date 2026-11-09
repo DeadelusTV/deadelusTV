@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   function mount(host,{client,userId,isCurrent,scope='streamer',onReward=()=>{}}){
-    let active=true,version=0,state=null,busy=false,error='',message='',retryLevel=null;
+    let active=true,version=0,state=null,previousState=null,busy=false,error='',message='',retryLevel=null;
     const valid=()=>active&&host.isConnected&&isCurrent()&&!!userId;
     const stateRpc=scope==='general'?'dcg_my_xp':'tcg_my_xp';
     const claimRpc=scope==='general'?'dcg_claim_general_xp':'tcg_claim_xp';
@@ -13,7 +13,8 @@
       if(!valid())return;
       host.replaceChildren();
       if(state){
-        host.insertAdjacentHTML('beforeend',window.DCGXP.markup(state,{label:scope==='general'?'Niveau général':'Niveau de ce DCG',scope,interactive:true,busy}));
+        host.insertAdjacentHTML('beforeend',window.DCGXP.markup(state,{label:scope==='general'?'Niveau général':'Niveau de ce DCG',scope,interactive:true,busy,previousState}));
+        previousState=null;
         if(state.active===false){const note=document.createElement('p');note.className='dcg-xp-pass__note';note.textContent='La progression XP commencera au lancement du DCG. Les ouvertures de test ne sont pas comptées.';host.append(note);}
         if(scope==='general'){
           const note=document.createElement('p');note.className='dcg-xp-pass__note';
@@ -29,7 +30,7 @@
     async function reload(){
       if(!valid()||busy||retryLevel)return;
       const run=++version;
-      try{const r=await client.rpc(stateRpc);if(!valid()||run!==version)return;if(r.error)throw r.error;state=safeState(r.data);error='';}
+      try{const r=await client.rpc(stateRpc);if(!valid()||run!==version)return;if(r.error)throw r.error;const next=safeState(r.data);previousState=state;state=next;error='';}
       catch{if(!valid()||run!==version)return;state=null;error='Ta progression est momentanément indisponible.';}
       paint();
     }
