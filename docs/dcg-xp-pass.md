@@ -1,5 +1,13 @@
 # Niveau général XP — 9 novembre 2026
 
+## Animation de récupération avec les icônes choisies
+
+Le portail reprend le moteur partagé `dcg-xp-rewards.js` et les deux WebP transparents de 256 px dans `public/modules/dcg/assets/xp/`. Le général montre l’icône Alkahest × montant reçu par DCG ; le jeu individuel montre le booster × quantité attribuée. Les deux images fournies sont conservées, légèrement inclinées, sans cadre. Leur chemin est résolu depuis le script pour fonctionner aussi dans ce sous-dossier.
+
+Le clic concentre la lumière ; seul un reçu serveur confirmé déclenche l’éclat, l’apparition des gains, leur envol et le vidage de l’ancien anneau. La progression suivante garde les ouvertures excédentaires. Le vol vise une destination visible (solde ou carte personnelle du DCG) et reste sur place si aucune ne l’est. Aucun solde commun ni compteur fictif n’est créé. Une déconnexion ou un départ de la rubrique supprime immédiatement les calques et animations ; le mouvement réduit affiche directement le résultat. La reprise idempotente et les règles serveur ne changent pas.
+
+Les quatre ressources XP utilisent la version de cache `xp-rewards-1`. Les 44 tests du portail, consentement et lecteur Twitch passent ; le moteur partagé est couvert par les 22 tests XP et de placement du dépôt TCG. La branche cible du portail reste `developpement/tcg-attente`, sans publication OVH.
+
 L'accueil `#tcg` affiche un médaillon **Niveau général**. Il reprend toutes les ouvertures de paquets enregistrées dans les DCG du joueur. Le niveau individuel reste dans chaque jeu. Le futur **Connexion Pass** conserve son emplacement séparé.
 
 Le médaillon réutilise `dcg-xp.js`, `dcg-xp.css` et `dcg-xp-pass.js`, identiques aux composants du dépôt TCG. La session et le client sont ceux de `DEADELUSTV_AUTH`, sans copie d'identifiants ni nouveau client. Le module est détruit à la déconnexion, au changement de compte et en quittant l'accueil ; les réponses tardives ne restaurent pas de contenu privé.
