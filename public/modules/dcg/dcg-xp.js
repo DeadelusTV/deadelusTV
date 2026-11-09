@@ -105,17 +105,18 @@
     });
     return()=>stops.forEach(stop=>stop());
   }
-  function markup(state,{label='Niveau DCG',scope='streamer',interactive=false,busy=false,previousState=null}={}){
+  function markup(state,{label='Niveau DCG',scope='streamer',interactive=false,busy=false,previousState=null,compact=false}={}){
     const p=progress(state.total,state.level),ready=p.pending>0;
     const advance=previousState!==null&&previousState.level===p.level&&previousState.total<p.total;
     const from=advance?progress(previousState.total,previousState.level).fraction:p.fraction;
     const text=ready?'Niveau '+p.next+' disponible':p.opened+' / '+p.required+' paquets';
     const reward=scope==='general'?10*p.next+' Alkahests':Math.ceil(p.next/2)+' paquet'+(Math.ceil(p.next/2)>1?'s':'');
     const tag=interactive&&ready?'button':'div';
-    return '<'+tag+' class="dcg-xp'+(ready?' dcg-xp--ready':'')+(advance?' dcg-xp--advance':'')+'"'+(tag==='button'?' type="button" data-xp-claim="'+esc(scope)+'"'+(busy?' disabled':''):'')+
-      ' data-xp-progress="'+p.fraction+'" data-xp-from="'+from+'" aria-label="'+esc(label+' : niveau '+p.level+'. '+text+'. Prochaine récompense : '+reward)+'">'+
+    const accessible=label+' : niveau '+p.level+'. '+text+'. Prochaine récompense : '+reward+(ready&&interactive?'. Cliquer pour récupérer.':'');
+    return '<'+tag+' class="dcg-xp'+(ready?' dcg-xp--ready':'')+(advance?' dcg-xp--advance':'')+(compact?' dcg-xp--compact':'')+'"'+(tag==='button'?' type="button" data-xp-claim="'+esc(scope)+'"'+(busy?' disabled':''):'')+
+      ' data-xp-progress="'+p.fraction+'" data-xp-from="'+from+'"'+(compact?' title="'+esc(accessible)+'"':'')+' aria-label="'+esc(accessible)+'">'+
       '<span class="dcg-xp__medal" aria-hidden="true"><span class="dcg-xp__halo"></span><span class="dcg-xp__face"><span class="dcg-xp__nebula-stars">'+nebulaStars()+'</span></span>'+ring(p.fraction)+'<span class="dcg-xp__sparks">'+sparkles(p.fraction)+'</span><span class="dcg-xp__number">'+p.level+'</span></span>'+
-      '<span class="dcg-xp__copy"><span class="dcg-xp__label">'+esc(label)+'</span><strong>'+esc(text)+'</strong><span class="dcg-xp__reward">'+esc(ready?(busy?'Récupération…':interactive?'Récupérer · '+reward:'Récompense · '+reward):'Niveau '+p.next+' · '+reward)+'</span></span></'+tag+'>';
+      (compact?'':'<span class="dcg-xp__copy"><span class="dcg-xp__label">'+esc(label)+'</span><strong>'+esc(text)+'</strong><span class="dcg-xp__reward">'+esc(ready?(busy?'Récupération…':interactive?'Récupérer · '+reward:'Récompense · '+reward):'Niveau '+p.next+' · '+reward)+'</span></span>')+'</'+tag+'>';
   }
   window.DCGXP=Object.freeze({threshold,levelFor,progress,markup,animate});
 })();
