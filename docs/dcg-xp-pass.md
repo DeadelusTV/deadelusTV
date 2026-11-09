@@ -6,6 +6,8 @@ Le médaillon réutilise `dcg-xp.js`, `dcg-xp.css` et `dcg-xp-pass.js`, identiqu
 
 Le décor est désormais l'asset transparent `public/modules/dcg/assets/xp/dcg-xp-medallion.png`, validé à partir des références visuelles. La copie TCG se trouve dans `public/assets/xp/`. Le chiffre n'est pas dans l'image : niveau, remplissage et halo restent dynamiques. Pour changer le décor, remplacer les deux PNG en conservant leur cadrage ; le chemin est également personnalisable par `--xp-medallion-image`. Les références CSS/JS sont passées à `rev=2`. Aucun changement du calcul ou de l'activation XP.
 
+La portion acquise du cercle est désormais nettement lumineuse, avec un reflet qui se déplace uniquement sur cet arc et une étoile scintillante au bout de la progression. Le cercle à zéro ne reçoit pas cette surbrillance. Le mouvement réduit conserve l'éclat fixe et désactive les animations. CSS et JS sont identiques au TCG et référencés en `rev=3`.
+
 `dcg_my_xp` lit la progression du compte authentifié. `dcg_claim_general_xp` récupère un niveau précis au clic, avec son numéro comme clé de reprise. Le serveur crédite **10 × niveau Alkahests dans chacun des DCG rejoints**, intégralement, et conserve les portefeuilles séparés. Un nouveau DCG ne récupère pas les récompenses déjà réclamées avant son arrivée.
 
 La migration correspondante est versionnée dans `Yekelle/TCG`, `supabase/migrations/20261109020743_dcg_xp_pass.sql`. Elle ignore l'historique et les anciens lancements de test. Le routage et l'inscription autonome de plusieurs streamers ne sont pas ajoutés par cette évolution ; le scénario de cumul est testé avec plusieurs chaînes fictives côté serveur.
