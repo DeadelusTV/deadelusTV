@@ -1,5 +1,7 @@
 # Portail DCG — structure sur la branche de test, 5 novembre 2026
 
+Ajout préparé le 9 novembre : [niveau général du Pass XP](dcg-xp-pass.md), avec récompenses au clic dans chaque DCG rejoint. Le Pass de connexion reste distinct.
+
 Destination confirmée par Yekelle : dépôt `DeadelusTV/deadelusTV`, branche `developpement/tcg-attente`. Yekelle a terminé son alignement avec `main` avant l’intégration. Base contrôlée : `0e10a9da6d83902c779a86438bac20ede5539baa`. Aucun changement n’est fusionné sur `main` et aucun déploiement OVH n’est demandé.
 
 ## Parcours préparés
@@ -26,7 +28,9 @@ Le déplacement de Boosters en premier dans le menu du jeu reste préparé dans 
 - `public/index.html` : contenu de la seule rubrique d’attente remplacé et chargement des fichiers du module ; logo du site réutilisé.
 - `public/assets/app.js` : reconnaissance de `tcg/...`, montage et annulation du module ; autres répartitions de routes conservées.
 
-Mon compte réutilise `DEADELUSTV_AUTH` et sa session existante. Le module ne crée pas de second client Supabase, ne reçoit pas de jeton via URL et n’attribue aucun rôle à partir du pseudo. Une déconnexion ou un changement de route invalide les réponses en attente ; les textes personnels sont échappés. Aucun achat ou lancement n’est ajouté par le portail. Le suivi quotidien commun est préparé séparément, avec gains désactivés, dans `docs/connexion-pass.md` ; il fonctionne depuis toutes les rubriques et ne dépend pas de la vue du Pass.
+Mon compte réutilise `DEADELUSTV_AUTH` et sa session existante. Le module ne crée pas de second client Supabase, ne reçoit pas de jeton via URL et n’attribue aucun rôle à partir du pseudo. Une déconnexion ou un changement de route invalide les réponses en attente ; les textes personnels sont échappés. Le Pass XP ajoute les lectures et récupérations décrites dans son guide ; les achats, ouvertures de boosters et lancements restent dans les jeux.
+
+Le Pass quotidien est préparé séparément dans `docs/connexion-pass.md` ; seule une visite connectée du site DeadelusTV peut enregistrer sa présence.
 
 ## Vérifications
 

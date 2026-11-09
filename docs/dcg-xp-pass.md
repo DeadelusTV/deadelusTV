@@ -1,0 +1,25 @@
+# Niveau général XP — 9 novembre 2026
+
+## Animation de récupération avec les icônes choisies
+
+Le portail reprend le moteur partagé `dcg-xp-rewards.js` et les deux WebP transparents de 256 px dans `public/modules/dcg/assets/xp/`. Le général montre l’icône Alkahest × montant reçu par DCG ; le jeu individuel montre le booster × quantité attribuée. Les deux images fournies sont conservées, légèrement inclinées, sans cadre. Leur chemin est résolu depuis le script pour fonctionner aussi dans ce sous-dossier.
+
+Le clic concentre la lumière ; seul un reçu serveur confirmé déclenche l’éclat, l’apparition des gains, leur envol et le vidage de l’ancien anneau. La progression suivante garde les ouvertures excédentaires. Le vol vise une destination visible (solde ou carte personnelle du DCG) et reste sur place si aucune ne l’est. Aucun solde commun ni compteur fictif n’est créé. Une déconnexion ou un départ de la rubrique supprime immédiatement les calques et animations ; le mouvement réduit affiche directement le résultat. La reprise idempotente et les règles serveur ne changent pas.
+
+Les quatre ressources XP utilisent la version de cache `xp-rewards-1`. Les 44 tests du portail, consentement et lecteur Twitch passent ; le moteur partagé est couvert par les 22 tests XP et de placement du dépôt TCG. La branche cible du portail reste `developpement/tcg-attente`, sans publication OVH.
+
+L'accueil `#tcg` affiche un médaillon **Niveau général**. Il reprend toutes les ouvertures de paquets enregistrées dans les DCG du joueur. Le niveau individuel reste dans chaque jeu. Le futur **Connexion Pass** conserve son emplacement séparé.
+
+Le médaillon réutilise `dcg-xp.js`, `dcg-xp.css` et `dcg-xp-pass.js`, identiques aux composants du dépôt TCG. La session et le client sont ceux de `DEADELUSTV_AUTH`, sans copie d'identifiants ni nouveau client. Le module est détruit à la déconnexion, au changement de compte et en quittant l'accueil ; les réponses tardives ne restaurent pas de contenu privé.
+
+Le décor reste l'asset transparent `public/modules/dcg/assets/xp/dcg-xp-medallion.png`, dont la nébuleuse a été validée. La copie TCG se trouve dans `public/assets/xp/`. Le chiffre n'est pas dans l'image : niveau, anneau et halo restent dynamiques. Pour changer le décor, remplacer les deux PNG en conservant leur cadrage ; le chemin est également personnalisable par `--xp-medallion-image`. Aucun changement du calcul ou de l'activation XP.
+
+Les animations reprennent désormais le prototype fourni dans **Pass-XP-Prototype-Complet.zip**, avec le choix explicite de conserver la nébuleuse validée. L'anneau SVG et les micro-étoiles fixes remplacent les filaments : scintillement sur l'arc acquis, halo diffus au niveau disponible, remplissage doux et brève salve lors d'une hausse confirmée des ouvertures. Aucun marqueur de fin ni rotation. Les simples relectures ne redéclenchent pas la salve ; le mouvement réduit garde un rendu fixe. Les anciens effets de filaments sont retirés des fichiers publiés. CSS et moteur visuel sont identiques au TCG en `rev=5`, le contrôleur en `rev=2`.
+
+`dcg_my_xp` lit la progression du compte authentifié. `dcg_claim_general_xp` récupère un niveau précis au clic, avec son numéro comme clé de reprise. Le serveur crédite **10 × niveau Alkahests dans chacun des DCG rejoints**, intégralement, et conserve les portefeuilles séparés. Un nouveau DCG ne récupère pas les récompenses déjà réclamées avant son arrivée.
+
+La migration correspondante est versionnée dans `Yekelle/TCG`, `supabase/migrations/20261109020743_dcg_xp_pass.sql`. Elle ignore l'historique et les anciens lancements de test. Le routage et l'inscription autonome de plusieurs streamers ne sont pas ajoutés par cette évolution ; le scénario de cumul est testé avec plusieurs chaînes fictives côté serveur.
+
+Migration TCG `20261109024814_dcg_xp_pass` appliquée le 9 novembre. Les lectures authentifiées retournaient zéro, avec activation inactive, à la livraison initiale. La [PR #16](https://github.com/DeadelusTV/deadelusTV/pull/16) est intégrée à `developpement/tcg-attente` par la fusion `c9cca8bdc121c29d6be4247e35532af1f1111983`. Le [portail Cloudflare](https://deadelustv.pages.dev/#tcg) est publié ; déploiement initial Pages `23682dd8-de00-47ee-ae96-1c67bd1b208b`. Les six fichiers contrôlés correspondent aux sources intégrées, et la section XP est visible en navigateur sans erreur console relevée. Aucune fusion sur `main` ni publication OVH.
+
+À la demande de l’utilisatrice, l’XP est activée pour **tous les comptes du site de test** depuis le 9 novembre à 04 h 13, heure de Paris (`starts_at=2026-11-09T03:13:49.763156Z`). Les RPC individuelles et générales des neuf comptes sont vérifiées actives. Aucun historique n’est repris : la prochaine ouverture fera avancer les deux compteurs. Aucun reset maintenant ; la remise à zéro au transfert vers le vrai site reste à traiter séparément avec les journaux et gains XP.

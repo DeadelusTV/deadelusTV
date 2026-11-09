@@ -6,6 +6,7 @@
   const gameLink=route=>new URL('#/'+route,config.gameBase).href;
   const logo = 'assets/logo-chaine.png';
   let currentPage=null,generation=0,accountUser=null,accountLoading=false,accountError=false;
+  let xpWidget=null,xpHost=null,xpUser=null;
   let mySpaces=[],myLoading=false,myError=false,signedInHint=false;
   // Annuaire des espaces réellement raccordés. Ajouter un streamer demandera
   // aussi son routage et son isolation serveur ; cette liste ne crée aucun DCG.
@@ -24,7 +25,7 @@
   const titles = {accueil:'Accueil', regles:'Règles du jeu', 'mon-compte':'Mon compte', 'collections-communes':'Collections communes', 'connexion-pass':'Connexion Pass'};
   const heading = (tag, title, copy) => `<header class="portal-heading"><div class="bread">${tag}</div><h1>${title}</h1><p>${copy}</p></header>`;
   const badge = '<span class="portal-status">À venir</span>';
-  const pass = () => `<section class="portal-pass" aria-labelledby="portal-pass-title"><div class="portal-pass-symbol" aria-hidden="true">✧</div><div><div class="portal-eyebrow">LE RENDEZ-VOUS DES COLLECTIONNEURS</div><h2 id="portal-pass-title">Connexion Pass ${badge}</h2><p>Un espace pour retrouver ta progression de connexion et tes récompenses. Le Pass sera accessible ici lorsqu’il sera activé.</p></div><a class="button-outline" href="#tcg/connexion-pass">Découvrir le Pass →</a></section>`;
+  const pass = () => `<section class="portal-pass" aria-labelledby="portal-pass-title"><div class="portal-pass-symbol" aria-hidden="true">✧</div><div><div class="portal-eyebrow">LE RENDEZ-VOUS DES COLLECTIONNEURS</div><h2 id="portal-pass-title">Connexion Pass ${badge}</h2><p>Dix jours de présence sur DeadelusTV pour des récompenses dans chacun de tes DCG. Découvre le calendrier du Pass.</p></div><a class="button-outline" href="#tcg/connexion-pass">Découvrir le Pass →</a></section>`;
   const ordered = () => [...mySpaces].sort((a,b) => a.name.localeCompare(b.name, 'fr', {sensitivity:'base'}));
   const normalize=s=>String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('fr').trim();
   const searchStates=new WeakMap();
@@ -43,8 +44,9 @@
     return ordered().map(space => `<a class="portal-space" href="${esc(space.href)}" data-dcg="${esc(space.id)}"><img src="${esc(space.avatar)}" alt="" referrerpolicy="no-referrer" width="96" height="96"><div class="portal-space-copy"><span class="portal-space-status">${esc(space.status||'')}</span><h3>${esc(space.name)}</h3><p>Ses cartes, ses moments, sa communauté.</p></div><span class="portal-space-arrow" aria-hidden="true">↗</span><span class="portal-space-cta">Entrer dans le DCG →</span></a>`).join('');
   }
   const discoverySection=()=>!showDiscovery?'':`<section class="portal-discovery" id="dcg-decouverte" aria-labelledby="dcg-discovery-title"><div class="portal-section-top"><div><span class="overline">LES COMMUNAUTÉS</span><h2 id="dcg-discovery-title">Les DCG</h2></div><div class="portal-carousel-controls" ${discovery.length<2?'hidden':''}><button type="button" data-portal-carousel-direction="previous" aria-label="DCG précédents" aria-controls="dcg-discovery-rail">←</button><button type="button" data-portal-carousel-direction="next" aria-label="DCG suivants" aria-controls="dcg-discovery-rail">→</button></div></div><ul class="portal-carousel" id="dcg-discovery-rail" data-portal-carousel tabindex="0" aria-label="Découvrir des DCG">${discovery.map(space=>`<li><a class="portal-streamer-pill" href="${esc(space.href)}" data-discovery-dcg="${esc(space.id)}" aria-label="Entrer dans le DCG ${esc(space.name)}"><img src="${esc(space.avatar)}" alt="" width="42" height="42" loading="lazy" referrerpolicy="no-referrer"><span>${esc(space.name)}</span></a></li>`).join('')}</ul></section>`;
+  const xpSection=()=>'<section class="portal-xp"><div class="portal-eyebrow">PASS XP DCG</div><h2>Ton niveau général</h2><p>Chaque paquet ouvert dans un DCG fait avancer ta progression commune.</p><div data-general-xp></div></section>';
   const home = () => `<section class="portal-hero"><div><span class="overline">DEADELUS CARD GAME</span><h1><em>Collectionne les Communautés Twitch</em></h1><p>Rejoins les collections de tes streamers préférés et collectionne leurs cartes, celles de leurs viewers et leurs meilleurs clips.<br>Découvre des cartes exclusives au fil des événements et des nouvelles collections !</p><div class="portal-hero-links"><a class="button-primary" href="#dcg-annuaire" data-portal-directory>Explorer les DCG ↓</a><a class="text-link" href="#tcg/regles">Comment jouer ? →</a></div></div><a class="portal-featured" href="${gameLink('boosters')}" aria-label="Entrer dans le DCG DeadelusTV"><span class="portal-featured-orbit" aria-hidden="true"></span><img src="${logo}" alt="Logo DeadelusTV" width="210" height="210"><span class="portal-eyebrow">ENTRÉE DIRECTE</span><strong>DeadelusTV</strong><span>Ouvrir mon espace boosters →</span></a></section>
-    <section class="portal-directory" id="dcg-annuaire" aria-labelledby="dcg-directory-title"><div class="portal-section-top"><div><span class="overline">MES COMMUNAUTÉS</span><h2 id="dcg-directory-title">Mes DCG</h2><p>Retrouve les communautés où tu joues.</p></div><button class="button-outline" type="button" data-portal-search-open aria-haspopup="dialog">Rechercher un streamer</button></div><div class="portal-spaces" data-portal-spaces>${directory()}</div></section>${discoverySection()}${pass()}${searchDialog()}`;
+    ${xpSection()}<section class="portal-directory" id="dcg-annuaire" aria-labelledby="dcg-directory-title"><div class="portal-section-top"><div><span class="overline">MES COMMUNAUTÉS</span><h2 id="dcg-directory-title">Mes DCG</h2><p>Retrouve les communautés où tu joues.</p></div><button class="button-outline" type="button" data-portal-search-open aria-haspopup="dialog">Rechercher un streamer</button></div><div class="portal-spaces" data-portal-spaces>${directory()}</div></section>${discoverySection()}${pass()}${searchDialog()}`;
   const rules = () => `${heading('BIEN DÉMARRER', 'Les règles du jeu.', 'Un compte Twitch, plusieurs univers à collectionner. Chaque DCG garde sa propre progression et son solde d’Alkahests.')}<div class="portal-rules">
     <section><span class="portal-rule-number">01</span><div><h2>Rejoins ta communauté</h2><p>Choisis un DCG et connecte-toi avec Twitch. Le follow de la chaîne est vérifié automatiquement. Les inscriptions et le lancement sont ouverts par le streamer ; les boosters restent fermés jusqu’au lancement de son DCG.</p><a href="#tcg" class="text-link">Choisir un DCG →</a></div></section>
     <section><span class="portal-rule-number">02</span><div><h2>Ouvre tes boosters</h2><p>Retrouve tes boosters de départ, ta réserve automatique et les récompenses de présence ou les drops du live dans l’onglet Boosters. La réserve automatique pleine met son compteur en pause. Les délais et les disponibilités sont affichés dans ton DCG.</p><a href="${gameLink('boosters')}" class="text-link">Les boosters DeadelusTV →</a></div></section>
@@ -61,12 +63,26 @@
     return `${heading('ESPACE PERSONNEL', 'Mon compte.', `Bienvenue ${esc(String(name).slice(0,60))}. Retrouve ici les accès à tes collections.`)}<section class="portal-account-section"><div class="portal-section-top"><div><span class="overline">MES COLLECTIONS</span><h2>Les DCG des streamers</h2><p>DeadelusTV est le premier DCG disponible. Chaque univers conserve ses propres cartes et Alkahests.</p></div></div><article class="portal-account-space"><img src="${logo}" alt="" width="86" height="86"><div><h3>DeadelusTV</h3><p>Cartodex et exemplaires possédés</p></div><div class="portal-account-actions"><a class="button-primary" href="${gameLink('catalogue')}">Mon Cartodex →</a><a class="button-outline" href="${gameLink('profil')}">Mon profil dans ce DCG</a></div></article></section><section class="panel portal-message"><span class="overline">MES COLLECTIONS COMMUNES</span><h2>Des univers à partager ${badge}</h2><p>Les cartes des futures collections communes seront réunies ici, aux côtés de tes collections de streamers.</p><a class="text-link" href="#tcg/collections-communes">Voir l’espace des collections communes →</a></section>${pass()}`;
   }
   const common = () => `${heading('DES UNIVERS À PARTAGER', 'Collections communes.', 'Des collections à découvrir entre communautés, avec un dos propre à chaque collection.')}<p class="portal-availability" role="status">La boutique est en préparation. Les collections ci-dessous illustrent les univers envisagés ; aucun booster commun n’est en vente pour le moment.</p><div class="portal-common-grid"><article class="portal-common portal-common-ghost"><span class="portal-common-art" aria-hidden="true">◌</span><span class="portal-eyebrow">COLLECTION ENVISAGÉE</span><h2>Phasmophobia</h2>${badge}</article><article class="portal-common portal-common-valor"><span class="portal-common-art" aria-hidden="true">◇</span><span class="portal-eyebrow">COLLECTION ENVISAGÉE</span><h2>Valorant</h2>${badge}</article></div><section class="panel portal-message"><span class="overline">LE CHOIX DU SOLDE</span><h2>Un achat, un DCG choisi</h2><p>Quand la boutique sera ouverte, tu pourras sélectionner le solde d’Alkahests d’un streamer suivi pour acheter ton booster commun. Le montant disponible et le coût seront affichés avant confirmation.</p><p>Les soldes resteront séparés : 200 Alkahests chez un streamer et 300 chez un autre ne forment pas un solde commun de 500.</p></section>`;
-  const connexion = () => `${heading('LE RENDEZ-VOUS DES COLLECTIONNEURS', 'Connexion Pass.', 'Une connexion au site suffit pour les récompenses dans chacun de tes DCG.')}<section class="panel portal-message"><h2>Ton rendez-vous quotidien</h2><p>Le cycle dure dix jours. Un jour manqué remet au J1 ; la journée change à minuit, heure de Paris.</p>${window.DEADELUSTV_AUTH?.userId ? '' : '<p>Connecte-toi avec Twitch pour retrouver ton Pass.</p><button class="button-primary" type="button" data-portal-login>Se connecter avec Twitch</button>'}<p>Tu peux déjà rejoindre le DCG DeadelusTV et retrouver tes boosters.</p><a class="button-outline" href="${gameLink('boosters')}">Accéder au DCG DeadelusTV →</a></section><section id="daily-pass-root" hidden aria-label="État du Connexion Pass"></section>`;
+  const connexion = () => `${heading('LE RENDEZ-VOUS DES COLLECTIONNEURS', 'Connexion Pass.', 'Ta présence sur DeadelusTV compte pour tous les DCG auxquels tu participes.')}${window.DEADELUSTV_AUTH?.userId ? '' : '<div class="portal-pass-login"><p>Connecte-toi avec Twitch pour commencer ton cycle.</p><button class="button-primary" type="button" data-portal-login>Se connecter avec Twitch</button></div>'}<section id="daily-pass-root" aria-label="État du Connexion Pass"></section>`;
+
   const renderers = {accueil:home, regles:rules, 'mon-compte':account, 'collections-communes':common, 'connexion-pass':connexion};
   const nav = () => '<nav class="dcg-portal-nav" aria-label="Navigation du portail DCG">'+pages.map(page=>'<a href="'+(page==='accueil'?'#tcg':'#tcg/'+page)+'"'+(page===currentPage?' aria-current="page"':'')+'>'+titles[page]+'</a>').join('')+'</nav>';
+  function mountGeneralXP(){
+    const host=currentPage==='accueil'?root.querySelector('[data-general-xp]'):null;
+    if(host===xpHost&&accountUser?.id===xpUser)return;
+    xpWidget?.destroy();xpWidget=null;xpHost=host;xpUser=accountUser?.id||null;
+    if(!host)return;
+    if(!accountUser){host.innerHTML='<p>Connecte-toi pour retrouver ton niveau général.</p><button class="button-outline" data-portal-login>Connexion Twitch ↗</button>';return;}
+    const id=accountUser.id;
+    void window.DEADELUSTV_AUTH.getClient().then(client=>{
+      if(!host.isConnected||accountUser?.id!==id||xpHost!==host||!window.DCGXPPass)return;
+      xpWidget=window.DCGXPPass.mount(host,{client,userId:id,scope:'general',isCurrent:()=>accountUser?.id===id&&currentPage==='accueil'});
+    }).catch(()=>{if(host.isConnected&&xpHost===host)host.textContent='Ta progression est momentanément indisponible.';});
+  }
   function paint(){
     window.DCGDailyPass?.unmount();
     root.innerHTML=nav()+'<div class="dcg-portal-view">'+(renderers[currentPage]||home)()+'</div>';
+    mountGeneralXP();
     const title=root.querySelector('h1');if(title){title.id='tcg-title';title.tabIndex=-1;}
     if(currentPage==='connexion-pass')window.DCGDailyPass?.mount(root.querySelector('#daily-pass-root'));
   }
@@ -84,7 +100,7 @@
     }
   }
   function hasSessionHint(){try{return signedInHint||localStorage.getItem(config.authStorageKey)!==null||new URLSearchParams(location.search).has('code');}catch{return signedInHint;}}
-  function paintMySpaces(){if(currentPage!=='accueil')return;const list=root.querySelector('[data-portal-spaces]');const html=directory();if(list&&list.innerHTML!==html)list.innerHTML=html;}
+  function paintMySpaces(){if(currentPage!=='accueil')return;mountGeneralXP();const list=root.querySelector('[data-portal-spaces]');const html=directory();if(list&&list.innerHTML!==html)list.innerHTML=html;}
   async function readMySpaces(run){
     try{
       const client=await window.DEADELUSTV_AUTH.getClient();
@@ -107,7 +123,7 @@
     if(accountLoading)void readAccount(run);
     if(myLoading)void readMySpaces(run);
   }
-  function cancel(){closeSearch(false);window.DCGDailyPass?.unmount();generation++;currentPage=null;accountUser=null;mySpaces=[];myLoading=false;myError=false;accountLoading=false;accountError=false;root.replaceChildren();}
+  function cancel(){window.DCGDailyPass?.unmount();xpWidget?.destroy();xpWidget=null;xpHost=null;xpUser=null;closeSearch(false);generation++;currentPage=null;accountUser=null;mySpaces=[];myLoading=false;myError=false;accountLoading=false;accountError=false;root.replaceChildren();}
   function updateSearch(field){const results=root.querySelector('[data-portal-search-results]');if(results)results.innerHTML=searchResults(field.value);}
   root.addEventListener('input',event=>{if(event.target.matches('[data-portal-search]'))updateSearch(event.target);});
   root.addEventListener('submit',event=>{if(event.target.matches('[data-portal-search-form]')){event.preventDefault();updateSearch(event.target.querySelector('input'));}});

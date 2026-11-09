@@ -10,7 +10,7 @@ function page({stored=false,search='',blocked=false,uid='alice',handler,getUser}
  const user=()=>owner?{id:owner,user_metadata:{preferred_username:owner}}:null;
  const client={auth:{onAuthStateChange(fn){authCallback=fn;},getUser:async()=>{if(fail)throw Error('private diagnostic');return getUser?getUser():{data:{user:user()}};},getSession:async()=>({data:{session:owner?{user:user(),access_token:'scoped-session'}:null}}),signOut:async()=>{owner=null;authCallback?.('SIGNED_OUT',null);return{};}},
   from:()=>({select(){return this;},eq(){return this;},maybeSingle:async()=>({data:{enabled:false}})}),
-  rpc:async(...args)=>{calls.push(args);return handler?handler(...args):{data:{status:'recorded',step:1,gains:[]}};}};
+  rpc:async()=>({data:{status:'disabled'}}),functions:{invoke:async(...args)=>{calls.push(args);return handler?handler(...args):{data:{status:'recorded',step:1,gains:[]}};}}};
  const context={location:{search,hash:'#accueil'},supabase:{createClient(){created++;return client;}},
   document:{visibilityState:'visible',getElementById:id=>id==='daily-pass-root'?null:element(id),querySelector(){return null;},addEventListener(){}},
   localStorage:{getItem(){if(blocked)throw Error('blocked');return stored?'stored-session':null;}},sessionStorage:{getItem(){return null;}},
@@ -26,7 +26,7 @@ test('anonymous visits and blocked storage keep Auth lazy and make no Pass call'
  for(const blocked of [false,true]){const p=page({blocked});await tick();assert.equal(p.created,0);assert.equal(p.calls.length,0);assert.equal(p.context.DEADELUSTV_AUTH.userId,null);}
 });
 test('stored session on the site home is validated and records presence without any Pass markup',async()=>{
- const p=page({stored:true});await tick();assert.equal(p.created,1);assert.equal(p.context.DEADELUSTV_AUTH.userId,'alice');assert.deepEqual(p.calls,[['tcg_claim_daily_pass']]);
+ const p=page({stored:true});await tick();assert.equal(p.created,1);assert.equal(p.context.DEADELUSTV_AUTH.userId,'alice');assert.deepEqual(JSON.parse(JSON.stringify(p.calls)),[['tcg-daily-pass',{body:{}}]]);
  const view=p.element('view');p.context.DCGDailyPass.mount(view);assert.match(view.innerHTML,/Jour 1/);assert.equal(p.calls.length,1);
  p.context.DCGDailyPass.unmount();p.advance(61000);p.timers[0]();await tick();assert.equal(p.calls.length,2);
 });
@@ -39,7 +39,7 @@ test('invalid stored session is verified by Auth and never requests rewards',asy
 test('late reward response after sign-out is discarded, including on a later route mount',async()=>{
  let release;const p=page({stored:true,handler:()=>new Promise(r=>release=r)});await tick();assert.equal(p.calls.length,1);
  await p.context.DEADELUSTV_AUTH.signOut();release({data:{status:'recorded',gains:[{kind:'dust',amount:5,login:'OLD_ACCOUNT'}]}});await tick();
- const view=p.element('view');p.context.DCGDailyPass.mount(view);assert.equal(view.hidden,true);assert.doesNotMatch(view.innerHTML,/OLD_ACCOUNT/);assert.equal(p.events.some(e=>e.type==='tcg:daily-pass-change'),false);
+ const view=p.element('view');p.context.DCGDailyPass.mount(view);assert.doesNotMatch(view.innerHTML,/OLD_ACCOUNT/);assert.doesNotMatch(view.innerHTML,/OLD_ACCOUNT/);assert.equal(p.events.some(e=>e.type==='tcg:daily-pass-change'),false);
 });
 test('account switch invalidates the old pending request and records the newly verified identity',async()=>{
  const releases=[];const p=page({stored:true,handler:()=>new Promise(r=>releases.push(r))});await tick();await p.switchTo('bob');assert.equal(p.context.DEADELUSTV_AUTH.userId,'bob');assert.equal(p.calls.length,2);

@@ -22,9 +22,9 @@ class Node{
  closest(selector){return this.selector===selector?this:null;}
  querySelector(selector){return this.nodes?.[selector]||null;}
 }
-function setup({hash='#tcg',user=null,getSession,withAuth=true,registered=true,getUser,getMembership,spaces,showSingle=true,random}={}){
+function setup({hash='#tcg',user=null,getSession,withAuth=true,registered=true,getUser,getMembership,spaces,showSingle=true,random,xpMount}={}){
  const root=new Node(),heading=new Node(),list=new Node(),search=new Node(),searchForm=new Node(),searchDialog=new Node(),searchResults=new Node(),directory=new Node(),discoveryRoot=new Node(),rail=new Node(),nav=new Node(),menu=new Node(),back=new Node(),main=new Node(),brand=new Node(),passRoot=new Node();
- search.selector='[data-portal-search]';searchDialog.selector='[data-portal-search-dialog]';searchDialog.onClose=()=>root.emit('close',searchDialog);searchForm.nodes={input:search};root.nodes={'h1':heading,'[data-portal-spaces]':list,'[data-portal-search]':search,'#dcg-annuaire':directory,'#dcg-decouverte':discoveryRoot,'[data-portal-carousel]':rail,'[data-portal-search-form]':searchForm,'[data-portal-search-dialog]':searchDialog,'[data-portal-search-results]':searchResults};rail.clientWidth=500;rail.scrollBy=options=>rail.scrolled=options;
+ search.selector='[data-portal-search]';searchDialog.selector='[data-portal-search-dialog]';searchDialog.onClose=()=>root.emit('close',searchDialog);searchForm.nodes={input:search};root.nodes={'[data-general-xp]':new Node(),'h1':heading,'[data-portal-spaces]':list,'[data-portal-search]':search,'#dcg-annuaire':directory,'#dcg-decouverte':discoveryRoot,'[data-portal-carousel]':rail,'[data-portal-search-form]':searchForm,'[data-portal-search-dialog]':searchDialog,'[data-portal-search-results]':searchResults};rail.clientWidth=500;rail.scrollBy=options=>rail.scrolled=options;
  root.nodes['#daily-pass-root']=passRoot;
  const pageNames=['accueil','tcg','phasmophobia','crewmongus','pavillon-noir','mentions-legales','confidentialite','conditions-utilisation','conditions-vente'];
  const sections=pageNames.map(name=>{const n=new Node();n.dataset.page=name;n.nodes={h1:heading};return n;});
@@ -36,7 +36,7 @@ function setup({hash='#tcg',user=null,getSession,withAuth=true,registered=true,g
  let currentUser=user,signins=0;const reads=[],passCalls=[];context.DCGDailyPass={mount:element=>passCalls.push(['mount',element]),unmount:()=>passCalls.push(['unmount'])};const storage=new Map(user?[['sb-eodtxlhnfzyapkyvvxdi-auth-token','session-present']]:[]);context.localStorage={getItem:k=>storage.get(k)??null};if(random)context.Math=Object.assign(Object.create(Math),{random});
  if(withAuth)context.DEADELUSTV_AUTH={getClient:async()=>({auth:{getSession:getSession||(async()=>({data:{session:currentUser?{user:currentUser}:null}})),getUser:getUser||(async()=>({data:{user:currentUser}}))},from(table){reads.push({table});return {select(columns){reads.at(-1).columns=columns;return this;},eq(column,value){reads.at(-1).filter={column,value};return this;},async maybeSingle(){return getMembership?getMembership():{data:registered&&currentUser?{user_id:currentUser.id}:null};}};}}),signIn:()=>{signins++;}};
  if(withAuth)Object.defineProperty(context.DEADELUSTV_AUTH,'userId',{get:()=>currentUser?.id||null});
- context.window=context;vm.createContext(context);vm.runInContext(config,context);context.DEADELUSTV_DCG_CONFIG={...context.DEADELUSTV_DCG_CONFIG,...(spaces?{spaces}:{}),showDiscoveryWithSingleStreamer:showSingle};vm.runInContext(source,context);vm.runInContext(router,context);
+ if(xpMount)context.DCGXPPass={mount:xpMount};context.window=context;vm.createContext(context);vm.runInContext(config,context);context.DEADELUSTV_DCG_CONFIG={...context.DEADELUSTV_DCG_CONFIG,...(spaces?{spaces}:{}),showDiscoveryWithSingleStreamer:showSingle};vm.runInContext(source,context);vm.runInContext(router,context);
  return {root,heading,list,search,searchForm,searchDialog,searchResults,directory,rail,reads,discoveryRoot,menu,nav,sections,calls,context,navNodes,passCalls,passRoot,get signins(){return signins;},async go(value){location.hash=value;for(const fn of windowListeners.hashchange||[])fn();await tick();},async auth(user){currentUser=user;if(user)storage.set('sb-eodtxlhnfzyapkyvvxdi-auth-token','session-present');else storage.clear();for(const fn of windowListeners['deadelustv:auth-change']||[])fn({detail:{authenticated:!!user}});await tick();},click(selector){const n=new Node();n.selector=selector;return root.emit('click',n);}};
 }
 
@@ -57,7 +57,7 @@ test('DCG replaces only its own waiting page and is mounted by the real site rou
  assert.match(s.context.document.title,/DCG/);assert.equal(s.signins,0);
 });
 test('each common subpage is a real DCG route; unknown DCG subpages safely return to its directory',async()=>{
- const s=setup();for(const [route,text]of[['regles','Les règles du jeu'],['collections-communes','aucun booster commun n’est en vente'],['connexion-pass','Ton rendez-vous quotidien']]){
+ const s=setup();for(const [route,text]of[['regles','Les règles du jeu'],['collections-communes','aucun booster commun n’est en vente'],['connexion-pass','État du Connexion Pass']]){
   await s.go('#tcg/'+route);assert.match(s.root.innerHTML,new RegExp(text));assert.equal(s.sections.find(n=>n.dataset.page==='tcg').hidden,false);assert.match(s.root.innerHTML,new RegExp('href="#tcg/'+route+'" aria-current="page"'));
  }
  await s.go('#tcg/inconnu');assert.match(s.root.innerHTML,/data-portal-search/);
@@ -166,3 +166,11 @@ test('streamer names in search results are escaped and unsafe destinations never
  const s=setup({spaces:[{id:'safe',name:'<svg onload=bad> & Viewer',avatar:'https://images.example/a.png',gameBase:'https://game.example/'},{id:'unsafe',name:'Unsafe',avatar:'https://images.example/a.png',gameBase:'javascript:bad()'}]});s.click('[data-portal-search-open]');assert.match(s.searchResults.innerHTML,/&lt;svg onload=bad&gt; &amp; Viewer/);assert.doesNotMatch(s.searchResults.innerHTML,/<svg|javascript:|>Unsafe</);assert.match(s.root.innerHTML,/aria-labelledby="dcg-search-title"/);
 });
 
+
+test('general XP mounts on the home with the shared authenticated client and clears on logout or leaving',async()=>{
+ const mounts=[];let destroyed=0;
+ const s=setup({user:{id:'xp-player'},xpMount:(host,options)=>{mounts.push(options);return {destroy(){destroyed++;},reload(){}};}});
+ await tick();assert.match(s.root.innerHTML,/Ton niveau général/);assert.equal(mounts.length,1);assert.equal(mounts[0].scope,'general');assert.equal(mounts[0].userId,'xp-player');assert.equal(mounts[0].isCurrent(),true);
+ await s.auth(null);assert.equal(destroyed,1);assert.equal(mounts[0].isCurrent(),false);assert.match(s.root.nodes['[data-general-xp]'].innerHTML,/Connecte-toi/);
+ await s.auth({id:'other'});assert.equal(mounts.length,2);await s.go('#phasmophobia');assert.equal(destroyed,2);assert.equal(mounts[1].isCurrent(),false);
+});
