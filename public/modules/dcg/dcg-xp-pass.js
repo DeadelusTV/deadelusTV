@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   function mount(host,{client,userId,isCurrent,scope='streamer',onReward=()=>{}}){
-    let active=true,version=0,state=null,previousState=null,busy=false,error='',message='',retryLevel=null;
+    let active=true,version=0,state=null,previousState=null,busy=false,error='',message='',retryLevel=null,stopAnimation=()=>{};
     const valid=()=>active&&host.isConnected&&isCurrent()&&!!userId;
     const stateRpc=scope==='general'?'dcg_my_xp':'tcg_my_xp';
     const claimRpc=scope==='general'?'dcg_claim_general_xp':'tcg_claim_xp';
@@ -11,9 +11,11 @@
     };
     function paint(){
       if(!valid())return;
+      stopAnimation();
       host.replaceChildren();
       if(state){
         host.insertAdjacentHTML('beforeend',window.DCGXP.markup(state,{label:scope==='general'?'Niveau général':'Niveau de ce DCG',scope,interactive:true,busy,previousState}));
+        stopAnimation=window.DCGXP.animate(host);
         previousState=null;
         if(state.active===false){const note=document.createElement('p');note.className='dcg-xp-pass__note';note.textContent='La progression XP commencera au lancement du DCG. Les ouvertures de test ne sont pas comptées.';host.append(note);}
         if(scope==='general'){
@@ -57,7 +59,7 @@
     const focus=()=>{if(valid())void reload();else destroy();};
     const visible=()=>{if(!document.hidden)focus();};
     const timer=setInterval(focus,60000);
-    function destroy(){if(!active)return;active=false;version++;clearInterval(timer);host.removeEventListener('click',click);window.removeEventListener('focus',focus);document.removeEventListener('visibilitychange',visible);host.replaceChildren();}
+    function destroy(){if(!active)return;active=false;version++;stopAnimation();clearInterval(timer);host.removeEventListener('click',click);window.removeEventListener('focus',focus);document.removeEventListener('visibilitychange',visible);host.replaceChildren();}
     host.classList.add('dcg-xp-pass');host.addEventListener('click',click);window.addEventListener('focus',focus);document.addEventListener('visibilitychange',visible);paint();void reload();
     return Object.freeze({reload,destroy});
   }

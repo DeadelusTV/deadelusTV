@@ -1,37 +1,68 @@
-.dcg-xp{--xp-size:136px;--xp-progress:0;--xp-from:0;--xp-medallion-image:url("assets/xp/dcg-xp-medallion.png");--xp-halo-strength:.43;--xp-fog-low:.18;--xp-fog-high:.29;display:flex;flex-wrap:wrap;align-items:center;gap:24px;position:relative;isolation:isolate;color:#f4e4be;font-family:inherit;text-align:left;border:0;background:none;padding:18px 8px;max-width:100%;box-sizing:border-box}
+.dcg-xp{--xp-size:136px;--xp-medallion-image:url("assets/xp/dcg-xp-nebula-v3.png");--xp-halo-intensity:.75;--xp-sparkle-intensity:.90;display:flex;flex-wrap:wrap;align-items:center;gap:24px;position:relative;isolation:isolate;color:#f4e4be;font-family:inherit;text-align:left;border:0;background:none;padding:18px 8px;max-width:100%;box-sizing:border-box}
 button.dcg-xp{cursor:pointer;appearance:none;border-radius:20px;transition:background .2s}
 button.dcg-xp:hover{background:#dba9580c}button.dcg-xp:focus-visible{outline:2px solid #ffdb8b;outline-offset:5px}button.dcg-xp:disabled{cursor:wait}
-/* Animation and SVG ring adapted from the user-supplied Pass-XP prototype. */
-.dcg-xp__medal{position:relative;flex:0 0 var(--xp-size);display:grid;place-items:center;width:var(--xp-size);height:var(--xp-size);isolation:isolate;user-select:none}
-/* Crop the approved image to the nebula; the prototype's SVG supplies the metal rim. */
-.dcg-xp__face{position:absolute;inset:7.7%;border-radius:50%;overflow:hidden;background:var(--xp-medallion-image) center/132% 132% no-repeat;box-shadow:inset 0 0 17px 5px #0006,inset 0 0 0 1px #b99a6260,0 0 0 2px #0c0e10;z-index:0}
-.dcg-xp__number{position:relative;z-index:2;font:500 calc(var(--xp-size)*.54)/1 Georgia,'Times New Roman',serif;letter-spacing:-.055em;padding-right:.045em;margin-top:-.025em;transform:translateY(-.06em);background:linear-gradient(115deg,#ffe9a5 8%,#fff9dc 31%,#f7d17a 45%,#cb8d31 65%,#ffe3a0 84%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(1px 1px 0 #8e5c20) drop-shadow(0 0 6px #eab74a66)}
-.dcg-xp__ring-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;z-index:1;pointer-events:none}
-.dcg-xp__ring-track{stroke:#494137;filter:drop-shadow(0 0 1px #b2925a40)}
-.dcg-xp__ring-edge{stroke:#a7854d99}
-.dcg-xp__ring-active{stroke:#e7bb71;filter:drop-shadow(0 0 3.5px #e3b45a89);stroke-linecap:butt}
-.dcg-xp__ring-inner{stroke:#ffe0a4;filter:drop-shadow(0 0 4px #d3a04f88);stroke-linecap:butt}
-.dcg-xp__ring-fog{stroke:#d6a156;filter:blur(6px);opacity:.23;stroke-linecap:butt;animation:dcg-xp-arc-shimmer 2.7s ease-in-out infinite}
-.dcg-xp--advance .dcg-xp__ring-active,.dcg-xp--advance .dcg-xp__ring-inner{animation:dcg-xp-fill 1s cubic-bezier(.18,.75,.2,1)}
-.dcg-xp--advance .dcg-xp__ring-fog{animation:dcg-xp-fill 1s cubic-bezier(.18,.75,.2,1),dcg-xp-arc-shimmer 2.7s ease-in-out infinite}
-.dcg-xp__halo{position:absolute;z-index:-2;inset:-16%;border-radius:50%;opacity:0;background:radial-gradient(circle,transparent 42%,#bf8d403b 55%,#dda9521c 68%,transparent 79%);filter:blur(calc(var(--xp-size)*.059));transition:opacity 1s;pointer-events:none}
-.dcg-xp--ready{--xp-fog-low:.35;--xp-fog-high:.58}
-.dcg-xp--ready .dcg-xp__halo{opacity:var(--xp-halo-strength);animation:dcg-xp-aura-breathe 3.5s ease-in-out infinite}
-.dcg-xp--ready .dcg-xp__ring-active{stroke:#f2d091;filter:drop-shadow(0 0 5px #edc579b2)}
-.dcg-xp--ready .dcg-xp__ring-fog{opacity:.48}
-.dcg-xp__sparks{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:visible}
-.dcg-xp__spark{position:absolute;width:calc(var(--xp-size)*var(--xp-spark-size));height:calc(var(--xp-size)*var(--xp-spark-size));left:var(--xp-x);top:var(--xp-y);transform:translate(-50%,-50%) rotate(var(--xp-spark-rotation));opacity:0;animation:dcg-xp-twinkle var(--xp-spark-time) ease-in-out var(--xp-spark-delay) infinite}
-.dcg-xp__spark:before{content:"";position:absolute;inset:-65%;border-radius:50%;background:radial-gradient(circle,#fff3d8 0%,#ffce72b2 20%,#f0ab3e38 40%,transparent 72%);filter:blur(.4px)}
-.dcg-xp__spark:after{content:"";position:absolute;inset:0;clip-path:polygon(50% 0%,57% 40%,100% 50%,57% 60%,50% 100%,43% 60%,0% 50%,43% 40%);background:linear-gradient(135deg,#fff 10%,#f9d18b 75%);filter:drop-shadow(0 0 2px #fbd995)}
-.dcg-xp__spark--tiny:after{border-radius:50%;clip-path:none;inset:20%;background:#ffe8b4}
-.dcg-xp__spark--burst{animation:dcg-xp-burst-star var(--xp-spark-time) ease-out forwards}
-.dcg-xp--ready .dcg-xp__sparks{filter:drop-shadow(0 0 1.5px #f7d38860)}
-@keyframes dcg-xp-twinkle{0%,12%,92%,100%{opacity:0;filter:brightness(.8)}24%{opacity:calc(var(--xp-spark-peak)*.65);filter:brightness(1)}37%{opacity:var(--xp-spark-peak);filter:brightness(1.4)}55%{opacity:var(--xp-spark-peak);filter:brightness(1.25)}76%{opacity:calc(var(--xp-spark-peak)*.37);filter:brightness(1)}}
-@keyframes dcg-xp-burst-star{0%{opacity:0;filter:brightness(.8);scale:.4}35%{opacity:.95;filter:brightness(1.25);scale:1.15}100%{opacity:0;scale:.85;filter:brightness(.8)}}
-@keyframes dcg-xp-aura-breathe{0%,100%{opacity:calc(var(--xp-halo-strength)*.8);transform:scale(.98)}50%{opacity:var(--xp-halo-strength);transform:scale(1.07)}}
-@keyframes dcg-xp-arc-shimmer{0%,100%{opacity:var(--xp-fog-low)}50%{opacity:var(--xp-fog-high)}}
-@keyframes dcg-xp-fill{from{stroke-dasharray:calc(var(--xp-from)*100) 100}to{stroke-dasharray:calc(var(--xp-progress)*100) 100}}
+/* Adapted from the supplied DCG-Pass-XP-Prototype-V3.html. */
+.dcg-xp__medal{position:relative;width:var(--xp-size);height:var(--xp-size);display:grid;place-items:center;flex:none;isolation:isolate;user-select:none}
+.dcg-xp__medal .dcg-xp__halo{position:absolute;z-index:-2;inset:-26%;border-radius:50%;opacity:0;pointer-events:none;transform:scale(.95);filter:blur(9px);background:radial-gradient(circle,transparent 35%,#c78b3640 42%,#d8a14d56 48%,#ecb25938 54%,#c8882d19 62%,transparent 74%);transition:opacity .7s ease}
+.dcg-xp--ready .dcg-xp__medal .dcg-xp__halo{opacity:var(--xp-halo-intensity);animation:dcg-xp-halo-breathe 4s ease-in-out infinite}
+.dcg-xp__medal .dcg-xp__face{position:absolute;inset:7.563025%;border-radius:50%;overflow:hidden;z-index:0;border:1px solid #a686536b;box-shadow:inset 0 0 17px 4px #0009,0 0 0 4px #0c0d0f;background:radial-gradient(circle at 57% 50%,#182231,#0b1016 72%)}
+.dcg-xp__medal .dcg-xp__face::before{position:absolute;content:'';inset:0;border-radius:50%;background-image:var(--xp-medallion-image);background-position:center;background-size:cover;opacity:.91;filter:saturate(.90) brightness(.87)}
+.dcg-xp__medal .dcg-xp__face::after{content:'';position:absolute;inset:0;border-radius:50%;background:radial-gradient(ellipse at 51% 46%,transparent 46%,#080b0d30 78%,#000a 100%),linear-gradient(110deg,#ffffff06,transparent 39%,#e4be7208 75%,transparent);box-shadow:inset 0 0 22px 2px #0009}
+.dcg-xp__medal .dcg-xp__ring-svg{width:100%;height:100%;position:absolute;z-index:2;inset:0;overflow:visible;pointer-events:none}
+.dcg-xp__medal .dcg-xp__ring-svg .dcg-xp__metal-groove{fill:none;stroke:#8a683e;stroke-width:1;opacity:.55}
+.dcg-xp__medal .dcg-xp__ring-svg .dcg-xp__metal-shell{fill:none;stroke:#36271a;stroke-width:16;opacity:.95}
+.dcg-xp__medal .dcg-xp__ring-svg .dcg-xp__metal-grain{fill:none;stroke:#78542b;stroke-width:12;opacity:.30}
+.dcg-xp__medal .dcg-xp__ring-svg .dcg-xp__metal-light{fill:none;stroke:#bb9050;stroke-width:1.15;opacity:.58}
+.dcg-xp__medal .dcg-xp__ring-svg .dcg-xp__metal-dark{fill:none;stroke:#070707;stroke-width:2;opacity:.85}
+.dcg-xp__medal .dcg-xp__ring-svg .dcg-xp__arc-haze{fill:none;stroke:#e7b662;stroke-width:24;opacity:.32;filter:blur(6px);stroke-linecap:round}
+.dcg-xp__medal .dcg-xp__ring-svg .dcg-xp__arc-core{fill:none;stroke-width:14;stroke-linecap:butt;opacity:.95}
+.dcg-xp__medal .dcg-xp__ring-svg .dcg-xp__arc-highlight{fill:none;stroke:#fff1bf;stroke-width:1.6;stroke-linecap:butt;opacity:.75}
+.dcg-xp__medal .dcg-xp__ring-svg .dcg-xp__arc-tail{stroke:#edc27b;fill:none;stroke-linecap:butt}
+.dcg-xp__medal .dcg-xp__ring-svg .dcg-xp__arc-tail.dcg-xp__arc-tail--glow{stroke-width:23;filter:blur(5px)}
+.dcg-xp--ready .dcg-xp__medal .dcg-xp__ring-svg .dcg-xp__arc-haze{opacity:.48;animation:dcg-xp-arc-breathe 3.5s ease-in-out infinite}
+.dcg-xp__medal .dcg-xp__number{position:relative;z-index:5;font:500 calc(var(--xp-size)*.3487395)/1 Georgia,'Times New Roman',serif;letter-spacing:-.045em;color:#f1d49c;text-shadow:0 1px 0 #714620,0 4px 12px #000d,0 0 19px #c58a3438;transform:translateX(calc(var(--xp-size)*-.012605))}
+.dcg-xp__medal .dcg-xp__sparks{position:absolute;inset:0;z-index:4;pointer-events:none;overflow:visible}
+.dcg-xp__spark{position:absolute;left:var(--xp-x);top:var(--xp-y);width:calc(var(--xp-size)*var(--xp-star-size));height:calc(var(--xp-size)*var(--xp-star-size));opacity:0;transform:translate(-50%,-50%);animation:dcg-xp-glitter var(--xp-period) ease-in-out var(--xp-delay) infinite;animation-play-state:running}
+.dcg-xp__spark::before{content:'';position:absolute;inset:-100%;border-radius:50%;background:radial-gradient(circle,#ffdb944d,transparent 65%);filter:blur(1.8px)}
+.dcg-xp__spark::after{content:'';position:absolute;inset:0;clip-path:polygon(50% 0,59% 43%,100% 50%,59% 57%,50% 100%,41% 57%,0 50%,41% 43%);background:#fff5d9;box-shadow:0 0 2px #f5c982}
+.dcg-xp__spark.dcg-xp__spark--dot::after{clip-path:none;border-radius:50%;inset:25%;background:#f5dca6}
+.dcg-xp__spark.dcg-xp__spark--major{filter:drop-shadow(0 0 2px #ebbd66)}
+.dcg-xp--ready .dcg-xp__medal .dcg-xp__spark{animation-duration:calc(var(--xp-period)*.90)}
+@keyframes dcg-xp-glitter{0%,8%,86%,100%{opacity:0;scale:.64}25%{opacity:calc(var(--xp-power) * var(--xp-sparkle-intensity));scale:1.07}41%{opacity:calc(var(--xp-power) * var(--xp-sparkle-intensity) * .78);scale:.94}55%{opacity:0;scale:.80}}
+@keyframes dcg-xp-halo-breathe{0%,100%{opacity:calc(var(--xp-halo-intensity)*.68);transform:scale(.97)}50%{opacity:var(--xp-halo-intensity);transform:scale(1.06)}}
+@keyframes dcg-xp-arc-breathe{0%,100%{opacity:.34}50%{opacity:.57}}
+
+/* V3 : l'anneau non rempli se fond presque entièrement dans le fond. */
+.dcg-xp__medal .dcg-xp__ring-svg .dcg-xp__metal-groove{stroke:#53412c;opacity:.17}
+.dcg-xp__medal .dcg-xp__ring-svg .dcg-xp__metal-shell{stroke:#221d18;opacity:.57}
+.dcg-xp__medal .dcg-xp__ring-svg .dcg-xp__metal-grain{stroke:#5a4428;opacity:.11}
+.dcg-xp__medal .dcg-xp__ring-svg .dcg-xp__metal-light{stroke:#af8a54;opacity:.24}
+.dcg-xp__medal .dcg-xp__ring-svg .dcg-xp__metal-dark{opacity:.75}
+.dcg-xp__medal .dcg-xp__face{isolation:isolate;border-color:#785e3d3e;box-shadow:inset 0 0 13px 3px #0009,0 0 0 4px #0c0d0f}
+.dcg-xp__medal .dcg-xp__face::before{opacity:1;filter:saturate(1.12) brightness(1.11)}
+.dcg-xp__medal .dcg-xp__face::after{z-index:1;box-shadow:inset 0 0 13px 1px #0008;background:radial-gradient(circle at 50% 47%,transparent 44%,#080b0d21 82%,#0008 100%)}
+.dcg-xp__medal .dcg-xp__face .dcg-xp__nebula-stars{position:absolute;inset:0;z-index:2;pointer-events:none}
+.dcg-xp__medal .dcg-xp__face .dcg-xp__nebula-star{position:absolute;left:var(--xp-x);top:var(--xp-y);width:calc(var(--xp-size)*var(--xp-star-size));height:calc(var(--xp-size)*var(--xp-star-size));transform:translate(-50%,-50%);opacity:.2;animation:dcg-xp-nebula-twinkle var(--xp-duration) ease-in-out var(--xp-delay) infinite;animation-fill-mode:both;will-change:opacity}
+.dcg-xp__medal .dcg-xp__face .dcg-xp__nebula-star::before{content:'';position:absolute;inset:-7px;border-radius:50%;background:radial-gradient(circle,rgba(255,225,164,.9),rgba(242,177,78,.36) 18%,transparent 67%);filter:blur(2px);opacity:var(--xp-glow)}
+.dcg-xp__medal .dcg-xp__face .dcg-xp__nebula-star::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0 43%,#ffe8b7 49%,#fff9e6 50%,#ffe8b7 51%,transparent 57% 100%),linear-gradient(0deg,transparent 0 43%,#ffe8b7 49%,#fff9e6 50%,#ffe8b7 51%,transparent 57% 100%);clip-path:polygon(50% 0,58% 42%,100% 50%,58% 58%,50% 100%,42% 58%,0 50%,42% 42%);filter:drop-shadow(0 0 3px #f9c773)}
+.dcg-xp__medal .dcg-xp__face .dcg-xp__nebula-star.dcg-xp__nebula-star--small::before{inset:-3px;filter:blur(1px)}
+.dcg-xp__medal .dcg-xp__face .dcg-xp__nebula-star.dcg-xp__nebula-star--small::after{clip-path:none;border-radius:50%;inset:20%;background:#fee1a7;box-shadow:0 0 4px #e9bb71}
+@keyframes dcg-xp-nebula-twinkle{0%,100%{opacity:calc(var(--xp-base) * var(--xp-sparkle-intensity));transform:translate(-50%,-50%) scale(.78)}23%{opacity:calc(var(--xp-peak) * var(--xp-sparkle-intensity));transform:translate(-50%,-50%) scale(1.16)}40%{opacity:calc(var(--xp-base) * .8 * var(--xp-sparkle-intensity));transform:translate(-50%,-50%) scale(.9)}76%{opacity:calc(var(--xp-base) * 1.12 * var(--xp-sparkle-intensity));transform:translate(-50%,-50%) scale(1)}}
+/* V3 : étoiles de bordure plus lisibles, avec de vrais flashes brefs, sans dot-cur­seur. */
+.dcg-xp__medal .dcg-xp__sparks{overflow:visible}
+.dcg-xp__medal .dcg-xp__spark::before{inset:-170%;background:radial-gradient(circle,rgba(255,240,194,.94) 0%,rgba(248,203,121,.36) 18%,transparent 66%);filter:blur(1.6px)}
+.dcg-xp__medal .dcg-xp__spark::after{background:#fff5d6;filter:drop-shadow(0 0 2px #ffdb90) drop-shadow(0 0 3px #e4a64e)}
+.dcg-xp__medal .dcg-xp__spark.dcg-xp__spark--major::after{background:#fffae7;filter:drop-shadow(0 0 3px #ffe1a3) drop-shadow(0 0 5px #f2bd5b)}
+.dcg-xp__medal .dcg-xp__spark.dcg-xp__spark--major::before{inset:-230%;filter:blur(2.2px)}
+@keyframes dcg-xp-glitter{0%,11%,64%,100%{opacity:0;scale:.52}24%{opacity:calc(var(--xp-power) * var(--xp-sparkle-intensity));scale:1.22}32%{opacity:calc(var(--xp-power) * .75 * var(--xp-sparkle-intensity));scale:1}47%{opacity:.05;scale:.75}}
+.dcg-xp--advance .dcg-xp__medal .dcg-xp__ring-svg .dcg-xp__arc-haze{animation:dcg-xp-gain-haze 1.1s ease-out 1}
+.dcg-xp--advance .dcg-xp__medal .dcg-xp__spark{filter:brightness(1.5)}
+@keyframes dcg-xp-gain-haze{0%,100%{opacity:.32}35%{opacity:.85}}
+@media(prefers-reduced-motion:reduce){.dcg-xp__medal .dcg-xp__nebula-star{animation:none;opacity:.6}.dcg-xp__medal .dcg-xp__spark.dcg-xp__spark--major{opacity:.45}.dcg-xp--advance .dcg-xp__medal .dcg-xp__ring-svg .dcg-xp__arc-haze{animation:none}}
+
+
+.dcg-xp__spark[hidden]{display:none}
 .dcg-xp__copy{display:flex;flex-direction:column;gap:6px;min-width:0}.dcg-xp__label{font-size:10px;font-weight:600;letter-spacing:.17em;text-transform:uppercase;color:#c5a875}.dcg-xp__copy strong{font-size:18px;font-weight:500;line-height:1.35}.dcg-xp__reward{font-size:12px;line-height:1.5;color:#ab9c86}
 .dcg-xp-pass{padding:18px 24px;border:1px solid #a178343d;border-radius:18px;background:radial-gradient(ellipse at 10% 80%,#b3803010,transparent 65%),#090d13;margin-bottom:24px}.dcg-xp-pass[hidden]{display:none}.dcg-xp-pass__note{font-size:12px;color:#ac9f8b;line-height:1.65;margin:8px 0 0}.dcg-xp-pass__error{font-size:13px;color:#efbd95}.dcg-xp-pass__message{font-size:13px;color:#f1d59a}
 @media(max-width:520px){.dcg-xp{--xp-size:108px;gap:18px}.dcg-xp__copy strong{font-size:16px}}
-@media(prefers-reduced-motion:reduce){.dcg-xp,.dcg-xp__halo,.dcg-xp__ring-active,.dcg-xp__ring-inner,.dcg-xp__ring-fog,.dcg-xp__spark{animation:none!important;transition:none!important}.dcg-xp__spark{opacity:.15!important}.dcg-xp__spark--burst{display:none}.dcg-xp--ready .dcg-xp__halo{opacity:.35}}
+@media(prefers-reduced-motion:reduce){.dcg-xp,.dcg-xp__halo,.dcg-xp__arc-haze,.dcg-xp__spark,.dcg-xp__nebula-star{animation:none!important;transition:none!important}.dcg-xp__nebula-star{opacity:.6}.dcg-xp__spark{opacity:.12}.dcg-xp__spark--major{opacity:.45}.dcg-xp--ready .dcg-xp__medal .dcg-xp__halo{opacity:.45}}
