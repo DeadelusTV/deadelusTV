@@ -13,7 +13,7 @@
       const p=window.DCGXP.progress(state.total,state.level),opened=Math.min(p.opened,p.required),remaining=Math.max(0,p.required-p.opened);
       const packs=Math.ceil(p.next/2),reward=scope==='general'?10*p.next+' Alkahests':packs+' paquet'+(packs>1?'s':'');
       const percent=(p.fraction*100).toLocaleString('fr-FR',{maximumFractionDigits:1}),count=n=>n.toLocaleString('fr-FR');
-      return '<div class="dcg-xp-details__heading"><div><span class="overline">PASS XP · CE DCG</span><h2>Ma progression XP</h2></div><strong class="dcg-xp-details__level">Niveau '+p.level+'</strong></div>'+
+      return '<div class="dcg-xp-details__heading"><div><span class="overline">Level UP - <span data-streamer-name>Streamer</span></span><h2>Ma progression XP</h2></div><strong class="dcg-xp-details__level">Niveau '+p.level+'</strong></div>'+
         '<div class="dcg-xp-details__measure"><span>Vers le niveau '+p.next+'</span><strong>'+count(opened)+' / '+count(p.required)+' paquets · '+percent+' %</strong></div>'+
         '<progress class="dcg-xp-details__bar" max="'+p.required+'" value="'+opened+'" aria-label="Progression vers le niveau '+p.next+'">'+percent+' %</progress>'+
         '<dl class="dcg-xp-details__stats"><div><dt>Paquets ouverts au total</dt><dd>'+count(p.total)+'</dd></div><div><dt>Paquets restants pour le niveau '+p.next+'</dt><dd>'+count(remaining)+'</dd></div><div><dt>Récompense du niveau '+p.next+'</dt><dd>'+reward+'</dd></div></dl>'+
@@ -31,7 +31,7 @@
       detailsHost?.replaceChildren();
       if(state){
         host.insertAdjacentHTML('beforeend',window.DCGXP.markup(state,{label:scope==='general'?'Niveau général':'Niveau de ce DCG',scope,interactive:true,busy,previousState,compact}));
-        if(detailsHost)detailsHost.insertAdjacentHTML('beforeend',details());
+        if(detailsHost){detailsHost.insertAdjacentHTML('beforeend',details());window.DCGHeader?.refreshBrand();}
         stopAnimation=window.DCGXP.animate(host);
         previousState=null;
         if(state.active===false)appendNote('dcg-xp-pass__note','La progression XP commencera au lancement du DCG. Les ouvertures de test ne sont pas comptées.');
