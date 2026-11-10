@@ -3,6 +3,7 @@ window.DEADELUSTV_DCG_CONFIG=Object.freeze({
   gameBase:'https://tcg.yekelle-boulet.workers.dev/',
   // Le serveur actuel héberge uniquement le DCG DeadelusTV.
   accountSpaceId:'deadelustv',
+  accountBroadcasterId:'99977368',
   authStorageKey:'sb-eodtxlhnfzyapkyvvxdi-auth-token',
   discoveryLimit:20,
   // Activer seulement après installation et recette du service de présence.

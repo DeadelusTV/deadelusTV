@@ -1,0 +1,647 @@
+/* Styles de la carte V8.1 conservés en Shadow DOM : aucun conflit avec les styles du site. */
+/* V0.1.2 : le Shadow DOM n’hérite pas du box-sizing global du site. Sans ceci, les 365px de la carte excluaient ses bordures et son padding, et débordaient du conteneur. */
+*,*::before,*::after{box-sizing:border-box}
+:host{display:block;position:relative;width:100%;aspect-ratio:591/1004;overflow:visible;contain:layout;--fit:1}
+.live-fit{position:absolute;left:0;top:0;width:365px;height:620px;transform:scale(var(--fit));transform-origin:top left;perspective:1300px}
+.live-fit>.trading-card {width:365px!important;max-width:none!important;height:calc(365px * 1004 / 591);}
+    .trading-card {
+      --pointer-x:50%;--pointer-y:50%;--rx:0deg;--ry:0deg;
+      --accent-rarity:#9aabb7; --accent-light:#e0e7ec; --accent-glow:#afbdcc36;
+      --gold:#d6af62; --gold-light:#fff0bc; --gold-dark:#83602c;
+      position:relative;isolation:isolate;width:min(365px,100%);aspect-ratio:591 / 1004;padding:13px;
+      border:3px solid #a77e3a;border-radius:29px;
+      background:linear-gradient(140deg,#b48b4a 0%,#251d17 3.5%,#0d0e10 13%,#171718 55%,#08090c 89%,#59401e 97%,#e5c67c 100%);
+      box-shadow:0 25px 55px #000b,0 0 0 1px #3c2a16,0 0 26px var(--accent-glow),inset 0 0 0 2px #efd294,inset 0 0 0 6px #141313;
+      transform:rotateX(var(--rx)) rotateY(var(--ry)) translateZ(0);
+      transition:transform .22s ease,box-shadow .3s ease;will-change:transform;user-select:none;
+    }
+    /* Progression validée : gris → bleu → vert ; autres raretés inchangées. */
+    .trading-card[data-rarity="Basique"],.trading-card[data-rarity="Commun"] {--accent-rarity:#8d99a6;--accent-light:#d8dee5;--accent-glow:#b9c7d32d}
+    .trading-card[data-rarity="Commune"],.trading-card[data-rarity="Peu commun"] {--accent-rarity:#4f9cf4;--accent-light:#c7e5ff;--accent-glow:#3594ff36}
+    .trading-card[data-rarity="Rare"] {--accent-rarity:#4fc88e;--accent-light:#c7ffe0;--accent-glow:#3cdd8b3f}
+    .trading-card[data-rarity="Épique"] {--accent-rarity:#ba83f9;--accent-light:#f3daff;--accent-glow:#b66cff61}
+    .trading-card[data-rarity="Légendaire"] {--accent-rarity:#f9ca62;--accent-light:#fff4bc;--accent-glow:#ffd3657a}
+
+    /* Calques optiques au-dessus du contenu (mais sans bloquer la souris). */
+    .trading-card::before {content:"";position:absolute;z-index:9;inset:3px;border-radius:24px;pointer-events:none;opacity:0;background:linear-gradient(115deg,transparent 15%,#fff5 40%,#fff9 47%,transparent 62%);background-size:240% 100%;background-position:var(--pointer-x) center;mix-blend-mode:screen}
+    .trading-card::after {content:"";position:absolute;z-index:10;inset:3px;border-radius:24px;pointer-events:none;opacity:0;background:radial-gradient(circle at var(--pointer-x) var(--pointer-y),#fff9,transparent 34%),repeating-linear-gradient(122deg,#ff6fcd 0%,#69d6fd 12%,#f8f4a2 24%,#d5adff 37%,#86e8f1 50%);background-size:100% 100%,320% 320%;background-position:center, var(--pointer-x) var(--pointer-y);mix-blend-mode:color-dodge;transition:opacity .25s}
+    /* Reflet très fin du film plastifié, commun à toutes les finitions.
+       Contrairement au foil et aux halos holo, il n'éclaire qu'une bande
+       localisée dont l'orientation et la position suivent l'inclinaison. */
+    .laminate-glint {
+      position:absolute;
+      z-index:14;
+      inset:4px;
+      border-radius:23px;
+      pointer-events:none;
+      opacity:0;
+      background:linear-gradient(var(--laminate-angle,115deg),
+        transparent 28%,
+        rgba(255,255,255,.008) 39%,
+        rgba(245,242,229,.045) 45%,
+        rgba(255,250,239,.17) 49.5%,
+        rgba(231,240,252,.045) 52.5%,
+        rgba(255,255,255,.008) 60%,
+        transparent 67%);
+      background-size:220% 140%;
+      background-position:var(--laminate-x,50%) var(--laminate-y,50%);
+      background-repeat:no-repeat;
+      -webkit-mask-image:radial-gradient(ellipse 80% 56% at var(--laminate-mask-x,50%) var(--laminate-mask-y,50%),
+        #000 10%,rgba(0,0,0,.78) 32%,transparent 82%);
+      mask-image:radial-gradient(ellipse 80% 56% at var(--laminate-mask-x,50%) var(--laminate-mask-y,50%),
+        #000 10%,rgba(0,0,0,.78) 32%,transparent 82%);
+      mix-blend-mode:screen;
+      transition:opacity .23s ease-out;
+    }
+    .trading-card.laminate-active .laminate-glint {opacity:.82}
+    /* L'aperçu pilote le survol des deux faces depuis un repère immobile. */
+    :host([hover="external"]) {pointer-events:none}
+    :host([hover="external"]) .trading-card {transform:none;--pointer-x:inherit;--pointer-y:inherit}
+    :host([hover="external"]) .laminate-glint {opacity:var(--preview-glint-opacity,0)}
+    .shine-layer,.sparkle-layer {position:absolute;inset:2px;border-radius:25px;pointer-events:none}
+    .shine-layer {z-index:11;opacity:0;background:linear-gradient(110deg,transparent 11%,#ffffff05 24%,#fff9 42%,#fff9dfc2 48%,#fff3 56%,transparent 74%);background-size:235% 100%;background-position:160% center;mix-blend-mode:screen}
+    .sparkle-layer {z-index:12;opacity:0;background:
+      radial-gradient(circle at 15% 20%,#fff 0 1.6px,transparent 3.2px),
+      radial-gradient(circle at 83% 12%,#fff8d4 0 1.8px,transparent 3.5px),
+      radial-gradient(circle at 76% 72%,#fff 0 1.3px,transparent 3px),
+      radial-gradient(circle at 24% 82%,#ffedac 0 1.7px,transparent 3.5px),
+      radial-gradient(circle at 53% 47%,#fff 0 1.2px,transparent 3px),
+      radial-gradient(circle at 91% 52%,#fff9d7 0 1.5px,transparent 3px);
+      filter:drop-shadow(0 0 4px #fff9) drop-shadow(0 0 7px #ffc87879)
+    }
+    /* Aucun voile de verre sur l'illustration : les couches qui couvrent toute la carte sont désactivées. */
+    .trading-card:is(.gold,.holo,.holo-gold)::before,
+    .trading-card:is(.gold,.holo,.holo-gold,.ultimate)::after {
+      opacity:0!important;animation:none!important;
+    }
+    /* Dorée = métal pur, sans particules, balayage ni halo additionnel. */
+    .trading-card.gold .shine-layer,.trading-card.gold .sparkle-layer {opacity:0!important;animation:none!important}
+    /* Étoilée : points lumineux nets qui scintillent ; aucun reflet diffus. */
+    .trading-card.holo .shine-layer,.trading-card.holo-gold .shine-layer {opacity:0!important;animation:none!important}
+    .trading-card.holo .sparkle-layer,.trading-card.holo-gold .sparkle-layer {
+      opacity:.83;animation:twinkle 2.3s ease-in-out infinite alternate,starDrift 9s linear infinite;
+      filter:drop-shadow(0 0 3px #fff9) drop-shadow(0 0 6px #8ecbff75);
+    }
+    .trading-card.holo-gold .sparkle-layer {filter:drop-shadow(0 0 3px #fff9) drop-shadow(0 0 7px #fbd2858a)}
+
+    /* V5 : ciel étoilé à éclats individualisés (pas un voile sur l'illustration).
+       Spécifique à Étoilée / Étoilée dorée ; la Dorée et l'Ultimate restent inchangées. */
+    .sky-stars {position:absolute;inset:2px;z-index:13;pointer-events:none;border-radius:25px;display:none;overflow:hidden;--spark-color:#e7f9ff;--spark-glow:#62cfff}
+    .trading-card:is(.holo,.holo-gold) .sky-stars {display:block}
+    .trading-card.holo-gold .sky-stars {--spark-color:#fff6dd;--spark-glow:#e8c47e}
+    .sky-stars .spark {
+      position:absolute;left:var(--sx);top:var(--sy);width:var(--ss);height:var(--ss);
+      transform:translate(-50%,-50%) scale(.68);opacity:.68;
+      animation:skyTwinkle var(--dur) ease-in-out var(--delay) infinite alternate;
+      filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 6px var(--spark-glow));
+    }
+    .sky-stars .spark::before {content:"";position:absolute;inset:0;
+      background:var(--spark-color);
+      clip-path:polygon(50% 0%,59% 38%,100% 50%,59% 62%,50% 100%,41% 62%,0% 50%,41% 38%);
+    }
+    .sky-stars .spark::after {content:"";position:absolute;inset:28%;border-radius:50%;background:#fff;
+      box-shadow:0 0 9px 3px var(--spark-glow),0 0 13px 2px rgba(255,255,255,.48);
+      opacity:.64;
+    }
+    .sky-stars .spark.pin {width:var(--ss);height:var(--ss);filter:drop-shadow(0 0 3px var(--spark-glow))}
+    .sky-stars .spark.pin::before {clip-path:none;border-radius:50%;background:#f7ffff;box-shadow:0 0 5px var(--spark-glow)}
+    .sky-stars .spark.pin::after {display:none}
+    .trading-card:is(.holo,.holo-gold):hover .sky-stars .spark {filter:drop-shadow(0 0 3px #fff) drop-shadow(0 0 9px var(--spark-glow))}
+    @keyframes skyTwinkle {
+      0% {opacity:.4;transform:translate(-50%,-50%) scale(.64)}
+      45% {opacity:.82;transform:translate(-50%,-50%) scale(.94)}
+      100% {opacity:1;transform:translate(-50%,-50%) scale(1.14)}
+    }
+
+    /* Galactique : les anciens calques de foil restent éteints. */
+    .trading-card.ultimate .shine-layer,.trading-card.ultimate .sparkle-layer {opacity:0!important;animation:none!important}
+
+    /* Dorée : métal doré statique, sans glow supplémentaire. */
+    .trading-card:is(.gold,.holo-gold) {
+      border-color:#ecc575;
+      background:linear-gradient(126deg,#f9e1a3 0%,#9a6c35 4%,#1a1611 12%,#201914 44%,#17120e 71%,#9c712f 95%,#f8e6b1 100%);
+      box-shadow:0 25px 55px #000c,inset 0 0 0 3px #f8e0a0,inset 0 0 0 7px #50391d;
+      animation:none;
+    }
+    /* Galactique avec spirale : variante B validée le 06/11/2026.
+       Le support conserve ses contours ; les nouveaux calques autonomes sont
+       définis dans card-galactic.css, sous et au-dessus du contenu. */
+    .trading-card.ultimate {
+      border-color:#d5ae65;
+      background:radial-gradient(ellipse at 8% 36%,#34266b 0,transparent 37%),radial-gradient(ellipse at 94% 66%,#10394f 0,transparent 38%),radial-gradient(ellipse at 75% 1%,#583b90 0,transparent 31%),linear-gradient(150deg,#100d25,#070914 48%,#17102c);
+      box-shadow:0 25px 65px #000c,0 0 27px #a881ff75,0 0 66px #7641cf38,inset 0 0 0 2px #dfc591,inset 0 0 0 6px #131022;
+      animation:none;
+    }
+    .trading-card.ultimate::before {
+      opacity:0!important;background:none;animation:none!important;
+    }
+
+    .inner {position:relative;z-index:2;height:100%;display:flex;flex-direction:column;min-height:0}
+    .band {display:flex;align-items:center;justify-content:center;position:relative;border:1.5px solid #caa15c;border-radius:13px;background:linear-gradient(105deg,#372c1d,#17181b 21%,#202024 72%,#3e301d);box-shadow:inset 0 0 0 1px #f1d5964b,0 1px 4px #0008;flex-shrink:0}
+    .card-head {height:9%;margin:0 1px 4px;padding:0 10px;gap:7px;font-family:Georgia,serif;font-size:25px;font-weight:900;color:#ffe7af;white-space:nowrap}
+    .title-value {min-width:0;max-width:83%;overflow:hidden;text-overflow:ellipsis;line-height:1.05;letter-spacing:-.04em;text-shadow:0 1px 1px #000}
+    .chevrons {font:900 12px system-ui,sans-serif;letter-spacing:-3px;color:#c5a05c;white-space:nowrap;flex:1;text-align:left}
+    .chevrons.right {text-align:right}
+    .stars-bar {height:7%;margin:0 8px 7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:10px;color:var(--accent-rarity)}
+    .stars-bar::before,.stars-bar::after {content:"";height:1px;flex:1;max-width:50px;background:linear-gradient(90deg,transparent,var(--accent-rarity))}
+    .stars-bar::after {transform:rotate(180deg)}
+    .stars {display:flex;align-items:center;justify-content:center;gap:3px;white-space:nowrap;font-family:Georgia,serif;font-size:23px;line-height:1}
+    .stars .star {color:var(--accent-rarity);-webkit-text-stroke:.6px var(--accent-light);text-shadow:0 1px 1px #000,0 0 8px var(--accent-glow)}
+    .trading-card[data-rarity="Épique"] .stars .star {animation:starPulse 3s ease-in-out infinite alternate}
+    .trading-card[data-rarity="Légendaire"] .stars .star {animation:starPulse 1.9s ease-in-out infinite alternate;text-shadow:0 0 7px #fff4b0a8,0 0 17px #ffd46e9e}
+    .stars .star:nth-child(2n) {animation-delay:.35s!important}
+    .stars .star:nth-child(3n) {animation-delay:.7s!important}
+    .art-box {position:relative;flex:0 0 45%;min-height:0;margin:0 1px;border:2px solid #d0a860;border-radius:13px;overflow:hidden;background:#4e5257;box-shadow:inset 0 0 0 2px #f2d898,0 0 0 1px var(--accent-rarity),0 0 12px var(--accent-glow)}
+    .art-box img {width:100%;height:100%;object-fit:cover;display:block}
+    .art-box.framing-editable {cursor:grab;touch-action:none;user-select:none}
+    .art-box.framing-dragging {cursor:grabbing}
+    .first-badge {position:absolute;left:12px;bottom:12px;z-index:3;padding:6px 10px;border:1px solid #f8d78f;border-radius:6px;background:#17130fee;color:#ffe6aa;font:800 13px system-ui,sans-serif;letter-spacing:.14em;box-shadow:0 2px 8px #0009;pointer-events:none}
+    .art-box::after {content:"";position:absolute;inset:0;border:2px solid #fff1bb53;border-radius:11px;pointer-events:none}
+    .card-role {height:10%;margin:-3px 1px -4px;z-index:2;gap:10px;font-size:25px;font-weight:800;font-family:Georgia,serif;letter-spacing:-.045em;color:#f9e0ac;white-space:nowrap;background:linear-gradient(105deg,#30281b,#0e1013 24%,#272019 60%,#342717);box-shadow:inset 0 0 0 1px #efd3a044,0 1px 4px #0009}
+    .role-value {overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center;padding:0 8px}
+    .tcg-emote {display:inline-block;width:1.5em;height:1.5em;object-fit:contain;vertical-align:middle;margin:0 .08em;border:0;box-shadow:none}
+    .card-bottom {flex:1;min-height:0;margin:0 1px;border:1.5px solid #bd9754;border-radius:15px;background:linear-gradient(143deg,#272322,#0f1217 39%,#1a1b20 75%,#2b251e);box-shadow:inset 0 0 0 1px #f3d6954f;position:relative;padding:17px 15px 37px}
+    .desc {margin:0;color:#f4e8d3;line-height:1.34;font-family:Georgia,serif;font-size:17px;font-weight:500;white-space:pre-wrap;overflow-wrap:anywhere;max-height:100%;overflow:hidden}
+    /* ancien champ 'author' devenu nom en haut, et 'title' devenu collection en bas */
+    .collection-plaque {position:absolute;bottom:-10px;right:11px;max-width:77%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:5px 12px;border:1.5px solid #cba866;border-radius:8px;background:linear-gradient(105deg,#b58943,#fff1bf 46%,#b68a46);color:#18120b;font-family:Georgia,serif;font-weight:900;letter-spacing:.005em;font-size:16px;box-shadow:inset 0 0 0 1px #fff2bc,0 2px 4px #0009}
+    .gold .band,.holo-gold .band {border-color:#ffe0a0;box-shadow:inset 0 0 0 1px #fff0b689,0 0 9px #ffdc7b4f}
+    .gold .collection-plaque,.holo-gold .collection-plaque {background:linear-gradient(110deg,#96621c,#fff4c4 30%,#c7902e 53%,#fff2ae 75%,#a26722);border-color:#fff0ac;box-shadow:inset 0 0 0 1px #fff7d6,0 0 12px #ffdd7999}
+    .gold .art-box,.holo-gold .art-box {border-color:#ffe6a3;box-shadow:inset 0 0 0 2px #fff4c7,0 0 0 1px var(--accent-rarity),0 0 13px #ffe09c70}
+    /* La finition Dorée seule ne scintille pas, pas même sur ses petits panneaux. */
+    .trading-card.gold .band {box-shadow:inset 0 0 0 1px #fff0b689,0 1px 4px #0009}
+    .trading-card.gold .collection-plaque {box-shadow:inset 0 0 0 1px #fff7d6,0 2px 4px #0009}
+    .trading-card.gold .art-box {box-shadow:inset 0 0 0 2px #fff4c7,0 0 0 1px var(--accent-rarity)}
+    .holo .art-box,.holo-gold .art-box {border-color:#d8e8ff;box-shadow:inset 0 0 0 2px rgba(236,245,255,.95),0 0 0 1px rgba(127,193,255,.65),0 0 12px rgba(120,195,255,.35),0 0 22px rgba(115,88,255,.16)}
+    .holo .band,.holo-gold .band {box-shadow:inset 0 0 0 1px rgba(233,245,255,.65),0 0 8px rgba(119,188,255,.26)}
+    .holo .collection-plaque,.holo-gold .collection-plaque {box-shadow:inset 0 0 0 1px rgba(255,255,255,.72),0 0 10px rgba(118,190,255,.25)}
+    /* Ultimate : on garde les encadrés de la DA noir / or (fond opaque, dorures nettes).
+       Le foil ne colore ni la photo, ni les encadrés, ni la plaque de collection. */
+    .trading-card.ultimate .band,
+    .trading-card.ultimate .card-role,
+    .trading-card.ultimate .card-bottom {
+      border-color:#cba15b;
+      animation:none;
+    }
+    .trading-card.ultimate .art-box {
+      border-color:#d0a860;
+      background:#4e5257;
+      box-shadow:inset 0 0 0 2px #f2d898,0 0 0 1px var(--accent-rarity),0 0 12px var(--accent-glow);
+      animation:none;
+    }
+    .trading-card.ultimate .collection-plaque {
+      border-color:#cba866;
+      background:linear-gradient(105deg,#b58943,#fff1bf 46%,#b68a46);
+      color:#18120b;
+      box-shadow:inset 0 0 0 1px #fff2bc,0 2px 4px #0009;
+    }
+
+    @keyframes rainbow {from {filter:saturate(1.12) hue-rotate(0deg)} to {filter:saturate(1.12) hue-rotate(360deg)}}
+    @keyframes shineSweep {0%,8%{background-position:160% 50%;opacity:.08}34%{opacity:.56}64%{opacity:.32}100%{background-position:-95% 50%;opacity:.1}}
+    @keyframes twinkle {0%{opacity:.14}38%{opacity:.84}73%{opacity:.28}100%{opacity:.96}}
+    @keyframes starDrift {0%{transform:translate3d(0,0,0)}25%{transform:translate3d(1px,-1px,0)}50%{transform:translate3d(-1px,1px,0)}75%{transform:translate3d(1px,1px,0)}100%{transform:translate3d(0,0,0)}}
+    @keyframes starPulse {from{filter:brightness(.95)}to{filter:brightness(1.4) drop-shadow(0 0 6px var(--accent-rarity))}}
+    @keyframes goldPulse {0%,100%{box-shadow:0 25px 55px #000c,0 0 17px #eab45f7a,0 0 35px #f2c76b39,inset 0 0 0 3px #ffe9a3,inset 0 0 0 7px #50391d}50%{box-shadow:0 25px 55px #000c,0 0 28px #f9cc80b8,0 0 56px #ffdb8363,inset 0 0 0 3px #fff3c7,inset 0 0 0 7px #50391d}}
+    @keyframes ultimatePulse {0%,100%{box-shadow:0 25px 65px #000d,0 0 12px rgba(169,217,255,.25),0 0 28px rgba(255,215,124,.14),inset 0 0 0 3px #fff0c0,inset 0 0 0 7px #2e2440}50%{box-shadow:0 25px 65px #000d,0 0 20px rgba(200,229,255,.33),0 0 40px rgba(255,224,164,.20),inset 0 0 0 3px #fff5da,inset 0 0 0 7px #2e2440}}
+    @keyframes ultimateHolo {from{background-position:center,0% 50%}to{background-position:center,100% 50%}}
+    @keyframes ultimateMetal {from{background-position:12% 48%}to{background-position:83% 55%}}
+    @keyframes foilLightSweep {from{background-position:165% 50%,center}to{background-position:-55% 50%,center}}
+
+    /* V7 : éditeur, panneaux facultatifs et statistiques dorées. */
+    .collection-tools {display:flex;gap:7px;align-items:center;margin-top:8px}
+    .collection-tools input {flex:1;min-width:0}
+    .collection-tools .btn {padding:11px 9px}
+    .checklabel {display:flex!important;align-items:center;gap:9px;font-size:12px!important;cursor:pointer}
+    .checklabel input {accent-color:#d6ae64;width:16px;height:16px}
+    input[type="number"] {display:block;width:100%;padding:11px 12px;border:1px solid #424c63;border-radius:10px;color:var(--ink);background:#101622;outline:none}
+    input:disabled {opacity:.56;cursor:not-allowed}
+    .is-hidden {display:none!important}
+    .stat-strip {position:absolute;left:9px;bottom:-9px;display:flex;align-items:center;gap:7px;z-index:5;
+      color:#f4d38c;font:700 12px system-ui,-apple-system,"Segoe UI",sans-serif;text-shadow:0 1px 3px #000b}
+    .stat-line {display:inline-flex;align-items:baseline;gap:3px;white-space:nowrap;padding:7px 6px 6px;border:1px solid #cba866;border-radius:8px;
+      background:linear-gradient(145deg,#34291b,#191713 65%,#382a1a);box-shadow:inset 0 0 0 1px #e6be7047,0 2px 5px #0009}
+    .stat-line b {font-size:10px;letter-spacing:.035em;color:#dfbe79}
+    .stat-line strong {font-size:15px;color:#fff0c1;font-variant-numeric:tabular-nums}
+    .trading-card.has-stats .collection-plaque {max-width:53%}
+    .trading-card.no-role .art-box {flex-basis:55%}
+    .trading-card.no-description .card-bottom {flex:0 0 39px;min-height:39px;padding:0;border:0;background:transparent;box-shadow:none}
+    .trading-card.no-description .art-box {flex:1 1 auto}
+    .trading-card.no-role.no-description .art-box {flex:1 1 auto}
+    .trading-card.no-author .stars-bar {height:9%}
+    .trading-card:not(.has-stats) .collection-plaque {max-width:77%}
+    @media(max-width:420px){.stat-strip{gap:4px;left:6px}.stat-line{padding:6px 4px}.stat-line b{font-size:9px}.stat-line strong{font-size:13px}.trading-card.has-stats .collection-plaque{max-width:52%}.collection-tools{flex-wrap:wrap}.collection-tools input{flex-basis:100%}}
+
+    /* V8 : statistiques agrandies. Les deux cases et le nom de collection partagent une rangée flexible. */
+    .card-footer {position:absolute;left:9px;right:11px;bottom:-10px;z-index:7;display:flex;align-items:flex-end;justify-content:space-between;gap:8px;min-width:0}
+    .card-footer .stat-strip {position:static;left:auto;bottom:auto;flex:0 0 auto;display:flex;gap:7px;align-items:center;min-width:0}
+    .card-footer .stat-line {display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px;min-width:68px;min-height:43px;padding:5px 7px 4px;text-align:center;line-height:1.05}
+    .card-footer .stat-line b {font-size:8px;line-height:1.05;letter-spacing:.10em}
+    .card-footer .stat-line strong {font-size:16px;font-weight:800;line-height:1.12;letter-spacing:0}
+    .card-footer .collection-plaque,.trading-card.has-stats .card-footer .collection-plaque {position:static;right:auto;bottom:auto;max-width:100%;min-width:0;flex:0 1 auto;text-align:center;padding:7px 9px}
+    .trading-card.no-description.has-stats .card-bottom {flex-basis:49px;min-height:49px}
+    /* Collection longue : le cartouche gagne une deuxième ligne, sans réduire les stats.
+       Les libellés courts conservent leur présentation initiale. */
+    .card-footer .collection-plaque.collection-multiline,
+    .trading-card.has-stats .card-footer .collection-plaque.collection-multiline {
+      flex:1 1 0;
+      white-space:normal;
+      overflow-wrap:break-word;
+      text-overflow:clip;
+      text-align:center;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      line-height:1.12;
+      min-height:43px;
+      max-height:51px;
+      padding:5px 7px;
+    }
+    .trading-card.has-stats:not(.no-description) .card-bottom:has(.collection-multiline) {padding-bottom:44px}
+
+    @media(max-width:420px){.card-footer{left:6px;right:7px;gap:5px}.card-footer .stat-strip{gap:4px}.card-footer .stat-line{min-width:59px;min-height:42px;padding:6px 4px 5px}.card-footer .stat-line strong{font-size:14px}.card-footer .collection-plaque{padding:7px 7px;font-size:13px}}
+
+
+/* Cartouches de collection harmonisés à côté des deux statistiques.
+   - Nom court : occupe toute la zone disponible, centré sur la hauteur des cases.
+   - Nom long : 2 lignes dans un cartouche volontairement un peu plus étroit,
+     centré dans cette même zone. Les cases ATK / DEF restent inchangées. */
+.trading-card.has-stats .card-footer {right:6px;gap:6px}
+.trading-card.has-stats .card-footer .collection-plaque {
+  position:static;flex:1 1 0;width:auto;min-width:0;max-width:none;
+  min-height:43px;margin:0;padding:6px 7px;
+  display:flex;align-items:center;justify-content:center;
+  text-align:center;line-height:1.12;
+}
+.trading-card.has-stats .card-footer .collection-plaque.collection-multiline {
+  flex:0 1 146px;width:146px;min-width:0;max-width:100%;
+  margin-left:auto;margin-right:auto;
+  min-height:43px;max-height:51px;padding:5px 7px;
+  white-space:normal;overflow-wrap:break-word;
+}
+
+/* Fin du calque autonome. La carte garde les dimensions du générateur, puis est réduite pour son emplacement. */
+.live-fit>.trading-card {width:365px!important;max-width:none!important;height:calc(365px * 1004 / 591)!important}
+.art-placeholder{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:17px;background:radial-gradient(circle at 45% 34%,#4d3b20,#151721 75%);color:#efd69c;text-align:center;letter-spacing:.15em;font:700 26px Georgia,serif}
+.art-placeholder span{font:72px Georgia,serif;color:#e5bb72;text-shadow:0 0 24px rgba(251,210,133,.38)}
+.art-placeholder.noel{background:radial-gradient(circle at 45% 38%,#433027,#12131c 70%)}
+@media(prefers-reduced-motion:reduce){.live-fit>.trading-card{transform:none!important}.sky-stars .spark{animation:none!important}.laminate-glint{opacity:0!important;transition:none!important}}
+
+.trading-card[data-rarity="Exclusive"] {--accent-rarity:#ef4444;--accent-light:#ffe0df;--accent-glow:#ef444455}
+.trading-card:not(.has-stats) .card-footer {justify-content:center}
+/* Lunar : croissants argentés et halo bleuté, sur la clé d'édition historique. */
+.trading-card.holo-gold{background:radial-gradient(ellipse at 22% 18%,#27364c 0,transparent 42%),linear-gradient(145deg,#10161e,#080b10 55%,#17263c);border-color:#b7c9df;box-shadow:0 25px 65px #000d,0 0 22px #719fd044,inset 0 0 0 3px #b8cbe2,inset 0 0 0 7px #182130}
+.trading-card.holo-gold .sparkle-layer{opacity:0!important;animation:none!important}
+.trading-card.holo-gold .sky-stars{--spark-color:#e8f2ff;--spark-glow:#7cabf0}
+.trading-card.holo-gold .sky-stars .spark:not(.pin){width:calc(var(--ss)*1.2);height:calc(var(--ss)*1.2)}
+.trading-card.holo-gold .sky-stars .spark:not(.pin)::before{clip-path:none;border-radius:50%;background:#edf5ff;mask-image:radial-gradient(circle at 72% 30%,transparent 48%,#000 51%)}
+.trading-card.holo-gold .sky-stars .spark:not(.pin)::after{display:none}
+
+/* Diamant noir : adaptation du prototype Exclusive validé le 31/10/2026.
+   Les facettes et le balayage restent sous les panneaux opaques et la photo. */
+.trading-card.black-diamond {
+  border-color:#ead6aa;
+  background:conic-gradient(from 38deg at 35% 40%,#090a0d 0deg,#575a66 22deg,#14161d 23deg,#121317 70deg,#9ba7b8 71deg,#171923 75deg,#06080d 119deg,#665632 120deg,#c8bca1 133deg,#0d1018 134deg,#0b0c11 183deg,#5a6e8b 184deg,#d8e9f5 197deg,#12151d 199deg,#05070b 243deg,#333947 244deg,#969cac 261deg,#101219 262deg,#08090d 310deg,#c2ae82 311deg,#101217 316deg,#090a0d 360deg);
+  background-size:160% 160%;
+  box-shadow:0 17px 29px #0009,0 0 12px #fff1c333,inset 0 0 0 2px #fff0d1,inset 0 0 0 6px #16151b;
+  animation:diamond-turn 7s ease-in-out infinite alternate;
+}
+.trading-card.black-diamond::before {
+  z-index:1;inset:5px;opacity:.95;
+  background:linear-gradient(115deg,transparent 32%,#bfddff26 36%,#edf9ffd9 37%,#fffdf3f2 38%,#d4d8f03d 40%,transparent 43%,transparent 65%,#ffebbb6b 67%,#fff9eacc 68%,transparent 70%),radial-gradient(ellipse at var(--pointer-x) var(--pointer-y),#cde5ff55,transparent 29%);
+  background-size:250% 100%,100% 100%;
+  animation:foilLightSweep 5.5s ease-in-out infinite alternate;
+}
+.trading-card.black-diamond::after {display:none}
+.diamond-facets {position:absolute;z-index:2;inset:6px;border-radius:21px;pointer-events:none;opacity:.48;
+  background:conic-gradient(from 180deg at 80% 32%,transparent 0deg,#cee4ff22 47deg,transparent 48deg 83deg,#fff3cb22 84deg,transparent 85deg 158deg,#ffffff3b 159deg,transparent 160deg),linear-gradient(147deg,transparent 37%,#e2edff77 37.2%,transparent 37.5%),linear-gradient(32deg,transparent 63%,#fff0c355 63.2%,transparent 63.5%);
+}
+.diamond-rim {position:absolute;z-index:10;inset:-2px;border-radius:28px;padding:3px;pointer-events:none;
+  background:linear-gradient(115deg,#b89a5c 0%,#fff5ce 13%,#a5a7b6 22%,#fffef4 27%,#7b91ab 39%,#f0edff 45%,#8d6d35 57%,#fff0b6 63%,#e9f8ff 72%,#6f829c 83%,#fff4cd 92%,#b89a5c 100%);
+  background-size:300% 300%;
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;
+  mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude;
+  animation:diamond-rim-flow 7s ease-in-out infinite alternate;
+}
+.diamond-glints {position:absolute;z-index:12;inset:1px;border-radius:26px;overflow:hidden;pointer-events:none}
+.diamond-glint {position:absolute;left:var(--x);top:var(--y);width:var(--s);height:var(--s);transform:translate(-50%,-50%);opacity:0;filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 5px #ddeaff);animation:diamond-spark-cut var(--dur) var(--delay) ease-in-out infinite}
+.diamond-glint::before {content:"";position:absolute;inset:0;background:#fffef9;clip-path:polygon(50% 0%,57% 42%,100% 50%,57% 58%,50% 100%,43% 58%,0% 50%,43% 42%)}
+.diamond-glint::after {content:"";position:absolute;inset:38%;border-radius:50%;background:#fff;box-shadow:0 0 4px #fff}
+.black-diamond .art-box {border-color:#eee2c9;box-shadow:0 0 0 1px #b69552,0 0 6px #d7e7ff55}
+.black-diamond:not(.no-description) .card-bottom {background:linear-gradient(145deg,transparent 62%,#a7aeb424 62.4%,#616c741c 76%,transparent 76.4%),linear-gradient(35deg,transparent 80%,#f6e4b91c 80.3%,transparent 98%),linear-gradient(143deg,#242223,#0b0e13 39%,#171920 75%,#29251f)}
+.black-diamond .collection-plaque {background:linear-gradient(105deg,#ac8649,#fff5d6 34%,#ddd0ae 47%,#b5955f 65%,#fff0c6);border-color:#f2dfb7}
+@keyframes diamond-turn {from{background-position:35% 34%}to{background-position:72% 71%}}
+@keyframes diamond-rim-flow {from{background-position:0% 25%}to{background-position:100% 75%}}
+@keyframes diamond-spark-cut {0%,18%,100%{opacity:0;transform:translate(-50%,-50%) scale(.35)}43%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}67%{opacity:.18;transform:translate(-50%,-50%) scale(.65)}}
+@media(prefers-reduced-motion:reduce){
+  .trading-card.black-diamond,.trading-card.black-diamond::before,.diamond-rim,.diamond-glint{animation:none!important}
+  .diamond-glint{opacity:.6}
+}
+
+/* Proposition du 05/11/2026 : contours par rareté des cartes hors Event.
+   La rareté porte la palette ; le nombre d'étoiles reste indépendant.
+   Crew, Events et modèles sans famille identifiée restent hors de ces règles.
+   Les Exclusives disposent de leur cadre noir dédié ci-dessous. */
+.trading-card:not([data-theme="crew"]):is([data-family="classic"],[data-family="collection"])[data-rarity="Commun"] {
+  --frame-edge:#8995a3;--frame-light:#d8dee5;--frame-dark:#4f5a68;
+  --frame-tip:#a1adbb;--frame-corner:#25272b;--frame-shade:#34383e;
+  --frame-inner:#d8dee54b;--frame-art:#e0e7ef53;
+}
+.trading-card:not([data-theme="crew"]):is([data-family="classic"],[data-family="collection"])[data-rarity="Peu commun"] {
+  --frame-edge:#4f9cf4;--frame-light:#c7e5ff;--frame-dark:#255584;
+  --frame-tip:#80b7f7;--frame-corner:#1b2330;--frame-shade:#203d5d;
+  --frame-inner:#c7e5ff4b;--frame-art:#c7e5ff53;
+}
+.trading-card:not([data-theme="crew"]):is([data-family="classic"],[data-family="collection"])[data-rarity="Rare"] {
+  --frame-edge:#4fc88e;--frame-light:#c7ffe0;--frame-dark:#286f4b;
+  --frame-tip:#7bdda9;--frame-corner:#1b2822;--frame-shade:#234b35;
+  --frame-inner:#c7ffe04b;--frame-art:#c7ffe053;
+}
+.trading-card:not([data-theme="crew"]):is([data-family="classic"],[data-family="collection"])[data-rarity="Épique"] {
+  --frame-edge:#ba83f9;--frame-light:#f3daff;--frame-dark:#674192;
+  --frame-tip:#ceadf6;--frame-corner:#261e2f;--frame-shade:#47305c;
+  --frame-inner:#f3daff4b;--frame-art:#f3daff53;
+}
+/* Le Légendaire conserve exactement le cadre doré original.
+   Toutes les règles ci-dessous restent sous le périmètre des classiques.
+   Les panneaux sombres et les textes ne sont pas recolorés. */
+.trading-card:not([data-theme="crew"]):is([data-family="classic"],[data-family="collection"]):is([data-rarity="Commun"],[data-rarity="Peu commun"],[data-rarity="Rare"],[data-rarity="Épique"]) {
+  border-color:var(--frame-edge);
+  background-image:linear-gradient(140deg,var(--frame-tip) 0%,var(--frame-corner) 3.5%,#0d0e10 13%,#171718 55%,#08090c 89%,var(--frame-shade) 97%,var(--frame-light) 100%);
+  box-shadow:0 25px 55px #000b,0 0 0 1px var(--frame-dark),0 0 26px var(--accent-glow),inset 0 0 0 2px var(--frame-light),inset 0 0 0 6px #141313;
+}
+.trading-card:not([data-theme="crew"]):is([data-family="classic"],[data-family="collection"]):is([data-rarity="Commun"],[data-rarity="Peu commun"],[data-rarity="Rare"],[data-rarity="Épique"]) .band {
+  border-color:var(--frame-edge);
+  box-shadow:inset 0 0 0 1px var(--frame-inner),0 1px 4px #0008;
+}
+.trading-card:not([data-theme="crew"]):is([data-family="classic"],[data-family="collection"]):is([data-rarity="Commun"],[data-rarity="Peu commun"],[data-rarity="Rare"],[data-rarity="Épique"]) .chevrons {color:var(--frame-edge)}
+.trading-card:not([data-theme="crew"]):is([data-family="classic"],[data-family="collection"]):is([data-rarity="Commun"],[data-rarity="Peu commun"],[data-rarity="Rare"],[data-rarity="Épique"]) .art-box {
+  border-color:var(--frame-edge);
+  box-shadow:inset 0 0 0 2px var(--frame-light),0 0 0 1px var(--accent-rarity),0 0 12px var(--accent-glow);
+}
+.trading-card:not([data-theme="crew"]):is([data-family="classic"],[data-family="collection"]):is([data-rarity="Commun"],[data-rarity="Peu commun"],[data-rarity="Rare"],[data-rarity="Épique"]) .art-box::after {border-color:var(--frame-art)}
+.trading-card:not([data-theme="crew"]):is([data-family="classic"],[data-family="collection"]):is([data-rarity="Commun"],[data-rarity="Peu commun"],[data-rarity="Rare"],[data-rarity="Épique"]):not(.no-description) .card-bottom {
+  border-color:var(--frame-edge);box-shadow:inset 0 0 0 1px var(--frame-inner);
+}
+.trading-card:not([data-theme="crew"]):is([data-family="classic"],[data-family="collection"]):is([data-rarity="Commun"],[data-rarity="Peu commun"],[data-rarity="Rare"],[data-rarity="Épique"]) .collection-plaque {
+  border-color:var(--frame-edge);
+  background-image:linear-gradient(105deg,var(--frame-dark),var(--frame-light) 46%,var(--frame-edge));
+  box-shadow:inset 0 0 0 1px var(--frame-light),0 2px 4px #0009;
+}
+.trading-card:not([data-theme="crew"]):is([data-family="classic"],[data-family="collection"]):is([data-rarity="Commun"],[data-rarity="Peu commun"],[data-rarity="Rare"],[data-rarity="Épique"]) .stat-line {
+  border-color:var(--frame-edge);box-shadow:inset 0 0 0 1px var(--frame-inner),0 2px 5px #0009;
+}
+
+/* Exclusives : noir poli / graphite validé le 07/11/2026.
+   La finition Singularité conserve ses facettes et ses éclats.
+   Les étoiles restent rouges ; les identités Crew et Events sont distinctes. */
+.trading-card:not([data-theme="crew"]):is([data-family="classic"],[data-family="collection"])[data-rarity="Exclusive"] {
+  --exclusive-edge:#0a0c10;--exclusive-light:#59616d;--exclusive-inner:#404650;
+  --exclusive-dark:#030407;--exclusive-tip:#6b7584;--exclusive-corner:#11141a;
+  --exclusive-shade:#1b2029;--exclusive-line:#a3adbc42;--exclusive-art:#a1adbf38;
+  border-color:var(--exclusive-edge);
+  box-shadow:0 20px 32px #0009,0 0 0 1px var(--exclusive-dark),inset 0 0 0 2px var(--exclusive-inner),inset 0 0 0 6px #111216;
+}
+.trading-card:not([data-theme="crew"]):is([data-family="classic"],[data-family="collection"])[data-rarity="Exclusive"]:not(.black-diamond) {
+  background-image:linear-gradient(140deg,var(--exclusive-tip) 0%,var(--exclusive-corner) 3.5%,#0d0e10 13%,#171718 55%,#08090c 89%,var(--exclusive-shade) 97%,var(--exclusive-light) 100%);
+}
+.trading-card:not([data-theme="crew"]):is([data-family="classic"],[data-family="collection"])[data-rarity="Exclusive"] .band {
+  border-color:var(--exclusive-edge);box-shadow:inset 0 0 0 1px var(--exclusive-line),0 1px 4px #0008;
+}
+.trading-card:not([data-theme="crew"]):is([data-family="classic"],[data-family="collection"])[data-rarity="Exclusive"] .chevrons {color:var(--exclusive-light);}
+.trading-card:not([data-theme="crew"]):is([data-family="classic"],[data-family="collection"])[data-rarity="Exclusive"] .art-box {
+  border-color:var(--exclusive-edge);box-shadow:inset 0 0 0 2px var(--exclusive-inner),0 0 0 1px var(--exclusive-inner),0 0 8px #0006;
+}
+.trading-card:not([data-theme="crew"]):is([data-family="classic"],[data-family="collection"])[data-rarity="Exclusive"] .art-box::after {border-color:var(--exclusive-art);}
+.trading-card:not([data-theme="crew"]):is([data-family="classic"],[data-family="collection"])[data-rarity="Exclusive"]:not(.no-description) .card-bottom {
+  border-color:var(--exclusive-edge);box-shadow:inset 0 0 0 1px var(--exclusive-line);
+}
+.trading-card:not([data-theme="crew"]):is([data-family="classic"],[data-family="collection"])[data-rarity="Exclusive"] .collection-plaque {
+  border-color:var(--exclusive-edge);color:#f5eee5;
+  background-image:linear-gradient(105deg,#090b10,#303641 46%,#0b0e14);
+  box-shadow:inset 0 0 0 1px var(--exclusive-line),0 2px 4px #0009;
+}
+.trading-card:not([data-theme="crew"]):is([data-family="classic"],[data-family="collection"])[data-rarity="Exclusive"] .diamond-rim {
+  background-image:linear-gradient(115deg,#07090e 0%,#505b6a 13%,#171b23 22%,#818c9b 27%,#10141c 39%,#596678 45%,#080b10 57%,#707b8b 63%,#373f4d 72%,#111620 83%,#626e80 92%,#07090e 100%);
+}
+
+/* Le Crew : palette approuvée, indépendante de la famille et de la rareté.
+   Les autres collections conservent leurs contours actuels. Le thème ne choisit
+   aucune finition et ne modifie pas les étoiles, le gabarit ou les animations. */
+.trading-card[data-theme="crew"].normal {
+  border-color: #43cedd #a46bda #be68d7 #2ec9dc;
+  background-image: linear-gradient(140deg,
+    #14b5cf 0%, #12334b 3.5%, #0a1831 13%,
+    #15142e 55%, #150f27 89%, #4f236f 97%, #d381e5 100%);
+  box-shadow:
+    0 25px 55px #000b,
+    0 0 0 1px #17273f,
+    0 0 26px var(--accent-glow),
+    inset 0 0 0 2px #b6c9f2,
+    inset 0 0 0 6px #0b1021;
+}
+
+.trading-card[data-theme="crew"].normal .band {
+  border-color: #79d8e5 #aa85db #a78bdc #59d2e1;
+  background-image: linear-gradient(105deg,
+    #0b3949, #111b2c 21%, #20152f 72%, #48205a);
+  box-shadow: inset 0 0 0 1px #c2e8ff4b, 0 1px 4px #0008;
+}
+
+.trading-card[data-theme="crew"].normal .card-head {
+  color: #e7fbff;
+}
+
+.trading-card[data-theme="crew"].normal .chevrons {
+  color: #39d6e7;
+}
+
+.trading-card[data-theme="crew"].normal .chevrons.right {
+  color: #cf88f2;
+}
+
+.trading-card[data-theme="crew"].normal .art-box {
+  border-color: #63d3df #b675d7 #b675d7 #36cdda;
+  box-shadow:
+    inset 0 0 0 2px #c0dcfa,
+    0 0 0 1px var(--accent-rarity),
+    0 0 12px var(--accent-glow);
+}
+
+.trading-card[data-theme="crew"].normal .art-box::after {
+  border-color: #dce9ff53;
+}
+
+.trading-card[data-theme="crew"].normal .card-role {
+  border-color: #9fb6ec #bd85dc #c08bdd #74cce4;
+  color: #f1e9ff;
+  background-image: linear-gradient(105deg,
+    #102e47, #0d1527 24%, #23172e 60%, #49204e);
+  box-shadow: inset 0 0 0 1px #c7c7ff44, 0 1px 4px #0009;
+}
+
+/* Le panneau absent de la version courante reste transparent et sans contour. */
+.trading-card[data-theme="crew"].normal:not(.no-description) .card-bottom {
+  border-color: #88bdda #b181ce #b77ed2 #75bfd6;
+  background-image: linear-gradient(143deg,
+    #182c3d, #101529 39%, #21172f 75%, #3c2050);
+  box-shadow: inset 0 0 0 1px #c6dcff4f;
+}
+
+.trading-card[data-theme="crew"].normal .collection-plaque {
+  border-color: #afd9ed #cfacf0 #cfa1ec #9cddea;
+  background-image: linear-gradient(105deg,
+    #2bc4d7, #dfe7ff 46%, #a970d2);
+  color: #0d1328;
+  box-shadow: inset 0 0 0 1px #ebefff, 0 2px 4px #0009;
+}
+
+/* Si les statistiques sont présentes, seules leurs surfaces et bordures changent. */
+.trading-card[data-theme="crew"].normal .stat-line {
+  border-color: #7cbfdc #a481cf #b380d2 #6fc7db;
+  background-image: linear-gradient(145deg,
+    #133344, #151a2c 65%, #38204a);
+  box-shadow: inset 0 0 0 1px #c4d4fb47, 0 2px 5px #0009;
+}
+
+/* Singularité Crew : mêmes facettes, balayage et éclats que le modèle approuvé. */
+.trading-card[data-theme="crew"].black-diamond {
+  border-color: #43cedd #a46bda #be68d7 #2ec9dc;
+  background-image: conic-gradient(from 38deg at 35% 40%,
+    #04060b 0deg, #1a667b 22deg, #0a1321 23deg,
+    #0a0d18 70deg, #a4e4ee 71deg, #10152a 75deg,
+    #03050b 119deg, #3d285f 120deg, #b9bde5 133deg,
+    #070b16 134deg, #040710 183deg, #244f6b 184deg,
+    #ecfaff 197deg, #0b1221 199deg, #02040a 243deg,
+    #252344 244deg, #b1c2e1 261deg, #0a0d1c 262deg,
+    #04050c 310deg, #9784c9 311deg, #090a18 316deg,
+    #04060b 360deg);
+  box-shadow:
+    0 17px 29px #0009,
+    0 0 12px #a1daff33,
+    inset 0 0 0 2px #dceaff,
+    inset 0 0 0 6px #0b1021;
+}
+
+/* Le balayage existant reste derrière les panneaux opaques et l'image. */
+.trading-card[data-theme="crew"].black-diamond::before {
+  background-image:
+    linear-gradient(115deg,
+      transparent 32%, #8fddf526 36%, #edf9ffd9 37%,
+      #f9fcfff2 38%, #c0b9f03d 40%, transparent 43%,
+      transparent 65%, #bca6ff6b 67%, #f0f5ffcc 68%,
+      transparent 70%),
+    radial-gradient(ellipse at var(--pointer-x) var(--pointer-y),
+      #8dd8f755, transparent 29%);
+}
+
+/* Les facettes existantes gardent leurs découpes et leur opacité source. */
+.trading-card[data-theme="crew"].black-diamond .diamond-facets {
+  background-image:
+    conic-gradient(from 180deg at 80% 32%,
+      transparent 0deg, #b9efff22 47deg, transparent 48deg 83deg,
+      #d5bdff22 84deg, transparent 85deg 158deg,
+      #ffffff3b 159deg, transparent 160deg),
+    linear-gradient(147deg,
+      transparent 37%, #d7f5ff77 37.2%, transparent 37.5%),
+    linear-gradient(32deg,
+      transparent 63%, #ddd3ff55 63.2%, transparent 63.5%);
+}
+
+/* Le masque et le mouvement du bord Diamant noir sont hérités du modèle. */
+.trading-card[data-theme="crew"].black-diamond .diamond-rim {
+  background-image: linear-gradient(115deg,
+    #29b9d0 0%, #e1faff 13%, #a6b8d7 22%, #fbfdff 27%,
+    #527ba6 39%, #eef0ff 45%, #7d3eaa 57%, #e1b7ff 63%,
+    #f5fcff 72%, #3a617c 83%, #ddf6ff 92%, #29b9d0 100%);
+}
+
+.trading-card[data-theme="crew"].black-diamond .diamond-glint::before {
+  background-color: #f8fcff;
+}
+
+/* Panneaux Crew choisis : mêmes contours, fond sombre et textes clairs. */
+.trading-card[data-theme="crew"].black-diamond .band {
+  border-color: #79d8e5 #aa85db #a78bdc #59d2e1;
+  background-image: linear-gradient(105deg,
+    #0b3949, #111b2c 21%, #20152f 72%, #48205a);
+  box-shadow: inset 0 0 0 1px #c2e8ff4b, 0 1px 4px #0008;
+}
+
+.trading-card[data-theme="crew"].black-diamond .card-head {
+  color: #e7fbff;
+}
+
+.trading-card[data-theme="crew"].black-diamond .chevrons {
+  color: #39d6e7;
+}
+
+.trading-card[data-theme="crew"].black-diamond .chevrons.right {
+  color: #cf88f2;
+}
+
+.trading-card[data-theme="crew"].black-diamond .art-box {
+  border-color: #63d3df #b675d7 #b675d7 #36cdda;
+  box-shadow: 0 0 0 1px #6caac7, 0 0 6px #b2dfff55;
+}
+
+.trading-card[data-theme="crew"].black-diamond .art-box::after {
+  border-color: #dce9ff53;
+}
+
+.trading-card[data-theme="crew"].black-diamond .card-role {
+  border-color: #9fb6ec #bd85dc #c08bdd #74cce4;
+  color: #f1e9ff;
+  background-image: linear-gradient(105deg,
+    #102e47, #0d1527 24%, #23172e 60%, #49204e);
+  box-shadow: inset 0 0 0 1px #c7c7ff44, 0 1px 4px #0009;
+}
+
+/* Le panneau facultatif reste absent sur une carte sans description. */
+.trading-card[data-theme="crew"].black-diamond:not(.no-description) .card-bottom {
+  border-color: #88bdda #b181ce #b77ed2 #75bfd6;
+  background-image:
+    linear-gradient(145deg,
+      transparent 62%, #88c6e024 62.4%, #536c941c 76%, transparent 76.4%),
+    linear-gradient(35deg,
+      transparent 80%, #ceadf21c 80.3%, transparent 98%),
+    linear-gradient(143deg,
+      #122035, #070b15 39%, #171229 75%, #2d173d);
+  box-shadow: inset 0 0 0 1px #c6dcff4f;
+}
+
+.trading-card[data-theme="crew"].black-diamond .collection-plaque {
+  border-color: #afd9ed #cfacf0 #cfa1ec #9cddea;
+  background-image: linear-gradient(105deg,
+    #27b8d0, #edfaff 34%, #cad6ec 47%, #9771c6 65%, #e9deff);
+  color: #0d1328;
+  box-shadow: inset 0 0 0 1px #ebefff, 0 2px 4px #0009;
+}
+
+/* Même palette sur les éléments facultatifs, sans les ajouter à la carte. */
+.trading-card[data-theme="crew"].black-diamond .stat-line {
+  border-color: #7cbfdc #a481cf #b380d2 #6fc7db;
+  background-image: linear-gradient(145deg,
+    #133344, #151a2c 65%, #38204a);
+  box-shadow: inset 0 0 0 1px #c4d4fb47, 0 2px 5px #0009;
+}
+
+.trading-card[data-theme="crew"].black-diamond .stat-strip {
+  color: #d8eaff;
+}
+
+.trading-card[data-theme="crew"].black-diamond .stat-line b {
+  color: #b8d9ee;
+}
+
+.trading-card[data-theme="crew"].black-diamond .stat-line strong {
+  color: #edfaff;
+}
+
+.trading-card[data-theme="crew"].black-diamond .desc {
+  color: #e7eaf5;
+}
+
+.trading-card[data-theme="crew"].black-diamond .first-badge {
+  border-color: #c4ddf5;
+  background-color: #0b1021ee;
+  color: #e7fbff;
+}

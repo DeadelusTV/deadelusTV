@@ -1,0 +1,88 @@
+/* Éclairage partagé : aucune illustration ni donnée de jeu. */
+.trading-card {--preview-aura-rgb: 249 202 98;}
+.card-aura {
+  position: absolute;
+  inset: -3px;
+  z-index: 30;
+  display: block;
+  pointer-events: none;
+  --preview-aura-play: paused;
+}
+.card-aura[data-active="true"] {--preview-aura-play: running;}
+/* Proposition 04 validée : halo et reflet diffus, partagés par les aperçus larges.
+   Le doré reste le repli des modèles sans palette classique confirmée. */
+:is(.detail-card-flip,.trading-card):is([data-preview-family="classic"],[data-preview-family="collection"],[data-family="classic"],[data-family="collection"]):is([data-preview-rarity="Basique"],[data-rarity="Basique"],[data-preview-rarity="Commun"],[data-rarity="Commun"]) {--preview-aura-rgb: 141 153 166;}
+:is(.detail-card-flip,.trading-card):is([data-preview-family="classic"],[data-preview-family="collection"],[data-family="classic"],[data-family="collection"]):is([data-preview-rarity="Commune"],[data-rarity="Commune"],[data-preview-rarity="Peu commun"],[data-rarity="Peu commun"]) {--preview-aura-rgb: 79 156 244;}
+:is(.detail-card-flip,.trading-card):is([data-preview-family="classic"],[data-preview-family="collection"],[data-family="classic"],[data-family="collection"]):is([data-preview-rarity="Rare"],[data-rarity="Rare"]) {--preview-aura-rgb: 79 200 142;}
+:is(.detail-card-flip,.trading-card):is([data-preview-family="classic"],[data-preview-family="collection"],[data-family="classic"],[data-family="collection"]):is([data-preview-rarity="Épique"],[data-rarity="Épique"]) {--preview-aura-rgb: 186 131 249;}
+/* Noir graphite des Exclusives ; même palette dans le composant et la fiche recto/verso. */
+:is(.detail-card-flip,.trading-card):is([data-preview-family="classic"],[data-preview-family="collection"],[data-family="classic"],[data-family="collection"]):is([data-preview-rarity="Exclusive"],[data-rarity="Exclusive"]) {--preview-aura-rgb: 124 136 154;}
+/* Le Crew conserve sa lumière cyan/violet dans les deux contextes d'aperçu.
+   La présence de la rareté donne à ce thème priorité sur la palette graphite. */
+.detail-card-flip[data-preview-theme="crew"][data-preview-rarity],
+.trading-card[data-theme="crew"][data-rarity] {
+  --preview-aura-rgb: 57 214 231;
+  --preview-aura-secondary-rgb: 207 136 242;
+  --preview-rim-tint: #e1faff;
+  --preview-rim-light: #f8fcff;
+}
+@property --dcg-detail-light-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+.detail-card-face {--preview-aura-play: paused;}
+.card-dialog[open] .detail-card-flip:not(.is-flipped) .detail-card-front,
+.card-dialog[open] .detail-card-flip.is-flipped .detail-card-back,
+.profile-viewer-art .detail-card-flip:not(.is-flipped) .detail-card-front,
+.profile-viewer-art .detail-card-flip.is-flipped .detail-card-back {--preview-aura-play: running;}
+.detail-card-face::before,
+.card-aura::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  z-index: -1;
+  border-radius: 8% / 4.7%;
+  box-shadow: 0 0 18px 6px rgb(var(--preview-aura-rgb) / .6),
+    0 0 48px 15px rgb(var(--preview-aura-secondary-rgb, var(--preview-aura-rgb)) / .35),
+    0 0 85px 23px rgb(var(--preview-aura-secondary-rgb, var(--preview-aura-rgb)) / .13);
+  opacity: .85;
+  pointer-events: none;
+  animation: detail-aura-breathe 3s ease-in-out infinite alternate;
+  animation-play-state: var(--preview-aura-play);
+}
+.detail-card-rim {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: block;
+  opacity: .85;
+  pointer-events: none;
+}
+.detail-card-rim::before,
+.detail-card-rim::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  padding: 2.4px;
+  border-radius: 8% / 4.7%;
+  background: conic-gradient(from var(--dcg-detail-light-angle),
+    transparent 0deg 120deg, rgb(var(--preview-aura-rgb) / .02) 150deg,
+    rgb(var(--preview-aura-rgb) / .20) 185deg, rgb(var(--preview-aura-rgb) / .66) 225deg,
+    var(--preview-rim-tint, #fff6e8) 268deg, var(--preview-rim-light, #fffdf8) 289deg,
+    rgb(var(--preview-aura-secondary-rgb, var(--preview-aura-rgb)) / .70) 318deg,
+    rgb(var(--preview-aura-secondary-rgb, var(--preview-aura-rgb)) / .25) 344deg, transparent 360deg);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: detail-rim-drift 6s linear infinite;
+  animation-play-state: var(--preview-aura-play);
+}
+.detail-card-rim::before {inset: -2px;padding: 4px;filter: blur(4px);opacity: .62;}
+@keyframes detail-aura-breathe {from {opacity: .35;}to {opacity: 0.95;}}
+@keyframes detail-rim-drift {from {--dcg-detail-light-angle: 0deg;}to {--dcg-detail-light-angle: 360deg;}}
+@media (prefers-reduced-motion: reduce) {
+  .detail-card-face::before, .card-aura::before {animation: none;opacity: .6;}
+  .detail-card-rim::before, .detail-card-rim::after {animation: none;}
+}

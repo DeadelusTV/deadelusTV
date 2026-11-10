@@ -88,8 +88,16 @@ test('anonymous account access reuses the common Twitch login',async()=>{
 });
 test('personal display escapes Twitch metadata and logout clears all previous account content',async()=>{
  const s=setup({hash:'#tcg/mon-compte',user:{id:'one',user_metadata:{preferred_username:'<img src=x> & Yekelle'}}});await tick();
- assert.match(s.root.innerHTML,/&lt;img src=x&gt; &amp; Yekelle/);assert.doesNotMatch(s.root.innerHTML,/<img src=x>/);assert.match(s.root.innerHTML,/https:\/\/tcg\.yekelle-boulet\.workers\.dev\/#\/catalogue/);
+ assert.match(s.root.innerHTML,/&lt;img src=x&gt; &amp; Yekelle/);assert.doesNotMatch(s.root.innerHTML,/<img src=x>/);assert.match(s.root.innerHTML,/#tcg\/mon-compte\/constellations/);
  await s.auth(null);assert.doesNotMatch(s.root.innerHTML,/Yekelle/);assert.match(s.root.innerHTML,/data-portal-login/);
+});
+
+test('profile subpages preserve navigation and keep the daily Pass only on the profile home',async()=>{
+ const s=setup({hash:'#tcg/mon-compte',user:{id:'alice'}});await tick();assert.match(s.root.innerHTML,/Rubriques du profil/);assert.match(s.root.innerHTML,/daily-pass-root/);
+ await s.go('#tcg/mon-compte/constellations');assert.match(s.root.innerHTML,/dcg-profile-root/);assert.doesNotMatch(s.root.innerHTML,/daily-pass-root/);assert.match(s.root.innerHTML,/Par constellation/);assert.match(s.root.innerHTML,/href="#tcg\/mon-compte"/);
+ await s.go('#tcg/mon-compte/cartes');assert.match(s.root.innerHTML,/href="#tcg\/mon-compte\/cartes" aria-current="page"/);
+ await s.auth(null);assert.match(s.root.innerHTML,/data-portal-login/);assert.doesNotMatch(s.root.innerHTML,/dcg-profile-root|daily-pass-root/);
+ await s.go('#tcg/mon-compte');assert.match(s.root.innerHTML,/daily-pass-root/);assert.equal(s.passCalls.at(-1)[2].view,'details');
 });
 test('late account results cannot restore private content after a route change or a newer logout',async()=>{
  let release;const s=setup({hash:'#tcg/mon-compte',getSession:()=>new Promise(r=>{release=r;})});await tick();await s.go('#phasmophobia');

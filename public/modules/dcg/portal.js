@@ -5,6 +5,7 @@
   const config=window.DEADELUSTV_DCG_CONFIG;
   const gameLink=route=>new URL('#/'+route,config.gameBase).href;
   const logo = 'assets/logo-chaine.png';
+  let accountSection='accueil';
   let currentPage=null,generation=0,accountUser=null,accountLoading=false,accountError=false;
   let xpWidget=null,xpHost=null,xpUser=null;
   let mySpaces=[],myLoading=false,myError=false,signedInHint=false;
@@ -61,13 +62,15 @@
     <section><span class="portal-rule-number">04</span><div><h2>Fais évoluer tes cartes</h2><p>Le Laboratoire permet de fusionner, de tenter Stellar ou Lunar et d’obtenir une Holographique-Ultimate avec les deux finitions du même modèle. Les deux cartes sont conservées lors de l’obtention de la Holo. Les Exclusives ont leur propre finition Diamant noir. Les coûts, conditions et chances sont présentés avant confirmation.</p></div></section>
     <section><span class="portal-rule-number">05</span><div><h2>Gère tes Alkahests</h2><p>La Dissolution transforme tes exemplaires non protégés en Alkahests. Ton solde appartient à un seul DCG : les montants de plusieurs streamers ne s’additionnent pas. La future boutique commune permettra de choisir un seul de ces soldes pour acheter un booster.</p></div></section>
     <section><span class="portal-rule-number">06</span><div><h2>Échange et participe aux enchères</h2><p>Les échanges permettent de proposer plusieurs cartes et de répondre par une contre-offre. Une carte engagée est réservée. Sur le marché, une mise dépassée est remboursée et une enchère de dernière seconde prolonge le délai. Les collections communes auront des échanges à rareté égale et ne seront pas revendues aux enchères.</p></div></section></div>`;
+  const profileNav = () => '<nav class="portal-profile-tabs" aria-label="Rubriques du profil"><a href="#tcg/mon-compte"'+(accountSection==='accueil'?' aria-current="page"':'')+'>Accueil</a><a href="#tcg/mon-compte/constellations"'+(accountSection!=='accueil'?' aria-current="page"':'')+'>Mes constellations</a></nav>'+(accountSection==='accueil'?'':'<nav class="portal-profile-views" aria-label="Affichage des constellations"><a href="#tcg/mon-compte/constellations"'+(accountSection==='constellations'?' aria-current="page"':'')+'>Par constellation</a><a href="#tcg/mon-compte/cartes"'+(accountSection==='cartes'?' aria-current="page"':'')+'>Toutes mes cartes</a></nav>');
   function account() {
-    if(accountLoading)return heading('ESPACE PERSONNEL','Mon compte.','Retrouve les accès à tes collections.')+'<p class="portal-availability" role="status">Recherche de ta connexion Twitch…</p>';
-    if(accountError)return heading('ESPACE PERSONNEL','Mon compte.','Retrouve les accès à tes collections.')+'<section class="panel portal-message"><h2>Connexion momentanément indisponible</h2><p>Réessaie pour retrouver ton compte Twitch.</p><button class="button-primary" data-portal-account-retry>Réessayer</button></section>';
-    const user = accountUser;
-    if (!user) return `${heading('ESPACE PERSONNEL', 'Mon compte.', 'Toutes tes collections auront leur place ici.')}<section class="panel portal-message"><span class="overline">TON COMPTE TWITCH</span><h2>Retrouve tes collections</h2><p>Connecte-toi pour accéder à tes cartes et à ton profil dans les DCG.</p><button class="button-primary" type="button" data-portal-login>Connexion Twitch ↗</button></section>`;
-    const meta = user.user_metadata || {}, name = meta.preferred_username || meta.user_name || meta.display_name || 'Collectionneur';
-    return `${heading('ESPACE PERSONNEL', 'Mon compte.', `Bienvenue ${esc(String(name).slice(0,60))}. Retrouve ici les accès à tes collections.`)}<section class="portal-account-section"><div class="portal-section-top"><div><span class="overline">MES COLLECTIONS</span><h2>Les DCG des streamers</h2><p>DeadelusTV est le premier DCG disponible. Chaque univers conserve ses propres cartes et Alkahests.</p></div></div><article class="portal-account-space"><img src="${logo}" alt="" width="86" height="86"><div><h3>DeadelusTV</h3><p>Cartodex et exemplaires possédés</p></div><div class="portal-account-actions"><a class="button-primary" href="${gameLink('catalogue')}">Mon Cartodex →</a><a class="button-outline" href="${gameLink('profil')}">Mon profil dans ce DCG</a></div></article></section><section class="panel portal-message"><span class="overline">MES COLLECTIONS COMMUNES</span><h2>Des univers à partager ${badge}</h2><p>Les cartes des futures collections communes seront réunies ici, aux côtés de tes collections de streamers.</p><a class="text-link" href="#tcg/collections-communes">Voir l’espace des collections communes →</a></section>`;
+    const meta=accountUser?.user_metadata||{},name=meta.preferred_username||meta.user_name||meta.display_name||'Collectionneur';
+    const intro=heading('ESPACE PERSONNEL','Mon compte.',accountUser?'Bienvenue '+esc(String(name).slice(0,60))+'.':'Ton profil et tes constellations.');
+    const navigation=profileNav();
+    if(accountLoading)return intro+navigation+'<p class="portal-availability" role="status">Recherche de ta connexion Twitch…</p>';
+    if(accountError)return intro+navigation+'<section class="panel portal-message"><h2>Connexion momentanément indisponible</h2><p>Réessaie pour retrouver ton compte Twitch.</p><button class="button-primary" data-portal-account-retry>Réessayer</button></section>';
+    if(!accountUser)return intro+navigation+'<section class="panel portal-message"><span class="overline">TON COMPTE TWITCH</span><h2>Retrouve tes collections</h2><p>Connecte-toi pour accéder à tes cartes et à ton profil dans les DCG.</p><button class="button-primary" type="button" data-portal-login>Connexion Twitch ↗</button></section>';
+    return intro+navigation+(accountSection==='accueil'?'':'<section id="dcg-profile-root" aria-label="Mes constellations"></section>');
   }
   const common = () => `${heading('DES UNIVERS À PARTAGER', 'Collections communes.', 'Des collections à découvrir entre communautés, avec un dos propre à chaque collection.')}<p class="portal-availability" role="status">La boutique est en préparation. Les collections ci-dessous illustrent les univers envisagés ; aucun booster commun n’est en vente pour le moment.</p><div class="portal-common-grid"><article class="portal-common portal-common-ghost"><span class="portal-common-art" aria-hidden="true">◌</span><span class="portal-eyebrow">COLLECTION ENVISAGÉE</span><h2>Phasmophobia</h2>${badge}</article><article class="portal-common portal-common-valor"><span class="portal-common-art" aria-hidden="true">◇</span><span class="portal-eyebrow">COLLECTION ENVISAGÉE</span><h2>Valorant</h2>${badge}</article></div><section class="panel portal-message"><span class="overline">LE CHOIX DU SOLDE</span><h2>Un achat, un DCG choisi</h2><p>Quand la boutique sera ouverte, tu pourras sélectionner le solde d’Alkahests d’un streamer suivi pour acheter ton booster commun. Le montant disponible et le coût seront affichés avant confirmation.</p><p>Les soldes resteront séparés : 200 Alkahests chez un streamer et 300 chez un autre ne forment pas un solde commun de 500.</p></section>`;
   const renderers = {accueil:home, regles:rules, 'mon-compte':account, 'collections-communes':common};
@@ -87,10 +90,11 @@
   }
   function paint(){
     window.DCGDailyPass?.unmount();
-    root.innerHTML=nav()+'<div class="dcg-portal-view">'+(renderers[currentPage]||home)()+(currentPage==='mon-compte'?pass():'')+'</div>';
+    root.innerHTML=nav()+'<div class="dcg-portal-view">'+(renderers[currentPage]||home)()+(currentPage==='mon-compte'&&accountSection==='accueil'?pass():'')+'</div>';
     mountGeneralXP();
     const title=root.querySelector('h1');if(title){title.id='tcg-title';title.tabIndex=-1;}
-    if(['accueil','mon-compte'].includes(currentPage))window.DCGDailyPass?.mount(root.querySelector('#daily-pass-root'),{view:currentPage==='mon-compte'?'details':'progress'});
+    if(currentPage==='mon-compte'&&accountSection!=='accueil'&&accountUser)window.DCGProfile?.mount(root.querySelector('#dcg-profile-root'),{user:accountUser,view:accountSection});
+    if(currentPage==='accueil'||currentPage==='mon-compte'&&accountSection==='accueil')window.DCGDailyPass?.mount(root.querySelector('#daily-pass-root'),{view:currentPage==='mon-compte'?'details':'progress'});
   }
   async function readAccount(run){
     try{
@@ -125,12 +129,13 @@
   function render(page='accueil'){
     closeSearch(false);
     if(page==='connexion-pass')window.history.replaceState(window.history.state,'','#tcg');
-    const run=++generation;currentPage=pages.includes(page)?page:'accueil';
+    const parts=page.split('/');accountSection=parts[0]==='mon-compte'&&['constellations','cartes'].includes(parts[1])?parts[1]:'accueil';
+    const run=++generation;currentPage=parts[0]==='mon-compte'?'mon-compte':pages.includes(page)?page:'accueil';
     accountUser=null;accountError=false;accountLoading=currentPage==='mon-compte';mySpaces=[];myError=false;myLoading=currentPage==='accueil'&&hasSessionHint();paint();
     if(accountLoading)void readAccount(run);
     if(myLoading)void readMySpaces(run);
   }
-  function cancel(){window.DCGDailyPass?.unmount();xpWidget?.destroy();xpWidget=null;xpHost=null;xpUser=null;closeSearch(false);generation++;currentPage=null;accountUser=null;mySpaces=[];myLoading=false;myError=false;accountLoading=false;accountError=false;root.replaceChildren();}
+  function cancel(){window.DCGProfile?.unmount();window.DCGDailyPass?.unmount();xpWidget?.destroy();xpWidget=null;xpHost=null;xpUser=null;closeSearch(false);generation++;currentPage=null;accountUser=null;mySpaces=[];myLoading=false;myError=false;accountLoading=false;accountError=false;root.replaceChildren();}
   function updateSearch(field){const results=root.querySelector('[data-portal-search-results]');if(results)results.innerHTML=searchResults(field.value);}
   root.addEventListener('input',event=>{if(event.target.matches('[data-portal-search]'))updateSearch(event.target);});
   root.addEventListener('submit',event=>{if(event.target.matches('[data-portal-search-form]')){event.preventDefault();updateSearch(event.target.querySelector('input'));}});
@@ -142,7 +147,7 @@
     if(event.target.closest('[data-portal-search-result]'))closeSearch(false);
     if(event.target.matches('[data-portal-search-dialog]')){const rect=event.target.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)closeSearch();}
     if(event.target.closest('[data-portal-login]'))void window.DEADELUSTV_AUTH?.signIn();
-    if(event.target.closest('[data-portal-account-retry]'))render('mon-compte');
+    if(event.target.closest('[data-portal-account-retry]'))render(accountSection==='accueil'?'mon-compte':'mon-compte/'+accountSection);
     if(event.target.closest('[data-portal-my-retry]')){myLoading=true;myError=false;paintMySpaces();void readMySpaces(++generation);}
     const direction=event.target.closest('[data-portal-carousel-direction]');
     if(direction){const rail=root.querySelector('[data-portal-carousel]');rail?.scrollBy({left:(direction.dataset.portalCarouselDirection==='next'?1:-1)*Math.max(180,(rail.clientWidth||0)*.8),behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}
@@ -151,7 +156,7 @@
       if(showDiscovery)root.querySelector('[data-portal-carousel]')?.focus({preventScroll:true});
     }
   });
-  window.addEventListener('deadelustv:auth-change',event=>{signedInHint=event.detail?.authenticated===true;accountUser=null;mySpaces=[];myError=false;if(currentPage==='mon-compte')render(currentPage);else if(currentPage==='accueil'){const run=++generation;myLoading=signedInHint;paintMySpaces();if(myLoading)void readMySpaces(run);}});
+  window.addEventListener('deadelustv:auth-change',event=>{signedInHint=event.detail?.authenticated===true;accountUser=null;mySpaces=[];myError=false;if(currentPage==='mon-compte')render(accountSection==='accueil'?'mon-compte':'mon-compte/'+accountSection);else if(currentPage==='accueil'){const run=++generation;myLoading=signedInHint;paintMySpaces();if(myLoading)void readMySpaces(run);}});
   window.addEventListener('focus',()=>{if(currentPage==='accueil'&&hasSessionHint())void readMySpaces(++generation);});
   window.DEADELUSTV_DCG=Object.freeze({render,cancel});
 })();
