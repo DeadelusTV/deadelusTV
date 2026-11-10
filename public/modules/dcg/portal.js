@@ -21,8 +21,8 @@
   const shuffled=[...spaces];for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];}
   const discovery=shuffled.slice(0,Math.max(1,Math.min(20,Number(config.discoveryLimit)||20)));
   const showDiscovery=spaces.length>1||(spaces.length===1&&config.showDiscoveryWithSingleStreamer===true);
-  const pages = ['accueil', 'regles', 'mon-compte', 'collections-communes', 'connexion-pass'];
-  const titles = {accueil:'Accueil', regles:'Règles du jeu', 'mon-compte':'Mon compte', 'collections-communes':'Collections communes', 'connexion-pass':'Connexion Pass'};
+  const pages = ['accueil', 'regles', 'mon-compte', 'collections-communes'];
+  const titles = {accueil:'Accueil', regles:'Règles du jeu', 'mon-compte':'Mon compte', 'collections-communes':'Collections communes'};
   const heading = (tag, title, copy) => `<header class="portal-heading"><div class="bread">${tag}</div><h1>${title}</h1><p>${copy}</p></header>`;
   const badge = '<span class="portal-status">À venir</span>';
   const pass = () => '<section id="daily-pass-root" aria-label="État du Connexion Pass"></section>';
@@ -63,9 +63,7 @@
     return `${heading('ESPACE PERSONNEL', 'Mon compte.', `Bienvenue ${esc(String(name).slice(0,60))}. Retrouve ici les accès à tes collections.`)}<section class="portal-account-section"><div class="portal-section-top"><div><span class="overline">MES COLLECTIONS</span><h2>Les DCG des streamers</h2><p>DeadelusTV est le premier DCG disponible. Chaque univers conserve ses propres cartes et Alkahests.</p></div></div><article class="portal-account-space"><img src="${logo}" alt="" width="86" height="86"><div><h3>DeadelusTV</h3><p>Cartodex et exemplaires possédés</p></div><div class="portal-account-actions"><a class="button-primary" href="${gameLink('catalogue')}">Mon Cartodex →</a><a class="button-outline" href="${gameLink('profil')}">Mon profil dans ce DCG</a></div></article></section><section class="panel portal-message"><span class="overline">MES COLLECTIONS COMMUNES</span><h2>Des univers à partager ${badge}</h2><p>Les cartes des futures collections communes seront réunies ici, aux côtés de tes collections de streamers.</p><a class="text-link" href="#tcg/collections-communes">Voir l’espace des collections communes →</a></section>`;
   }
   const common = () => `${heading('DES UNIVERS À PARTAGER', 'Collections communes.', 'Des collections à découvrir entre communautés, avec un dos propre à chaque collection.')}<p class="portal-availability" role="status">La boutique est en préparation. Les collections ci-dessous illustrent les univers envisagés ; aucun booster commun n’est en vente pour le moment.</p><div class="portal-common-grid"><article class="portal-common portal-common-ghost"><span class="portal-common-art" aria-hidden="true">◌</span><span class="portal-eyebrow">COLLECTION ENVISAGÉE</span><h2>Phasmophobia</h2>${badge}</article><article class="portal-common portal-common-valor"><span class="portal-common-art" aria-hidden="true">◇</span><span class="portal-eyebrow">COLLECTION ENVISAGÉE</span><h2>Valorant</h2>${badge}</article></div><section class="panel portal-message"><span class="overline">LE CHOIX DU SOLDE</span><h2>Un achat, un DCG choisi</h2><p>Quand la boutique sera ouverte, tu pourras sélectionner le solde d’Alkahests d’un streamer suivi pour acheter ton booster commun. Le montant disponible et le coût seront affichés avant confirmation.</p><p>Les soldes resteront séparés : 200 Alkahests chez un streamer et 300 chez un autre ne forment pas un solde commun de 500.</p></section>`;
-  const connexion = () => '<h1 class="daily-pass-sr">Connexion Pass</h1>'+pass();
-
-  const renderers = {accueil:home, regles:rules, 'mon-compte':account, 'collections-communes':common, 'connexion-pass':connexion};
+  const renderers = {accueil:home, regles:rules, 'mon-compte':account, 'collections-communes':common};
   const nav = () => '<nav class="dcg-portal-nav" aria-label="Navigation du portail DCG">'+pages.map(page=>'<a href="'+(page==='accueil'?'#tcg':'#tcg/'+page)+'"'+(page===currentPage?' aria-current="page"':'')+'>'+titles[page]+'</a>').join('')+'</nav>';
   function mountGeneralXP(){
     const host=currentPage==='accueil'?root.querySelector('[data-general-xp]'):null;
@@ -85,7 +83,7 @@
     root.innerHTML=nav()+'<div class="dcg-portal-view">'+(renderers[currentPage]||home)()+(currentPage==='mon-compte'?pass():'')+'</div>';
     mountGeneralXP();
     const title=root.querySelector('h1');if(title){title.id='tcg-title';title.tabIndex=-1;}
-    if(['accueil','connexion-pass','mon-compte'].includes(currentPage))window.DCGDailyPass?.mount(root.querySelector('#daily-pass-root'),{view:currentPage==='mon-compte'?'details':'progress'});
+    if(['accueil','mon-compte'].includes(currentPage))window.DCGDailyPass?.mount(root.querySelector('#daily-pass-root'),{view:currentPage==='mon-compte'?'details':'progress'});
   }
   async function readAccount(run){
     try{
@@ -119,6 +117,7 @@
   }
   function render(page='accueil'){
     closeSearch(false);
+    if(page==='connexion-pass')window.history.replaceState(window.history.state,'','#tcg');
     const run=++generation;currentPage=pages.includes(page)?page:'accueil';
     accountUser=null;accountError=false;accountLoading=currentPage==='mon-compte';mySpaces=[];myError=false;myLoading=currentPage==='accueil'&&hasSessionHint();paint();
     if(accountLoading)void readAccount(run);
@@ -145,7 +144,7 @@
       if(showDiscovery)root.querySelector('[data-portal-carousel]')?.focus({preventScroll:true});
     }
   });
-  window.addEventListener('deadelustv:auth-change',event=>{signedInHint=event.detail?.authenticated===true;accountUser=null;mySpaces=[];myError=false;if(currentPage==='mon-compte'||currentPage==='connexion-pass')render(currentPage);else if(currentPage==='accueil'){const run=++generation;myLoading=signedInHint;paintMySpaces();if(myLoading)void readMySpaces(run);}});
+  window.addEventListener('deadelustv:auth-change',event=>{signedInHint=event.detail?.authenticated===true;accountUser=null;mySpaces=[];myError=false;if(currentPage==='mon-compte')render(currentPage);else if(currentPage==='accueil'){const run=++generation;myLoading=signedInHint;paintMySpaces();if(myLoading)void readMySpaces(run);}});
   window.addEventListener('focus',()=>{if(currentPage==='accueil'&&hasSessionHint())void readMySpaces(++generation);});
   window.DEADELUSTV_DCG=Object.freeze({render,cancel});
 })();

@@ -30,9 +30,10 @@ function setup({hash='#tcg',user=null,getSession,withAuth=true,registered=true,g
  const sections=pageNames.map(name=>{const n=new Node();n.dataset.page=name;n.nodes={h1:heading};return n;});
  const navNodes=['accueil','tcg','phasmophobia','crewmongus','jeux-de-role'].map(name=>{const n=new Node();n.dataset.nav=name;return n;});
  const documentListeners={},windowListeners={},calls=[],location={hash,search:'',pathname:'/'};
+ const history={state:{},replacements:[],replaceState(state,title,url){this.state=state;this.replacements.push(url);location.hash=url;}};
  const known={'#main-nav':nav,'.menu-toggle':menu,'#back-top':back,'#main-content':main,'.brand':brand,'#dcg-portal-root':root};
  const document={hidden:false,body:{classList:{add(){},remove(){}}},getElementById:id=>known['#'+id]||null,querySelector(selector){if(known[selector])return known[selector];const match=selector.match(/^\[data-page="(.+)"\] h1$/);if(match)return heading;return null;},querySelectorAll(selector){if(selector==='[data-page]')return sections;if(selector==='[data-nav]')return navNodes;return [];},addEventListener(name,fn){(documentListeners[name]??=[]).push(fn);}};
- const context={document,location,console,URL,URLSearchParams,Object,setTimeout,clearTimeout,setInterval:()=>1,innerWidth:1200,scrollTo(){},matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(name,fn){(windowListeners[name]??=[]).push(fn);},DEADELUSTV_CONFIG:{},DEADELUSTV_CREW:{render:(...args)=>calls.push(['crew',...args]),cancel:()=>{}},DEADELUSTV_PAVILLON:{render:(...args)=>calls.push(['pavillon',...args]),cancel:()=>{}},DEADELUSTV_TWITCH:{sync(){}}};
+ const context={document,location,history,console,URL,URLSearchParams,Object,setTimeout,clearTimeout,setInterval:()=>1,innerWidth:1200,scrollTo(){},matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(name,fn){(windowListeners[name]??=[]).push(fn);},DEADELUSTV_CONFIG:{},DEADELUSTV_CREW:{render:(...args)=>calls.push(['crew',...args]),cancel:()=>{}},DEADELUSTV_PAVILLON:{render:(...args)=>calls.push(['pavillon',...args]),cancel:()=>{}},DEADELUSTV_TWITCH:{sync(){}}};
  let currentUser=user,signins=0;const reads=[],passCalls=[];context.DCGDailyPass={mount:(element,options)=>passCalls.push(['mount',element,options]),unmount:()=>passCalls.push(['unmount'])};const storage=new Map(user?[['sb-eodtxlhnfzyapkyvvxdi-auth-token','session-present']]:[]);context.localStorage={getItem:k=>storage.get(k)??null};if(random)context.Math=Object.assign(Object.create(Math),{random});
  if(withAuth)context.DEADELUSTV_AUTH={getClient:async()=>({auth:{getSession:getSession||(async()=>({data:{session:currentUser?{user:currentUser}:null}})),getUser:getUser||(async()=>({data:{user:currentUser}}))},from(table){reads.push({table});return {select(columns){reads.at(-1).columns=columns;return this;},eq(column,value){reads.at(-1).filter={column,value};return this;},async maybeSingle(){return getMembership?getMembership():{data:registered&&currentUser?{user_id:currentUser.id}:null};}};}}),signIn:()=>{signins++;}};
  if(withAuth)Object.defineProperty(context.DEADELUSTV_AUTH,'userId',{get:()=>currentUser?.id||null});
@@ -40,10 +41,13 @@ function setup({hash='#tcg',user=null,getSession,withAuth=true,registered=true,g
  return {root,heading,list,search,searchForm,searchDialog,searchResults,directory,rail,reads,discoveryRoot,menu,nav,sections,calls,context,navNodes,passCalls,passRoot,get signins(){return signins;},async go(value){location.hash=value;for(const fn of windowListeners.hashchange||[])fn();await tick();},async auth(user){currentUser=user;if(user)storage.set('sb-eodtxlhnfzyapkyvvxdi-auth-token','session-present');else storage.clear();for(const fn of windowListeners['deadelustv:auth-change']||[])fn({detail:{authenticated:!!user}});await tick();},click(selector){const n=new Node();n.selector=selector;return root.emit('click',n);}};
 }
 
-test('the Pass route mounts progress only and leaving the route unmounts its view',async()=>{
- const s=setup();assert.equal(s.passCalls.at(-1)[2].view,'progress');await s.go('#tcg/connexion-pass');
+test('the removed Pass tab redirects old links to home and keeps the progress view',async()=>{
+ const s=setup({hash:'#tcg/connexion-pass'});assert.equal(s.context.location.hash,'#tcg');assert.deepEqual(s.context.history.replacements,['#tcg']);
+ const nav=s.root.innerHTML.match(/<nav class="dcg-portal-nav"[^>]*>(.*?)<\/nav>/)[1];
+ assert.equal((nav.match(/<a /g)||[]).length,4);assert.doesNotMatch(nav,/connexion-pass|Connexion Pass/);assert.match(nav,/href="#tcg" aria-current="page"/);
+ await s.go('#tcg/mon-compte');await s.go('#tcg/connexion-pass');assert.equal(s.context.location.hash,'#tcg');
  assert.equal(s.passCalls.at(-1)[1],s.passRoot);assert.equal(s.passCalls.at(-1)[2].view,'progress');assert.match(s.root.innerHTML,/daily-pass-root/);
- assert.doesNotMatch(s.root.innerHTML,/portal-heading|portal-pass-login|data-portal-login|Découvrir le Pass/);
+ assert.match(s.root.innerHTML,/Collectionne les/);assert.doesNotMatch(s.root.innerHTML,/portal-heading|portal-pass-login|Découvrir le Pass/);
  await s.go('#phasmophobia');assert.deepEqual(s.passCalls.at(-1),['unmount']);assert.equal(s.root.innerHTML,'');
 });
 
@@ -62,7 +66,7 @@ test('DCG replaces only its own waiting page and is mounted by the real site rou
  assert.match(s.context.document.title,/DCG/);assert.equal(s.signins,0);
 });
 test('each common subpage is a real DCG route; unknown DCG subpages safely return to its directory',async()=>{
- const s=setup();for(const [route,text]of[['regles','Les règles du jeu'],['collections-communes','aucun booster commun n’est en vente'],['connexion-pass','État du Connexion Pass']]){
+ const s=setup();for(const [route,text]of[['regles','Les règles du jeu'],['collections-communes','aucun booster commun n’est en vente']]){
   await s.go('#tcg/'+route);assert.match(s.root.innerHTML,new RegExp(text));assert.equal(s.sections.find(n=>n.dataset.page==='tcg').hidden,false);assert.match(s.root.innerHTML,new RegExp('href="#tcg/'+route+'" aria-current="page"'));
  }
  await s.go('#tcg/inconnu');assert.match(s.root.innerHTML,/data-portal-search/);

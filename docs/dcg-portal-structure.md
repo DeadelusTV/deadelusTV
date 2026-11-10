@@ -8,11 +8,12 @@ Destination confirmée par Yekelle : dépôt `DeadelusTV/deadelusTV`, branche `d
 
 | Adresse sur un aperçu de cette branche | Contenu |
 | --- | --- |
-| `#tcg` | Accueil DCG commun, Mes DCG personnels, recherche globale en fenêtre flottante, découverte aléatoire en carrousel, raccourci DeadelusTV et emplacement du Pass |
+| `#tcg` | Accueil DCG commun, Mes DCG personnels, recherche globale en fenêtre flottante, découverte aléatoire en carrousel, raccourci DeadelusTV et dix losanges de progression du Pass |
 | `#tcg/regles` | Présentation des règles actuelles du jeu |
-| `#tcg/mon-compte` | Connexion Twitch commune puis accès au Cartodex et au profil DeadelusTV |
+| `#tcg/mon-compte` | Connexion Twitch commune, accès au Cartodex et au profil DeadelusTV, détails du Pass quotidien |
 | `#tcg/collections-communes` | Boutique à venir ; Phasmophobia et Valorant présentées comme collections envisagées |
-| `#tcg/connexion-pass` | Consultation du Pass ; suivi de présence commun préparé, gains désactivés |
+
+L'onglet Connexion Pass est retiré du menu. Les anciens liens `#tcg/connexion-pass` reviennent à `#tcg` ; les détails du Pass restent dans Mon compte.
 
 L’entrée du menu et les accès de l’accueil portent le libellé **DCG**. Les sous-pages restent dans la rubrique TCG du routeur existant ; les anciennes adresses `#tcg` continuent de fonctionner. Aucun routage serveur `/tcg` ou `/tcg/<streamer>` n’est activé par ce lot.
 
@@ -48,7 +49,7 @@ Limites : pas de nouvelle recette visuelle dans un navigateur, pas de migration 
 
 ## Recette de l’aperçu de branche
 
-Ouvrir `#tcg`, vérifier le logo et l’annuaire, ouvrir la recherche et trouver DeadelusTV, y compris avant inscription, parcourir les cinq entrées du menu commun, se connecter puis se déconnecter dans Mon compte. Le logo mène aux boosters Workers actuels. Vérifier ensuite les retours vers l’accueil principal, Phasmophobia, Crew et Pavillon Noir, ainsi que l’affichage sur téléphone. Aucun TCG ne doit être lancé pour cette recette du portail.
+Ouvrir `#tcg`, vérifier le logo et l’annuaire, ouvrir la recherche et trouver DeadelusTV, y compris avant inscription, parcourir les quatre entrées du menu commun, vérifier le retour de l'ancien lien `#tcg/connexion-pass` vers l'accueil DCG, se connecter puis se déconnecter dans Mon compte. Le logo mène aux boosters Workers actuels. Vérifier ensuite les retours vers l’accueil principal, Phasmophobia, Crew et Pavillon Noir, ainsi que l’affichage sur téléphone. Aucun TCG ne doit être lancé pour cette recette du portail.
 
 
 ## Accueil personnel et découverte — 5 novembre 2026

@@ -14,7 +14,7 @@ La progression appartient au compte global et chaque DCG joué reçoit sa récom
 
 ## Vue du Pass
 
-Le visuel du ZIP `DCG-Connexion-Pass-Codex.zip` fourni le 10 novembre 2026 conserve dix losanges J1–J10 sur une ligne droite, une texture minérale sombre et des étoiles crème et or. Après simplification demandée par l'utilisatrice, l'accueil DCG `#tcg` et la route `#tcg/connexion-pass` n'affichent que l'échelle de progression, sans panneau, titre, légende, quantités ni règles visibles autour des losanges. La route dédiée conserve son titre accessible aux lecteurs d'écran. Les dix jours tiennent dans la largeur disponible, y compris à 320 px.
+Le visuel du ZIP `DCG-Connexion-Pass-Codex.zip` fourni le 10 novembre 2026 conserve dix losanges J1–J10 sur une ligne droite, une texture minérale sombre et des étoiles crème et or. Après simplification demandée par l'utilisatrice, l'accueil DCG `#tcg` n'affiche que l'échelle de progression, sans panneau, titre, légende, quantités ni règles visibles autour des losanges. L'onglet Connexion Pass est supprimé ; son ancienne adresse `#tcg/connexion-pass` revient à l'accueil DCG et remplace l'URL sans ajouter d'étape dans l'historique. Les dix jours tiennent dans la largeur disponible, y compris à 320 px.
 
 Tous les détails sont regroupés dans `#tcg/mon-compte` : état du cycle, quantités, règles, confirmations et attentes par DCG, bonus de soutien lorsqu'il sera activé et bouton d'actualisation. Le calendrier et ses règles restent consultables anonymement ; seuls les gains personnels exigent une identité vérifiée. Le bandeau du TCG renvoie vers cet espace. Aucun contrôle de démonstration ni donnée fictive n'est livré dans le parcours public.
 
