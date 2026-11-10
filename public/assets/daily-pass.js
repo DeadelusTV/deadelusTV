@@ -159,9 +159,10 @@
         '><span class="diamond" aria-hidden="true"></span><span class="day-number" aria-hidden="true">J'+day+'</span>'+sparkles(day)+
         (ready ? '<button class="claim-hit" type="button" data-daily-pass-refresh aria-label="Vérifier la réception du gain du jour '+day+'"'+(pending ? ' disabled aria-busy="true"' : '')+'></button>' : '')+'</li>';
     }).join('');
-    const rewardList = states.map(({day,reward,detail}) => '<li aria-label="Jour '+day+' : '+escape(rewardText(reward))+' — '+detail+'" title="'+escape(rewardText(reward))+'">'+
+    const rewardList = states.map(({day,reward,detail,ready}) => '<li aria-label="Jour '+day+' : '+escape(rewardText(reward))+' — '+detail+'" title="'+escape(rewardText(reward))+'">'+
+      (ready ? '<button class="daily-pass-reward-claim" type="button" data-daily-pass-refresh data-reward-day="'+day+'" aria-label="Vérifier la réception du gain du jour '+day+'"'+(pending ? ' disabled aria-busy="true"' : '')+'>' : '')+
       '<img src="'+escape(iconBase+(reward.kind === 'dust' ? 'dcg-alkahest-256.webp' : 'dcg-booster-256.webp'))+'" alt="" width="36" height="36" aria-hidden="true">'+
-      '<strong aria-hidden="true">'+escape(reward.kind === 'dust' ? '+'+reward.amount : '×'+reward.booster_count)+'</strong></li>').join('');
+      '<strong aria-hidden="true">'+escape(reward.kind === 'dust' ? '+'+reward.amount : '×'+reward.booster_count)+'</strong>'+(ready ? '</button>' : '')+'</li>').join('');
     const channels = owner && !preparation ? (data?.channels || []).filter(c => !['not_following','not_participating','disabled'].includes(c.status)).map(c =>
       '<li><strong>'+escape(c.login)+'</strong><span>'+escape(labels[c.status] || 'En attente')+
       (c.status === 'claimed' && c.balance_after != null ? ' · Solde : '+escape(c.balance_after)+' Alkahests' :

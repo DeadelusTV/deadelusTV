@@ -22,3 +22,11 @@ Les futures communautés et collections communes nécessiteront leurs lectures d
 ## Vérification
 
 64 tests site/portail/profil/presence/consentement passent, dont sept scénarios du nouveau lecteur : inventaire propre au compte, consultation sans inscription, aperçu sans actions, rejet des réponses d'un autre compte ou DCG, réponses tardives, échappement et pagination. Les sessions des tests sont fictives. La recette navigateur couvre les deux niveaux de navigation, le rendu compact des six finitions, l'aperçu en lecture seule et son retour au bouton d'origine. Aucune migration distante ou activation du Pass n'est réalisée.
+
+## Niveau général et gains dans le profil
+
+L’accueil du profil affiche le médaillon du niveau général et la barre du profil DCG adaptée au compteur `dcg_my_xp` : ouvertures cumulées, ouvertures restantes et récompense par DCG. Les deux compteurs individuels et général ne sont pas confondus ; le calcul et les RPC existantes sont conservés. Les autres sous-onglets ne chargent pas ce bloc.
+
+Dans le profil, les gains confirmés apparaissent sur place sous forme d’icône et de quantité ×, puis disparaissent après 1,5 seconde. La récupération d’un niveau utilise cette présentation, sans trajectoire ni cible. Le clic sur le losange ou l’icône du gain quotidien déclenche la vérification existante et ne présente un gain que si le serveur en confirme un. Les erreurs, relectures automatiques et réponses après changement de compte ou de page ne présentent pas de faux gain. Les effets sont nettoyés en quittant le profil, y compris avec le mouvement réduit.
+
+L’animation du Pass quotidien est prête pour l’activation du service, qui reste en préparation sur le site de test. Aucune migration, activation du Pass ou modification des crédits serveur.

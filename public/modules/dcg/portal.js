@@ -8,6 +8,8 @@
   let accountSection='accueil';
   let currentPage=null,generation=0,accountUser=null,accountLoading=false,accountError=false;
   let xpWidget=null,xpHost=null,xpUser=null;
+  let passGainRequest=null,stopPassGain=()=>{};
+  function clearPassGain(){passGainRequest=null;stopPassGain();stopPassGain=()=>{};}
   let mySpaces=[],myLoading=false,myError=false,signedInHint=false;
   // Annuaire des espaces réellement raccordés. Ajouter un streamer demandera
   // aussi son routage et son isolation serveur ; cette liste ne crée aucun DCG.
@@ -70,13 +72,15 @@
     if(accountLoading)return intro+navigation+'<p class="portal-availability" role="status">Recherche de ta connexion Twitch…</p>';
     if(accountError)return intro+navigation+'<section class="panel portal-message"><h2>Connexion momentanément indisponible</h2><p>Réessaie pour retrouver ton compte Twitch.</p><button class="button-primary" data-portal-account-retry>Réessayer</button></section>';
     if(!accountUser)return intro+navigation+'<section class="panel portal-message"><span class="overline">TON COMPTE TWITCH</span><h2>Retrouve tes collections</h2><p>Connecte-toi pour accéder à tes cartes et à ton profil dans les DCG.</p><button class="button-primary" type="button" data-portal-login>Connexion Twitch ↗</button></section>';
-    return intro+navigation+(accountSection==='accueil'?'':'<section id="dcg-profile-root" aria-label="Mes constellations"></section>');
+    return intro+navigation+(accountSection==='accueil'?'<section class="portal-profile-xp" aria-label="Niveau général et progression"><div class="portal-profile-xp-medal" data-general-xp hidden></div><div class="portal-profile-xp-details" data-general-xp-details></div></section>':'<section id="dcg-profile-root" aria-label="Mes constellations"></section>');
   }
   const common = () => `${heading('DES UNIVERS À PARTAGER', 'Collections communes.', 'Des collections à découvrir entre communautés, avec un dos propre à chaque collection.')}<p class="portal-availability" role="status">La boutique est en préparation. Les collections ci-dessous illustrent les univers envisagés ; aucun booster commun n’est en vente pour le moment.</p><div class="portal-common-grid"><article class="portal-common portal-common-ghost"><span class="portal-common-art" aria-hidden="true">◌</span><span class="portal-eyebrow">COLLECTION ENVISAGÉE</span><h2>Phasmophobia</h2>${badge}</article><article class="portal-common portal-common-valor"><span class="portal-common-art" aria-hidden="true">◇</span><span class="portal-eyebrow">COLLECTION ENVISAGÉE</span><h2>Valorant</h2>${badge}</article></div><section class="panel portal-message"><span class="overline">LE CHOIX DU SOLDE</span><h2>Un achat, un DCG choisi</h2><p>Quand la boutique sera ouverte, tu pourras sélectionner le solde d’Alkahests d’un streamer suivi pour acheter ton booster commun. Le montant disponible et le coût seront affichés avant confirmation.</p><p>Les soldes resteront séparés : 200 Alkahests chez un streamer et 300 chez un autre ne forment pas un solde commun de 500.</p></section>`;
   const renderers = {accueil:home, regles:rules, 'mon-compte':account, 'collections-communes':common};
   const nav = () => '<nav class="dcg-portal-nav" aria-label="Navigation du portail DCG">'+pages.map(page=>'<a href="'+(page==='accueil'?'#tcg':'#tcg/'+page)+'"'+(page===currentPage?' aria-current="page"':'')+'>'+titles[page]+'</a>').join('')+'</nav>';
   function mountGeneralXP(){
-    const host=currentPage==='accueil'?root.querySelector('[data-general-xp]'):null;
+    const profile=currentPage==='mon-compte'&&accountSection==='accueil';
+    const host=currentPage==='accueil'||profile?root.querySelector('[data-general-xp]'):null;
+    const detailsHost=profile?root.querySelector('[data-general-xp-details]'):null;
     if(host===xpHost&&accountUser?.id===xpUser)return;
     xpWidget?.destroy();xpWidget=null;xpHost=host;xpUser=accountUser?.id||null;
     if(!host)return;
@@ -85,10 +89,11 @@
     const id=accountUser.id;
     void window.DEADELUSTV_AUTH.getClient().then(client=>{
       if(!host.isConnected||accountUser?.id!==id||xpHost!==host||!window.DCGXPPass)return;
-      xpWidget=window.DCGXPPass.mount(host,{client,userId:id,scope:'general',compact:true,isCurrent:()=>accountUser?.id===id&&currentPage==='accueil'});
+      xpWidget=window.DCGXPPass.mount(host,{client,userId:id,scope:'general',compact:true,detailsHost,rewardPresentation:profile?'popup':'flight',isCurrent:()=>accountUser?.id===id&&xpHost===host&&(profile?currentPage==='mon-compte'&&accountSection==='accueil':currentPage==='accueil')});
     }).catch(()=>{if(host.isConnected&&xpHost===host)host.textContent='Ta progression est momentanément indisponible.';});
   }
   function paint(){
+    clearPassGain();
     window.DCGDailyPass?.unmount();
     root.innerHTML=nav()+'<div class="dcg-portal-view">'+(renderers[currentPage]||home)()+(currentPage==='mon-compte'&&accountSection==='accueil'?pass():'')+'</div>';
     mountGeneralXP();
@@ -135,13 +140,18 @@
     if(accountLoading)void readAccount(run);
     if(myLoading)void readMySpaces(run);
   }
-  function cancel(){window.DCGProfile?.unmount();window.DCGDailyPass?.unmount();xpWidget?.destroy();xpWidget=null;xpHost=null;xpUser=null;closeSearch(false);generation++;currentPage=null;accountUser=null;mySpaces=[];myLoading=false;myError=false;accountLoading=false;accountError=false;root.replaceChildren();}
+  function cancel(){clearPassGain();window.DCGProfile?.unmount();window.DCGDailyPass?.unmount();xpWidget?.destroy();xpWidget=null;xpHost=null;xpUser=null;closeSearch(false);generation++;currentPage=null;accountUser=null;mySpaces=[];myLoading=false;myError=false;accountLoading=false;accountError=false;root.replaceChildren();}
   function updateSearch(field){const results=root.querySelector('[data-portal-search-results]');if(results)results.innerHTML=searchResults(field.value);}
   root.addEventListener('input',event=>{if(event.target.matches('[data-portal-search]'))updateSearch(event.target);});
   root.addEventListener('submit',event=>{if(event.target.matches('[data-portal-search-form]')){event.preventDefault();updateSearch(event.target.querySelector('input'));}});
   root.addEventListener('keydown',event=>{if(event.key==='Escape'&&root.querySelector('[data-portal-search-dialog]')?.open){event.preventDefault();event.stopPropagation();closeSearch();}});
   root.addEventListener('close',event=>{if(!event.target.matches('[data-portal-search-dialog]'))return;const saved=searchStates.get(event.target);searchStates.delete(event.target);if(saved?.restore&&currentPage==='accueil'&&saved.trigger?.isConnected)saved.trigger.focus();},true);
   root.addEventListener('click',event=>{
+    const passClaim=event.target.closest('[data-daily-pass-refresh]');
+    if(passClaim&&accountUser&&currentPage==='mon-compte'&&accountSection==='accueil'){
+      const day=Number(passClaim.dataset.rewardDay||passClaim.closest('[data-day]')?.dataset.day);
+      if(Number.isInteger(day)&&day>=1&&day<=10)passGainRequest={user:accountUser.id,day,generation,at:Date.now()};
+    }
     const searchTrigger=event.target.closest('[data-portal-search-open]');if(searchTrigger)openSearch(searchTrigger);
     if(event.target.closest('[data-portal-search-close]'))closeSearch();
     if(event.target.closest('[data-portal-search-result]'))closeSearch(false);
@@ -157,6 +167,15 @@
     }
   });
   window.addEventListener('deadelustv:auth-change',event=>{signedInHint=event.detail?.authenticated===true;accountUser=null;mySpaces=[];myError=false;if(currentPage==='mon-compte')render(accountSection==='accueil'?'mon-compte':'mon-compte/'+accountSection);else if(currentPage==='accueil'){const run=++generation;myLoading=signedInHint;paintMySpaces();if(myLoading)void readMySpaces(run);}});
+  window.addEventListener('tcg:daily-pass-change',event=>{
+    const request=passGainRequest;passGainRequest=null;
+    if(!request||request.generation!==generation||request.user!==accountUser?.id||Date.now()-request.at>15000||currentPage!=='mon-compte'||accountSection!=='accueil')return;
+    const host=root.querySelector('#daily-pass-root'),anchor=host?.querySelector('[data-day="'+request.day+'"]');
+    if(!anchor||!window.DCGProfileRewards)return;
+    stopPassGain();
+    const popup=window.DCGProfileRewards.show(host,window.DCGProfileRewards.dailyItems(event.detail?.gains),{anchor,valid:()=>request.generation===generation&&request.user===accountUser?.id});
+    stopPassGain=()=>popup.cancel();
+  });
   window.addEventListener('focus',()=>{if(currentPage==='accueil'&&hasSessionHint())void readMySpaces(++generation);});
   window.DEADELUSTV_DCG=Object.freeze({render,cancel});
 })();

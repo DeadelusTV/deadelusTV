@@ -32,7 +32,41 @@
 #page-tcg .portal-card-detail dd{margin:0;overflow-wrap:anywhere}
 #page-tcg .portal-card-detail .button-primary{max-width:100%;font-size:12px;line-height:1.7}
 #page-tcg .portal-profile-tabs a:focus-visible,#page-tcg .portal-profile-views a:focus-visible,#page-tcg .portal-owned-open:focus-visible{outline:2px solid var(--gold-light);outline-offset:5px}
+#page-tcg .portal-profile-xp{display:grid;grid-template-columns:136px minmax(0,1fr);align-items:center;gap:28px;margin:28px 0 40px}
+#page-tcg .portal-profile-xp-medal.dcg-xp-pass{position:relative;padding:0;margin:0;border:0;background:none;box-shadow:none}
+#page-tcg .portal-profile-xp-medal .dcg-xp{--xp-size:136px;display:grid;place-items:center;width:var(--xp-size);height:var(--xp-size);padding:0;gap:0;border-radius:50%;background:none}
+#page-tcg .portal-profile-xp-medal>.dcg-xp-pass__note,#page-tcg .portal-profile-xp-medal>.dcg-xp-pass__message,#page-tcg .portal-profile-xp-medal>.dcg-xp-pass__error{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;margin:0;padding:0}
+#page-tcg .portal-profile-xp-details{min-width:0}
+#page-tcg .portal-profile-xp-details .dcg-xp-details__heading{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+#page-tcg .portal-profile-xp-details h2{font:500 27px Georgia,serif;margin:7px 0 0;color:var(--gold-light)}
+#page-tcg .portal-profile-xp-details .dcg-xp-details__level{font:500 24px Georgia,serif;color:var(--gold-light);white-space:nowrap}
+#page-tcg .portal-profile-xp-details .dcg-xp-details__stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin:22px 0}
+#page-tcg .portal-profile-xp-details dt{font-size:12px;line-height:1.6;color:var(--muted)}
+#page-tcg .portal-profile-xp-details dd{margin:5px 0 0;font-size:18px;color:var(--gold-light)}
+#page-tcg .portal-profile-xp-details .dcg-xp-details__measure{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 18px;font-size:12px;color:var(--muted);margin-bottom:9px}
+#page-tcg .portal-profile-xp-details .dcg-xp-details__bar{display:block;width:100%;height:9px;overflow:hidden;border:0;border-radius:99px;background:#27231d;color:#e3bc76;accent-color:#e3bc76}
+#page-tcg .portal-profile-xp-details .dcg-xp-details__bar::-webkit-progress-bar{background:#27231d;border-radius:99px}
+#page-tcg .portal-profile-xp-details .dcg-xp-details__bar::-webkit-progress-value{background:linear-gradient(90deg,#a67b39,#f3d697);border-radius:99px}
+#page-tcg .portal-profile-xp-details .dcg-xp-details__bar::-moz-progress-bar{background:linear-gradient(90deg,#a67b39,#f3d697);border-radius:99px}
+#page-tcg .portal-profile-xp-details .dcg-xp-details__available{font-size:13px;color:var(--gold-light);margin:18px 0 10px}
+#page-tcg .portal-profile-xp-details .button-primary{font-size:12px;white-space:normal;max-width:100%}
+.portal-profile-gain{position:fixed;z-index:2200;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:16px;max-width:calc(100vw - 24px);pointer-events:none;color:#ffe9c1;text-shadow:0 2px 8px #09090b,0 0 11px #dcb06835;animation:portal-profile-gain 1.5s ease both}
+.portal-profile-gain__item{display:grid;grid-template-columns:64px auto;align-items:center;gap:0 4px}
+.portal-profile-gain__item img{display:block;object-fit:contain;filter:drop-shadow(0 6px 5px #0009) drop-shadow(0 0 8px #edc16e43)}
+.portal-profile-gain__item strong{font:800 26px/1 Arial,sans-serif;white-space:nowrap}
+.portal-profile-gain__item small{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@keyframes portal-profile-gain{0%{opacity:0}15%,78%{opacity:1}100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){.portal-profile-gain{animation:none}}
 @media(max-width:600px){
+#page-tcg .portal-profile-xp{display:block;position:relative;margin:24px 0 32px}
+#page-tcg .portal-profile-xp-medal.dcg-xp-pass{position:absolute;right:3px;top:0}
+#page-tcg .portal-profile-xp-medal .dcg-xp{--xp-size:86px}
+#page-tcg .portal-profile-xp-details .dcg-xp-details__heading{min-height:86px;padding-right:102px;flex-direction:column;align-items:flex-start;justify-content:center;gap:8px}
+#page-tcg .portal-profile-xp-details h2{font-size:23px}
+#page-tcg .portal-profile-xp-details .dcg-xp-details__level{font-size:20px}
+#page-tcg .portal-profile-xp-details .dcg-xp-details__stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px;margin:18px 0}
+#page-tcg .portal-profile-xp-details .dcg-xp-details__stats>div:last-child{grid-column:1/-1}
+#page-tcg .portal-profile-xp-details dd{font-size:17px}
 #page-tcg .portal-owned-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 16px}
 #page-tcg .portal-profile-filters,#page-tcg .portal-profile-filters label{width:100%}
 #page-tcg .portal-profile-filters input{width:100%;box-sizing:border-box}
