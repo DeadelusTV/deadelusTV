@@ -48,10 +48,12 @@ Le JavaScript et le CSS sont identiques aux copies `public/daily-pass.*` du TCG.
 
 Tests du portail : `node --test scripts/test_dcg_portal.cjs scripts/test_daily_pass.cjs scripts/test_frontend_consent.cjs scripts/test_twitch_floating.cjs scripts/test_journal_account_access.cjs`. Le dépôt TCG possède les tests PostgreSQL, HTTP et UI du Pass. Les comptes de tests sont fictifs.
 
-La recette Twitch réelle, les appels simultanés sur PostgreSQL réel et l'installation coordonnée restent nécessaires avant activation. Les écrans J1–J6 reçus/J7 en attente utilisés pour la recette visuelle sont servis uniquement par un harnais local hors dépôt public ; ils ne constituent pas une attribution réelle. Les essais couvrent les largeurs 1366/736/320 px, le clavier, l'échec de vérification et la transition confirmée sans allumer J8. Le prestataire de soutien sera raccordé séparément après décision.
+La connexion réelle et le crédit unique de J1 ont été vérifiés après installation coordonnée du service dédié, de la structure et du portail de recette. La concurrence sur deux sessions PostgreSQL et la transition de journée réelle restent à confirmer avant une ouverture de production. Les écrans J1–J6 reçus/J7 en attente utilisés pour la recette visuelle sont servis uniquement par un harnais local hors dépôt public ; ils ne constituent pas une attribution réelle. Les essais couvrent les largeurs 1366/736/320 px, le clavier, l'échec de vérification et la transition confirmée sans allumer J8. Le prestataire de soutien sera raccordé séparément après décision.
 
 ## Vérifications de mise en service
 
 88 tests moteur/HTTP/interface/Twitch et 45 tests portail/session/routes réussis. Les vérifications HTTP réelles confirment l'origine de test (204), le refus des autres origines (403) et des appels anonymes (401). La recette sur session réelle confirme J1 et l'absence de double crédit au rechargement. Le cycle complet, les absences et les jours Paris de 23/25 heures sont testés sur des données fictives ; aucun jour futur n'est forcé sur les comptes réels.
 
 Recette réelle du 10 novembre 2026 : la session connectée du site test reçoit J1, +5 Alkahests chez DeadelusTV, avec un solde après crédit de 45. Un rechargement conserve une seule visite, un seul reçu, un total distribué de 5 et le même solde de 45 ; aucun booster quotidien n'est créé à J1. L'affichage confirme la réception de J1 et garde J2–J10 à venir. Aucun jour futur, autre compte ou autre DCG n'est forcé pour cette recette.
+
+La vue de consultation du TCG reste préparée dans la PR Yekelle/TCG #60. Sa fusion vers main n'est pas réalisée, car la revue automatique limite l'autorisation actuelle au site de test ; les crédits du portail ne dépendent pas de cette fusion.
