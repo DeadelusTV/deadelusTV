@@ -130,7 +130,7 @@
     if (!isSite()) {
       root.hidden = !owner;
       root.innerHTML = owner ? '<section class="daily-pass daily-pass--compact"><div><h2>Connexion Pass</h2><p>'+escape(title)+
-        ' · Ta présence quotidienne se valide sur le site DeadelusTV.</p></div><a class="daily-pass-site-link" href="https://www.deadelustv.com/#tcg/mon-compte">Détails de mon Pass →</a><button type="button" data-daily-pass-refresh>Actualiser</button></section>' : '';
+        ' · Ta présence quotidienne se valide sur le site DeadelusTV.</p></div><a class="daily-pass-site-link" href="https://deadelustv.pages.dev/#tcg/mon-compte">Détails de mon Pass →</a><button type="button" data-daily-pass-refresh>Actualiser</button></section>' : '';
       return;
     }
     // Un numéro de présence n'est pas un reçu. Les coches utilisent uniquement
@@ -220,7 +220,7 @@
       if (isSite() && !result.error && result.data?.channels?.some(c => c.status === 'verification_required') && Date.now() >= verifyAt) {
         verifyAt = Date.now()+300000;
         try {
-          const check = await client.functions.invoke('tcg-twitch-sync', {body:{action:'verify_follow'}});
+          const check = await client.functions.invoke(isSite() ? 'tcg-daily-pass' : 'tcg-twitch-sync', {body:{action:'verify_follow'}});
           if (!current()) return;
           if (!check.error && check.data?.ok && !check.data.failed_count && !check.data.skipped) {
             const refreshed = await read();

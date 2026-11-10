@@ -1,6 +1,6 @@
 # Connexion Pass — structure du site au 10 novembre 2026
 
-Préparation dans la PR [#8](https://github.com/DeadelusTV/deadelusTV/pull/8) vers `developpement/tcg-attente`. Moteur associé : [Yekelle/TCG #60](https://github.com/Yekelle/TCG/pull/60), guide `docs/CONNEXION_PASS_FOUNDATION.md`. Le Pass et le bonus donateur restent désactivés ; aucune mise en service de production n'est réalisée ici.
+Raccordement de recette du 10 novembre 2026 sur `developpement/tcg-attente`. Le service et la structure du Pass sont installés dans le projet TCG ; le calendrier standard et le canal DeadelusTV sont activés après accord explicite. Le bonus donateur reste désactivé. Seule l'adresse `https://deadelustv.pages.dev` est autorisée pour la présence ; les domaines de production ne sont pas activés.
 
 ## Présence du site, consultation facultative
 
@@ -22,7 +22,7 @@ Dans `#tcg/mon-compte`, une icône d'Alkahest ou de booster et sa quantité se t
 
 Les règles de départ à J1, cycle de dix jours, absence et minuit Paris sont regroupées dans la **FAQ du Pass quotidien**, en tête de `#tcg/regles`. Le lien « FAQ du Pass » y mène depuis Mon compte. Le calendrier reste consultable anonymement ; seuls les gains personnels exigent une identité vérifiée. Le bandeau du TCG renvoie vers Mon compte. Aucun contrôle de démonstration ni donnée fictive n'est livré dans le parcours public.
 
-Diagnostic du 10 novembre : `tcg-daily-pass` est absent des fonctions déployées du projet `eodtxlhnfzyapkyvvxdi` et sa requête OPTIONS renvoie 404 `NOT_FOUND`. L'ancien bouton Actualiser répétait cet appel sans pouvoir réussir. Le portail garde donc `dailyPassServiceReady:false` : aucun appel de présence n'est tenté avant installation, et le panneau indique « Bientôt disponible ». Le contrôleur attend une valeur explicitement vraie ; les autres pages ne supposent pas que le service existe. Lors d'une future mise en service, ce drapeau devra suivre l'installation et la recette du service, en plus des réglages d'activation serveur. Sur un service actif, une erreur de réseau conserve les reçus déjà confirmés et annonce une nouvelle tentative automatique. Aucun déploiement Supabase ni activation n'est réalisé par cette simplification.
+Le diagnostic initial du 10 novembre constatait l'absence de `tcg-daily-pass`. Le service est maintenant installé (version 2), avec la migration `tcg_site_daily_pass_structure` et les réglages de recette activés. `dailyPassServiceReady:true` permet les appels sur le site test. Le service accepte son origine exacte, vérifie Auth et refuse les domaines de production, le jeu et les appels anonymes. Aucun paiement n'est raccordé. En cas d'arrêt volontaire, remettre ce drapeau à false coupe les appels du client ; la désactivation serveur reste le contrôle d'attribution.
 
 Les jours futurs restent argentés et éteints. Le jour courant en attente d'un gain éligible utilise le halo renforcé ; son bouton clavier relance uniquement la vérification existante. La présence continue à attribuer les gains automatiquement, sans clic obligatoire. Une coche signifie qu'au moins un DCG possède un reçu confirmé pour ce jour ; le détail par DCG présente séparément les attributions du jour et les attentes. Une présence sans reçu n'est pas présentée comme une récompense récupérée.
 
@@ -42,10 +42,14 @@ Tipeee classique, TipeeeStream et une intégration PayPal ont été étudiés po
 
 ## Raccordement et vérification
 
-Les origines publiques sont `https://www.deadelustv.com` et `https://deadelustv.com`. Ajouter chaque origine de recette exacte dans `TCG_PASS_SITE_ORIGINS` du nouveau service de présence et `TCG_PASS_ORIGINS` du service Twitch. Ces variables sont des listes séparées par des virgules, sans joker. L'origine du jeu ne peut pas enregistrer de présence. Le filtrage CORS/origine n'est pas une preuve anti-bot et ne remplace pas les contrôles serveur.
+L'entrée du service dédié configure actuellement `https://deadelustv.pages.dev`. Une liste explicite `TCG_PASS_SITE_ORIGINS` remplace les origines par défaut ; une liste vide ferme les accès. Aucun joker. L'origine du jeu et les domaines de production ne peuvent pas enregistrer de présence. Le filtrage d'origine n'est pas une preuve anti-bot et ne remplace pas Auth, l'inscription et les reçus serveur. Pour renouveler le follow, le navigateur appelle le même service du Pass avec `{action:'verify_follow'}`. Celui-ci relaie uniquement le contrôle utilisateur existant vers Twitch avec le JWT confirmé ; le service partagé reste inchangé dans sa version 17, sans nouvelles commandes administratives exposées.
 
 Le JavaScript et le CSS sont identiques aux copies `public/daily-pass.*` du TCG. Conserver leur synchronisation lors des évolutions du contrat. Le Pass XP et les autres rubriques du portail restent en place.
 
 Tests du portail : `node --test scripts/test_dcg_portal.cjs scripts/test_daily_pass.cjs scripts/test_frontend_consent.cjs scripts/test_twitch_floating.cjs scripts/test_journal_account_access.cjs`. Le dépôt TCG possède les tests PostgreSQL, HTTP et UI du Pass. Les comptes de tests sont fictifs.
 
 La recette Twitch réelle, les appels simultanés sur PostgreSQL réel et l'installation coordonnée restent nécessaires avant activation. Les écrans J1–J6 reçus/J7 en attente utilisés pour la recette visuelle sont servis uniquement par un harnais local hors dépôt public ; ils ne constituent pas une attribution réelle. Les essais couvrent les largeurs 1366/736/320 px, le clavier, l'échec de vérification et la transition confirmée sans allumer J8. Le prestataire de soutien sera raccordé séparément après décision.
+
+## Vérifications de mise en service
+
+88 tests moteur/HTTP/interface/Twitch et 45 tests portail/session/routes réussis. Les vérifications HTTP réelles confirment l'origine de test (204), le refus des autres origines (403) et des appels anonymes (401). La recette sur session réelle et le rechargement sans double crédit sont à consigner après publication du client. Le cycle complet, les absences et les jours Paris de 23/25 heures sont testés sur des données fictives ; aucun jour futur n'est forcé sur les comptes réels.

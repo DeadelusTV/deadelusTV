@@ -38,7 +38,7 @@ test('the test site stays in preparation while its presence service is not deplo
  const p=page({stored:true,serviceReady:false});await tick();assert.equal(p.context.DEADELUSTV_AUTH.userId,'alice');assert.equal(p.calls.length,0);
  const view=p.element('view');p.context.DCGDailyPass.mount(view);assert.match(view.innerHTML,/Bientôt disponible/);assert.doesNotMatch(view.innerHTML,/Actualiser|Impossible de vérifier|Vérification de ta progression/);
  p.advance(360000);p.timers[0]();await tick();assert.equal(p.calls.length,0);
- assert.match(read('public/modules/dcg/config.js'),/dailyPassServiceReady:false/);
+
 });
 test('invalid stored session is verified by Auth and never requests rewards',async()=>{
  const p=page({stored:true,getUser:async()=>({error:{message:'expired'}})});await tick();assert.equal(p.created,1);assert.equal(p.context.DEADELUSTV_AUTH.userId,null);assert.equal(p.calls.length,0);
@@ -62,4 +62,13 @@ test('the common controller is loaded once before portal routes on every site pa
  assert.ok(html.indexOf('assets/site-auth.js')<html.indexOf('assets/daily-pass.js'));
  assert.ok(html.indexOf('assets/daily-pass.js')<html.indexOf('modules/dcg/portal.js'));
  assert.match(html,/<script src="assets\/daily-pass.js[^>]* defer>/);assert.match(html,/href="assets\/daily-pass.css/);
+});
+test('site follow renewal stays on the dedicated Pass gateway and preserves confirmed gains',async()=>{
+ let reads=0;const p=page({stored:true,handler:async(name,options)=>{
+  assert.equal(name,'tcg-daily-pass');
+  if(options.body.action==='verify_follow')return{data:{ok:true,failed_count:0}};
+  const first=++reads===1;return{data:{status:'recorded',step:1,channels:[{login:'second',status:first?'verification_required':'claimed'}],gains:[{kind:'dust',amount:5,login:first?'first':'second'}]}};
+ }});await tick();
+ assert.deepEqual(JSON.parse(JSON.stringify(p.calls)),[['tcg-daily-pass',{body:{}}],['tcg-daily-pass',{body:{action:'verify_follow'}}],['tcg-daily-pass',{body:{}}]]);
+ const view=p.element('view');p.context.DCGDailyPass.mount(view);assert.match(view.innerHTML,/\+5 Alkahests chez first/);assert.match(view.innerHTML,/\+5 Alkahests chez second/);
 });
