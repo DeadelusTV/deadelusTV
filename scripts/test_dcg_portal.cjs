@@ -22,7 +22,7 @@ class Node{
  closest(selector){return this.selector===selector?this:null;}
  querySelector(selector){return this.nodes?.[selector]||null;}
 }
-function setup({hash='#tcg',user=null,getSession,withAuth=true,registered=true,getUser,getMembership,spaces,showSingle=true,random,xpMount}={}){
+function setup({hash='#tcg',user=null,getSession,withAuth=true,registered=true,getUser,getMembership,spaces,showSingle=true,random,xpMount,xpRead}={}){
  const root=new Node(),heading=new Node(),list=new Node(),search=new Node(),searchForm=new Node(),searchDialog=new Node(),searchResults=new Node(),directory=new Node(),discoveryRoot=new Node(),rail=new Node(),nav=new Node(),menu=new Node(),back=new Node(),main=new Node(),brand=new Node(),passRoot=new Node();
  search.selector='[data-portal-search]';searchDialog.selector='[data-portal-search-dialog]';searchDialog.onClose=()=>root.emit('close',searchDialog);searchForm.nodes={input:search};root.nodes={'[data-general-xp]':new Node(),'h1':heading,'[data-portal-spaces]':list,'[data-portal-search]':search,'#dcg-annuaire':directory,'#dcg-decouverte':discoveryRoot,'[data-portal-carousel]':rail,'[data-portal-search-form]':searchForm,'[data-portal-search-dialog]':searchDialog,'[data-portal-search-results]':searchResults};rail.clientWidth=500;rail.scrollBy=options=>rail.scrolled=options;
  root.nodes['#daily-pass-root']=passRoot;root.nodes['[data-general-xp-details]']=new Node();
@@ -34,11 +34,11 @@ function setup({hash='#tcg',user=null,getSession,withAuth=true,registered=true,g
  const known={'#main-nav':nav,'.menu-toggle':menu,'#back-top':back,'#main-content':main,'.brand':brand,'#dcg-portal-root':root};
  const document={hidden:false,body:{classList:{add(){},remove(){}}},getElementById:id=>known['#'+id]||null,querySelector(selector){if(known[selector])return known[selector];const match=selector.match(/^\[data-page="(.+)"\] h1$/);if(match)return heading;return null;},querySelectorAll(selector){if(selector==='[data-page]')return sections;if(selector==='[data-nav]')return navNodes;return [];},addEventListener(name,fn){(documentListeners[name]??=[]).push(fn);}};
  const context={document,location,history,console,URL,URLSearchParams,Object,setTimeout,clearTimeout,setInterval:()=>1,innerWidth:1200,scrollTo(){},matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(name,fn){(windowListeners[name]??=[]).push(fn);},DEADELUSTV_CONFIG:{},DEADELUSTV_CREW:{render:(...args)=>calls.push(['crew',...args]),cancel:()=>{}},DEADELUSTV_PAVILLON:{render:(...args)=>calls.push(['pavillon',...args]),cancel:()=>{}},DEADELUSTV_TWITCH:{sync(){}}};
- let currentUser=user,signins=0;const reads=[],passCalls=[];context.DCGDailyPass={mount:(element,options)=>passCalls.push(['mount',element,options]),unmount:()=>passCalls.push(['unmount'])};const storage=new Map(user?[['sb-eodtxlhnfzyapkyvvxdi-auth-token','session-present']]:[]);context.localStorage={getItem:k=>storage.get(k)??null};if(random)context.Math=Object.assign(Object.create(Math),{random});
- if(withAuth)context.DEADELUSTV_AUTH={getClient:async()=>({auth:{getSession:getSession||(async()=>({data:{session:currentUser?{user:currentUser}:null}})),getUser:getUser||(async()=>({data:{user:currentUser}}))},from(table){reads.push({table});return {select(columns){reads.at(-1).columns=columns;return this;},eq(column,value){reads.at(-1).filter={column,value};return this;},async maybeSingle(){return getMembership?getMembership():{data:registered&&currentUser?{user_id:currentUser.id}:null};}};}}),signIn:()=>{signins++;}};
+ let currentUser=user,signins=0;const reads=[],passCalls=[],xpReads=[];context.DCGDailyPass={mount:(element,options)=>passCalls.push(['mount',element,options]),unmount:()=>passCalls.push(['unmount'])};const storage=new Map(user?[['sb-eodtxlhnfzyapkyvvxdi-auth-token','session-present']]:[]);context.localStorage={getItem:k=>storage.get(k)??null};if(random)context.Math=Object.assign(Object.create(Math),{random});
+ if(withAuth)context.DEADELUSTV_AUTH={getClient:async()=>({auth:{getSession:getSession||(async()=>({data:{session:currentUser?{user:currentUser}:null}})),getUser:getUser||(async()=>({data:{user:currentUser}}))},rpc:async(name,args)=>{xpReads.push({name,args});return xpRead?xpRead(name,args):{data:{scope:'streamer',broadcaster_id:'99977368',total:30,level:2}};},from(table){reads.push({table});return {select(columns){reads.at(-1).columns=columns;return this;},eq(column,value){reads.at(-1).filter={column,value};return this;},async maybeSingle(){return getMembership?getMembership():{data:registered&&currentUser?{user_id:currentUser.id}:null};}};}}),signIn:()=>{signins++;}};
  if(withAuth)Object.defineProperty(context.DEADELUSTV_AUTH,'userId',{get:()=>currentUser?.id||null});
- if(xpMount)context.DCGXPPass={mount:xpMount};context.window=context;vm.createContext(context);vm.runInContext(config,context);context.DEADELUSTV_DCG_CONFIG={...context.DEADELUSTV_DCG_CONFIG,...(spaces?{spaces}:{}),showDiscoveryWithSingleStreamer:showSingle};vm.runInContext(source,context);vm.runInContext(router,context);
- return {emitWindow(type,detail){for(const fn of windowListeners[type]||[])fn({detail});},root,heading,list,search,searchForm,searchDialog,searchResults,directory,rail,reads,discoveryRoot,menu,nav,sections,calls,context,navNodes,passCalls,passRoot,get signins(){return signins;},async go(value){location.hash=value;for(const fn of windowListeners.hashchange||[])fn();await tick();},async auth(user){currentUser=user;if(user)storage.set('sb-eodtxlhnfzyapkyvvxdi-auth-token','session-present');else storage.clear();for(const fn of windowListeners['deadelustv:auth-change']||[])fn({detail:{authenticated:!!user}});await tick();},click(selector){const n=new Node();n.selector=selector;return root.emit('click',n);}};
+ if(xpMount)context.DCGXPPass={mount:xpMount};context.window=context;vm.createContext(context);vm.runInContext(read('public/modules/dcg/dcg-xp.js'),context);vm.runInContext(config,context);context.DEADELUSTV_DCG_CONFIG={...context.DEADELUSTV_DCG_CONFIG,...(spaces?{spaces}:{}),showDiscoveryWithSingleStreamer:showSingle};vm.runInContext(source,context);vm.runInContext(router,context);
+ return {emitWindow(type,detail){for(const fn of windowListeners[type]||[])fn({detail});},root,heading,list,search,searchForm,searchDialog,searchResults,directory,rail,reads,xpReads,discoveryRoot,menu,nav,sections,calls,context,navNodes,passCalls,passRoot,get signins(){return signins;},async go(value){location.hash=value;for(const fn of windowListeners.hashchange||[])fn();await tick();},async auth(user){currentUser=user;if(user)storage.set('sb-eodtxlhnfzyapkyvvxdi-auth-token','session-present');else storage.clear();for(const fn of windowListeners['deadelustv:auth-change']||[])fn({detail:{authenticated:!!user}});await tick();},click(selector){const n=new Node();n.selector=selector;return root.emit('click',n);}};
 }
 
 test('the removed Pass tab redirects old links to home and keeps the progress view',async()=>{
@@ -73,7 +73,7 @@ test('each common subpage is a real DCG route; unknown DCG subpages safely retur
 });
 test('the logo and directory lead to the existing Workers boosters, with no embedded game or copied auth client',()=>{
  const s=setup();assert.equal((s.root.innerHTML.match(/href="https:\/\/tcg\.yekelle-boulet\.workers\.dev\/#\/boosters"/g)||[]).length,3);
- assert.doesNotMatch(s.root.innerHTML,/<iframe|<script/);assert.doesNotMatch(source,/createClient|service_role|rpc\(|fetch\(/);
+ assert.doesNotMatch(s.root.innerHTML,/<iframe|<script/);assert.doesNotMatch(source,/createClient|service_role|fetch\(/);
 });
 test('global streamer search handles accents without filtering personal DCG or replacing the input',async()=>{
  const s=setup({user:{id:'player'}});await tick();s.click('[data-portal-search-open]');assert.equal(s.searchDialog.open,true);assert.equal(s.search.focused,true);
@@ -126,7 +126,7 @@ test('markup and scripts are integrated once, and all portal CSS selectors are s
 
 test('Mes DCG reads only the signed-in player account, without joining a game or requiring a Viewer card',async()=>{
  const s=setup({user:{id:'admin-player'}});await tick();assert.match(s.list.innerHTML,/data-dcg="deadelustv"/);assert.match(s.root.innerHTML,/data-portal-search-open/);
- assert.deepEqual(s.reads,[{table:'tcg_accounts',columns:'user_id',filter:{column:'user_id',value:'admin-player'}}]);assert.doesNotMatch(source,/\.insert\(|\.update\(|\.upsert\(|\.rpc\(|\.functions\./);
+ assert.deepEqual(s.reads,[{table:'tcg_accounts',columns:'user_id',filter:{column:'user_id',value:'admin-player'}}]);assert.doesNotMatch(source,/\.insert\(|\.update\(|\.upsert\(|tcg_claim_|\.functions\./);
 });
 test('anonymous and unregistered visitors retain public discovery but have no personal DCG',async()=>{
  const anonymous=setup({withAuth:false});await tick();assert.match(anonymous.list.innerHTML||anonymous.root.innerHTML,/Connecte-toi avec Twitch/);assert.equal(anonymous.reads.length,0);
@@ -207,4 +207,22 @@ test('only a profile Pass click followed by confirmed gains displays a popup, cl
  s.emitWindow('tcg:daily-pass-change',{gains:[{kind:'dust',amount:35}]});assert.equal(shown.length,0);
  s.root.emit('click',claim);s.emitWindow('tcg:daily-pass-change',{gains:[{kind:'dust',amount:35}]});assert.equal(shown.length,1);assert.equal(shown[0].options.anchor,anchor);assert.equal(shown[0].options.valid(),true);
  await s.go('#tcg/mon-compte/cartes');assert.equal(cancelled,1);assert.equal(shown[0].options.valid(),false);s.emitWindow('tcg:daily-pass-change',{gains:[{kind:'dust',amount:35}]});assert.equal(shown.length,1);
+});
+
+
+test('joined DCG tiles show the local level in a passive medal instead of the arrow',async()=>{
+ const s=setup({user:{id:'alice'}});await tick();assert.deepEqual(s.xpReads,[{name:'tcg_my_xp',args:undefined}]);assert.match(s.list.innerHTML,/portal-space-level/);assert.match(s.list.innerHTML,/Ton niveau chez DeadelusTV : niveau 2/);assert.match(s.list.innerHTML,/dcg-xp__number">2</);assert.doesNotMatch(s.list.innerHTML,/portal-space-arrow|data-xp-claim|<button/);assert.match(s.list.innerHTML,/href="https:\/\/tcg.yekelle-boulet.workers.dev\/#\/boosters"/);
+ const markup=s.list.innerHTML;s.emitWindow('focus');await tick();assert.equal(s.xpReads.length,2);assert.equal(s.list.innerHTML,markup);
+});
+test('only verified participants request a DCG level, and zero is a real server level',async()=>{
+ for(const options of [{user:null},{user:{id:'alice'},registered:false}]){const s=setup(options);await tick();assert.equal(s.xpReads.length,0);assert.doesNotMatch(s.list.innerHTML,/portal-space-level/);}
+ const s=setup({user:{id:'alice'},xpRead:async()=>({data:{scope:'streamer',broadcaster_id:'99977368',total:4,level:0}})});await tick();assert.match(s.list.innerHTML,/Ton niveau chez DeadelusTV : niveau 0/);assert.match(s.list.innerHTML,/4 \/ 10 boosters/);
+});
+test('failed or mismatched local XP never hides the DCG or invents a level',async()=>{
+ for(const result of [{error:{message:'private diagnostic'}},{data:{scope:'general',total:10,level:1}},{data:{scope:'streamer',broadcaster_id:'other',total:10,level:1}},{data:{scope:'streamer',broadcaster_id:'99977368',total:0,level:99}}]){
+ const s=setup({user:{id:'alice'},xpRead:async()=>result});await tick();assert.match(s.list.innerHTML,/data-dcg="deadelustv"/);assert.match(s.list.innerHTML,/Niveau momentanément indisponible/);assert.doesNotMatch(s.list.innerHTML,/dcg-xp__number|private diagnostic|portal-space-arrow/);
+ }
+});
+test('a late local level response cannot restore another player tile after sign-out or leaving',async()=>{
+ for(const leave of ['logout','route']){let release;const s=setup({user:{id:'alice'},xpRead:()=>new Promise(r=>release=r)});await tick();assert.match(s.list.innerHTML,/Lecture de ton niveau/);if(leave==='logout')await s.auth(null);else await s.go('#phasmophobia');const before=s.list.innerHTML;release({data:{scope:'streamer',broadcaster_id:'99977368',total:450,level:9}});await tick();assert.equal(s.list.innerHTML,before);assert.doesNotMatch(s.list.innerHTML,/niveau 9/);}
 });
