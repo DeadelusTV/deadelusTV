@@ -3,7 +3,7 @@
   'use strict';
   const standard = [...Array.from({length:8}, (_, i) => ({kind:'dust', amount:(i+1)*5})),
     {kind:'booster', card_count:3, booster_count:1}, {kind:'booster', card_count:3, booster_count:2}];
-  let root = null, feedback = '', owner = null, generation = 0;
+  let root = null, view = 'details', feedback = '', owner = null, generation = 0;
   let pending = null, snapshot = null, retryAt = 0, verifyAt = 0;
   const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function mineralTexture(seed) {
@@ -127,7 +127,7 @@
     if (!isSite()) {
       root.hidden = !owner;
       root.innerHTML = owner ? '<section class="daily-pass daily-pass--compact"><div><h2>Connexion Pass</h2><p>'+escape(title)+
-        ' · Ta présence quotidienne se valide sur le site DeadelusTV.</p></div><a class="daily-pass-site-link" href="https://www.deadelustv.com/#tcg/connexion-pass">Retrouver mon Pass →</a><button type="button" data-daily-pass-refresh>Actualiser</button></section>' : '';
+        ' · Ta présence quotidienne se valide sur le site DeadelusTV.</p></div><a class="daily-pass-site-link" href="https://www.deadelustv.com/#tcg/mon-compte">Détails de mon Pass →</a><button type="button" data-daily-pass-refresh>Actualiser</button></section>' : '';
       return;
     }
     // Un numéro de présence n'est pas un reçu. Les coches utilisent uniquement
@@ -171,11 +171,21 @@
       'Ta première présence démarre à J1, quel que soit le jour de la semaine.';
     const focusTarget = root.contains?.(document.activeElement) && document.activeElement?.closest?.('[data-daily-pass-refresh]');
     const focusedDay = focusTarget?.closest?.('[data-day]')?.dataset.day;
+    const trackFocused = root.contains?.(document.activeElement) && document.activeElement?.matches?.('.day-track');
+    const restoreFocus = () => {
+      if (focusTarget || trackFocused) ((focusedDay ? root.querySelector('[data-day="'+focusedDay+'"] button') : null) || root.querySelector('.daily-pass-footer button') || root.querySelector('.day-track'))?.focus({preventScroll:true});
+    };
+    const progression = '<div class="daily-pass-scroll" tabindex="0" role="region" aria-label="Les dix jours du Pass"><ol class="day-track daily-pass-days" tabindex="-1" aria-label="Progression sur dix jours" style="--lit-width:'+Math.max(0,(step-1)*10)+'%;--lit-opacity:'+(step > 1 ? 1 : 0)+'">'+days+'</ol></div>';
     root.hidden = false;
+    if (view === 'progress') {
+      root.innerHTML = '<section class="daily-pass daily-pass--visual daily-pass--progress" aria-label="Connexion Pass"><div class="pass-surface">'+progression+
+        '<p class="daily-pass-sr" role="status" aria-live="polite">'+escape(title)+'. '+escape(stateText)+(message ? ' '+escape(message) : '')+'</p></div></section>';
+      restoreFocus(); syncVisibility(); return;
+    }
     root.innerHTML = '<section class="daily-pass daily-pass--visual pass-frame" aria-label="Pass de connexion quotidienne"><div class="pass-surface">'+
       '<header class="daily-pass-heading"><div><h2 class="pass-heading">CONNEXION PASS</h2><p class="pass-subtitle">Votre rendez-vous quotidien</p></div><span class="daily-pass-state">'+escape(title)+'</span></header>'+
       '<p class="daily-pass-intro">Une visite connectée sur DeadelusTV, des récompenses dans chacun de tes DCG.</p>'+
-      '<div class="daily-pass-scroll" tabindex="0" role="region" aria-label="Les dix jours du Pass"><ol class="day-track daily-pass-days" aria-label="Progression sur dix jours" style="--lit-width:'+Math.max(0,(step-1)*10)+'%;--lit-opacity:'+(step > 1 ? 1 : 0)+'">'+days+'</ol></div>'+
+      progression+
       '<div class="pass-caption"><span>'+collectedCount+' jour'+(collectedCount > 1 ? 's' : '')+' récompensé'+(collectedCount > 1 ? 's' : '')+' sur 10</span><span class="daily-pass-legend"><span>✓ Reçu</span><span>◇ À venir</span></span></div>'+
       '<p class="daily-pass-status">'+escape(stateText)+'</p>'+
       '<details class="daily-pass-reward-details" open><summary>Les récompenses des 10 jours</summary><ol class="daily-pass-rewards">'+rewardList+'</ol></details>'+
@@ -184,7 +194,7 @@
       '<footer class="daily-pass-footer"><p>J1 commence à ta première connexion, quel que soit le jour de la semaine. Après J10, un nouveau cycle commence à J1. Un jour manqué fait reprendre à J1. Changement de journée à minuit, heure de Paris.</p>'+
       (owner ? '<button type="button" data-daily-pass-refresh>Actualiser</button>' : '')+'</footer>'+
       '<p class="daily-pass-feedback" role="status" aria-live="polite">'+escape(message)+'</p></div></section>';
-    if (focusTarget) (focusedDay ? root.querySelector('[data-day="'+focusedDay+'"] button') || root.querySelector('.daily-pass-footer button') : root.querySelector('.daily-pass-footer button'))?.focus({preventScroll:true});
+    restoreFocus();
     syncVisibility();
   }
 
@@ -253,8 +263,9 @@
     }}
   }
   const onClick = event => {if (event.target.closest('[data-daily-pass-refresh]')) void refresh(true);};
-  function mount(element) {
+  function mount(element, options = {}) {
     stopMotion(); viewObserver?.disconnect(); inView = true;
+    view = options.view === 'progress' ? 'progress' : 'details';
     if (root && root !== element) {root.removeEventListener('click',onClick); root.replaceChildren(); root.hidden = true;}
     root = element || null;
     if (root) {root.removeEventListener('click',onClick); root.addEventListener('click',onClick); render(snapshot);

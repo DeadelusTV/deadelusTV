@@ -404,3 +404,8 @@
 [data-pass-paused="true"] .daily-pass--visual .day *,[data-pass-paused="true"] .daily-pass--visual .day *::before,[data-pass-paused="true"] .daily-pass--visual .day *::after{animation-play-state:paused!important}
 @media(max-width:736px){.daily-pass--visual .daily-pass-rewards{grid-template-columns:repeat(5,minmax(0,1fr))}.daily-pass--visual .daily-pass-rewards li>span:last-of-type{display:block}.daily-pass--visual .daily-pass-heading{align-items:flex-start}.daily-pass--visual .daily-pass-state{padding:5px 8px}}
 @media(max-width:420px){.daily-pass--visual .daily-pass-heading{display:block}.daily-pass--visual .daily-pass-state{display:inline-block;margin-top:12px}.daily-pass--visual .daily-pass-intro{line-height:1.7}.daily-pass--visual .pass-caption{gap:10px}.daily-pass--visual .daily-pass-legend{gap:10px}.daily-pass--visual .daily-pass-rewards{gap:5px}.daily-pass--visual .daily-pass-rewards strong{font-size:19px}}
+
+/* L'accueil et la page du Pass ne montrent que les dix losanges. */
+.daily-pass--visual.daily-pass--progress{padding:0;border:0;background:none;border-radius:0;clip-path:none}
+.daily-pass--progress .pass-surface{padding:18px 6px;background:none;clip-path:none}
+.daily-pass--progress .day-track{margin:16px 0}

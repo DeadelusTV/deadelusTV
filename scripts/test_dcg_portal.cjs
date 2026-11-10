@@ -33,23 +33,28 @@ function setup({hash='#tcg',user=null,getSession,withAuth=true,registered=true,g
  const known={'#main-nav':nav,'.menu-toggle':menu,'#back-top':back,'#main-content':main,'.brand':brand,'#dcg-portal-root':root};
  const document={hidden:false,body:{classList:{add(){},remove(){}}},getElementById:id=>known['#'+id]||null,querySelector(selector){if(known[selector])return known[selector];const match=selector.match(/^\[data-page="(.+)"\] h1$/);if(match)return heading;return null;},querySelectorAll(selector){if(selector==='[data-page]')return sections;if(selector==='[data-nav]')return navNodes;return [];},addEventListener(name,fn){(documentListeners[name]??=[]).push(fn);}};
  const context={document,location,console,URL,URLSearchParams,Object,setTimeout,clearTimeout,setInterval:()=>1,innerWidth:1200,scrollTo(){},matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(name,fn){(windowListeners[name]??=[]).push(fn);},DEADELUSTV_CONFIG:{},DEADELUSTV_CREW:{render:(...args)=>calls.push(['crew',...args]),cancel:()=>{}},DEADELUSTV_PAVILLON:{render:(...args)=>calls.push(['pavillon',...args]),cancel:()=>{}},DEADELUSTV_TWITCH:{sync(){}}};
- let currentUser=user,signins=0;const reads=[],passCalls=[];context.DCGDailyPass={mount:element=>passCalls.push(['mount',element]),unmount:()=>passCalls.push(['unmount'])};const storage=new Map(user?[['sb-eodtxlhnfzyapkyvvxdi-auth-token','session-present']]:[]);context.localStorage={getItem:k=>storage.get(k)??null};if(random)context.Math=Object.assign(Object.create(Math),{random});
+ let currentUser=user,signins=0;const reads=[],passCalls=[];context.DCGDailyPass={mount:(element,options)=>passCalls.push(['mount',element,options]),unmount:()=>passCalls.push(['unmount'])};const storage=new Map(user?[['sb-eodtxlhnfzyapkyvvxdi-auth-token','session-present']]:[]);context.localStorage={getItem:k=>storage.get(k)??null};if(random)context.Math=Object.assign(Object.create(Math),{random});
  if(withAuth)context.DEADELUSTV_AUTH={getClient:async()=>({auth:{getSession:getSession||(async()=>({data:{session:currentUser?{user:currentUser}:null}})),getUser:getUser||(async()=>({data:{user:currentUser}}))},from(table){reads.push({table});return {select(columns){reads.at(-1).columns=columns;return this;},eq(column,value){reads.at(-1).filter={column,value};return this;},async maybeSingle(){return getMembership?getMembership():{data:registered&&currentUser?{user_id:currentUser.id}:null};}};}}),signIn:()=>{signins++;}};
  if(withAuth)Object.defineProperty(context.DEADELUSTV_AUTH,'userId',{get:()=>currentUser?.id||null});
  if(xpMount)context.DCGXPPass={mount:xpMount};context.window=context;vm.createContext(context);vm.runInContext(config,context);context.DEADELUSTV_DCG_CONFIG={...context.DEADELUSTV_DCG_CONFIG,...(spaces?{spaces}:{}),showDiscoveryWithSingleStreamer:showSingle};vm.runInContext(source,context);vm.runInContext(router,context);
  return {root,heading,list,search,searchForm,searchDialog,searchResults,directory,rail,reads,discoveryRoot,menu,nav,sections,calls,context,navNodes,passCalls,passRoot,get signins(){return signins;},async go(value){location.hash=value;for(const fn of windowListeners.hashchange||[])fn();await tick();},async auth(user){currentUser=user;if(user)storage.set('sb-eodtxlhnfzyapkyvvxdi-auth-token','session-present');else storage.clear();for(const fn of windowListeners['deadelustv:auth-change']||[])fn({detail:{authenticated:!!user}});await tick();},click(selector){const n=new Node();n.selector=selector;return root.emit('click',n);}};
 }
 
-test('the Pass route mounts its view and leaving the route only unmounts that view',async()=>{
- const s=setup();assert.equal(s.passCalls.some(c=>c[0]==='mount'),false);await s.go('#tcg/connexion-pass');
- assert.deepEqual(s.passCalls.at(-1),['mount',s.passRoot]);assert.match(s.root.innerHTML,/id="daily-pass-root"/);
+test('the Pass route mounts progress only and leaving the route unmounts its view',async()=>{
+ const s=setup();assert.equal(s.passCalls.at(-1)[2].view,'progress');await s.go('#tcg/connexion-pass');
+ assert.equal(s.passCalls.at(-1)[1],s.passRoot);assert.equal(s.passCalls.at(-1)[2].view,'progress');assert.match(s.root.innerHTML,/daily-pass-root/);
+ assert.doesNotMatch(s.root.innerHTML,/portal-heading|portal-pass-login|data-portal-login|Découvrir le Pass/);
  await s.go('#phasmophobia');assert.deepEqual(s.passCalls.at(-1),['unmount']);assert.equal(s.root.innerHTML,'');
 });
-test('the Pass route reuses login and removes the login prompt after verified authentication',async()=>{
- const s=setup({hash:'#tcg/connexion-pass'});assert.match(s.root.innerHTML,/data-portal-login/);s.click('[data-portal-login]');assert.equal(s.signins,1);
- await s.auth({id:'alice'});assert.doesNotMatch(s.root.innerHTML,/data-portal-login/);assert.deepEqual(s.passCalls.at(-1),['mount',s.passRoot]);
+
+test('Mon compte owns detailed Pass information and keeps the shared Twitch login',async()=>{
+ const s=setup({hash:'#tcg/mon-compte'});await tick();assert.match(s.root.innerHTML,/data-portal-login/);s.click('[data-portal-login]');assert.equal(s.signins,1);
+ assert.equal(s.passCalls.at(-1)[2].view,'details');assert.equal((s.root.innerHTML.match(/id="daily-pass-root"/g)||[]).length,1);
+ await s.auth({id:'alice'});assert.doesNotMatch(s.root.innerHTML,/data-portal-login/);assert.equal(s.passCalls.at(-1)[2].view,'details');
  await s.auth(null);assert.match(s.root.innerHTML,/data-portal-login/);
+ await s.go('#tcg');assert.equal(s.passCalls.at(-1)[2].view,'progress');assert.doesNotMatch(s.root.innerHTML,/Découvrir le Pass|portal-pass-title/);
 });
+
 test('DCG replaces only its own waiting page and is mounted by the real site router',()=>{
  const s=setup();assert.equal(s.sections.find(n=>n.dataset.page==='tcg').hidden,false);assert.equal(s.sections.find(n=>n.dataset.page==='accueil').hidden,true);
  assert.match(s.root.innerHTML,/Collectionne les/);assert.match(s.root.innerHTML,/Connexion Pass/);assert.match(s.root.innerHTML,/data-discovery-dcg="deadelustv"/);assert.match(s.root.innerHTML,/Mes DCG/);
