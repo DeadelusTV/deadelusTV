@@ -182,3 +182,12 @@
 
 #page-tcg .portal-pass-login{display:flex;align-items:center;flex-wrap:wrap;gap:14px 24px;margin:12px 0 28px;color:var(--muted);font-size:13px;}
 #page-tcg .portal-pass-login p{margin:0;}
+
+#page-tcg .daily-pass--progress{--portal-pass-scale:.68}
+#page-tcg .daily-pass--progress .pass-surface{padding:8px 6px 16px}
+#page-tcg .daily-pass--progress .day-track{height:clamp(44px,7cqi,88px);margin:12px 0}
+#page-tcg .daily-pass--progress .day{transform:scale(var(--portal-pass-scale))}
+#page-tcg .daily-pass--progress .claim-hit{min-width:calc(44px / var(--portal-pass-scale));min-height:calc(44px / var(--portal-pass-scale))}
+@media(max-width:600px){
+#page-tcg .daily-pass--progress{--portal-pass-scale:.85}
+}
