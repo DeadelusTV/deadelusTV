@@ -73,3 +73,9 @@ Le bouton **Rechercher un streamer**, à côté de Mes DCG, ouvre une fenêtre m
 Les résultats sont triés par pseudo, avec la PP et un lien vers les Boosters du streamer. La recherche ignore la casse et les accents. Mes DCG conserve sa liste personnelle sans être filtrée par cette saisie. La fermeture est possible avec la croix, Échap ou le fond extérieur ; le focus revient au bouton d’ouverture. Quitter le portail ferme la fenêtre. Les changements de compte et les rafraîchissements des inscriptions conservent la recherche publique en cours.
 
 Les 24 scénarios du portail couvrent également les résultats hors carrousel, les visiteurs anonymes, la fermeture et le retour du focus, la navigation et l’échappement des noms de streamers.
+
+## Niveau dans Mes DCG
+
+Chaque encart personnel remplace la flèche de droite par le médaillon du niveau local, avec l’anneau de progression et le décor XP existants. Le médaillon reste une information dans le lien vers le DCG ; aucune commande de récupération n’est imbriquée dans ce lien. Le niveau général conserve son médaillon distinct dans l’en-tête.
+
+Après vérification de l’utilisateur et de son inscription, le lecteur actuel consulte `tcg_my_xp` sans paramètre, puis vérifie le périmètre streamer et la chaîne `accountBroadcasterId`. Il concerne uniquement le DCG actuellement raccordé, DeadelusTV. Les autres lecteurs seront raccordés avec leurs DCG. Un échec laisse le lien disponible et montre un tiret, jamais un niveau zéro inventé. Les réponses après changement de compte ou de page sont ignorées ; le retour sur la fenêtre relit la progression.
