@@ -42,7 +42,10 @@
 #page-tcg .portal-space-level{position:relative;width:64px;height:64px;justify-self:end;pointer-events:none}
 #page-tcg .portal-space-level .dcg-xp{--xp-size:64px;display:grid;place-items:center;width:var(--xp-size);height:var(--xp-size);padding:0;gap:0;border:0;background:none}
 #page-tcg .portal-space-level-placeholder{display:grid;place-items:center;box-sizing:border-box;width:100%;height:100%;border:1px solid #8a683e50;border-radius:50%;background:radial-gradient(circle,#182231,#0b1016 72%);color:var(--gold-light);font:24px Georgia,serif}
-#page-tcg .portal-space-cta{grid-column: 1/-1; border-top: 1px solid #d2b16625; padding-top: 16px; font-size: 12px; color: var(--gold-light); font-weight: 650;}
+#page-tcg .portal-space-stock{grid-column:1/-1;display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px 20px;border-top:1px solid #d2b16625;padding-top:16px;font-size:12px;color:#bdb6aa}
+#page-tcg .portal-space-stock strong{color:var(--gold-light);font-weight:700;font-variant-numeric:tabular-nums}
+#page-tcg .portal-space-stock>span{display:inline-block;white-space:nowrap}
+#page-tcg .portal-space.portal-space--reward{border-color:#f2cf8a;box-shadow:0 0 24px #dba95840}
 #page-tcg .portal-empty{grid-column: 1/-1; color: var(--muted); padding: 30px 0;}
 #page-tcg .portal-pass{margin: 40px 0 50px; padding: 28px 30px; display: grid; grid-template-columns: 50px minmax(0,1fr) auto; gap: 25px; align-items: center; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: linear-gradient(90deg,#b2955539,#10131c99 65%);}
 #page-tcg .portal-pass h2{font: 600 25px Georgia,serif; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: 9px 0;}
