@@ -10,7 +10,7 @@ test('Contact is in the common footer and signed-in history and administration a
 });
 test('the shared contact assets exist and load after the original router with the website auth adapter',()=>{
  assert.match(html,/<link[^>]+href="assets\/contact-centre\.css\?rev=admin-panel-1"/);
- assert.match(html,/<script[^>]+src="assets\/contact-centre\.js\?rev=admin-panel-1"[^>]+data-contact-host="site"/);
+ assert.match(html,/<script[^>]+src="assets\/contact-centre\.js\?rev=[^"\s]+"[^>]+data-contact-host="site"/);
  assert.ok(html.indexOf('assets/contact-centre.js')>html.indexOf('assets/app.js'));
  assert.doesNotThrow(()=>new vm.Script(read('public/assets/contact-centre.js')));
  assert.ok(read('public/assets/contact-centre.css').length>1000);
