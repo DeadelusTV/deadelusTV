@@ -1,0 +1,44 @@
+#page-tcg .portal-profile-tabs,#page-tcg .portal-profile-views{display:flex;flex-wrap:wrap;gap:8px 24px;margin:0 0 28px}
+#page-tcg .portal-profile-tabs{border-bottom:1px solid var(--border);padding-bottom:15px}
+#page-tcg .portal-profile-tabs a{padding:10px 0;color:var(--muted);font-size:15px}
+#page-tcg .portal-profile-tabs a[aria-current]{color:var(--gold-light);box-shadow:0 2px var(--gold-light)}
+#page-tcg .portal-profile-views a{padding:10px 15px;border:1px solid var(--border);border-radius:999px;color:var(--muted);font-size:12px}
+#page-tcg .portal-profile-views a[aria-current]{color:var(--gold-light);background:#ad88431c;border-color:#ae8e4d}
+#page-tcg .portal-profile-filters{display:flex;flex-wrap:wrap;align-items:end;gap:16px;margin:22px 0}
+#page-tcg .portal-profile-filters label{display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--muted)}
+#page-tcg .portal-profile-filters input,#page-tcg .portal-profile-filters select{max-width:100%;padding:12px;border:1px solid var(--border);border-radius:9px;background:#141519;color:var(--ink);font:inherit}
+#page-tcg .portal-profile-filters input{width:310px}
+#page-tcg .portal-owned-count{color:var(--muted);font-size:12px;margin:24px 0}
+#page-tcg .portal-owned-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:24px 18px}
+#page-tcg .portal-owned-card{position:relative;min-width:0}
+#page-tcg .portal-owned-open{display:flex;flex-direction:column;gap:7px;align-items:stretch;width:100%;padding:0;border:0;background:none;color:var(--ink);text-align:left;cursor:pointer}
+#page-tcg .portal-card-mini{display:block;max-width:160px;margin:0 auto 5px;width:100%;aspect-ratio:591/1004;pointer-events:none}
+#page-tcg .portal-card-mini tcg-card{display:block;width:100%;height:100%}
+#page-tcg .portal-owned-open strong{font-size:13px;overflow-wrap:anywhere}
+#page-tcg .portal-owned-open small{font-size:10px;color:var(--muted)}
+#page-tcg .portal-owned-quantity{align-self:flex-start;padding:3px 8px;border:1px solid var(--border);border-radius:20px;color:var(--gold-light);font-size:11px}
+#page-tcg .portal-owned-pages{display:flex;justify-content:center;align-items:center;gap:18px;margin:36px 0;font-size:12px;color:var(--muted)}
+#page-tcg .portal-owned-pages button:disabled{opacity:.35;cursor:default}
+#page-tcg .portal-card-dialog{box-sizing:border-box;width:min(920px,calc(100vw - 28px));max-width:calc(100vw - 28px);max-height:calc(100dvh - 32px);margin:auto;padding:45px 30px 30px;border:1px solid #a4874a;border-radius:20px;background:#111315;color:var(--ink);overflow-y:auto;overscroll-behavior:contain}
+#page-tcg .portal-card-dialog::backdrop{background:#020307d9;backdrop-filter:blur(6px)}
+#page-tcg .portal-dialog-close{position:absolute;top:10px;right:14px;width:32px;height:32px;border:1px solid var(--border);border-radius:50%;background:#1b1c20;color:var(--ink);font:24px/1 Georgia,serif;cursor:pointer}
+#page-tcg .portal-card-detail{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:32px;align-items:center}
+#page-tcg .portal-card-large{width:100%;min-width:0}
+#page-tcg .portal-card-large tcg-card{display:block;width:100%;aspect-ratio:591/1004}
+#page-tcg .portal-card-detail h2{font:500 32px Georgia,serif;margin:16px 0}
+#page-tcg .portal-card-detail dl{margin:20px 0 28px;font-size:13px}
+#page-tcg .portal-card-detail dl>div{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:12px 0;border-bottom:1px solid var(--border)}
+#page-tcg .portal-card-detail dt{color:var(--muted)}
+#page-tcg .portal-card-detail dd{margin:0;overflow-wrap:anywhere}
+#page-tcg .portal-card-detail .button-primary{max-width:100%;font-size:12px;line-height:1.7}
+#page-tcg .portal-profile-tabs a:focus-visible,#page-tcg .portal-profile-views a:focus-visible,#page-tcg .portal-owned-open:focus-visible{outline:2px solid var(--gold-light);outline-offset:5px}
+@media(max-width:600px){
+#page-tcg .portal-owned-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 16px}
+#page-tcg .portal-profile-filters,#page-tcg .portal-profile-filters label{width:100%}
+#page-tcg .portal-profile-filters input{width:100%;box-sizing:border-box}
+#page-tcg .portal-card-dialog{padding:45px 20px 24px}
+#page-tcg .portal-card-detail{grid-template-columns:minmax(0,1fr);gap:22px}
+#page-tcg .portal-card-large{max-width:300px;justify-self:center}
+#page-tcg .portal-card-detail h2{font-size:27px}
+#page-tcg .portal-profile-tabs{gap:20px}
+}

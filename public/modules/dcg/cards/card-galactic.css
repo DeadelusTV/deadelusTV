@@ -1,0 +1,52 @@
+/* Galactique avec spirale : proposition B validée le 06/11/2026.
+   Fond sous le contenu, motifs au-dessus ; contours gérés par card-live.css. */
+.galactic-spiral {
+  position:absolute;
+  inset:5px;
+  z-index:1;
+  border-radius:21px;
+  overflow:hidden;
+  pointer-events:none;
+  isolation:isolate;
+  background:#030511;
+}
+.galactic-spiral-texture {
+  position:absolute;
+  inset:-4%;
+  background:url("https://tcg.yekelle-boulet.workers.dev/assets/galactique/spirale-violette.webp") center/100% 100% no-repeat;
+  opacity:1;
+  mix-blend-mode:normal;
+  transform-origin:50% 16%;
+  animation:galacticSpiralDepth 15s linear -5s infinite alternate;
+  animation-play-state:paused;
+  will-change:transform;
+}
+.galactic-finish[data-galactic-motion="running"] .galactic-spiral-texture {
+  animation-play-state:running;
+}
+.galactic-surface {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  z-index:12;
+  pointer-events:none;
+  border-radius:25px;
+  mix-blend-mode:screen;
+}
+.trading-card.galactic-finish .art-box {
+  box-shadow:0 0 12px #aa89ff50,0 0 22px #69caff25,inset 0 0 0 1px #ffffff38;
+}
+.trading-card.galactic-finish[data-galactic-motion="paused"],
+.trading-card.galactic-finish[data-galactic-motion="paused"] *,
+.trading-card.galactic-finish[data-galactic-motion="paused"] *::before,
+.trading-card.galactic-finish[data-galactic-motion="paused"] *::after {
+  animation-play-state:paused!important;
+}
+@keyframes galacticSpiralDepth {
+  from {transform:translate3d(-3%,-1.7%,0) rotate(-4deg) scale(1.08)}
+  to {transform:translate3d(3%,1.7%,0) rotate(4deg) scale(1.08)}
+}
+@media(prefers-reduced-motion:reduce) {
+  .galactic-spiral-texture {animation-play-state:paused!important}
+}

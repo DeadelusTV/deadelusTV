@@ -12,6 +12,7 @@ on:
       - public/assets/daily-pass.*
       - public/modules/dcg/**
       - scripts/test_dcg_portal.cjs
+      - scripts/test_dcg_profile.cjs
       - scripts/test_daily_pass.cjs
       - .github/workflows/check-dcg-portal.yml
 
@@ -34,8 +35,9 @@ jobs:
         run: |
           node --check public/modules/dcg/config.js
           node --check public/modules/dcg/portal.js
+          node --check public/modules/dcg/profile.js
           node --check public/assets/app.js
           node --check public/assets/site-auth.js
           node --check public/assets/daily-pass.js
       - name: Tester portail, routage et consentements existants
-        run: node --test scripts/test_dcg_portal.cjs scripts/test_daily_pass.cjs scripts/test_frontend_consent.cjs scripts/test_twitch_floating.cjs scripts/test_journal_account_access.cjs
+        run: node --test scripts/test_dcg_portal.cjs scripts/test_dcg_profile.cjs scripts/test_daily_pass.cjs scripts/test_frontend_consent.cjs scripts/test_twitch_floating.cjs scripts/test_journal_account_access.cjs
