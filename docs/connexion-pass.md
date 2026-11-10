@@ -14,7 +14,13 @@ La progression appartient au compte global et chaque DCG joué reçoit sa récom
 
 ## Vue du Pass
 
-La route `#tcg/connexion-pass` montre dix jalons dorés alignés avec les quantités, les règles de reprise et la connexion Twitch du site. Le calendrier reste lisible anonymement. La progression personnelle et les gains ne sont affichés qu'après réponse serveur. La rangée est défilable sur mobile et accessible au clavier.
+La route `#tcg/connexion-pass` reprend le visuel du ZIP `DCG-Connexion-Pass-Codex.zip` fourni le 10 novembre 2026 : dix losanges J1–J10 sur une ligne droite, cadre biseauté doré, texture minérale sombre, étoiles crème et or. Le calendrier reste lisible anonymement. Les dix jours tiennent dans la largeur disponible, y compris à 320 px ; le détail des quantités reste consultable sous la ligne, en cinq colonnes sur petit écran. Aucun contrôle de démonstration ni donnée fictive n'est livré dans le parcours public.
+
+Les jours futurs restent argentés et éteints. Le jour courant en attente d'un gain éligible utilise le halo renforcé ; son bouton clavier relance uniquement la vérification existante. La présence continue à attribuer les gains automatiquement, sans clic obligatoire. Une coche signifie qu'au moins un DCG possède un reçu confirmé pour ce jour ; le détail par DCG présente séparément les attributions du jour et les attentes. Une présence sans reçu n'est pas présentée comme une récompense récupérée.
+
+La réponse serveur contient maintenant `history`, limité au compte et au cycle courants : `step`, `reward` figée lors de la visite et `claimed`, calculé depuis les reçus. Cet ajout est une lecture ; il ne change ni l'attribution ni les permissions. Un ancien serveur sans historique n'invente pas de coches pour les jours précédents.
+
+Un nouveau reçu déclenche une concentration de lumière de 420 ms, puis un éclat de 550 ms et le retour à l'apparence commune des jours récupérés. Les minuteries sont décoratives : aucun crédit ni changement de jour ne dépend de leur fin. Une même confirmation ne rejoue pas l'effet lors d'un remontage. Les textures et les géométries d'étoiles sont mises en cache ; les minuteries et l'observation de visibilité sont nettoyées au démontage. Les animations sont suspendues hors écran/onglet et neutralisées avec `prefers-reduced-motion`. Les styles du Pass XP ne sont pas modifiés.
 
 `DCGDailyPass.mount(element)` affiche l'état déjà obtenu ; `unmount()` retire la vue sans interrompre la présence du site. `refresh()` relance explicitement la vérification. Naviguer ne réclame pas deux fois les récompenses. La déconnexion et le changement de compte effacent immédiatement les données personnelles ; les réponses tardives sont ignorées.
 
@@ -24,7 +30,7 @@ Le contrôle reprend au retour d'un onglet ou chaque minute visible, avec tempor
 
 La structure prévoit un bonus global au compte : J9 deux boosters et J10 quatre, chacun de trois cartes, dans tous les DCG éligibles ; J1–J8 restent identiques. Le serveur doit confirmer un droit de soutien et son activation avant tout changement de calendrier. Le réglage est désactivé, aucun statut n'est attribué par le navigateur et aucun paiement n'est raccordé.
 
-Tipeee classique est la piste retenue pour financer le site et ses fonctionnalités intercommunautaires. Méthode de liaison, montant et durée restent à confirmer. Aucun recours obligatoire à Discord n'est décidé. L'interface ne propose pas encore d'achat ni ne promet cet avantage.
+Tipeee classique, TipeeeStream et une intégration PayPal ont été étudiés pour financer le site et ses fonctionnalités intercommunautaires. Le choix du prestataire, la liaison, le montant et la durée restent à confirmer ; l'utilisatrice reporte ce chantier. Aucun recours obligatoire à Discord n'est décidé. Aucun paiement ni contour de PP donateur n'est ajouté par le lot visuel.
 
 ## Raccordement et vérification
 
@@ -34,4 +40,4 @@ Le JavaScript et le CSS sont identiques aux copies `public/daily-pass.*` du TCG.
 
 Tests du portail : `node --test scripts/test_dcg_portal.cjs scripts/test_daily_pass.cjs scripts/test_frontend_consent.cjs scripts/test_twitch_floating.cjs scripts/test_journal_account_access.cjs`. Le dépôt TCG possède les tests PostgreSQL, HTTP et UI du Pass. Les comptes de tests sont fictifs.
 
-La recette Twitch réelle, les appels simultanés sur PostgreSQL réel et l'installation coordonnée restent nécessaires avant activation. La connexion de Tipeee sera traitée séparément après confirmation de son fonctionnement.
+La recette Twitch réelle, les appels simultanés sur PostgreSQL réel et l'installation coordonnée restent nécessaires avant activation. Les écrans J1–J6 reçus/J7 en attente utilisés pour la recette visuelle sont servis uniquement par un harnais local hors dépôt public ; ils ne constituent pas une attribution réelle. Les essais couvrent les largeurs 1366/736/320 px, le clavier, l'échec de vérification et la transition confirmée sans allumer J8. Le prestataire de soutien sera raccordé séparément après décision.

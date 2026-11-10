@@ -1,5 +1,13 @@
 # Niveau général XP — 9 novembre 2026
 
+## Placement validé le 10 novembre
+
+Sur l'accueil `#tcg`, la grande case « Ton niveau général » est remplacée par le cercle seul, à gauche de « Rechercher un streamer » dans l'en-tête **Mes DCG**. Aucun texte latéral, panneau ou fond au survol ne l'entoure. Le niveau, les scintillements, le halo et le clic de récupération restent ceux du moteur XP partagé.
+
+Le cercle mesure 110 px sur ordinateur, 92 px sur petit écran et 78 px sur les écrans les plus étroits. Sur mobile, il reste à droite du titre et la recherche passe à la ligne suivante. Les cartes des DCG restent dans leur grille de trois, deux ou une colonne suivant la largeur. La bulle n'est affichée que pour le compte authentifié ; sa déconnexion vide le contenu et masque son emplacement. Les textes de progression et d'état restent accessibles aux lecteurs d'écran, avec l'infobulle du médaillon.
+
+Seuls `portal.js`, `portal.css` et leurs références de cache (`20261110-xp-bubble`) changent. Le calcul, les récompenses serveur et l'animation de récupération sont conservés. La publication reste limitée à `developpement/tcg-attente` et au portail Cloudflare de test.
+
 ## Animation de récupération avec les icônes choisies
 
 Le portail reprend le moteur partagé `dcg-xp-rewards.js` et les deux WebP transparents de 256 px dans `public/modules/dcg/assets/xp/`. Le général montre l’icône Alkahest × montant reçu par DCG ; le jeu individuel montre le booster × quantité attribuée. Les deux images fournies sont conservées, légèrement inclinées, sans cadre. Leur chemin est résolu depuis le script pour fonctionner aussi dans ce sous-dossier.

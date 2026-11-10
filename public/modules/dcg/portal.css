@@ -160,7 +160,25 @@
 #page-tcg [data-portal-search-open]{margin-top:16px;}
 }
 
-#page-tcg .portal-xp{margin:36px 0 48px;padding:28px 32px;border:1px solid #a1783440;border-radius:20px;background:radial-gradient(ellipse at 10% 65%,#d19f3612,transparent 65%),#090c12}#page-tcg .portal-xp h2{font:400 30px Georgia,serif;color:#f3dfb1;margin:10px 0}#page-tcg .portal-xp>p{color:#aaa497;line-height:1.7}#page-tcg .portal-xp .dcg-xp-pass{border:0;background:none;margin:0;padding:0}#page-tcg .portal-xp .dcg-xp{--xp-size:160px}@media(max-width:520px){#page-tcg .portal-xp{padding:22px 16px}#page-tcg .portal-xp .dcg-xp{--xp-size:112px}}
+#page-tcg .portal-directory-actions{display:flex;align-items:flex-end;gap:40px;flex:none}
+#page-tcg .portal-general-xp-bubble{position:relative;width:110px;min-height:110px;flex:none}
+#page-tcg .portal-general-xp-bubble.dcg-xp-pass{padding:0;border:0;border-radius:0;margin:0;background:none}
+#page-tcg .portal-general-xp-bubble .dcg-xp{--xp-size:110px;display:grid;place-items:center;width:var(--xp-size);height:var(--xp-size);padding:0;gap:0;border:0;background:none;border-radius:50%;box-shadow:none}
+#page-tcg .portal-general-xp-bubble button.dcg-xp:hover{background:none}
+#page-tcg .portal-general-xp-bubble>.dcg-xp-pass__note,#page-tcg .portal-general-xp-bubble>.dcg-xp-pass__message,#page-tcg .portal-general-xp-bubble>.dcg-xp-pass__error{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;margin:0;padding:0}
+@media(max-width:680px){
+#page-tcg .portal-directory>.portal-section-top{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:end}
+#page-tcg .portal-directory-actions{display:contents}
+#page-tcg .portal-general-xp-bubble{grid-column:2;grid-row:1;width:92px;min-height:92px;margin-right:8px!important}
+#page-tcg .portal-general-xp-bubble .dcg-xp{--xp-size:92px}
+#page-tcg [data-portal-search-open]{grid-column:1/-1;justify-self:start;margin-top:0}
+#page-tcg .portal-directory>.portal-section-top h2{font-size:31px}
+}
+@media(max-width:360px){
+#page-tcg .portal-general-xp-bubble{width:78px;min-height:78px}
+#page-tcg .portal-general-xp-bubble .dcg-xp{--xp-size:78px}
+#page-tcg .portal-directory>.portal-section-top{gap:16px}
+}
 
 #page-tcg .portal-pass-login{display:flex;align-items:center;flex-wrap:wrap;gap:14px 24px;margin:12px 0 28px;color:var(--muted);font-size:13px;}
 #page-tcg .portal-pass-login p{margin:0;}
