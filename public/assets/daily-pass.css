@@ -1,0 +1,411 @@
+.daily-pass-shell{max-width:1440px;margin:18px auto;padding:0 24px;color:#eee6d7;font:14px/1.6 system-ui,sans-serif}.daily-pass-shell[hidden]{display:none}
+.daily-pass{--pass-gold:#e2c080;--pass-ink:#f5eedf;box-sizing:border-box;color:var(--pass-ink);padding:clamp(22px,3vw,40px);border:1px solid #b99a582e;border-radius:20px;background:radial-gradient(ellipse at 70% 0,#c69d3d0c,transparent 65%),#111316;font:14px/1.7 system-ui,sans-serif;overflow:hidden}
+.daily-pass-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}.daily-pass-eyebrow{font-size:9px;letter-spacing:.17em;font-weight:700;color:#b7a27c}.daily-pass h2{font:500 clamp(27px,3vw,36px)/1.2 Georgia,serif;margin:10px 0;color:var(--pass-ink)}.daily-pass-state{border:1px solid #b99a5845;border-radius:999px;padding:7px 13px;font-size:11px;color:var(--pass-gold);background:#c7a85b08}.daily-pass-intro{color:#bfb7aa;margin:12px 0 2px;max-width:650px}
+.daily-pass-scroll{overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#8c7445 #16181c;padding:18px 0 8px}.daily-pass-days{list-style:none;display:grid;grid-template-columns:repeat(10,minmax(80px,1fr));min-width:880px;padding:0 0 12px;margin:0}.daily-pass-day{position:relative;min-width:0;text-align:center;display:flex;align-items:center;flex-direction:column;gap:5px;padding:8px 4px;color:#92918c}.daily-pass-day::before{content:"";position:absolute;left:-50%;top:65px;width:100%;height:1px;background:#82724f45}.daily-pass-day:first-child::before{display:none}.daily-pass-day-label{font-size:10px;letter-spacing:.08em;color:#aaa496;margin-bottom:11px}.daily-pass-node{position:relative;z-index:1;display:grid;place-items:center;box-sizing:border-box;width:46px;height:46px;border:1px solid #81704a;background:#191b1e;border-radius:50%;font:500 17px Georgia,serif;color:#c1ae89;margin-bottom:14px}.daily-pass-day strong{font:500 25px/1.2 Georgia,serif;color:#c8b58e}.daily-pass-unit{font-size:10px;line-height:1.6;max-width:82px;min-height:32px;color:#aaa498}.daily-pass-day--complete::before,.daily-pass-day--current::before{background:linear-gradient(90deg,#aa813e,#ebd298);box-shadow:0 0 7px #d4ab4550}.daily-pass-day--complete .daily-pass-node{border-color:#b99149;background:#2a241b;color:#e6c988}.daily-pass-day--current .daily-pass-node{border-color:#f1d699;background:radial-gradient(circle,#4d3b20,#211e18);color:#ffe5ac;box-shadow:0 0 0 5px #d8ba6a0d,0 0 28px #dfb96732}.daily-pass-day--current strong,.daily-pass-day--current .daily-pass-day-label{color:#ffe3a8}.daily-pass-day:nth-child(n+9) strong{color:#e5c78c}
+.daily-pass-status{font-size:12px;color:#cfc1a7;margin:16px 0}.daily-pass-channels{display:flex;flex-wrap:wrap;gap:12px;list-style:none;margin:22px 0;padding:0}.daily-pass-channels li{flex:1 1 210px;min-width:0;overflow-wrap:anywhere;border-left:2px solid #b79c6350;padding:3px 13px}.daily-pass-channels strong,.daily-pass-channels span{display:block}.daily-pass-channels strong{font-size:13px;color:#e2c080}.daily-pass-channels span{font-size:11px;color:#bfb8aa}.daily-pass-footer{display:flex;align-items:center;gap:22px;justify-content:space-between;border-top:1px solid #c3a56a20;padding-top:18px;margin-top:22px}.daily-pass-footer p{font-size:11px;line-height:1.9;color:#aaa497;max-width:740px;margin:0}.daily-pass button{flex-shrink:0;padding:9px 14px;border:1px solid #c6a56655;border-radius:9px;background:#1b1b1b;color:#e4ca93;font:inherit;font-size:12px;cursor:pointer}.daily-pass-site-link{color:#e4ca93;text-decoration:underline;text-underline-offset:4px;font-size:12px}.daily-pass-supporter{font-size:12px;color:#e5c78c}.daily-pass-feedback{font-size:12px;color:#e4ca93;overflow-wrap:anywhere;margin:16px 0 0}.daily-pass-feedback:empty{display:none}.daily-pass-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}.daily-pass :focus-visible{outline:2px solid #efcf8a;outline-offset:4px}.daily-pass-scroll:focus-visible{outline-offset:-2px}
+@media(max-width:600px){.daily-pass-shell{padding:0 12px}.daily-pass{padding:22px 16px;border-radius:15px}.daily-pass-heading{gap:9px}.daily-pass-eyebrow{font-size:8px}.daily-pass-intro{font-size:12px}.daily-pass-footer{align-items:flex-start;flex-direction:column;gap:14px}.daily-pass-days{min-width:850px}.daily-pass-state{font-size:10px}.daily-pass-scroll{margin-right:-8px;padding-right:8px}}
+.daily-pass--compact{display:flex;align-items:center;flex-wrap:wrap;gap:14px 24px;padding:15px 22px}.daily-pass--compact>div{flex:1 1 260px}.daily-pass--compact h2{font-size:21px;margin:0 0 5px}.daily-pass--compact p{font-size:12px;color:#bfb7aa;margin:0}
+@media(prefers-reduced-motion:reduce){.daily-pass *{scroll-behavior:auto}}
+
+/* Visuel fourni dans DCG-Connexion-Pass-Codex.zip, 10 novembre 2026. */
+
+    .daily-pass--visual {
+      --dcg-background: #06070b;
+      --dcg-gold: #f7ca61;
+      --dcg-gold-light: #fff0b7;
+      --dcg-off: #aaa8ad;
+      --dcg-off-text: #c6c3c4;
+      --xp-halo-intensity: .75;
+      padding: 16px 0;
+    }
+    .daily-pass--visual * { box-sizing: border-box; }
+    .daily-pass--visual .pass-frame {
+      position: relative;
+      padding: 1px;
+      background: linear-gradient(125deg, #eec979, #876326 37%, #b58a3e 73%, #ebc877);
+      clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 0 calc(100% - 14px), 0 14px);
+    }
+    .daily-pass--visual .pass-surface {
+      container-type: inline-size;
+      position: relative;
+      padding: 24px 18px 20px;
+      color: var(--dcg-gold-light);
+      background: radial-gradient(ellipse at 29% 70%, #33210d2b, transparent 58%), radial-gradient(ellipse at 96% 20%, #17152238, transparent 52%), var(--dcg-background);
+      clip-path: polygon(13px 0, calc(100% - 13px) 0, 100% 13px, 100% calc(100% - 13px), calc(100% - 13px) 100%, 13px 100%, 0 calc(100% - 13px), 0 13px);
+    }
+    .daily-pass--visual .pass-heading {
+      margin: 0;
+      font: 400 clamp(17px, 3.6cqi, 28px)/1.25 Georgia, 'Times New Roman', serif;
+      letter-spacing: .065em;
+      color: var(--dcg-gold);
+    }
+    .daily-pass--visual .pass-subtitle {
+      margin: 6px 0 0;
+      color: #c3b9a4;
+      font: 400 clamp(12px, 2.25cqi, 15px)/1.4 Georgia, 'Times New Roman', serif;
+    }
+    .daily-pass--visual .day-track {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(10, minmax(0, 1fr));
+      align-items: center;
+      list-style: none;
+      padding: 0;
+      margin: clamp(20px, 4cqi, 32px) 0 12px;
+      height: clamp(48px, 14cqi, 108px);
+    }
+    .daily-pass--visual .day-track::before,
+    .daily-pass--visual .day-track::after {
+      content: '';
+      position: absolute;
+      left: 5%;
+      top: calc(50% - 1.5px);
+      height: 3px;
+    }
+    .daily-pass--visual .day-track::before {
+      width: 90%;
+      background: linear-gradient(#777477, #b6b3b0 45%, #5d5b61);
+      opacity: .52;
+    }
+    .daily-pass--visual .day-track::after {
+      width: var(--lit-width, 60%);
+      opacity: var(--lit-opacity, 1);
+      background: linear-gradient(#fbbf28, #fff7cf 48%, #f2ad0b);
+      box-shadow: 0 0 3px #fff1b2, 0 0 8px #ffbd239e, 0 0 19px #ed9e1e55;
+    }
+    .daily-pass--visual .day {
+      --xp-size: 9.33cqi;
+      --xp-sparkle-intensity: .64;
+      --xp-star-boost: 1.42;
+      --xp-spark-min: 1.8px;
+      --xp-major-min: 3.7px;
+      position: relative;
+      display: grid;
+      place-items: center;
+      height: 100%;
+      min-width: 0;
+      isolation: isolate;
+      z-index: 1;
+    }
+    .daily-pass--visual .day::before {
+      content: '';
+      position: absolute;
+      z-index: -2;
+      width: 148%;
+      aspect-ratio: 1;
+      opacity: 0;
+      background: radial-gradient(ellipse, #dc8d1e24 7%, #df931116 35%, transparent 69%);
+    }
+    .daily-pass--visual .day.is-on::before { opacity: 1; }
+    .daily-pass--visual .diamond {
+      position: absolute;
+      z-index: -1;
+      width: 66%;
+      aspect-ratio: 1;
+      transform: rotate(45deg);
+      background: linear-gradient(135deg, #eeece8 0%, #8b898e 28%, #66656a 52%, #a5a1a2 83%, #d0cdcc 100%);
+      box-shadow: 0 0 2px #cfcbc72b;
+    }
+    .daily-pass--visual .diamond::before {
+      content: '';
+      position: absolute;
+      inset: 1.6px;
+      background: var(--mineral, radial-gradient(ellipse at 18% 15%, #393431, #08090c 65%));
+      background-size: 100% 100%;
+      filter: grayscale(1) brightness(.74);
+      border: 1px solid #e7e0cc1c;
+    }
+    .daily-pass--visual .diamond::after {
+      content: '';
+      position: absolute;
+      inset: 1px;
+      background: radial-gradient(ellipse at 0 0, #fff8da82, transparent 29%), radial-gradient(ellipse at 100% 100%, #c6c1b13d, transparent 28%);
+      border: 1px solid #e4e0d82b;
+      pointer-events: none;
+    }
+    .daily-pass--visual .day.is-on .diamond {
+      background: linear-gradient(135deg, #fffcee 0%, #fff2c9 9%, #f5be49 26%, #c88b15 43%, #ffdc60 70%, #fff5b5 93%, #fff7dd 100%);
+      box-shadow: 0 0 2px #fff3b7, 0 0 6px #ffd039d6, 0 0 17px #e9a11073, 0 0 30px #c87b0629;
+    }
+    .daily-pass--visual .day.is-on .diamond::before {
+      filter: sepia(1) saturate(2.35) brightness(1.12);
+      border-color: #ffe49877;
+    }
+    .daily-pass--visual .day.is-on .diamond::after {
+      background: radial-gradient(ellipse at 0 0, #fff6d591, #ffda4142 10%, transparent 41%), radial-gradient(ellipse at 100% 100%, #ffdb425c, transparent 38%);
+      border-color: #ffe9938a;
+    }
+    .daily-pass--visual .flares {
+      position: absolute;
+      width: 93.3%;
+      aspect-ratio: 1;
+      top: 50%;
+      left: 3.35%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      z-index: 2;
+      opacity: 0;
+    }
+    .daily-pass--visual .day.is-on .flares { opacity: 1; }
+    .daily-pass--visual .flares::before,
+    .daily-pass--visual .flares::after {
+      content: '';
+      position: absolute;
+      left: 35%;
+      width: 30%;
+      height: 30%;
+      background: radial-gradient(ellipse, #fff9da 0, #fff2b8 4%, #ffd65360 13%, transparent 43%), linear-gradient(90deg, transparent 48%, #ffe58c90 50%, transparent 52%), linear-gradient(transparent 48%, #fff3c490 50%, transparent 52%);
+      opacity: .8;
+    }
+    .daily-pass--visual .flares::before { top: -15%; }
+    .daily-pass--visual .flares::after { bottom: -15%; opacity: .7; }
+    .daily-pass--visual .day-number {
+      align-self: center;
+      position: relative;
+      transform: translateY(-1px);
+      color: var(--dcg-off-text);
+      font: 500 clamp(11px, 3.05cqi, 25px)/1 Georgia, 'Times New Roman', serif;
+      white-space: nowrap;
+    }
+    .daily-pass--visual .day.is-on .day-number {
+      color: #fff3c2;
+      text-shadow: 0 1px 2px #000, 0 0 7px #ffca5655;
+      transform: translateY(-4px);
+    }
+    .daily-pass--visual .day.is-collected .day-number::after {
+      content: '';
+      position: absolute;
+      left: calc(50% - 3px);
+      top: calc(100% + 4px);
+      width: clamp(3px, .65cqi, 5px);
+      height: clamp(5px, 1.1cqi, 8px);
+      border-right: 1.8px solid #ffe47b;
+      border-bottom: 1.8px solid #ffe47b;
+      transform: rotate(45deg);
+      filter: drop-shadow(0 0 2px #e9aa34aa);
+    }
+    .daily-pass--visual .pass-caption {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      margin-top: 14px;
+      color: #c3b9a4;
+      font: 400 12px/1.4 system-ui, sans-serif;
+    }
+    .daily-pass--visual .pass-caption output { color: var(--dcg-gold-light); }
+    .daily-pass--visual .sr-day { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    /* Palette, formes et rythmes repris de public/dcg-xp.css (08c5426b). */
+    .daily-pass--visual .day.is-ready {
+      --xp-sparkle-intensity: 1;
+      --xp-star-boost: 1.85;
+      --xp-spark-min: 2.2px;
+      --xp-major-min: 4.8px;
+      --xp-halo-intensity: 1;
+      z-index: 3;
+    }
+    .daily-pass--visual .day.is-collected .diamond {
+      box-shadow: 0 0 2px #fff3b7b3, 0 0 6px #ffd03980, 0 0 14px #e9a11040, 0 0 22px #c87b0614;
+    }
+    .daily-pass--visual .day.is-collected .flares { opacity: .76; }
+    .daily-pass--visual .day.is-ready .diamond {
+      width: 70%;
+      box-shadow: 0 0 4px #fff3c5, 0 0 12px #f6d392e0, 0 0 30px #e7b662ad, 0 0 52px #d8a14d66;
+    }
+    .daily-pass--visual .day.is-ready .diamond::before { inset: 2.2px; filter: sepia(1) saturate(2.35) brightness(1.28); }
+    .daily-pass--visual .day.is-ready .diamond::after { animation: pass-xp-arc-breathe 3.5s ease-in-out infinite; }
+    .daily-pass--visual .day.is-ready .day-number {
+      color: #fff5d9;
+      transform: translateY(-1px);
+      text-shadow: 0 1px 0 #714620, 0 4px 12px #000d, 0 0 12px #ffeca899, 0 0 24px #d8a14d77;
+    }
+    .daily-pass--visual .day.is-ready .flares { width: 99%; left: .5%; }
+    .daily-pass--visual .ready-aura {
+      position: absolute;
+      z-index: -3;
+      width: 176%;
+      aspect-ratio: 1;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .7s ease;
+    }
+    .daily-pass--visual .ready-aura::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      opacity: var(--xp-halo-intensity);
+      filter: blur(4px);
+      background: radial-gradient(circle, transparent 35%, #c78b365c 42%, #d8a14d88 48%, #ecb2595b 54%, #c8882d29 62%, transparent 74%);
+    }
+    .daily-pass--visual .day.is-ready .ready-aura { opacity: 1; }
+    .daily-pass--visual .day.is-ready .ready-aura::before { animation: pass-xp-halo-breathe 4s ease-in-out infinite; }
+    .daily-pass--visual .sparkles {
+      position: absolute;
+      width: 93.3%;
+      aspect-ratio: 1;
+      top: 50%;
+      left: 3.35%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      z-index: 4;
+      display: none;
+    }
+    .daily-pass--visual .day.is-on .sparkles { display: block; }
+    .daily-pass--visual .day.is-ready .sparkles { width: 99%; left: .5%; }
+    .daily-pass--visual .border-spark,
+    .daily-pass--visual .inside-spark {
+      position: absolute;
+      left: var(--xp-x);
+      top: var(--xp-y);
+      width: max(var(--xp-spark-min), calc(var(--xp-size) * var(--xp-star-size) * var(--xp-star-boost)));
+      height: max(var(--xp-spark-min), calc(var(--xp-size) * var(--xp-star-size) * var(--xp-star-boost)));
+      transform: translate(-50%, -50%);
+      opacity: 0;
+    }
+    .daily-pass--visual .border-spark {
+      animation: pass-xp-glitter var(--xp-period) ease-in-out var(--xp-delay) infinite;
+    }
+    .daily-pass--visual .border-spark::before {
+      content: '';
+      position: absolute;
+      inset: -170%;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,240,194,.94) 0%, rgba(248,203,121,.36) 18%, transparent 66%);
+      filter: blur(1.6px);
+    }
+    .daily-pass--visual .border-spark::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      clip-path: polygon(50% 0,59% 43%,100% 50%,59% 57%,50% 100%,41% 57%,0 50%,41% 43%);
+      background: #fff5d6;
+      filter: drop-shadow(0 0 2px #ffdb90) drop-shadow(0 0 3px #e4a64e);
+    }
+    .daily-pass--visual .border-spark.is-major { width: max(var(--xp-major-min), calc(var(--xp-size) * var(--xp-star-size) * var(--xp-star-boost))); height: max(var(--xp-major-min), calc(var(--xp-size) * var(--xp-star-size) * var(--xp-star-boost))); }
+    .daily-pass--visual .border-spark.is-major::before { inset: -230%; filter: blur(2.2px); }
+    .daily-pass--visual .border-spark.is-major::after {
+      background: #fffae7;
+      filter: drop-shadow(0 0 3px #ffe1a3) drop-shadow(0 0 5px #f2bd5b);
+    }
+    .daily-pass--visual .border-spark.is-dot::after { clip-path: none; border-radius: 50%; inset: 25%; background: #f5dca6; }
+    .daily-pass--visual .day.is-ready .border-spark { animation-duration: calc(var(--xp-period) * .90); }
+    .daily-pass--visual .inside-spark {
+      animation: pass-xp-nebula-twinkle var(--xp-duration) ease-in-out var(--xp-delay) infinite both;
+    }
+    .daily-pass--visual .inside-spark::before {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,225,164,.9), rgba(242,177,78,.36) 18%, transparent 67%);
+      filter: blur(1px);
+      opacity: var(--xp-glow);
+    }
+    .daily-pass--visual .inside-spark::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg,transparent 0 43%,#ffe8b7 49%,#fff9e6 50%,#ffe8b7 51%,transparent 57% 100%),linear-gradient(0deg,transparent 0 43%,#ffe8b7 49%,#fff9e6 50%,#ffe8b7 51%,transparent 57% 100%);
+      clip-path: polygon(50% 0,58% 42%,100% 50%,58% 58%,50% 100%,42% 58%,0 50%,42% 42%);
+      filter: drop-shadow(0 0 3px #f9c773);
+    }
+    .daily-pass--visual .inside-spark.is-dot::after { clip-path: none; border-radius: 50%; inset: 20%; background: #fee1a7; box-shadow: 0 0 4px #e9bb71; }
+    .daily-pass--visual .claim-hit {
+      appearance: none;
+      position: absolute;
+      z-index: 7;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: max(100%, 44px);
+      height: max(100%, 44px);
+      border: 0;
+      border-radius: 4px;
+      padding: 0;
+      margin: 0;
+      background: transparent;
+      color: inherit;
+    }
+    .daily-pass--visual .claim-hit[hidden] { display: none; }
+    .daily-pass--visual .claim-hit:disabled { cursor: wait; }
+    .daily-pass--visual .day.is-claiming .diamond { animation: pass-xp-charge .42s ease-in-out forwards; }
+    .daily-pass--visual .day.is-settling .diamond { animation: pass-xp-burst .5s ease-out forwards; }
+    .daily-pass--visual .claim-flash {
+      position: absolute;
+      z-index: 5;
+      width: 100%;
+      aspect-ratio: 1;
+      pointer-events: none;
+      opacity: 0;
+      background: radial-gradient(circle,#fff9d4ee,#fff1b9b6 13%,#efd19d60 35%,transparent 66%);
+    }
+    .daily-pass--visual .day.is-settling .claim-flash { animation: pass-xp-flash .53s ease-out forwards; }
+    .daily-pass--visual [data-status] { color: #edc27b; }
+    @keyframes pass-xp-glitter {
+      0%,11%,64%,100% { opacity: 0; scale: .52; }
+      24% { opacity: calc(var(--xp-power) * var(--xp-sparkle-intensity)); scale: 1.22; }
+      32% { opacity: calc(var(--xp-power) * .75 * var(--xp-sparkle-intensity)); scale: 1; }
+      47% { opacity: .05; scale: .75; }
+    }
+    @keyframes pass-xp-nebula-twinkle {
+      0%,100% { opacity: calc(var(--xp-base) * var(--xp-sparkle-intensity)); transform: translate(-50%,-50%) scale(.78); }
+      23% { opacity: calc(var(--xp-peak) * var(--xp-sparkle-intensity)); transform: translate(-50%,-50%) scale(1.16); }
+      40% { opacity: calc(var(--xp-base) * .8 * var(--xp-sparkle-intensity)); transform: translate(-50%,-50%) scale(.9); }
+      76% { opacity: calc(var(--xp-base) * 1.12 * var(--xp-sparkle-intensity)); transform: translate(-50%,-50%) scale(1); }
+    }
+    @keyframes pass-xp-halo-breathe { 0%,100% { opacity: calc(var(--xp-halo-intensity) * .68); transform: scale(.97); } 50% { opacity: var(--xp-halo-intensity); transform: scale(1.06); } }
+    @keyframes pass-xp-arc-breathe { 0%,100% { opacity: .34; } 50% { opacity: .57; } }
+    @keyframes pass-xp-charge { 0% { transform: rotate(45deg) scale(1); filter: brightness(1); } 100% { transform: rotate(45deg) scale(.90); filter: brightness(1.5); } }
+    @keyframes pass-xp-burst { 0% { transform: rotate(45deg) scale(.90); filter: brightness(1.5); } 45% { transform: rotate(45deg) scale(1.10); filter: brightness(1.75); } 100% { transform: rotate(45deg) scale(1); filter: brightness(1); } }
+    @keyframes pass-xp-flash { 0% { opacity: 0; transform: scale(.5); } 37% { opacity: .75; transform: scale(.90); } 100% { opacity: 0; transform: scale(1.3); } }
+    @media (prefers-reduced-motion: reduce) {
+      .daily-pass--visual .day *, .daily-pass--visual .day *::before, .daily-pass--visual .day *::after { animation: none !important; transition: none !important; }
+      .daily-pass--visual .border-spark { opacity: .12; }
+      .daily-pass--visual .border-spark.is-major { opacity: .45; }
+      .daily-pass--visual .inside-spark { opacity: .35; }
+      .daily-pass--visual .day.is-ready .ready-aura::before { opacity: .45; }
+    }
+    @media (max-width: 520px) {
+      .daily-pass--visual .day { --xp-star-boost: 1.12; --xp-spark-min: 1.4px; --xp-major-min: 2.7px; }
+      .daily-pass--visual .day.is-ready { --xp-star-boost: 1.35; --xp-spark-min: 1.7px; --xp-major-min: 3.3px; }
+      .daily-pass--visual .ready-aura { width: 152%; }
+    }
+    @media (max-width: 420px) {
+      .daily-pass--visual .pass-surface { padding: 20px 10px 16px; }
+      .daily-pass--visual .day.is-on .day-number { transform: translateY(-2px); }
+      .daily-pass--visual .day.is-on .day-number::after { top: calc(100% + 2px); }
+      .daily-pass--visual .pass-caption { margin-top: 8px; font-size: 11px; }
+    }
+
+/* Intégration au portail : aucun sélecteur global ni commande de démonstration. */
+.daily-pass--visual.daily-pass{padding:1px;border:0;border-radius:0;overflow:visible;font:14px/1.7 system-ui,sans-serif;background:linear-gradient(125deg,#eec979,#876326 37%,#b58a3e 73%,#ebc877)}
+.daily-pass--visual .pass-surface{padding:clamp(22px,3vw,34px) clamp(10px,2vw,26px) 22px}
+.daily-pass--visual .daily-pass-heading{gap:16px}.daily-pass--visual h2.pass-heading{font:400 clamp(17px,3.6cqi,28px)/1.25 Georgia,serif;letter-spacing:.065em;color:var(--dcg-gold);margin:0}
+.daily-pass--visual .daily-pass-intro{font-size:12px;margin-top:16px;max-width:none}.daily-pass--visual .daily-pass-scroll{overflow:visible;padding:0;margin:0;scrollbar-width:none}
+.daily-pass--visual .daily-pass-days{min-width:0;gap:0}.daily-pass--visual .daily-pass-day{padding:0;display:grid;gap:0;flex-direction:initial}
+.daily-pass--visual .day::before{left:auto;top:auto;height:auto;margin:0;border:0;box-shadow:none;display:block}
+.daily-pass--visual .day:first-child::before{display:block}.daily-pass--visual .day-number{margin:0}
+.daily-pass--visual .claim-hit{cursor:pointer;box-shadow:none;font:inherit;flex-shrink:initial}
+.daily-pass--visual .claim-hit:focus-visible{outline:2px solid #fff0b7;outline-offset:3px}
+.daily-pass--visual .daily-pass-legend{display:flex;gap:16px;font-size:11px;color:#b3ac9e}
+.daily-pass--visual .daily-pass-status{font-size:12px;margin:20px 0;color:#cfc1a7}
+.daily-pass--visual .daily-pass-reward-details{border-top:1px solid #c3a56a20;padding-top:16px;margin-top:18px}
+.daily-pass--visual summary{color:#cdb783;cursor:pointer;font-size:12px;width:fit-content}
+.daily-pass--visual .daily-pass-rewards{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:8px;list-style:none;margin:16px 0 0;padding:0}
+.daily-pass--visual .daily-pass-rewards li{min-width:0;text-align:center;padding:8px 0;border-radius:6px;background:#ffffff03;color:#afa798;font-size:10px;line-height:1.6}
+.daily-pass--visual .daily-pass-rewards li>span:first-child{display:block;color:#bba77f;font-size:10px;letter-spacing:.08em}
+.daily-pass--visual .daily-pass-rewards strong{display:block;font:400 22px/1.4 Georgia,serif;color:#e6c988}
+.daily-pass--visual .daily-pass-footer{gap:18px}.daily-pass--visual .daily-pass-feedback{margin-bottom:0}
+[data-pass-paused="true"] .daily-pass--visual .day *,[data-pass-paused="true"] .daily-pass--visual .day *::before,[data-pass-paused="true"] .daily-pass--visual .day *::after{animation-play-state:paused!important}
+@media(max-width:736px){.daily-pass--visual .daily-pass-rewards{grid-template-columns:repeat(5,minmax(0,1fr))}.daily-pass--visual .daily-pass-rewards li>span:last-of-type{display:block}.daily-pass--visual .daily-pass-heading{align-items:flex-start}.daily-pass--visual .daily-pass-state{padding:5px 8px}}
+@media(max-width:420px){.daily-pass--visual .daily-pass-heading{display:block}.daily-pass--visual .daily-pass-state{display:inline-block;margin-top:12px}.daily-pass--visual .daily-pass-intro{line-height:1.7}.daily-pass--visual .pass-caption{gap:10px}.daily-pass--visual .daily-pass-legend{gap:10px}.daily-pass--visual .daily-pass-rewards{gap:5px}.daily-pass--visual .daily-pass-rewards strong{font-size:19px}}
+
+/* L'accueil et la page du Pass ne montrent que les dix losanges. */
+.daily-pass--visual.daily-pass--progress{padding:0;border:0;background:none;border-radius:0;clip-path:none}
+.daily-pass--progress .pass-surface{padding:18px 6px;background:none;clip-path:none}
+.daily-pass--progress .day-track{margin:16px 0}

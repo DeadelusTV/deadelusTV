@@ -8,11 +8,12 @@ Destination confirmée par Yekelle : dépôt `DeadelusTV/deadelusTV`, branche `d
 
 | Adresse sur un aperçu de cette branche | Contenu |
 | --- | --- |
-| `#tcg` | Accueil DCG commun, Mes DCG personnels, recherche globale en fenêtre flottante, découverte aléatoire en carrousel, raccourci DeadelusTV et emplacement du Pass |
+| `#tcg` | Accueil DCG commun, Mes DCG personnels, recherche globale en fenêtre flottante, découverte aléatoire en carrousel, raccourci DeadelusTV et dix losanges de progression du Pass |
 | `#tcg/regles` | Présentation des règles actuelles du jeu |
-| `#tcg/mon-compte` | Connexion Twitch commune puis accès au Cartodex et au profil DeadelusTV |
+| `#tcg/mon-compte` | Connexion Twitch commune, accès au Cartodex et au profil DeadelusTV, détails du Pass quotidien |
 | `#tcg/collections-communes` | Boutique à venir ; Phasmophobia et Valorant présentées comme collections envisagées |
-| `#tcg/connexion-pass` | Emplacement du Pass, explicitement non activé |
+
+L'onglet Connexion Pass est retiré du menu. Les anciens liens `#tcg/connexion-pass` reviennent à `#tcg` ; les détails du Pass restent dans Mon compte.
 
 L’entrée du menu et les accès de l’accueil portent le libellé **DCG**. Les sous-pages restent dans la rubrique TCG du routeur existant ; les anciennes adresses `#tcg` continuent de fonctionner. Aucun routage serveur `/tcg` ou `/tcg/<streamer>` n’est activé par ce lot.
 
@@ -30,6 +31,8 @@ Le déplacement de Boosters en premier dans le menu du jeu reste préparé dans 
 
 Mon compte réutilise `DEADELUSTV_AUTH` et sa session existante. Le module ne crée pas de second client Supabase, ne reçoit pas de jeton via URL et n’attribue aucun rôle à partir du pseudo. Une déconnexion ou un changement de route invalide les réponses en attente ; les textes personnels sont échappés. Le Pass XP ajoute les lectures et récupérations décrites dans son guide ; les achats, ouvertures de boosters et lancements restent dans les jeux.
 
+Le Pass quotidien est préparé séparément dans `docs/connexion-pass.md` ; seule une visite connectée du site DeadelusTV peut enregistrer sa présence.
+
 ## Vérifications
 
 Commande sans dépendance ni réseau :
@@ -46,7 +49,7 @@ Limites : pas de nouvelle recette visuelle dans un navigateur, pas de migration 
 
 ## Recette de l’aperçu de branche
 
-Ouvrir `#tcg`, vérifier le logo et l’annuaire, ouvrir la recherche et trouver DeadelusTV, y compris avant inscription, parcourir les cinq entrées du menu commun, se connecter puis se déconnecter dans Mon compte. Le logo mène aux boosters Workers actuels. Vérifier ensuite les retours vers l’accueil principal, Phasmophobia, Crew et Pavillon Noir, ainsi que l’affichage sur téléphone. Aucun TCG ne doit être lancé pour cette recette du portail.
+Ouvrir `#tcg`, vérifier le logo et l’annuaire, ouvrir la recherche et trouver DeadelusTV, y compris avant inscription, parcourir les quatre entrées du menu commun, vérifier le retour de l'ancien lien `#tcg/connexion-pass` vers l'accueil DCG, se connecter puis se déconnecter dans Mon compte. Le logo mène aux boosters Workers actuels. Vérifier ensuite les retours vers l’accueil principal, Phasmophobia, Crew et Pavillon Noir, ainsi que l’affichage sur téléphone. Aucun TCG ne doit être lancé pour cette recette du portail.
 
 
 ## Accueil personnel et découverte — 5 novembre 2026

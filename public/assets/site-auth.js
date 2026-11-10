@@ -25,8 +25,8 @@
   let providerToken = null, providerUser = null, crewCache = null;
   let authGeneration = 0, signingOut = false;
   function captureSession(event, session) {
-    if (event === 'SIGNED_OUT' || providerUser && providerUser !== session?.user?.id) {
-      providerToken = null; crewCache = null; ++authGeneration;
+    if (event === 'SIGNED_OUT' || (providerUser || lastIdentity) && (providerUser || lastIdentity) !== session?.user?.id) {
+      providerToken = null; crewCache = null; ++authGeneration; ++requestNumber;
       notifyAuth(null);
     }
     providerUser = session?.user?.id || null;
@@ -202,6 +202,7 @@
     } catch {
       if (currentRequest !== requestNumber) return;
       setAnonymous();
+      notifyAuth(null);
       showNote('Connexion indisponible pour le moment.');
     }
   }
@@ -289,11 +290,13 @@
   });
   setAnonymous();
   setOpen(false);
-  // Ne charge pas le fournisseur chez un visiteur anonyme tant qu'il n'ouvre pas
-  // le compte/News, sauf au retour d'une redirection OAuth.
+  // Une session locale existante est revérifiée dès l'arrivée sur le site.
+  // Le visiteur anonyme conserve le chargement différé du fournisseur.
   const authQuery = new URLSearchParams(window.location.search);
-  if (authQuery.get('crew_auth') !== '1' && (returning || authQuery.has('code'))) refresh();
-  window.DEADELUSTV_AUTH = Object.freeze({ getClient, refresh, signIn, signOut, getCrewAccess, canManageNews, canManageJournal });
+  let savedSession = false;
+  try { savedSession = Boolean(localStorage.getItem('sb-eodtxlhnfzyapkyvvxdi-auth-token')); } catch { /* Stockage indisponible. */ }
+  if (authQuery.get('crew_auth') !== '1' && (returning || authQuery.has('code') || savedSession)) refresh();
+  window.DEADELUSTV_AUTH = Object.freeze({ get userId() { return lastIdentity; }, getClient, refresh, signIn, signOut, getCrewAccess, canManageNews, canManageJournal });
 })();
 
 
