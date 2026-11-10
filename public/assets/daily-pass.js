@@ -3,6 +3,8 @@
   'use strict';
   const standard = [...Array.from({length:8}, (_, i) => ({kind:'dust', amount:(i+1)*5})),
     {kind:'booster', card_count:3, booster_count:1}, {kind:'booster', card_count:3, booster_count:2}];
+  const scriptUrl = document.currentScript?.src;
+  const iconBase = scriptUrl ? new URL(scriptUrl.includes('/assets/daily-pass.js') ? '../modules/dcg/assets/xp/' : 'assets/xp/', scriptUrl).href : 'assets/xp/';
   let root = null, view = 'details', feedback = '', owner = null, generation = 0;
   let pending = null, snapshot = null, retryAt = 0, verifyAt = 0;
   const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -110,6 +112,7 @@
   }
 
   const isSite = () => !window.TCGAuth && Boolean(window.DEADELUSTV_AUTH);
+  const servicePending = () => isSite() && window.DEADELUSTV_DCG_CONFIG?.dailyPassServiceReady !== true;
   const identity = () => window.TCGAuth ? {id:window.TCGAuth.user?.id || null, client:window.TCGAuth.client}
     : {id:window.DEADELUSTV_AUTH?.userId || null, client:null};
   const labels = {eligible:'Gain en attente', claimed:'Reçu', not_following:'Follow requis',
@@ -118,10 +121,10 @@
   function render(data, message = feedback) {
     feedback = message;
     if (!root) return;
-    const preparation = ['disabled','configuration_pending','unavailable'].includes(data?.status);
+    const preparation = servicePending() || ['disabled','configuration_pending','unavailable'].includes(data?.status);
     const step = owner && !preparation && Number.isInteger(data?.step) && data.step >= 1 && data.step <= 10 ? data.step : 0;
     const rewards = data?.rewards?.length === 10 ? data.rewards : standard;
-    const title = !owner ? 'Ton premier jour t’attend' : preparation ? 'Bientôt disponible' :
+    const title = preparation ? 'Bientôt disponible' : !owner ? 'Ton premier jour t’attend' :
       data?.status === 'not_registered' ? 'Rejoins un DCG pour commencer' : step ? 'Jour '+step+' sur 10' :
       data ? 'Ton prochain cycle commence ici' : 'Vérification de ta progression…';
     if (!isSite()) {
@@ -135,11 +138,9 @@
     const history = step && Array.isArray(data?.history) ? data.history : [];
     const todayClaimed = step > 0 && ((data?.channels || []).some(c => c.status === 'claimed') || data?.gains?.length > 0);
     const todayReady = step > 0 && !todayClaimed && (data?.channels || []).some(c => ['eligible','verification_required'].includes(c.status));
-    let collectedCount = 0;
     const states = rewards.map((reward, i) => {
       const day = i+1, receipt = history.find(item => item.step === day && day <= step);
       const collected = Boolean(receipt?.claimed || day === step && todayClaimed);
-      if (collected) collectedCount++;
       const ready = day === step && todayReady;
       const visited = day <= step, pulse = day === motion?.step ? motion.stage : null;
       const detail = collected ? 'récompense reçue' : ready ? 'gain à vérifier' : visited ? 'présence enregistrée' : 'à venir';
@@ -158,8 +159,9 @@
         '><span class="diamond" aria-hidden="true"></span><span class="day-number" aria-hidden="true">J'+day+'</span>'+sparkles(day)+
         (ready ? '<button class="claim-hit" type="button" data-daily-pass-refresh aria-label="Vérifier la réception du gain du jour '+day+'"'+(pending ? ' disabled aria-busy="true"' : '')+'></button>' : '')+'</li>';
     }).join('');
-    const rewardList = states.map(({day,reward,detail}) => '<li><span>J'+day+'</span><strong>'+escape(reward.kind === 'dust' ? '+'+reward.amount : reward.booster_count)+
-      '</strong> <span>'+escape(reward.kind === 'dust' ? 'Alkahests' : 'booster'+(reward.booster_count > 1 ? 's' : '')+' de '+reward.card_count+' cartes')+'</span><span class="daily-pass-sr">'+detail+'</span></li>').join('');
+    const rewardList = states.map(({day,reward,detail}) => '<li aria-label="Jour '+day+' : '+escape(rewardText(reward))+' — '+detail+'" title="'+escape(rewardText(reward))+'">'+
+      '<img src="'+escape(iconBase+(reward.kind === 'dust' ? 'dcg-alkahest-256.webp' : 'dcg-booster-256.webp'))+'" alt="" width="36" height="36" aria-hidden="true">'+
+      '<strong aria-hidden="true">'+escape(reward.kind === 'dust' ? '+'+reward.amount : '×'+reward.booster_count)+'</strong></li>').join('');
     const channels = owner && !preparation ? (data?.channels || []).filter(c => !['not_following','not_participating','disabled'].includes(c.status)).map(c =>
       '<li><strong>'+escape(c.login)+'</strong><span>'+escape(labels[c.status] || 'En attente')+
       (c.status === 'claimed' && c.balance_after != null ? ' · Solde : '+escape(c.balance_after)+' Alkahests' :
@@ -168,12 +170,12 @@
       !owner ? 'Connecte-toi sur DeadelusTV pour commencer ton cycle personnel.' :
       data?.status === 'not_registered' ? 'Rejoins un DCG pour recevoir ses récompenses quotidiennes.' :
       step ? 'Ta présence du jour est enregistrée. Retrouve les gains confirmés dans tes DCG.' :
-      'Ta première présence démarre à J1, quel que soit le jour de la semaine.';
+      'Ta progression sera affichée après ta première présence.';
     const focusTarget = root.contains?.(document.activeElement) && document.activeElement?.closest?.('[data-daily-pass-refresh]');
     const focusedDay = focusTarget?.closest?.('[data-day]')?.dataset.day;
     const trackFocused = root.contains?.(document.activeElement) && document.activeElement?.matches?.('.day-track');
     const restoreFocus = () => {
-      if (focusTarget || trackFocused) ((focusedDay ? root.querySelector('[data-day="'+focusedDay+'"] button') : null) || root.querySelector('.daily-pass-footer button') || root.querySelector('.day-track'))?.focus({preventScroll:true});
+      if (focusTarget || trackFocused) ((focusedDay ? root.querySelector('[data-day="'+focusedDay+'"] button') : null) || root.querySelector('.day-track'))?.focus({preventScroll:true});
     };
     const progression = '<div class="daily-pass-scroll" tabindex="0" role="region" aria-label="Les dix jours du Pass"><ol class="day-track daily-pass-days" tabindex="-1" aria-label="Progression sur dix jours" style="--lit-width:'+Math.max(0,(step-1)*10)+'%;--lit-opacity:'+(step > 1 ? 1 : 0)+'">'+days+'</ol></div>';
     root.hidden = false;
@@ -186,13 +188,11 @@
       '<header class="daily-pass-heading"><div><h2 class="pass-heading">CONNEXION PASS</h2><p class="pass-subtitle">Votre rendez-vous quotidien</p></div><span class="daily-pass-state">'+escape(title)+'</span></header>'+
       '<p class="daily-pass-intro">Une visite connectée sur DeadelusTV, des récompenses dans chacun de tes DCG.</p>'+
       progression+
-      '<div class="pass-caption"><span>'+collectedCount+' jour'+(collectedCount > 1 ? 's' : '')+' récompensé'+(collectedCount > 1 ? 's' : '')+' sur 10</span><span class="daily-pass-legend"><span>✓ Reçu</span><span>◇ À venir</span></span></div>'+
-      '<p class="daily-pass-status">'+escape(stateText)+'</p>'+
-      '<details class="daily-pass-reward-details" open><summary>Les récompenses des 10 jours</summary><ol class="daily-pass-rewards">'+rewardList+'</ol></details>'+
+      '<ol class="daily-pass-rewards" aria-label="Récompenses de chaque jour">'+rewardList+'</ol>'+
+      '<div class="pass-caption"><span class="daily-pass-legend"><span>✓ Reçu</span><span>◇ À venir</span></span></div>'+
       (data?.donor_bonus?.enabled && data.donor_bonus.active && owner && !preparation ? '<p class="daily-pass-supporter">Bonus soutien actif · Les boosters de J9 et J10 sont doublés.</p>' : '')+
       (channels ? '<ul class="daily-pass-channels" aria-label="Récompenses par DCG">'+channels+'</ul>' : '')+
-      '<footer class="daily-pass-footer"><p>J1 commence à ta première connexion, quel que soit le jour de la semaine. Après J10, un nouveau cycle commence à J1. Un jour manqué fait reprendre à J1. Changement de journée à minuit, heure de Paris.</p>'+
-      (owner ? '<button type="button" data-daily-pass-refresh>Actualiser</button>' : '')+'</footer>'+
+      '<a class="daily-pass-help" href="#tcg/regles">FAQ du Pass →</a>'+
       '<p class="daily-pass-feedback" role="status" aria-live="polite">'+escape(message)+'</p></div></section>';
     restoreFocus();
     syncVisibility();
@@ -205,6 +205,7 @@
       render(null, '');
     }
     if (!owner || document.visibilityState === 'hidden' || pending || !force && Date.now() < retryAt) return;
+    if (servicePending()) {snapshot = {status:'configuration_pending'}; retryAt = Date.now()+300000; render(snapshot, ''); return;}
     const request = {generation, id:owner}; pending = request;
     for (const button of root?.querySelectorAll?.('[data-daily-pass-refresh]') || []) {button.disabled = true; button.setAttribute('aria-busy','true');}
     const current = () => request.generation === generation && identity().id === request.id;
@@ -257,7 +258,7 @@
         if (gains.some(g => g.kind === 'dust')) window.dispatchEvent(new Event('tcg:dust-change'));
       }
     } catch {
-      if (current()) {retryAt = Date.now()+30000; render(snapshot, 'Vérification momentanément indisponible. Tu peux réessayer.');}
+      if (current()) {retryAt = Date.now()+30000; render(snapshot, 'Impossible de vérifier ta progression pour le moment. Une nouvelle tentative sera faite automatiquement.');}
     } finally {if (pending === request) {pending = null;
       for (const button of root?.querySelectorAll?.('[data-daily-pass-refresh]') || []) {button.disabled = false; button.removeAttribute('aria-busy');}
     }}

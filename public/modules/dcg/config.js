@@ -5,6 +5,8 @@ window.DEADELUSTV_DCG_CONFIG=Object.freeze({
   accountSpaceId:'deadelustv',
   authStorageKey:'sb-eodtxlhnfzyapkyvvxdi-auth-token',
   discoveryLimit:20,
+  // Activer seulement après installation et recette du service de présence.
+  dailyPassServiceReady:false,
   // Aperçu de test : mettre false pour masquer la découverte avec un seul DCG.
   showDiscoveryWithSingleStreamer:true,
   spaces:[{
