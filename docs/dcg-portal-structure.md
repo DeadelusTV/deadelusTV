@@ -12,7 +12,7 @@ Destination confirmée par Yekelle : dépôt `DeadelusTV/deadelusTV`, branche `d
 | `#tcg/regles` | Présentation des règles actuelles du jeu |
 | `#tcg/mon-compte` | Accueil du profil et détails du Pass quotidien |
 | `#tcg/mon-compte/constellations` | Mes constellations, affichage par DCG et constellations communes |
-| `#tcg/mon-compte/cartes` | Mes constellations, catalogue compact des cartes possédées et aperçu en lecture seule |
+| `#tcg/mon-compte/cartes` | Mes constellations, Constellation compacte des cartes possédées et aperçu en lecture seule |
 | `#tcg/collections-communes` | Boutique à venir ; Phasmophobia et Valorant présentées comme collections envisagées |
 
 L'onglet Connexion Pass est retiré du menu. Les anciens liens `#tcg/connexion-pass` reviennent à `#tcg` ; les détails du Pass restent dans Mon compte.
