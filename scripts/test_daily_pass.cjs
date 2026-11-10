@@ -4,14 +4,14 @@ const test=require('node:test'),assert=require('node:assert/strict'),fs=require(
 const read=p=>fs.readFileSync(path.join(__dirname,'..',p),'utf8');
 const authSource=read('public/assets/site-auth.js'),passSource=read('public/assets/daily-pass.js');
 const tick=async()=>{for(let i=0;i<8;i++)await new Promise(r=>setImmediate(r));};
-function page({stored=false,search='',blocked=false,uid='alice',handler,getUser}={}){
+function page({stored=false,search='',blocked=false,uid='alice',handler,getUser,serviceReady=true}={}){
  const nodes=new Map(),events=[],listeners={},timers=[],calls=[];let created=0,owner=uid,authCallback,now=Date.now(),fail=false;
  const element=id=>{if(!nodes.has(id))nodes.set(id,{hidden:false,innerHTML:'',textContent:'',setAttribute(){},addEventListener(){},removeEventListener(){},contains(){return false;},querySelector(){return null;},replaceChildren(){this.innerHTML='';}});return nodes.get(id);};
  const user=()=>owner?{id:owner,user_metadata:{preferred_username:owner}}:null;
  const client={auth:{onAuthStateChange(fn){authCallback=fn;},getUser:async()=>{if(fail)throw Error('private diagnostic');return getUser?getUser():{data:{user:user()}};},getSession:async()=>({data:{session:owner?{user:user(),access_token:'scoped-session'}:null}}),signOut:async()=>{owner=null;authCallback?.('SIGNED_OUT',null);return{};}},
   from:()=>({select(){return this;},eq(){return this;},maybeSingle:async()=>({data:{enabled:false}})}),
   rpc:async()=>({data:{status:'disabled'}}),functions:{invoke:async(...args)=>{calls.push(args);return handler?handler(...args):{data:{status:'recorded',step:1,gains:[]}};}}};
- const context={location:{search,hash:'#accueil'},supabase:{createClient(){created++;return client;}},
+ const context={location:{search,hash:'#accueil'},DEADELUSTV_DCG_CONFIG:{dailyPassServiceReady:serviceReady},supabase:{createClient(){created++;return client;}},
   document:{visibilityState:'visible',getElementById:id=>id==='daily-pass-root'?null:element(id),querySelector(){return null;},addEventListener(){}},
   localStorage:{getItem(){if(blocked)throw Error('blocked');return stored?'stored-session':null;}},sessionStorage:{getItem(){return null;}},
   URLSearchParams,Date:class extends Date{static now(){return now;}},Event:class{constructor(type){this.type=type;}},CustomEvent:class{constructor(type,options){this.type=type;this.detail=options?.detail;}},
@@ -32,6 +32,13 @@ test('stored session on the site home is validated and records presence without 
 });
 test('Crew OAuth callback does not consume its code or restore the other Auth project',async()=>{
  const p=page({stored:true,search:'?crew_auth=1&code=crew-code'});await tick();assert.equal(p.created,0);assert.equal(p.calls.length,0);
+});
+
+test('the test site stays in preparation while its presence service is not deployed',async()=>{
+ const p=page({stored:true,serviceReady:false});await tick();assert.equal(p.context.DEADELUSTV_AUTH.userId,'alice');assert.equal(p.calls.length,0);
+ const view=p.element('view');p.context.DCGDailyPass.mount(view);assert.match(view.innerHTML,/Bientôt disponible/);assert.doesNotMatch(view.innerHTML,/Actualiser|Impossible de vérifier|Vérification de ta progression/);
+ p.advance(360000);p.timers[0]();await tick();assert.equal(p.calls.length,0);
+ assert.match(read('public/modules/dcg/config.js'),/dailyPassServiceReady:false/);
 });
 test('invalid stored session is verified by Auth and never requests rewards',async()=>{
  const p=page({stored:true,getUser:async()=>({error:{message:'expired'}})});await tick();assert.equal(p.created,1);assert.equal(p.context.DEADELUSTV_AUTH.userId,null);assert.equal(p.calls.length,0);
