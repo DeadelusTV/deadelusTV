@@ -4,7 +4,7 @@
  const host=document.currentScript?.dataset.contactHost||'tcg';
  const adminPage=document.currentScript?.dataset.contactAdminPage||'';
  let embeddedRoot=null,savedAdminState=null,lastAccessSignal='';const boundRoots=new WeakSet();
- const topics={site:[['phasmophobia','La partie Phasmophobia'],['crewmongus','La partie Crewmong Us'],['pavillon_noir','La partie Pavillon noir'],['suggestion','Suggestions'],['appeal','Contester une suspension / sanction']],tcg:[['booster','Un booster'],['catalogue','Le catalogue'],['laboratory','Le Laboratoire'],['trade_market','Les échanges et/ou le Marché'],['bug','Remonter un bug'],['other','Autre'],['suggestion','Suggestions'],['appeal','Contester une suspension / sanction']]};
+ const topics={site:[['phasmophobia','La partie Phasmophobia'],['crewmongus','La partie Crewmong Us'],['pavillon_noir','La partie Pavillon noir'],['suggestion','Suggestions'],['appeal','Contester une suspension / sanction']],tcg:[['booster','Un booster'],['catalogue','La Constellation'],['laboratory','Le Laboratoire'],['trade_market','Les échanges et/ou le Marché'],['bug','Remonter un bug'],['other','Autre'],['suggestion','Suggestions'],['appeal','Contester une suspension / sanction']]};
  const statuses={new:'Nouvelles',in_progress:'En cours',resolved:'Résolues'};
  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const when=s=>s?new Date(s).toLocaleString('fr-FR'):'';

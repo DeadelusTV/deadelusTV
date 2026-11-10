@@ -7,7 +7,7 @@ Le lien **Contact** apparaît dans le pied de page du DCG et du site général d
 Une connexion Twitch est obligatoire. Le formulaire demande **Je suis Viewer / Streamer**, puis **Le site / Le TCG**.
 
 - Site : Phasmophobia, Crewmong Us, Pavillon noir.
-- TCG : booster, catalogue, Laboratoire, échanges et/ou marché, bug, autre.
+- TCG : booster, Constellation, Laboratoire, échanges et/ou marché, bug, autre.
 - Dans les deux rubriques : Suggestions et Contester une suspension / sanction.
 - Pour un Streamer et un sujet TCG : **Demande pour débloquer mon DCG**.
 
