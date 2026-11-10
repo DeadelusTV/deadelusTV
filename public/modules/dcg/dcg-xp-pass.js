@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  function mount(host,{client,userId,isCurrent,scope='streamer',onReward=()=>{},compact=false,detailsHost=null,rewardPresentation='flight'}){
+  function mount(host,{client,userId,isCurrent,scope='streamer',onReward=()=>{},onConfirmed=()=>{},rewardTargets=null,compact=false,detailsHost=null,rewardPresentation='flight'}){
     let active=true,version=0,state=null,previousState=null,busy=false,error='',message='',retryLevel=null,stopAnimation=()=>{},stopReward=()=>{};
     const valid=()=>active&&host.isConnected&&isCurrent()&&!!userId;
     const stateRpc=scope==='general'?'dcg_my_xp':'tcg_my_xp';
@@ -60,7 +60,7 @@
       if(!retryLevel&&!window.DCGXP.progress(state.total,state.level).pending)return;
       const level=retryLevel||state.level+1;busy=true;error='';message='';version++;paint();
       let animation=null,receipt=null;
-      try{animation=(rewardPresentation==='popup'?window.DCGProfileRewards:window.DCGXPRewards)?.start(host,{scope,valid});}catch{/* A visual failure must never prevent claiming. */}
+      try{animation=(rewardPresentation==='popup'?window.DCGProfileRewards:window.DCGXPRewards)?.start(host,{scope,valid,resolveTargets:rewardTargets});}catch{/* A visual failure must never prevent claiming. */}
       stopReward=()=>animation?.cancel();
       try{
         const r=await client.rpc(claimRpc,{p_level:level});
@@ -76,6 +76,7 @@
       }catch{if(!valid())return;retryLevel=level;error='Vérifie cette récompense pour retrouver son résultat, sans double attribution.';}
       finally{if(!receipt){stopReward();busy=false;paint();}}
       if(!receipt)return;
+      try{onConfirmed(receipt);}catch{/* Keep the confirmed receipt if a stock refresh fails. */}
       // Confirmation and presentation are separate: an interrupted visual never
       // marks an already credited reward as an uncertain transaction.
       try{await animation?.complete(receipt);}catch{/* Keep the confirmed receipt. */}

@@ -6,21 +6,30 @@
   const count=value=>Number.isSafeInteger(value)&&value>0;
   function items(receipt,scope){
     const reward=receipt?.reward;
+    if(scope==='daily'){
+      const groups=new Map();
+      for(const gain of receipt?.gains||[]){
+        const kind=gain.kind==='dust'?'alkahest':gain.kind==='booster'?'booster':null,amount=kind==='booster'?1:gain.amount;
+        if(!kind||!count(amount))continue;
+        const key=JSON.stringify([gain.broadcaster_id,kind]),entry=groups.get(key)||{kind,amount:0};entry.amount+=amount;groups.set(key,entry);
+      }
+      return [...groups.values()].filter((item,i,all)=>count(item.amount)&&all.findIndex(other=>other.kind===item.kind)===i);
+    }
     if(scope==='streamer'&&count(reward?.amount))return[{kind:'booster',amount:reward.amount,label:'booster'+(reward.amount>1?'s':'')}];
     if(scope==='general'&&count(reward?.amount_per_dcg)&&Array.isArray(reward.credits)&&reward.credits.length)return[{kind:'alkahest',amount:reward.amount_per_dcg,label:'Alkahests par DCG'}];
     return[];
   }
-  function start(host,{scope='streamer',valid=()=>host.isConnected}={}){
-    const medal=host.querySelector('.dcg-xp'),face=medal?.querySelector('.dcg-xp__medal');
+  function start(host,{scope='streamer',valid=()=>host.isConnected,resolveTargets=null,anchor=null}={}){
+    const medal=host.querySelector('.dcg-xp'),face=anchor||medal?.querySelector('.dcg-xp__medal');
     if(!face||typeof window.requestAnimationFrame!=='function'||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return null;
     let cancelled=false,layer=null;
     const pending=new Set(),pulses=new Set(),extras=[];
-    const alive=()=>!cancelled&&host.isConnected&&medal.isConnected&&valid();
+    const alive=()=>!cancelled&&host.isConnected&&face.isConnected&&valid();
     function cancel(){
       if(cancelled)return;
       cancelled=true;
       for(const stop of [...pending])stop();pending.clear();
-      medal.classList.remove('dcg-xp--charging','dcg-xp--burst','dcg-xp--draining');
+      medal?.classList.remove('dcg-xp--charging','dcg-xp--burst','dcg-xp--draining');
       extras.forEach(el=>el.remove());layer?.remove();pulses.forEach(el=>el.classList.remove('dcg-xp-reward-received'));
     }
     function delay(ms){
@@ -77,24 +86,39 @@
       row.style.top=Math.max(12,Math.min(window.innerHeight-box.height-12,r.bottom+12))+'px';
       return row;
     }
-    async function flight(token){
-      const destination=target(token.dataset.rewardKind),s=token.getBoundingClientRect(),d=destination?.getBoundingClientRect();
+    async function flight(token,delivery=null){
+      const destination=delivery?.element||target(token.dataset.rewardKind),s=token.getBoundingClientRect(),d=destination?.getBoundingClientRect();
       const dx=d?d.left+d.width/2-(s.left+s.width/2):0,dy=d?d.top+d.height/2-(s.top+s.height/2):-76;
       const ok=await tween(900,t=>{const e=t*t*(3-2*t);token.style.transform='translate('+dx*e+'px,'+(dy*e-Math.sin(Math.PI*t)*30)+'px) scale('+(1-.45*e)+')';token.style.opacity=String(t<.75?1:1-(t-.75)*4);});
-      if(ok&&destination?.isConnected){destination.classList.add('dcg-xp-reward-received');pulses.add(destination);}
+      if(ok&&destination?.isConnected){destination.classList.add('dcg-xp-reward-received');pulses.add(destination);try{delivery?.onArrival?.();}catch{/* Presentation cannot affect a credited gain. */}}
       return ok;
     }
-    medal.classList.add('dcg-xp--charging');
-    const charged=delay(420);
+    async function send(row,receipt){
+      if(!resolveTargets)return(await Promise.all([...row.children].map(token=>flight(token)))).every(Boolean);
+      const flights=[];
+      for(const token of [...row.children]){
+        const box=token.getBoundingClientRect();
+        for(const delivery of resolveTargets(receipt,token.dataset.rewardKind)||[]){
+          if(!visible(delivery.element)||!count(delivery.amount))continue;
+          const copy=token.cloneNode(true);copy.style.position='absolute';copy.style.left=box.left+'px';copy.style.top=box.top+'px';
+          copy.querySelector('.dcg-xp-reward__quantity').textContent='×'+delivery.amount.toLocaleString('fr-FR');layer.append(copy);flights.push(flight(copy,delivery));
+        }
+        token.style.visibility='hidden';
+      }
+      return(await Promise.all(flights)).every(Boolean);
+    }
+    if(scope!=='daily')medal?.classList.add('dcg-xp--charging');
+    const charged=scope==='daily'?Promise.resolve(true):delay(420);
     async function complete(receipt){
+      if(receipt?.replayed===true){cancel();return;}
       if(!await charged||!alive())return;
       const rewards=items(receipt,scope);
       if(!rewards.length){cancel();return;}
-      burst();if(!await delay(700))return;
-      medal.classList.remove('dcg-xp--burst');
-      const row=show(rewards);if(!await delay(1150))return;
-      if(!(await Promise.all([...row.children].map(flight))).every(Boolean))return;
+      if(scope!=='daily'){burst();if(!await delay(700))return;medal.classList.remove('dcg-xp--burst');}
+      const row=show(rewards);if(!await delay(scope==='daily'?350:1150))return;
+      if(!await send(row,receipt))return;
       layer.remove();layer=null;
+      if(!medal)return;
       medal.classList.add('dcg-xp--draining');
       if(!await tween(560,t=>window.DCGXP?.setFraction(medal,Math.pow(1-t,2))))return;
       const number=medal.querySelector('.dcg-xp__number');if(number)number.textContent=receipt.reward.level;

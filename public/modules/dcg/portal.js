@@ -8,6 +8,8 @@
   let accountSection='accueil';
   let currentPage=null,generation=0,accountUser=null,accountLoading=false,accountError=false;
   let xpWidget=null,xpHost=null,xpUser=null;
+  let stockWidget=null,stockHost=null,stockUser=null,stopHomeDaily=()=>{};
+  function clearStocks(){stopHomeDaily();stopHomeDaily=()=>{};stockWidget?.destroy();stockWidget=null;stockHost=null;stockUser=null;}
   let passGainRequest=null,stopPassGain=()=>{};
   function clearPassGain(){passGainRequest=null;stopPassGain();stopPassGain=()=>{};}
   let mySpaces=[],myLoading=false,myError=false,signedInHint=false;
@@ -31,7 +33,7 @@
   const pass = () => '<section id="daily-pass-root" aria-label="État du Connexion Pass"></section>';
   const ordered = () => [...mySpaces].sort((a,b) => a.name.localeCompare(b.name, 'fr', {sensitivity:'base'}));
   const normalize=s=>String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('fr').trim();
-  const searchStates=new WeakMap();
+  const searchStates=new WeakMap(),directoryStates=new WeakMap();
   function searchResults(query=''){
     const found=[...spaces].sort((a,b)=>a.name.localeCompare(b.name,'fr',{sensitivity:'base'})).filter(space=>normalize(space.name).includes(normalize(query)));
     return found.length?'<ul class="portal-streamer-results">'+found.map(space=>`<li><a class="portal-streamer-result" href="${esc(space.href)}" data-portal-search-result="${esc(space.id)}"><img src="${esc(space.avatar)}" alt="" width="48" height="48" loading="lazy" referrerpolicy="no-referrer"><span>${esc(space.name)}</span><span aria-hidden="true">↗</span></a></li>`).join('')+'</ul>':'<p class="portal-search-empty" role="status">Aucun streamer ne correspond à ta recherche.</p>';
@@ -39,12 +41,13 @@
   const searchDialog=()=>`<dialog class="portal-streamer-search" data-portal-search-dialog aria-labelledby="dcg-search-title" aria-describedby="dcg-search-description"><div class="portal-streamer-search-heading"><h2 id="dcg-search-title">Rechercher un streamer</h2><button class="portal-streamer-search-close" type="button" data-portal-search-close aria-label="Fermer la recherche">×</button></div><p id="dcg-search-description">Retrouve tous les DCG, y compris ceux que tu n’as pas encore rejoints.</p><form class="portal-search" role="search" data-portal-search-form><label for="dcg-search">Nom du streamer</label><input id="dcg-search" type="search" maxlength="80" autocomplete="off" placeholder="Rechercher un streamer…" data-portal-search autofocus></form><div class="portal-streamer-search-results" data-portal-search-results aria-live="polite" aria-relevant="additions text">${searchResults()}</div></dialog>`;
   function openSearch(trigger){const dialog=root.querySelector('[data-portal-search-dialog]');if(!dialog||dialog.open)return;searchStates.set(dialog,{trigger,restore:true});dialog.showModal();const field=root.querySelector('[data-portal-search]');if(field){updateSearch(field);field.focus();}}
   function closeSearch(restore=true){const dialog=root.querySelector('[data-portal-search-dialog]');if(!dialog?.open)return;const saved=searchStates.get(dialog);if(saved)saved.restore=restore;dialog.close();}
+  const stockMarkup=()=>'<div class="portal-space-stock" aria-live="polite"><span data-portal-stock-target="booster">Boosters : <strong data-portal-stock="booster">…</strong></span><span data-portal-stock-target="alkahest">Alkahests : <strong data-portal-stock="alkahest">…</strong></span></div>';
   function directory() {
     if(myLoading)return '<p class="portal-empty" role="status">Recherche de tes DCG…</p>';
     if(myError)return '<div class="portal-empty" role="status"><p>Impossible de retrouver tes DCG pour le moment.</p><button class="button-outline" type="button" data-portal-my-retry>Réessayer</button></div>';
     if(!accountUser)return '<div class="portal-empty"><p>Connecte-toi avec Twitch pour retrouver les DCG où tu joues.</p><button class="button-outline" type="button" data-portal-login>Connexion Twitch ↗</button></div>';
     if(!mySpaces.length)return '<p class="portal-empty">Tu n’as pas encore rejoint de DCG. Découvre une communauté ci-dessous ou entre dans le DCG DeadelusTV.</p>';
-    return ordered().map(space => `<a class="portal-space" href="${esc(space.href)}" data-dcg="${esc(space.id)}"><img src="${esc(space.avatar)}" alt="" referrerpolicy="no-referrer" width="96" height="96"><div class="portal-space-copy"><span class="portal-space-status">${esc(space.status||'')}</span><h3>${esc(space.name)}</h3><p>Ses cartes, ses moments, sa communauté.</p></div><div class="portal-space-level"${space.xpMarkup?'':' role="status" aria-label="'+esc(space.xpUnavailable?'Niveau momentanément indisponible':'Lecture de ton niveau')+'" aria-busy="'+!space.xpUnavailable+'"'}>${space.xpMarkup||'<span class="portal-space-level-placeholder" aria-hidden="true">'+(space.xpUnavailable?'—':'…')+'</span>'}</div><span class="portal-space-cta">Entrer dans le DCG →</span></a>`).join('');
+    return ordered().map(space => `<a class="portal-space" href="${esc(space.href)}" data-dcg="${esc(space.id)}"><img src="${esc(space.avatar)}" alt="" referrerpolicy="no-referrer" width="96" height="96"><div class="portal-space-copy"><span class="portal-space-status">${esc(space.status||'')}</span><h3>${esc(space.name)}</h3><p>Ses cartes, ses moments, sa communauté.</p></div><div class="portal-space-level"${space.xpMarkup?'':' role="status" aria-label="'+esc(space.xpUnavailable?'Niveau momentanément indisponible':'Lecture de ton niveau')+'" aria-busy="'+!space.xpUnavailable+'"'}>${space.xpMarkup||'<span class="portal-space-level-placeholder" aria-hidden="true">'+(space.xpUnavailable?'—':'…')+'</span>'}</div>${stockMarkup()}</a>`).join('');
   }
   const discoverySection=()=>!showDiscovery?'':`<section class="portal-discovery" id="dcg-decouverte" aria-labelledby="dcg-discovery-title"><div class="portal-section-top"><div><span class="overline">LES COMMUNAUTÉS</span><h2 id="dcg-discovery-title">Les DCG</h2></div><div class="portal-carousel-controls" ${discovery.length<2?'hidden':''}><button type="button" data-portal-carousel-direction="previous" aria-label="DCG précédents" aria-controls="dcg-discovery-rail">←</button><button type="button" data-portal-carousel-direction="next" aria-label="DCG suivants" aria-controls="dcg-discovery-rail">→</button></div></div><ul class="portal-carousel" id="dcg-discovery-rail" data-portal-carousel tabindex="0" aria-label="Découvrir des DCG">${discovery.map(space=>`<li><a class="portal-streamer-pill" href="${esc(space.href)}" data-discovery-dcg="${esc(space.id)}" aria-label="Entrer dans le DCG ${esc(space.name)}"><img src="${esc(space.avatar)}" alt="" width="42" height="42" loading="lazy" referrerpolicy="no-referrer"><span>${esc(space.name)}</span></a></li>`).join('')}</ul></section>`;
   const directoryActions=()=>'<div class="portal-directory-actions"><div class="portal-general-xp-bubble" data-general-xp hidden aria-label="Niveau général DCG"></div><button class="button-outline" type="button" data-portal-search-open aria-haspopup="dialog">Rechercher un streamer</button></div>';
@@ -89,10 +92,19 @@
     const id=accountUser.id;
     void window.DEADELUSTV_AUTH.getClient().then(client=>{
       if(!host.isConnected||accountUser?.id!==id||xpHost!==host||!window.DCGXPPass)return;
-      xpWidget=window.DCGXPPass.mount(host,{client,userId:id,scope:'general',compact:true,detailsHost,rewardPresentation:profile?'popup':'flight',isCurrent:()=>accountUser?.id===id&&xpHost===host&&(profile?currentPage==='mon-compte'&&accountSection==='accueil':currentPage==='accueil')});
+      xpWidget=window.DCGXPPass.mount(host,{client,userId:id,scope:'general',compact:true,detailsHost,rewardPresentation:profile?'popup':'flight',rewardTargets:(receipt,kind)=>profile?[]:stockWidget?.targets(receipt,kind)||[],onConfirmed:()=>{if(!profile)void stockWidget?.refresh();},isCurrent:()=>accountUser?.id===id&&xpHost===host&&(profile?currentPage==='mon-compte'&&accountSection==='accueil':currentPage==='accueil')});
     }).catch(()=>{if(host.isConnected&&xpHost===host)host.textContent='Ta progression est momentanément indisponible.';});
   }
+  function syncStocks(client){
+    const host=currentPage==='accueil'&&accountUser&&mySpaces.length?root.querySelector('[data-portal-spaces]'):null;
+    if(!host){clearStocks();return;}
+    if(stockHost===host&&stockUser===accountUser.id){stockWidget?.sync();return;}
+    clearStocks();if(!window.DCGPortalStock)return;
+    const id=accountUser.id;stockHost=host;stockUser=id;
+    stockWidget=window.DCGPortalStock.mount(host,{userId:id,isCurrent:()=>accountUser?.id===id&&currentPage==='accueil'&&stockHost===host,readers:mySpaces.filter(space=>space.id===config.accountSpaceId).map(space=>({spaceId:space.id,broadcasterId:config.accountBroadcasterId,read:()=>client.rpc('tcg_my_boosters',{p_offset:0})}))});
+  }
   function paint(){
+    clearStocks();
     clearPassGain();
     window.DCGDailyPass?.unmount();
     root.innerHTML=nav()+'<div class="dcg-portal-view">'+(renderers[currentPage]||home)()+(currentPage==='mon-compte'&&accountSection==='accueil'?pass():'')+'</div>';
@@ -115,7 +127,7 @@
     }
   }
   function hasSessionHint(){try{return signedInHint||localStorage.getItem(config.authStorageKey)!==null||new URLSearchParams(location.search).has('code');}catch{return signedInHint;}}
-  function paintMySpaces(){if(currentPage!=='accueil')return;mountGeneralXP();const list=root.querySelector('[data-portal-spaces]');const html=directory();if(list&&list.innerHTML!==html)list.innerHTML=html;}
+  function paintMySpaces(){if(currentPage!=='accueil')return;if(!accountUser||!mySpaces.length)clearStocks();mountGeneralXP();const list=root.querySelector('[data-portal-spaces]');const html=directory();if(list&&directoryStates.get(list)!==html){list.innerHTML=html;directoryStates.set(list,html);}stockWidget?.sync();}
   async function readSpaceXP(client,run,userId){
     if(!mySpaces.length)return;
     const current=()=>run===generation&&currentPage==='accueil'&&accountUser?.id===userId;
@@ -149,7 +161,7 @@
       const membership=await client.from('tcg_accounts').select('user_id').eq('user_id',user.id).maybeSingle();
       if(run!==generation||currentPage!=='accueil')return;if(membership.error)throw membership.error;
       accountUser=user;mySpaces=membership.data?.user_id===user.id?spaces.filter(space=>space.id===config.accountSpaceId).map(space=>({...space,...mySpaces.find(previous=>previous.id===space.id)})):[];
-      myLoading=false;myError=false;paintMySpaces();
+      myLoading=false;myError=false;paintMySpaces();syncStocks(client);
       await readSpaceXP(client,run,user.id);
     }catch{if(run!==generation||currentPage!=='accueil')return;mySpaces=[];myLoading=false;myError=true;paintMySpaces();}
   }
@@ -162,7 +174,7 @@
     if(accountLoading)void readAccount(run);
     if(myLoading)void readMySpaces(run);
   }
-  function cancel(){clearPassGain();window.DCGProfile?.unmount();window.DCGDailyPass?.unmount();xpWidget?.destroy();xpWidget=null;xpHost=null;xpUser=null;closeSearch(false);generation++;currentPage=null;accountUser=null;mySpaces=[];myLoading=false;myError=false;accountLoading=false;accountError=false;root.replaceChildren();}
+  function cancel(){clearStocks();clearPassGain();window.DCGProfile?.unmount();window.DCGDailyPass?.unmount();xpWidget?.destroy();xpWidget=null;xpHost=null;xpUser=null;closeSearch(false);generation++;currentPage=null;accountUser=null;mySpaces=[];myLoading=false;myError=false;accountLoading=false;accountError=false;root.replaceChildren();}
   function updateSearch(field){const results=root.querySelector('[data-portal-search-results]');if(results)results.innerHTML=searchResults(field.value);}
   root.addEventListener('input',event=>{if(event.target.matches('[data-portal-search]'))updateSearch(event.target);});
   root.addEventListener('submit',event=>{if(event.target.matches('[data-portal-search-form]')){event.preventDefault();updateSearch(event.target.querySelector('input'));}});
@@ -190,6 +202,13 @@
   });
   window.addEventListener('deadelustv:auth-change',event=>{signedInHint=event.detail?.authenticated===true;accountUser=null;mySpaces=[];myError=false;if(currentPage==='mon-compte')render(accountSection==='accueil'?'mon-compte':'mon-compte/'+accountSection);else if(currentPage==='accueil'){const run=++generation;myLoading=signedInHint;paintMySpaces();if(myLoading)void readMySpaces(run);}});
   window.addEventListener('tcg:daily-pass-change',event=>{
+    if(currentPage==='accueil'&&accountUser&&event.detail?.gains?.length){
+      const id=accountUser.id,host=root.querySelector('#daily-pass-root');
+      void stockWidget?.refresh();stopHomeDaily();
+      const animation=host&&window.DCGXPRewards?.start(host,{scope:'daily',anchor:host.querySelector('[aria-current="step"]'),resolveTargets:(receipt,kind)=>stockWidget?.targets(receipt,kind)||[],valid:()=>accountUser?.id===id&&currentPage==='accueil'&&host.isConnected});
+      if(animation){stopHomeDaily=()=>animation.cancel();void animation.complete({gains:event.detail.gains}).catch(()=>{}).finally(()=>animation.cancel());}
+      return;
+    }
     const request=passGainRequest;passGainRequest=null;
     if(!request||request.generation!==generation||request.user!==accountUser?.id||Date.now()-request.at>15000||currentPage!=='mon-compte'||accountSection!=='accueil')return;
     const host=root.querySelector('#daily-pass-root'),anchor=host?.querySelector('[data-day="'+request.day+'"]');
