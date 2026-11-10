@@ -5,13 +5,17 @@
 `#tcg/mon-compte` est l'Accueil du profil : identité Twitch et Pass quotidien. Les cartes et accès aux collections sont déplacés dans **Mes constellations**.
 
 - `#tcg/mon-compte/constellations` : affichage **Par constellation**, avec les DCG rejoints et un emplacement pour les constellations communes lorsqu'elles ouvriront.
-- `#tcg/mon-compte/cartes` : affichage **Toutes mes cartes**, sous forme de Constellation compacte, avec recherche et pages de 24 versions. Les doublons sont regroupés côté serveur ; raretés, finitions et First restent séparées.
+- `#tcg/mon-compte/cartes` : affichage **Toutes mes cartes**, sous forme de Constellation compacte, avec recherche et pages de 24 versions. Les doublons sont regroupés côté serveur ; raretés, finitions et First restent séparées. Le menu **Trier par** propose Alphabétique, Numéro de carte, Rareté, Collection et Streamer ; le menu **Ordre** permet Croissant ou Décroissant. Le tri initial est alphabétique croissant.
 
 Les adresses fonctionnent directement, au rechargement et avec les boutons précédent/suivant du navigateur. Le Pass n'est monté que dans l'Accueil du profil et dans l'accueil général DCG.
 
 ## Lecture des cartes
 
 Le seul DCG actuellement raccordé est DeadelusTV (`99977368`). La session est réutilisée depuis `DEADELUSTV_AUTH`, vérifiée par `getUser()`, puis seule l'inscription du compte courant est lue. La Constellation appelle la RPC **stable, en lecture seule** `tcg_inventory_groups`, avec `p_context:'inventory'`, recherche et décalage. Aucun propriétaire n'est envoyé : le serveur utilise `auth.uid()`. Le retour est refusé si son propriétaire ou sa chaîne ne correspondent pas au compte et au DCG attendus. Consulter le profil ne crée ni inscription, carte, booster ni solde.
+
+Toutes les pages de versions correspondant à la recherche sont réunies avant le tri, puis affichées par pages de 24. Changer le tri, son sens ou la page ne relance pas ces lectures. Les numéros officiels sont rapprochés des versions à l’aide de la RPC existante, stable et en lecture seule, `tcg_owned_catalogue_page` ; modèle, finition, rareté, étoiles et First identifient la version. Les cartes possédées sans numéro restent présentes, à la fin du tri numérique dans les deux sens. Un numéro répété ne fusionne jamais les cartes. Le streamer de provenance reste affiché avec le numéro.
+
+L’identité est revérifiée à la fin du chargement. Une page en erreur, une pagination incohérente ou un inventaire modifié pendant sa lecture n’affiche pas de classement partiel. Les réponses après changement de compte ou de rubrique sont ignorées. Cette version réutilise les API existantes sans migration serveur ; pour de très grandes galeries et le futur raccordement de plusieurs DCG, une pagination triée côté serveur évitera de parcourir toutes les pages au chargement.
 
 La galerie et l'aperçu réutilisent le composant `tcg-card` de la Constellation TCG, copié avec ses styles et effets dans `modules/dcg/cards/`. Ses feuilles de styles sont résolues depuis le script local ; la texture Galactique réutilise l'asset public du DCG. Aucun module d'action de jeu n'est chargé. Les données de carte sont échappées, et les URL d'illustration sont limitées à HTTP(S).
 
