@@ -25,7 +25,7 @@ class Node{
 function setup({hash='#tcg',user=null,getSession,withAuth=true,registered=true,getUser,getMembership,spaces,showSingle=true,random,xpMount}={}){
  const root=new Node(),heading=new Node(),list=new Node(),search=new Node(),searchForm=new Node(),searchDialog=new Node(),searchResults=new Node(),directory=new Node(),discoveryRoot=new Node(),rail=new Node(),nav=new Node(),menu=new Node(),back=new Node(),main=new Node(),brand=new Node(),passRoot=new Node();
  search.selector='[data-portal-search]';searchDialog.selector='[data-portal-search-dialog]';searchDialog.onClose=()=>root.emit('close',searchDialog);searchForm.nodes={input:search};root.nodes={'[data-general-xp]':new Node(),'h1':heading,'[data-portal-spaces]':list,'[data-portal-search]':search,'#dcg-annuaire':directory,'#dcg-decouverte':discoveryRoot,'[data-portal-carousel]':rail,'[data-portal-search-form]':searchForm,'[data-portal-search-dialog]':searchDialog,'[data-portal-search-results]':searchResults};rail.clientWidth=500;rail.scrollBy=options=>rail.scrolled=options;
- root.nodes['#daily-pass-root']=passRoot;
+ root.nodes['#daily-pass-root']=passRoot;root.nodes['[data-general-xp-details]']=new Node();
  const pageNames=['accueil','tcg','phasmophobia','crewmongus','pavillon-noir','mentions-legales','confidentialite','conditions-utilisation','conditions-vente'];
  const sections=pageNames.map(name=>{const n=new Node();n.dataset.page=name;n.nodes={h1:heading};return n;});
  const navNodes=['accueil','tcg','phasmophobia','crewmongus','jeux-de-role'].map(name=>{const n=new Node();n.dataset.nav=name;return n;});
@@ -38,7 +38,7 @@ function setup({hash='#tcg',user=null,getSession,withAuth=true,registered=true,g
  if(withAuth)context.DEADELUSTV_AUTH={getClient:async()=>({auth:{getSession:getSession||(async()=>({data:{session:currentUser?{user:currentUser}:null}})),getUser:getUser||(async()=>({data:{user:currentUser}}))},from(table){reads.push({table});return {select(columns){reads.at(-1).columns=columns;return this;},eq(column,value){reads.at(-1).filter={column,value};return this;},async maybeSingle(){return getMembership?getMembership():{data:registered&&currentUser?{user_id:currentUser.id}:null};}};}}),signIn:()=>{signins++;}};
  if(withAuth)Object.defineProperty(context.DEADELUSTV_AUTH,'userId',{get:()=>currentUser?.id||null});
  if(xpMount)context.DCGXPPass={mount:xpMount};context.window=context;vm.createContext(context);vm.runInContext(config,context);context.DEADELUSTV_DCG_CONFIG={...context.DEADELUSTV_DCG_CONFIG,...(spaces?{spaces}:{}),showDiscoveryWithSingleStreamer:showSingle};vm.runInContext(source,context);vm.runInContext(router,context);
- return {root,heading,list,search,searchForm,searchDialog,searchResults,directory,rail,reads,discoveryRoot,menu,nav,sections,calls,context,navNodes,passCalls,passRoot,get signins(){return signins;},async go(value){location.hash=value;for(const fn of windowListeners.hashchange||[])fn();await tick();},async auth(user){currentUser=user;if(user)storage.set('sb-eodtxlhnfzyapkyvvxdi-auth-token','session-present');else storage.clear();for(const fn of windowListeners['deadelustv:auth-change']||[])fn({detail:{authenticated:!!user}});await tick();},click(selector){const n=new Node();n.selector=selector;return root.emit('click',n);}};
+ return {emitWindow(type,detail){for(const fn of windowListeners[type]||[])fn({detail});},root,heading,list,search,searchForm,searchDialog,searchResults,directory,rail,reads,discoveryRoot,menu,nav,sections,calls,context,navNodes,passCalls,passRoot,get signins(){return signins;},async go(value){location.hash=value;for(const fn of windowListeners.hashchange||[])fn();await tick();},async auth(user){currentUser=user;if(user)storage.set('sb-eodtxlhnfzyapkyvvxdi-auth-token','session-present');else storage.clear();for(const fn of windowListeners['deadelustv:auth-change']||[])fn({detail:{authenticated:!!user}});await tick();},click(selector){const n=new Node();n.selector=selector;return root.emit('click',n);}};
 }
 
 test('the removed Pass tab redirects old links to home and keeps the progress view',async()=>{
@@ -190,4 +190,21 @@ test('general XP mounts on the home with the shared authenticated client and cle
  await tick();assert.doesNotMatch(s.root.innerHTML,/Ton niveau général|class="portal-xp"/);assert.match(s.root.innerHTML,/portal-directory-actions/);assert.equal(mounts.length,1);assert.equal(mounts[0].scope,'general');assert.equal(mounts[0].compact,true);assert.equal(mounts[0].userId,'xp-player');assert.equal(mounts[0].isCurrent(),true);assert.equal(s.root.nodes['[data-general-xp]'].hidden,false);
  await s.auth(null);assert.equal(destroyed,1);assert.equal(mounts[0].isCurrent(),false);assert.equal(s.root.nodes['[data-general-xp]'].innerHTML,'');assert.equal(s.root.nodes['[data-general-xp]'].hidden,true);
  await s.auth({id:'other'});assert.equal(mounts.length,2);await s.go('#phasmophobia');assert.equal(destroyed,2);assert.equal(mounts[1].isCurrent(),false);
+});
+
+
+test('profile home mounts general XP details and popup rewards, with no private state on other profile tabs',async()=>{
+ const mounts=[];let destroyed=0;const s=setup({hash:'#tcg/mon-compte',user:{id:'alice'},xpMount:(host,options)=>{mounts.push(options);return{destroy(){destroyed++;}};}});await tick();
+ assert.match(s.root.innerHTML,/portal-profile-xp/);assert.equal(mounts.length,1);assert.equal(mounts[0].scope,'general');assert.equal(mounts[0].detailsHost,s.root.nodes['[data-general-xp-details]']);assert.equal(mounts[0].rewardPresentation,'popup');assert.equal(mounts[0].isCurrent(),true);
+ await s.go('#tcg/mon-compte/cartes');assert.equal(destroyed,1);assert.equal(mounts[0].isCurrent(),false);assert.equal(mounts.length,1);assert.doesNotMatch(s.root.innerHTML,/portal-profile-xp/);
+ await s.go('#tcg/mon-compte');assert.equal(mounts.length,2);await s.auth(null);assert.equal(destroyed,2);assert.equal(mounts[1].isCurrent(),false);
+});
+test('only a profile Pass click followed by confirmed gains displays a popup, cleared when leaving',async()=>{
+ const s=setup({hash:'#tcg/mon-compte',user:{id:'alice'}});await tick();const shown=[];let cancelled=0;
+ s.context.DCGProfileRewards={dailyItems:gains=>gains,show:(host,gains,options)=>{shown.push({host,gains,options});return{cancel(){cancelled++;}};}};
+ const anchor=new Node();s.passRoot.nodes={'[data-day="7"]':anchor};
+ const claim=new Node();claim.selector='[data-daily-pass-refresh]';claim.dataset.rewardDay='7';
+ s.emitWindow('tcg:daily-pass-change',{gains:[{kind:'dust',amount:35}]});assert.equal(shown.length,0);
+ s.root.emit('click',claim);s.emitWindow('tcg:daily-pass-change',{gains:[{kind:'dust',amount:35}]});assert.equal(shown.length,1);assert.equal(shown[0].options.anchor,anchor);assert.equal(shown[0].options.valid(),true);
+ await s.go('#tcg/mon-compte/cartes');assert.equal(cancelled,1);assert.equal(shown[0].options.valid(),false);s.emitWindow('tcg:daily-pass-change',{gains:[{kind:'dust',amount:35}]});assert.equal(shown.length,1);
 });

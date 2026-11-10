@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  function mount(host,{client,userId,isCurrent,scope='streamer',onReward=()=>{},compact=false,detailsHost=null}){
+  function mount(host,{client,userId,isCurrent,scope='streamer',onReward=()=>{},compact=false,detailsHost=null,rewardPresentation='flight'}){
     let active=true,version=0,state=null,previousState=null,busy=false,error='',message='',retryLevel=null,stopAnimation=()=>{},stopReward=()=>{};
     const valid=()=>active&&host.isConnected&&isCurrent()&&!!userId;
     const stateRpc=scope==='general'?'dcg_my_xp':'tcg_my_xp';
@@ -11,9 +11,9 @@
     };
     function details(){
       const p=window.DCGXP.progress(state.total,state.level),opened=Math.min(p.opened,p.required),remaining=Math.max(0,p.required-p.opened);
-      const packs=Math.ceil(p.next/2),reward=scope==='general'?10*p.next+' Alkahests':packs+' booster'+(packs>1?'s':'');
+      const packs=Math.ceil(p.next/2),reward=scope==='general'?10*p.next+' Alkahests par DCG':packs+' booster'+(packs>1?'s':'');
       const percent=(p.fraction*100).toLocaleString('fr-FR',{maximumFractionDigits:1}),count=n=>n.toLocaleString('fr-FR');
-      return '<div class="dcg-xp-details__heading"><div><span class="overline">Level UP - <span data-streamer-name>Streamer</span></span><h2>Ma progression XP</h2></div><strong class="dcg-xp-details__level">Niveau '+p.level+'</strong></div>'+
+      return '<div class="dcg-xp-details__heading"><div><span class="overline">'+(scope==='general'?'TOUS MES DCG':'Level UP - <span data-streamer-name>Streamer</span>')+'</span><h2>'+(scope==='general'?'Ma progression générale':'Ma progression XP')+'</h2></div><strong class="dcg-xp-details__level">Niveau '+p.level+'</strong></div>'+
         '<dl class="dcg-xp-details__stats"><div><dt>Boosters ouverts au total</dt><dd>'+count(p.total)+'</dd></div><div><dt>Boosters avant prochain niveau</dt><dd>'+count(remaining)+'</dd></div><div><dt>Récompenses du prochain niveau</dt><dd>'+reward+'</dd></div></dl>'+
         '<div class="dcg-xp-details__measure"><span>Vers le niveau '+p.next+'</span><strong>'+count(opened)+' / '+count(p.required)+' boosters · '+percent+' %</strong></div>'+
         '<progress class="dcg-xp-details__bar" max="'+p.required+'" value="'+opened+'" aria-label="Progression vers le niveau '+p.next+'">'+percent+' %</progress>'+
@@ -60,7 +60,7 @@
       if(!retryLevel&&!window.DCGXP.progress(state.total,state.level).pending)return;
       const level=retryLevel||state.level+1;busy=true;error='';message='';version++;paint();
       let animation=null,receipt=null;
-      try{animation=window.DCGXPRewards?.start(host,{scope,valid});}catch{/* A visual failure must never prevent claiming. */}
+      try{animation=(rewardPresentation==='popup'?window.DCGProfileRewards:window.DCGXPRewards)?.start(host,{scope,valid});}catch{/* A visual failure must never prevent claiming. */}
       stopReward=()=>animation?.cancel();
       try{
         const r=await client.rpc(claimRpc,{p_level:level});
