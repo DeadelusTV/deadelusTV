@@ -413,3 +413,9 @@
 .daily-pass--visual.daily-pass--progress{padding:0;border:0;background:none;border-radius:0;clip-path:none}
 .daily-pass--progress .pass-surface{padding:18px 6px;background:none;clip-path:none}
 .daily-pass--progress .day-track{margin:16px 0}
+
+/* Récompenses du Connexion Pass : action volontaire, jamais un contrôle automatique. */
+.daily-pass--visual .day.is-ready .claim-hit,
+.daily-pass--visual .daily-pass-reward-claim:not(:disabled) {cursor:pointer;}
+.daily-pass--visual .day.is-ready .claim-hit:focus-visible,
+.daily-pass--visual .daily-pass-reward-claim:focus-visible {outline:2px solid #f4d396;outline-offset:4px;}
