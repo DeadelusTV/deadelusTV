@@ -24,7 +24,8 @@
     if(!face||typeof window.requestAnimationFrame!=='function'||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return null;
     let cancelled=false,layer=null;
     const pending=new Set(),pulses=new Set(),extras=[];
-    const alive=()=>!cancelled&&host.isConnected&&face.isConnected&&valid();
+    // Le losange du Pass est redessiné après confirmation du serveur : seul le conteneur doit rester présent.
+    const alive=()=>!cancelled&&host.isConnected&&(scope==='daily'||face.isConnected)&&valid();
     function cancel(){
       if(cancelled)return;
       cancelled=true;
@@ -95,16 +96,30 @@
     }
     async function send(row,receipt){
       if(!resolveTargets)return(await Promise.all([...row.children].map(token=>flight(token)))).every(Boolean);
+      const deliveries=[...row.children].map(token=>({
+        token,targets:(resolveTargets(receipt,token.dataset.rewardKind)||[])
+          .filter(delivery=>delivery?.element?.isConnected&&count(delivery.amount))
+      }));
+      const all=deliveries.flatMap(batch=>batch.targets);
+      if(!all.length)return false; // Ne pas simuler un transfert vers un DCG absent.
+      if(scope==='daily'&&!all.some(delivery=>visible(delivery.element))){
+        const first=all[0].element.closest?.('.portal-space')||all[0].element;
+        first.scrollIntoView?.({behavior:'smooth',block:'center'});
+        if(!await delay(550))return false;
+      }
       const flights=[];
-      for(const token of [...row.children]){
+      for(const {token,targets} of deliveries){
         const box=token.getBoundingClientRect();
-        for(const delivery of resolveTargets(receipt,token.dataset.rewardKind)||[]){
-          if(!visible(delivery.element)||!count(delivery.amount))continue;
+        for(const delivery of targets){
+          if(!delivery.element.isConnected)continue;
+          // Les gains sont distribués à chaque DCG confirmé, même si sa tuile est sous la ligne de flottaison.
           const copy=token.cloneNode(true);copy.style.position='absolute';copy.style.left=box.left+'px';copy.style.top=box.top+'px';
-          copy.querySelector('.dcg-xp-reward__quantity').textContent='×'+delivery.amount.toLocaleString('fr-FR');layer.append(copy);flights.push(flight(copy,delivery));
+          copy.querySelector('.dcg-xp-reward__quantity').textContent='×'+delivery.amount.toLocaleString('fr-FR');layer.append(copy);
+          flights.push(flight(copy,delivery));
         }
         token.style.visibility='hidden';
       }
+      if(!flights.length)return false;
       return(await Promise.all(flights)).every(Boolean);
     }
     if(scope!=='daily')medal?.classList.add('dcg-xp--charging');
