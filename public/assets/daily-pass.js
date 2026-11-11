@@ -157,10 +157,10 @@
       return '<li class="'+classes.join(' ')+'" data-day="'+day+'"'+(day === step ? ' aria-current="step"' : '')+
         ' aria-label="Jour '+day+' : '+escape(rewardText(reward))+' — '+detail+'"'+(texture ? ' style="--mineral:url('+texture+')"' : '')+
         '><span class="diamond" aria-hidden="true"></span><span class="day-number" aria-hidden="true">J'+day+'</span>'+sparkles(day)+
-        (ready ? '<button class="claim-hit" type="button" data-daily-pass-refresh aria-label="Vérifier la réception du gain du jour '+day+'"'+(pending ? ' disabled aria-busy="true"' : '')+'></button>' : '')+'</li>';
+        (ready ? '<button class="claim-hit" type="button" data-daily-pass-claim aria-label="Récupérer la récompense du jour '+day+'"'+(pending ? ' disabled aria-busy="true"' : '')+'></button>' : '')+'</li>';
     }).join('');
     const rewardList = states.map(({day,reward,detail,ready}) => '<li aria-label="Jour '+day+' : '+escape(rewardText(reward))+' — '+detail+'" title="'+escape(rewardText(reward))+'">'+
-      (ready ? '<button class="daily-pass-reward-claim" type="button" data-daily-pass-refresh data-reward-day="'+day+'" aria-label="Vérifier la réception du gain du jour '+day+'"'+(pending ? ' disabled aria-busy="true"' : '')+'>' : '')+
+      (ready ? '<button class="daily-pass-reward-claim" type="button" data-daily-pass-claim data-reward-day="'+day+'" aria-label="Récupérer la récompense du jour '+day+'"'+(pending ? ' disabled aria-busy="true"' : '')+'>' : '')+
       '<img src="'+escape(iconBase+(reward.kind === 'dust' ? 'dcg-alkahest-256.webp' : 'dcg-booster-256.webp'))+'" alt="" width="36" height="36" aria-hidden="true">'+
       '<strong aria-hidden="true">'+escape(reward.kind === 'dust' ? '+'+reward.amount : '×'+reward.booster_count)+'</strong>'+(ready ? '</button>' : '')+'</li>').join('');
     const channels = owner && !preparation ? (data?.channels || []).filter(c => !['not_following','not_participating','disabled'].includes(c.status)).map(c =>
@@ -172,7 +172,7 @@
       data?.status === 'not_registered' ? 'Rejoins un DCG pour recevoir ses récompenses quotidiennes.' :
       step ? 'Ta présence du jour est enregistrée. Retrouve les gains confirmés dans tes DCG.' :
       'Ta progression sera affichée après ta première présence.';
-    const focusTarget = root.contains?.(document.activeElement) && document.activeElement?.closest?.('[data-daily-pass-refresh]');
+    const focusTarget = root.contains?.(document.activeElement) && document.activeElement?.closest?.('[data-daily-pass-claim], [data-daily-pass-refresh]');
     const focusedDay = focusTarget?.closest?.('[data-day]')?.dataset.day;
     const trackFocused = root.contains?.(document.activeElement) && document.activeElement?.matches?.('.day-track');
     const restoreFocus = () => {
@@ -187,10 +187,10 @@
     }
     root.innerHTML = '<section class="daily-pass daily-pass--visual pass-frame" aria-label="Pass de connexion quotidienne"><div class="pass-surface">'+
       '<header class="daily-pass-heading"><div><h2 class="pass-heading">CONNEXION PASS</h2><p class="pass-subtitle">Votre rendez-vous quotidien</p></div><span class="daily-pass-state">'+escape(title)+'</span></header>'+
-      '<p class="daily-pass-intro">Une visite connectée sur DeadelusTV, des récompenses dans chacun de tes DCG.</p>'+
+      '<p class="daily-pass-intro">Une visite connectée valide ton jour. Clique sur le losange lumineux pour récupérer ta récompense.</p>'+
       progression+
       '<ol class="daily-pass-rewards" aria-label="Récompenses de chaque jour">'+rewardList+'</ol>'+
-      '<div class="pass-caption"><span class="daily-pass-legend"><span>✓ Reçu</span><span>◇ À venir</span></span></div>'+
+      '<div class="pass-caption"><span class="daily-pass-legend"><span>✓ Reçu</span><span>◇ À venir</span><span>✧ Cliquer pour récupérer</span></span></div>'+
       (data?.donor_bonus?.enabled && data.donor_bonus.active && owner && !preparation ? '<p class="daily-pass-supporter">Bonus soutien actif · Les boosters de J9 et J10 sont doublés.</p>' : '')+
       (channels ? '<ul class="daily-pass-channels" aria-label="Récompenses par DCG">'+channels+'</ul>' : '')+
       '<a class="daily-pass-help" href="#tcg/regles">FAQ du Pass →</a>'+
@@ -199,7 +199,7 @@
     syncVisibility();
   }
 
-  async function refresh(force = false) {
+  async function refresh(force = false, claim = false) {
     const session = identity();
     if (session.id !== owner) {
       stopMotion(); playedAnimations.clear(); owner = session.id; ++generation; snapshot = null; pending = null; retryAt = 0; verifyAt = 0;
@@ -208,13 +208,13 @@
     if (!owner || document.visibilityState === 'hidden' || pending || !force && Date.now() < retryAt) return;
     if (servicePending()) {snapshot = {status:'configuration_pending'}; retryAt = Date.now()+300000; render(snapshot, ''); return;}
     const request = {generation, id:owner}; pending = request;
-    for (const button of root?.querySelectorAll?.('[data-daily-pass-refresh]') || []) {button.disabled = true; button.setAttribute('aria-busy','true');}
+    for (const button of root?.querySelectorAll?.('[data-daily-pass-claim], [data-daily-pass-refresh]') || []) {button.disabled = true; button.setAttribute('aria-busy','true');}
     const current = () => request.generation === generation && identity().id === request.id;
     try {
       const client = session.client || await window.DEADELUSTV_AUTH.getClient();
       if (!current()) return;
       // L'Edge Function du site vérifie origine et JWT. Le jeu n'appelle jamais une attribution.
-      const read = () => isSite() ? client.functions.invoke('tcg-daily-pass', {body:{}}) : client.rpc('tcg_daily_pass_status');
+      const read = () => isSite() ? client.functions.invoke('tcg-daily-pass', {body:claim ? {action:'claim'} : {}}) : client.rpc('tcg_daily_pass_status');
       let result = await read();
       if (!current()) return;
       if (isSite() && !result.error && result.data?.channels?.some(c => c.status === 'verification_required') && Date.now() >= verifyAt) {
@@ -264,7 +264,10 @@
       for (const button of root?.querySelectorAll?.('[data-daily-pass-refresh]') || []) {button.disabled = false; button.removeAttribute('aria-busy');}
     }}
   }
-  const onClick = event => {if (event.target.closest('[data-daily-pass-refresh]')) void refresh(true);};
+  const onClick = event => {
+    if (event.target.closest('[data-daily-pass-claim]')) {if (isSite()) void refresh(true, true); return;}
+    if (event.target.closest('[data-daily-pass-refresh]')) void refresh(true);
+  };
   function mount(element, options = {}) {
     stopMotion(); viewObserver?.disconnect(); inView = true;
     view = options.view === 'progress' ? 'progress' : 'details';
