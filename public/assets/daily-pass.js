@@ -261,7 +261,7 @@
     } catch {
       if (current()) {retryAt = Date.now()+30000; render(snapshot, 'Impossible de vérifier ta progression pour le moment. Une nouvelle tentative sera faite automatiquement.');}
     } finally {if (pending === request) {pending = null;
-      for (const button of root?.querySelectorAll?.('[data-daily-pass-refresh]') || []) {button.disabled = false; button.removeAttribute('aria-busy');}
+      for (const button of root?.querySelectorAll?.('[data-daily-pass-claim], [data-daily-pass-refresh]') || []) {button.disabled = false; button.removeAttribute('aria-busy');}
     }}
   }
   const onClick = event => {
