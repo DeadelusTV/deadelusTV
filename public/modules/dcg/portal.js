@@ -181,7 +181,7 @@
   root.addEventListener('keydown',event=>{if(event.key==='Escape'&&root.querySelector('[data-portal-search-dialog]')?.open){event.preventDefault();event.stopPropagation();closeSearch();}});
   root.addEventListener('close',event=>{if(!event.target.matches('[data-portal-search-dialog]'))return;const saved=searchStates.get(event.target);searchStates.delete(event.target);if(saved?.restore&&currentPage==='accueil'&&saved.trigger?.isConnected)saved.trigger.focus();},true);
   root.addEventListener('click',event=>{
-    const passClaim=event.target.closest('[data-daily-pass-refresh]');
+    const passClaim=event.target.closest('[data-daily-pass-claim]');
     if(passClaim&&accountUser&&currentPage==='mon-compte'&&accountSection==='accueil'){
       const day=Number(passClaim.dataset.rewardDay||passClaim.closest('[data-day]')?.dataset.day);
       if(Number.isInteger(day)&&day>=1&&day<=10)passGainRequest={user:accountUser.id,day,generation,at:Date.now()};
