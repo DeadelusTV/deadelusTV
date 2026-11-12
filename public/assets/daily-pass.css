@@ -428,3 +428,7 @@
 .daily-pass .daily-pass-pending button{color:#f7e3a8;background:#211b10;border:1px solid #b38a3f;border-radius:.35rem;padding:.5rem .8rem;cursor:pointer}
 .daily-pass .daily-pass-pending button:disabled{opacity:.6;cursor:wait}
 .daily-pass .daily-pass-pending button:focus-visible{outline:2px solid #f7e3a8;outline-offset:3px}
+.daily-pass .daily-pass-actions{display:flex;justify-content:flex-end;margin:1rem 0}
+.daily-pass .daily-pass-claim-all{color:#1b150b;background:#e4c36e;border:1px solid #f5df9d;border-radius:.4rem;padding:.65rem 1rem;font-weight:700;cursor:pointer}
+.daily-pass .daily-pass-claim-all:disabled{opacity:.5;cursor:default}
+.daily-pass .daily-pass-claim-all:focus-visible{outline:2px solid #f7e3a8;outline-offset:4px}

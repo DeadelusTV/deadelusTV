@@ -7,6 +7,9 @@
   const iconBase = scriptUrl ? new URL(scriptUrl.includes('/assets/daily-pass.js') ? '../modules/dcg/assets/xp/' : 'assets/xp/', scriptUrl).href : 'assets/xp/';
   let root = null, view = 'details', feedback = '', owner = null, generation = 0;
   let pending = null, snapshot = null, retryAt = 0, verifyAt = 0;
+  let bulk = null;
+  const claimableVisits = data => [...new Map([...(data?.history || []),...(data?.pending_rewards || [])]
+    .filter(item => item.id && item.claimable).map(item => [item.id,item])).values()];
   const tabSyncKey = 'dcg:daily-pass-updated';
   let tabSyncPending = false;
   function notifyOtherTabs() {
@@ -113,7 +116,7 @@
   const rewardText = reward => reward.kind === 'dust' ? '+'+reward.amount+' Alkahests' : reward.booster_count+' booster'+(reward.booster_count > 1 ? 's' : '')+' de '+reward.card_count+' cartes';
   function confirmedAnimation(data) {
     const target = data?.claimed_visit || data;
-    if (!root || !isSite() || !owner || !Number.isInteger(target?.step) || target.step < 1 || target.step > 10 || target.cycle !== data.cycle || !data.gains?.length || data.status !== 'recorded') return;
+    if (bulk || !root || !isSite() || !owner || !Number.isInteger(target?.step) || target.step < 1 || target.step > 10 || target.cycle !== data.cycle || !data.gains?.length || data.status !== 'recorded') return;
     const key = JSON.stringify([owner,target.date,target.cycle,target.step]);
     if (playedAnimations.has(key)) return;
     playedAnimations.add(key);
@@ -173,10 +176,10 @@
       return '<li class="'+classes.join(' ')+'" data-day="'+day+'"'+(visitId ? ' data-pass-visit="'+escape(visitId)+'"' : '')+(day === step ? ' aria-current="step"' : '')+
         ' aria-label="Jour '+day+' : '+escape(rewardText(reward))+' — '+detail+'"'+(texture ? ' style="--mineral:url('+texture+')"' : '')+
         '><span class="diamond" aria-hidden="true"></span><span class="day-number" aria-hidden="true">J'+day+'</span>'+sparkles(day)+
-        (ready ? '<button class="claim-hit" type="button" data-daily-pass-claim'+(visitId ? ' data-visit-id="'+escape(visitId)+'"' : '')+' aria-label="Récupérer la récompense du jour '+day+'"'+(pending ? ' disabled aria-busy="true"' : '')+'></button>' : '')+'</li>';
+        (ready ? '<button class="claim-hit" type="button" data-daily-pass-claim'+(visitId ? ' data-visit-id="'+escape(visitId)+'"' : '')+' aria-label="Récupérer la récompense du jour '+day+'"'+(pending || bulk ? ' disabled aria-busy="true"' : '')+'></button>' : '')+'</li>';
     }).join('');
     const rewardList = states.map(({day,visitId,reward,detail,ready}) => '<li aria-label="Jour '+day+' : '+escape(rewardText(reward))+' — '+detail+'" title="'+escape(rewardText(reward))+'">'+
-      (ready ? '<button class="daily-pass-reward-claim" type="button" data-daily-pass-claim'+(visitId ? ' data-visit-id="'+escape(visitId)+'"' : '')+' data-reward-day="'+day+'" aria-label="Récupérer la récompense du jour '+day+'"'+(pending ? ' disabled aria-busy="true"' : '')+'>' : '')+
+      (ready ? '<button class="daily-pass-reward-claim" type="button" data-daily-pass-claim'+(visitId ? ' data-visit-id="'+escape(visitId)+'"' : '')+' data-reward-day="'+day+'" aria-label="Récupérer la récompense du jour '+day+'"'+(pending || bulk ? ' disabled aria-busy="true"' : '')+'>' : '')+
       '<img src="'+escape(iconBase+(reward.kind === 'dust' ? 'dcg-alkahest-256.webp' : 'dcg-booster-256.webp'))+'" alt="" width="36" height="36" aria-hidden="true">'+
       '<strong aria-hidden="true">'+escape(reward.kind === 'dust' ? '+'+reward.amount : '×'+reward.booster_count)+'</strong>'+(ready ? '</button>' : '')+'</li>').join('');
     const channels = owner && !preparation ? (data?.channels || []).filter(c => !['not_following','not_participating','disabled'].includes(c.status)).map(c =>
@@ -188,18 +191,20 @@
       data?.status === 'not_registered' ? 'Rejoins un DCG pour recevoir ses récompenses quotidiennes.' :
       step ? 'Ta présence du jour est enregistrée. Retrouve les gains confirmés dans tes DCG.' :
       'Ta progression sera affichée après ta première présence.';
-    const focusTarget = root.contains?.(document.activeElement) && document.activeElement?.closest?.('[data-daily-pass-claim], [data-daily-pass-refresh]');
+    const focusTarget = root.contains?.(document.activeElement) && document.activeElement?.closest?.('[data-daily-pass-claim], [data-daily-pass-claim-all], [data-daily-pass-refresh]');
     const focusedDay = focusTarget?.closest?.('[data-day]')?.dataset.day;
     const focusedVisit = focusTarget?.dataset?.visitId;
+    const bulkFocused = focusTarget?.hasAttribute?.('data-daily-pass-claim-all');
     const trackFocused = root.contains?.(document.activeElement) && document.activeElement?.matches?.('.day-track');
     const restoreFocus = () => {
-      if (focusTarget || trackFocused) ((focusedVisit ? root.querySelector('[data-pass-visit="'+focusedVisit+'"] button') : null) || (focusedDay ? root.querySelector('[data-day="'+focusedDay+'"] button') : null) || root.querySelector('.day-track'))?.focus({preventScroll:true});
+      if (focusTarget || trackFocused) ((bulkFocused ? root.querySelector('[data-daily-pass-claim-all]') : null) || (focusedVisit ? root.querySelector('[data-pass-visit="'+focusedVisit+'"] button') : null) || (focusedDay ? root.querySelector('[data-day="'+focusedDay+'"] button') : null) || root.querySelector('.day-track'))?.focus({preventScroll:true});
     };
     const progression = '<div class="daily-pass-scroll" tabindex="0" role="region" aria-label="Les dix jours du Pass"><ol class="day-track daily-pass-days" tabindex="-1" aria-label="Progression sur dix jours" style="--lit-width:'+Math.max(0,(step-1)*10)+'%;--lit-opacity:'+(step > 1 ? 1 : 0)+'">'+days+'</ol></div>';
     const older = owner && individual && Array.isArray(data.pending_rewards) ? data.pending_rewards : [];
     const backlog = older.length ? '<section class="daily-pass-pending" aria-label="Récompenses des cycles précédents"><h3>Récompenses à récupérer</h3><p>Les jours validés des cycles précédents restent disponibles. Chaque clic récupère une seule récompense.</p><ul>'+older.map(item=>
       '<li data-pass-visit="'+escape(item.id)+'"><span>Cycle '+escape(item.cycle)+' · J'+escape(item.step)+' · '+escape(item.date)+'<strong>'+escape(rewardText(item.reward))+'</strong></span>'+
-      (item.claimable ? '<button type="button" data-daily-pass-claim data-visit-id="'+escape(item.id)+'" data-reward-day="'+escape(item.step)+'" aria-label="Récupérer la récompense J'+escape(item.step)+' du '+escape(item.date)+'"'+(pending ? ' disabled aria-busy="true"' : '')+'>Récupérer</button>' : '<span>Conditions d’accès à vérifier</span>')+'</li>').join('')+'</ul></section>' : '';
+      (item.claimable ? '<button type="button" data-daily-pass-claim data-visit-id="'+escape(item.id)+'" data-reward-day="'+escape(item.step)+'" aria-label="Récupérer la récompense J'+escape(item.step)+' du '+escape(item.date)+'"'+(pending || bulk ? ' disabled aria-busy="true"' : '')+'>Récupérer</button>' : '<span>Conditions d’accès à vérifier</span>')+'</li>').join('')+'</ul></section>' : '';
+    const allButton = owner && individual ? '<div class="daily-pass-actions"><button type="button" class="daily-pass-claim-all" data-daily-pass-claim-all'+(pending || bulk || !claimableVisits(data).length ? ' disabled' : '')+(bulk ? ' aria-busy="true"' : '')+'>'+(bulk ? 'Récupération en cours…' : 'Tout récupérer')+'</button></div>' : '';
     root.hidden = false;
     if (view === 'progress') {
       root.innerHTML = '<section class="daily-pass daily-pass--visual daily-pass--progress" aria-label="Connexion Pass"><div class="pass-surface">'+progression+
@@ -211,6 +216,7 @@
       '<p class="daily-pass-intro">Une visite connectée valide ton jour. Récupère chaque récompense séparément en cliquant sur son losange lumineux.</p>'+
       progression+
       '<ol class="daily-pass-rewards" aria-label="Récompenses de chaque jour">'+rewardList+'</ol>'+
+      allButton+
       '<div class="pass-caption"><span class="daily-pass-legend"><span>✓ Reçu</span><span>◇ À venir</span><span>✧ Cliquer pour récupérer</span></span></div>'+
       (data?.donor_bonus?.enabled && data.donor_bonus.active && owner && !preparation ? '<p class="daily-pass-supporter">Bonus soutien actif · Les boosters de J9 et J10 sont doublés.</p>' : '')+
       (channels ? '<ul class="daily-pass-channels" aria-label="Récompenses par DCG">'+channels+'</ul>' : '')+
@@ -221,18 +227,18 @@
     syncVisibility();
   }
 
-  async function refresh(force = false, claim = false, visitId = null) {
+  async function refresh(force = false, claim = false, visitId = null, batchToken = null) {
     const session = identity();
     if (session.id !== owner) {
-      stopMotion(); playedAnimations.clear(); owner = session.id; ++generation; snapshot = null; pending = null; retryAt = 0; verifyAt = 0; tabSyncPending = false;
+      stopMotion(); playedAnimations.clear(); owner = session.id; ++generation; snapshot = null; pending = null; bulk = null; retryAt = 0; verifyAt = 0; tabSyncPending = false;
       render(null, '');
     }
-    if (!owner || document.visibilityState === 'hidden' || pending || !force && Date.now() < retryAt) return;
+    if (!owner || document.visibilityState === 'hidden' || pending || bulk && batchToken !== bulk || !force && Date.now() < retryAt) return;
     if (claim && snapshot?.claim_mode === 'per_visit' && !visitId) return;
     if (servicePending()) {snapshot = {status:'configuration_pending'}; retryAt = Date.now()+300000; render(snapshot, ''); return;}
     tabSyncPending = false;
     const request = {generation, id:owner}; pending = request;
-    for (const button of root?.querySelectorAll?.('[data-daily-pass-claim], [data-daily-pass-refresh]') || []) {button.disabled = true; button.setAttribute('aria-busy','true');}
+    for (const button of root?.querySelectorAll?.('[data-daily-pass-claim], [data-daily-pass-claim-all], [data-daily-pass-refresh]') || []) {button.disabled = true; button.setAttribute('aria-busy','true');}
     const current = () => request.generation === generation && identity().id === request.id;
     try {
       const client = session.client || await window.DEADELUSTV_AUTH.getClient();
@@ -278,22 +284,60 @@
         g.quantity+' booster'+(g.quantity > 1 ? 's' : '')+' de '+g.card_count+' cartes chez '+g.login).join(' · ');
       const alreadyClaimed = claim && !gains.length && (snapshot.claimed_visit ? snapshot.claimed_visit.claimed : snapshot.channels?.some(c => c.status === 'claimed'));
       render(snapshot, message || (alreadyClaimed ? 'Récompense déjà récupérée.' : ''));
-      confirmedAnimation(snapshot);
-      if (gains.length) {
+      if (!batchToken) confirmedAnimation(snapshot);
+      if (gains.length && !batchToken) {
         window.dispatchEvent(new CustomEvent('tcg:daily-pass-change', {detail:{gains,visit:snapshot.claimed_visit}}));
         if (gains.some(g => g.kind === 'dust')) window.dispatchEvent(new Event('tcg:dust-change'));
         if (claim) notifyOtherTabs();
       }
+      return snapshot;
     } catch {
       if (current()) {retryAt = Date.now()+30000; render(snapshot, 'Impossible de vérifier ta progression pour le moment. Une nouvelle tentative sera faite automatiquement.');}
     } finally {if (pending === request) {pending = null;
-      for (const button of root?.querySelectorAll?.('[data-daily-pass-claim], [data-daily-pass-refresh]') || []) {button.disabled = false; button.removeAttribute('aria-busy');}
+      for (const button of root?.querySelectorAll?.('[data-daily-pass-claim], [data-daily-pass-claim-all], [data-daily-pass-refresh]') || []) {
+        button.disabled = Boolean(bulk) || button.hasAttribute('data-daily-pass-claim-all') && !claimableVisits(snapshot).length;
+        if (!bulk) button.removeAttribute('aria-busy');
+      }
       // Un signal reçu pendant une ancienne lecture impose une nouvelle lecture
       // après sa fin, sans transformer cette synchronisation en demande de gain.
       if (tabSyncPending) void refresh(true);
     }}
   }
+  async function collectAll() {
+    if (!owner || bulk || pending || snapshot?.claim_mode !== 'per_visit') return;
+    const task = {id:owner,generation}; bulk = task;
+    const current = () => bulk === task && identity().id === task.id && generation === task.generation;
+    const gains = []; let count = 0, interrupted = false;
+    render(snapshot, 'Vérification des récompenses à récupérer…');
+    try {
+      const fresh = await refresh(true, false, null, task);
+      if (!current()) return;
+      if (!fresh) {interrupted = true; return;}
+      const visits = claimableVisits(fresh);
+      for (const visit of visits) {
+        if (!current()) return;
+        const result = await refresh(true, true, visit.id, task);
+        if (!current()) return;
+        if (!result) {interrupted = true; break;}
+        if (result.gains?.length) {gains.push(...result.gains); count++;}
+      }
+    } finally {
+      if (current()) {
+        snapshot = {...snapshot,gains:[]};
+        bulk = null;
+        render(snapshot, interrupted ? (count ? count+' récompense(s) récupérée(s). ' : '')+'Récupération interrompue ; les récompenses restantes peuvent être réessayées.' :
+          count ? count+' récompense'+(count > 1 ? 's' : '')+' récupérée'+(count > 1 ? 's' : '')+'.' : 'Aucune nouvelle récompense à récupérer.');
+        if (gains.length) {
+          window.dispatchEvent(new CustomEvent('tcg:daily-pass-change', {detail:{gains,bulk:true}}));
+          if (gains.some(g => g.kind === 'dust')) window.dispatchEvent(new Event('tcg:dust-change'));
+          notifyOtherTabs();
+        }
+        if (tabSyncPending) void refresh(true);
+      }
+    }
+  }
   const onClick = event => {
+    if (event.target.closest('[data-daily-pass-claim-all]')) {if (isSite()) void collectAll(); return;}
     const claimButton = event.target.closest('[data-daily-pass-claim]');
     if (claimButton) {if (isSite()) void refresh(true, true, claimButton.dataset.visitId || null); return;}
     if (event.target.closest('[data-daily-pass-refresh]')) void refresh(true);
