@@ -112,12 +112,13 @@
   }
   const rewardText = reward => reward.kind === 'dust' ? '+'+reward.amount+' Alkahests' : reward.booster_count+' booster'+(reward.booster_count > 1 ? 's' : '')+' de '+reward.card_count+' cartes';
   function confirmedAnimation(data) {
-    if (!root || !isSite() || !owner || !Number.isInteger(data?.step) || data.step < 1 || data.step > 10 || !data.gains?.length || data.status !== 'recorded') return;
-    const key = JSON.stringify([owner,data.date,data.cycle,data.step]);
+    const target = data?.claimed_visit || data;
+    if (!root || !isSite() || !owner || !Number.isInteger(target?.step) || target.step < 1 || target.step > 10 || target.cycle !== data.cycle || !data.gains?.length || data.status !== 'recorded') return;
+    const key = JSON.stringify([owner,target.date,target.cycle,target.step]);
     if (playedAnimations.has(key)) return;
     playedAnimations.add(key);
     if (reducedMotion()) return;
-    stopMotion(); motion = {step:data.step, key, stage:'charging'}; render(data);
+    stopMotion(); motion = {step:target.step, key, context:JSON.stringify([owner,data.date,data.cycle,data.step]), stage:'charging'}; render(data);
     motionTimers.push(window.setTimeout(() => {
       if (!root || !motion) return;
       motion.stage = 'settling'; render(snapshot);
@@ -150,17 +151,18 @@
     // Un numéro de présence n'est pas un reçu. Les coches utilisent uniquement
     // l'historique serveur ou la confirmation des gains du jour courant.
     const history = step && Array.isArray(data?.history) ? data.history : [];
+    const individual = data?.claim_mode === 'per_visit';
     const todayClaimed = step > 0 && ((data?.channels || []).some(c => c.status === 'claimed') || data?.gains?.length > 0);
     const todayReady = step > 0 && !todayClaimed && (data?.channels || []).some(c => ['eligible','verification_required'].includes(c.status));
     const states = rewards.map((reward, i) => {
       const day = i+1, receipt = history.find(item => item.step === day && day <= step);
-      const collected = Boolean(receipt?.claimed || day === step && todayClaimed);
-      const ready = day === step && todayReady;
+      const collected = Boolean(individual ? receipt?.claimed : receipt?.claimed || day === step && todayClaimed);
+      const ready = individual ? Boolean(receipt?.id && receipt.claimable) : day === step && todayReady;
       const visited = day <= step, pulse = day === motion?.step ? motion.stage : null;
       const detail = collected ? 'récompense reçue' : ready ? 'gain à vérifier' : visited ? 'présence enregistrée' : 'à venir';
-      return {day, reward:receipt?.reward || reward, collected, ready, visited, pulse, detail};
+      return {day, visitId:individual ? receipt?.id : null, reward:receipt?.reward || reward, collected, ready, visited, pulse, detail};
     });
-    const days = states.map(({day,reward,collected,ready,visited,pulse,detail}) => {
+    const days = states.map(({day,visitId,reward,collected,ready,visited,pulse,detail}) => {
       const texture = mineral(day), state = day === step ? 'current' : visited ? 'complete' : 'upcoming';
       const classes = ['day','daily-pass-day','daily-pass-day--'+state];
       if (visited) classes.push('is-on');
@@ -168,13 +170,13 @@
       else if (collected) classes.push('is-collected');
       else if (ready) classes.push('is-ready');
       if (pulse === 'settling') classes.push('is-settling');
-      return '<li class="'+classes.join(' ')+'" data-day="'+day+'"'+(day === step ? ' aria-current="step"' : '')+
+      return '<li class="'+classes.join(' ')+'" data-day="'+day+'"'+(visitId ? ' data-pass-visit="'+escape(visitId)+'"' : '')+(day === step ? ' aria-current="step"' : '')+
         ' aria-label="Jour '+day+' : '+escape(rewardText(reward))+' — '+detail+'"'+(texture ? ' style="--mineral:url('+texture+')"' : '')+
         '><span class="diamond" aria-hidden="true"></span><span class="day-number" aria-hidden="true">J'+day+'</span>'+sparkles(day)+
-        (ready ? '<button class="claim-hit" type="button" data-daily-pass-claim aria-label="Récupérer la récompense du jour '+day+'"'+(pending ? ' disabled aria-busy="true"' : '')+'></button>' : '')+'</li>';
+        (ready ? '<button class="claim-hit" type="button" data-daily-pass-claim'+(visitId ? ' data-visit-id="'+escape(visitId)+'"' : '')+' aria-label="Récupérer la récompense du jour '+day+'"'+(pending ? ' disabled aria-busy="true"' : '')+'></button>' : '')+'</li>';
     }).join('');
-    const rewardList = states.map(({day,reward,detail,ready}) => '<li aria-label="Jour '+day+' : '+escape(rewardText(reward))+' — '+detail+'" title="'+escape(rewardText(reward))+'">'+
-      (ready ? '<button class="daily-pass-reward-claim" type="button" data-daily-pass-claim data-reward-day="'+day+'" aria-label="Récupérer la récompense du jour '+day+'"'+(pending ? ' disabled aria-busy="true"' : '')+'>' : '')+
+    const rewardList = states.map(({day,visitId,reward,detail,ready}) => '<li aria-label="Jour '+day+' : '+escape(rewardText(reward))+' — '+detail+'" title="'+escape(rewardText(reward))+'">'+
+      (ready ? '<button class="daily-pass-reward-claim" type="button" data-daily-pass-claim'+(visitId ? ' data-visit-id="'+escape(visitId)+'"' : '')+' data-reward-day="'+day+'" aria-label="Récupérer la récompense du jour '+day+'"'+(pending ? ' disabled aria-busy="true"' : '')+'>' : '')+
       '<img src="'+escape(iconBase+(reward.kind === 'dust' ? 'dcg-alkahest-256.webp' : 'dcg-booster-256.webp'))+'" alt="" width="36" height="36" aria-hidden="true">'+
       '<strong aria-hidden="true">'+escape(reward.kind === 'dust' ? '+'+reward.amount : '×'+reward.booster_count)+'</strong>'+(ready ? '</button>' : '')+'</li>').join('');
     const channels = owner && !preparation ? (data?.channels || []).filter(c => !['not_following','not_participating','disabled'].includes(c.status)).map(c =>
@@ -188,11 +190,16 @@
       'Ta progression sera affichée après ta première présence.';
     const focusTarget = root.contains?.(document.activeElement) && document.activeElement?.closest?.('[data-daily-pass-claim], [data-daily-pass-refresh]');
     const focusedDay = focusTarget?.closest?.('[data-day]')?.dataset.day;
+    const focusedVisit = focusTarget?.dataset?.visitId;
     const trackFocused = root.contains?.(document.activeElement) && document.activeElement?.matches?.('.day-track');
     const restoreFocus = () => {
-      if (focusTarget || trackFocused) ((focusedDay ? root.querySelector('[data-day="'+focusedDay+'"] button') : null) || root.querySelector('.day-track'))?.focus({preventScroll:true});
+      if (focusTarget || trackFocused) ((focusedVisit ? root.querySelector('[data-pass-visit="'+focusedVisit+'"] button') : null) || (focusedDay ? root.querySelector('[data-day="'+focusedDay+'"] button') : null) || root.querySelector('.day-track'))?.focus({preventScroll:true});
     };
     const progression = '<div class="daily-pass-scroll" tabindex="0" role="region" aria-label="Les dix jours du Pass"><ol class="day-track daily-pass-days" tabindex="-1" aria-label="Progression sur dix jours" style="--lit-width:'+Math.max(0,(step-1)*10)+'%;--lit-opacity:'+(step > 1 ? 1 : 0)+'">'+days+'</ol></div>';
+    const older = owner && individual && Array.isArray(data.pending_rewards) ? data.pending_rewards : [];
+    const backlog = older.length ? '<section class="daily-pass-pending" aria-label="Récompenses des cycles précédents"><h3>Récompenses à récupérer</h3><p>Les jours validés des cycles précédents restent disponibles. Chaque clic récupère une seule récompense.</p><ul>'+older.map(item=>
+      '<li data-pass-visit="'+escape(item.id)+'"><span>Cycle '+escape(item.cycle)+' · J'+escape(item.step)+' · '+escape(item.date)+'<strong>'+escape(rewardText(item.reward))+'</strong></span>'+
+      (item.claimable ? '<button type="button" data-daily-pass-claim data-visit-id="'+escape(item.id)+'" data-reward-day="'+escape(item.step)+'" aria-label="Récupérer la récompense J'+escape(item.step)+' du '+escape(item.date)+'"'+(pending ? ' disabled aria-busy="true"' : '')+'>Récupérer</button>' : '<span>Conditions d’accès à vérifier</span>')+'</li>').join('')+'</ul></section>' : '';
     root.hidden = false;
     if (view === 'progress') {
       root.innerHTML = '<section class="daily-pass daily-pass--visual daily-pass--progress" aria-label="Connexion Pass"><div class="pass-surface">'+progression+
@@ -201,25 +208,27 @@
     }
     root.innerHTML = '<section class="daily-pass daily-pass--visual pass-frame" aria-label="Pass de connexion quotidienne"><div class="pass-surface">'+
       '<header class="daily-pass-heading"><div><h2 class="pass-heading">CONNEXION PASS</h2><p class="pass-subtitle">Votre rendez-vous quotidien</p></div><span class="daily-pass-state">'+escape(title)+'</span></header>'+
-      '<p class="daily-pass-intro">Une visite connectée valide ton jour. Clique sur le losange lumineux pour récupérer ta récompense.</p>'+
+      '<p class="daily-pass-intro">Une visite connectée valide ton jour. Récupère chaque récompense séparément en cliquant sur son losange lumineux.</p>'+
       progression+
       '<ol class="daily-pass-rewards" aria-label="Récompenses de chaque jour">'+rewardList+'</ol>'+
       '<div class="pass-caption"><span class="daily-pass-legend"><span>✓ Reçu</span><span>◇ À venir</span><span>✧ Cliquer pour récupérer</span></span></div>'+
       (data?.donor_bonus?.enabled && data.donor_bonus.active && owner && !preparation ? '<p class="daily-pass-supporter">Bonus soutien actif · Les boosters de J9 et J10 sont doublés.</p>' : '')+
       (channels ? '<ul class="daily-pass-channels" aria-label="Récompenses par DCG">'+channels+'</ul>' : '')+
+      backlog+
       '<a class="daily-pass-help" href="#tcg/regles">FAQ du Pass →</a>'+
       '<p class="daily-pass-feedback" role="status" aria-live="polite">'+escape(message)+'</p></div></section>';
     restoreFocus();
     syncVisibility();
   }
 
-  async function refresh(force = false, claim = false) {
+  async function refresh(force = false, claim = false, visitId = null) {
     const session = identity();
     if (session.id !== owner) {
       stopMotion(); playedAnimations.clear(); owner = session.id; ++generation; snapshot = null; pending = null; retryAt = 0; verifyAt = 0; tabSyncPending = false;
       render(null, '');
     }
     if (!owner || document.visibilityState === 'hidden' || pending || !force && Date.now() < retryAt) return;
+    if (claim && snapshot?.claim_mode === 'per_visit' && !visitId) return;
     if (servicePending()) {snapshot = {status:'configuration_pending'}; retryAt = Date.now()+300000; render(snapshot, ''); return;}
     tabSyncPending = false;
     const request = {generation, id:owner}; pending = request;
@@ -229,7 +238,7 @@
       const client = session.client || await window.DEADELUSTV_AUTH.getClient();
       if (!current()) return;
       // L'Edge Function du site vérifie origine et JWT. Le jeu n'appelle jamais une attribution.
-      const read = () => isSite() ? client.functions.invoke('tcg-daily-pass', {body:claim ? {action:'claim'} : {}}) : client.rpc('tcg_daily_pass_status');
+      const read = () => isSite() ? client.functions.invoke('tcg-daily-pass', {body:claim ? {action:'claim',...(visitId ? {visit_id:visitId} : {})} : {}}) : client.rpc('tcg_daily_pass_status');
       let result = await read();
       if (!current()) return;
       if (isSite() && !result.error && result.data?.channels?.some(c => c.status === 'verification_required') && Date.now() >= verifyAt) {
@@ -253,7 +262,7 @@
       }
       if (!result.data?.status) throw Error('Réponse incomplète');
       snapshot = result.data;
-      if (motion && (motion.key !== JSON.stringify([owner,snapshot.date,snapshot.cycle,snapshot.step]) || ['disabled','configuration_pending'].includes(snapshot.status))) stopMotion();
+      if (motion && (motion.context !== JSON.stringify([owner,snapshot.date,snapshot.cycle,snapshot.step]) || ['disabled','configuration_pending'].includes(snapshot.status))) stopMotion();
       if (isSite() && ['disabled','configuration_pending'].includes(snapshot.status)) {
         const status = await client.rpc('tcg_daily_pass_status');
         if (!current()) return;
@@ -267,11 +276,11 @@
       }
       const message = [...grouped.values()].map(g => g.kind === 'dust' ? '+'+g.amount+' Alkahests chez '+g.login :
         g.quantity+' booster'+(g.quantity > 1 ? 's' : '')+' de '+g.card_count+' cartes chez '+g.login).join(' · ');
-      const alreadyClaimed = claim && !gains.length && snapshot.channels?.some(c => c.status === 'claimed');
-      render(snapshot, message || (alreadyClaimed ? 'Récompense déjà récupérée aujourd’hui.' : ''));
+      const alreadyClaimed = claim && !gains.length && (snapshot.claimed_visit ? snapshot.claimed_visit.claimed : snapshot.channels?.some(c => c.status === 'claimed'));
+      render(snapshot, message || (alreadyClaimed ? 'Récompense déjà récupérée.' : ''));
       confirmedAnimation(snapshot);
       if (gains.length) {
-        window.dispatchEvent(new CustomEvent('tcg:daily-pass-change', {detail:{gains}}));
+        window.dispatchEvent(new CustomEvent('tcg:daily-pass-change', {detail:{gains,visit:snapshot.claimed_visit}}));
         if (gains.some(g => g.kind === 'dust')) window.dispatchEvent(new Event('tcg:dust-change'));
         if (claim) notifyOtherTabs();
       }
@@ -285,7 +294,8 @@
     }}
   }
   const onClick = event => {
-    if (event.target.closest('[data-daily-pass-claim]')) {if (isSite()) void refresh(true, true); return;}
+    const claimButton = event.target.closest('[data-daily-pass-claim]');
+    if (claimButton) {if (isSite()) void refresh(true, true, claimButton.dataset.visitId || null); return;}
     if (event.target.closest('[data-daily-pass-refresh]')) void refresh(true);
   };
   function mount(element, options = {}) {
