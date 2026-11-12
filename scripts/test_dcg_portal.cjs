@@ -203,7 +203,7 @@ test('only a profile Pass click followed by confirmed gains displays a popup, cl
  const s=setup({hash:'#tcg/mon-compte',user:{id:'alice'}});await tick();const shown=[];let cancelled=0;
  s.context.DCGProfileRewards={dailyItems:gains=>gains,show:(host,gains,options)=>{shown.push({host,gains,options});return{cancel(){cancelled++;}};}};
  const anchor=new Node();s.passRoot.nodes={'[data-day="7"]':anchor};
- const claim=new Node();claim.selector='[data-daily-pass-refresh]';claim.dataset.rewardDay='7';
+ const claim=new Node();claim.selector='[data-daily-pass-claim]';claim.dataset.rewardDay='7';
  s.emitWindow('tcg:daily-pass-change',{gains:[{kind:'dust',amount:35}]});assert.equal(shown.length,0);
  s.root.emit('click',claim);s.emitWindow('tcg:daily-pass-change',{gains:[{kind:'dust',amount:35}]});assert.equal(shown.length,1);assert.equal(shown[0].options.anchor,anchor);assert.equal(shown[0].options.valid(),true);
  await s.go('#tcg/mon-compte/cartes');assert.equal(cancelled,1);assert.equal(shown[0].options.valid(),false);s.emitWindow('tcg:daily-pass-change',{gains:[{kind:'dust',amount:35}]});assert.equal(shown.length,1);

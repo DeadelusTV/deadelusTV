@@ -7,6 +7,20 @@
   const iconBase = scriptUrl ? new URL(scriptUrl.includes('/assets/daily-pass.js') ? '../modules/dcg/assets/xp/' : 'assets/xp/', scriptUrl).href : 'assets/xp/';
   let root = null, view = 'details', feedback = '', owner = null, generation = 0;
   let pending = null, snapshot = null, retryAt = 0, verifyAt = 0;
+  const tabSyncKey = 'dcg:daily-pass-updated';
+  let tabSyncPending = false;
+  function notifyOtherTabs() {
+    // Simple invalidation : aucun solde ni gain reçu d'un onglet ne fait autorité.
+    try { window.localStorage.setItem(tabSyncKey, JSON.stringify({owner, nonce:Math.random().toString(36).slice(2)})); }
+    catch { /* Stockage bloqué : le retour sur l'onglet relira le serveur. */ }
+  }
+  function syncOtherTab(event) {
+    if (event.key !== tabSyncKey || !isSite() || !owner || identity().id !== owner) return;
+    try { if (JSON.parse(event.newValue)?.owner !== owner) return; }
+    catch { return; }
+    tabSyncPending = true;
+    void refresh(true);
+  }
   const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function mineralTexture(seed) {
     const size = 160;
@@ -202,11 +216,12 @@
   async function refresh(force = false, claim = false) {
     const session = identity();
     if (session.id !== owner) {
-      stopMotion(); playedAnimations.clear(); owner = session.id; ++generation; snapshot = null; pending = null; retryAt = 0; verifyAt = 0;
+      stopMotion(); playedAnimations.clear(); owner = session.id; ++generation; snapshot = null; pending = null; retryAt = 0; verifyAt = 0; tabSyncPending = false;
       render(null, '');
     }
     if (!owner || document.visibilityState === 'hidden' || pending || !force && Date.now() < retryAt) return;
     if (servicePending()) {snapshot = {status:'configuration_pending'}; retryAt = Date.now()+300000; render(snapshot, ''); return;}
+    tabSyncPending = false;
     const request = {generation, id:owner}; pending = request;
     for (const button of root?.querySelectorAll?.('[data-daily-pass-claim], [data-daily-pass-refresh]') || []) {button.disabled = true; button.setAttribute('aria-busy','true');}
     const current = () => request.generation === generation && identity().id === request.id;
@@ -252,16 +267,21 @@
       }
       const message = [...grouped.values()].map(g => g.kind === 'dust' ? '+'+g.amount+' Alkahests chez '+g.login :
         g.quantity+' booster'+(g.quantity > 1 ? 's' : '')+' de '+g.card_count+' cartes chez '+g.login).join(' · ');
-      render(snapshot, message);
+      const alreadyClaimed = claim && !gains.length && snapshot.channels?.some(c => c.status === 'claimed');
+      render(snapshot, message || (alreadyClaimed ? 'Récompense déjà récupérée aujourd’hui.' : ''));
       confirmedAnimation(snapshot);
       if (gains.length) {
         window.dispatchEvent(new CustomEvent('tcg:daily-pass-change', {detail:{gains}}));
         if (gains.some(g => g.kind === 'dust')) window.dispatchEvent(new Event('tcg:dust-change'));
+        if (claim) notifyOtherTabs();
       }
     } catch {
       if (current()) {retryAt = Date.now()+30000; render(snapshot, 'Impossible de vérifier ta progression pour le moment. Une nouvelle tentative sera faite automatiquement.');}
     } finally {if (pending === request) {pending = null;
       for (const button of root?.querySelectorAll?.('[data-daily-pass-claim], [data-daily-pass-refresh]') || []) {button.disabled = false; button.removeAttribute('aria-busy');}
+      // Un signal reçu pendant une ancienne lecture impose une nouvelle lecture
+      // après sa fin, sans transformer cette synchronisation en demande de gain.
+      if (tabSyncPending) void refresh(true);
     }}
   }
   const onClick = event => {
@@ -285,8 +305,9 @@
   window.addEventListener('tcg:auth-change', () => {void refresh();});
   window.addEventListener('deadelustv:auth-change', () => {void refresh();});
   window.addEventListener('tcg:viewer-change', () => {if (snapshot?.status === 'not_registered') void refresh(true);});
-  window.addEventListener('focus', () => {void refresh();});
-  document.addEventListener('visibilitychange', () => {syncVisibility(); if (document.visibilityState !== 'hidden') void refresh();});
+  window.addEventListener('storage', syncOtherTab);
+  window.addEventListener('focus', () => {void refresh(true);});
+  document.addEventListener('visibilitychange', () => {syncVisibility(); if (document.visibilityState !== 'hidden') void refresh(true);});
   window.setInterval(() => {void refresh();}, 60000);
   void refresh();
 })();
