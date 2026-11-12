@@ -218,7 +218,8 @@
       '<ol class="daily-pass-rewards" aria-label="Récompenses de chaque jour">'+rewardList+'</ol>'+
       allButton+
       '<div class="pass-caption"><span class="daily-pass-legend"><span>✓ Reçu</span><span>◇ À venir</span><span>✧ Cliquer pour récupérer</span></span></div>'+
-      (data?.donor_bonus?.enabled && data.donor_bonus.active && owner && !preparation ? '<p class="daily-pass-supporter">Bonus soutien actif · Les boosters de J9 et J10 sont doublés.</p>' : '')+
+      ((data?.supporter_bonus || data?.donor_bonus)?.enabled && (data.supporter_bonus || data.donor_bonus).active && owner && !preparation ? '<p class="daily-pass-supporter">Bonus soutien actif · Les boosters de J9 et J10 sont doublés.</p>' : '')+
+      (data?.supporter_bonus?.subscriber_enabled && !data.supporter_bonus.active && owner && !preparation ? '<p class="daily-pass-supporter">Sub DeadelusTV : boosters J9 et J10 doublés après vérification à la récupération.</p>' : '')+
       (channels ? '<ul class="daily-pass-channels" aria-label="Récompenses par DCG">'+channels+'</ul>' : '')+
       backlog+
       '<a class="daily-pass-help" href="#tcg/regles">FAQ du Pass →</a>'+
@@ -283,7 +284,7 @@
       const message = [...grouped.values()].map(g => g.kind === 'dust' ? '+'+g.amount+' Alkahests chez '+g.login :
         g.quantity+' booster'+(g.quantity > 1 ? 's' : '')+' de '+g.card_count+' cartes chez '+g.login).join(' · ');
       const alreadyClaimed = claim && !gains.length && (snapshot.claimed_visit ? snapshot.claimed_visit.claimed : snapshot.channels?.some(c => c.status === 'claimed'));
-      render(snapshot, message || (alreadyClaimed ? 'Récompense déjà récupérée.' : ''));
+      render(snapshot, message || (snapshot.status === 'supporter_verification_required' ? 'Impossible de vérifier ton sub DeadelusTV pour le moment. Ta récompense reste à récupérer ; réessaie dans quelques instants.' : '') || (alreadyClaimed ? 'Récompense déjà récupérée.' : ''));
       if (!batchToken) confirmedAnimation(snapshot);
       if (gains.length && !batchToken) {
         window.dispatchEvent(new CustomEvent('tcg:daily-pass-change', {detail:{gains,visit:snapshot.claimed_visit}}));
@@ -318,7 +319,7 @@
         if (!current()) return;
         const result = await refresh(true, true, visit.id, task);
         if (!current()) return;
-        if (!result) {interrupted = true; break;}
+        if (!result || result.status === 'supporter_verification_required') {interrupted = true; break;}
         if (result.gains?.length) {gains.push(...result.gains); count++;}
       }
     } finally {
