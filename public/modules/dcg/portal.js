@@ -56,7 +56,8 @@
   const passFAQ = () => '<section class="portal-pass-faq" aria-labelledby="dcg-pass-faq-title"><h2 id="dcg-pass-faq-title">FAQ du Pass quotidien</h2>'+[
     ['Quand commence mon cycle ?', 'J1 commence à ta première connexion sur DeadelusTV, quel que soit le jour de la semaine. Ouvrir uniquement un DCG ne compte pas comme une visite du site.'],
     ['Que se passe-t-il après les dix jours ?', 'Après J10, un nouveau cycle commence à J1.'],
-    ['Et si je manque un jour ?', 'Un jour manqué fait reprendre à J1.'],
+    ['Dois-je récupérer ma récompense le jour même ?', 'Non. Chaque connexion valide un jour et conserve sa récompense. Clique sur chaque losange lumineux pour récupérer uniquement la récompense choisie ; les autres restent en attente. Dans Mon compte, Tout récupérer réclame explicitement toutes les récompenses disponibles, y compris celles des cycles précédents.'],
+    ['Et si je manque un jour ?', 'Un jour manqué fait reprendre la progression à J1. Les récompenses des jours où tu t’es connecté restent récupérables ; un jour sans connexion ne crée aucune récompense.'],
     ['À quelle heure change la journée ?', 'Le changement de journée a lieu à minuit, heure de Paris, avec les passages à l’heure d’été et à l’heure d’hiver.'],
     ['Dans quels DCG puis-je recevoir les récompenses ?', 'Le Pass suit ton compte commun. Chaque DCG auquel tu participes reçoit sa propre récompense, selon ses conditions d’accès ; les cartes et les soldes d’Alkahests restent séparés.']
   ].map(([question,answer])=>'<details><summary>'+question+'</summary><p>'+answer+'</p></details>').join('')+'</section>';
@@ -181,10 +182,11 @@
   root.addEventListener('keydown',event=>{if(event.key==='Escape'&&root.querySelector('[data-portal-search-dialog]')?.open){event.preventDefault();event.stopPropagation();closeSearch();}});
   root.addEventListener('close',event=>{if(!event.target.matches('[data-portal-search-dialog]'))return;const saved=searchStates.get(event.target);searchStates.delete(event.target);if(saved?.restore&&currentPage==='accueil'&&saved.trigger?.isConnected)saved.trigger.focus();},true);
   root.addEventListener('click',event=>{
+    if(event.target.closest('[data-daily-pass-claim-all]')&&accountUser&&currentPage==='mon-compte'&&accountSection==='accueil')passGainRequest={user:accountUser.id,bulk:true,generation,at:Date.now()};
     const passClaim=event.target.closest('[data-daily-pass-claim]');
     if(passClaim&&accountUser&&currentPage==='mon-compte'&&accountSection==='accueil'){
       const day=Number(passClaim.dataset.rewardDay||passClaim.closest('[data-day]')?.dataset.day);
-      if(Number.isInteger(day)&&day>=1&&day<=10)passGainRequest={user:accountUser.id,day,generation,at:Date.now()};
+      if(Number.isInteger(day)&&day>=1&&day<=10)passGainRequest={user:accountUser.id,day,visit:passClaim.dataset.visitId,generation,at:Date.now()};
     }
     const searchTrigger=event.target.closest('[data-portal-search-open]');if(searchTrigger)openSearch(searchTrigger);
     if(event.target.closest('[data-portal-search-close]'))closeSearch();
@@ -205,13 +207,15 @@
     if(currentPage==='accueil'&&accountUser&&event.detail?.gains?.length){
       const id=accountUser.id,host=root.querySelector('#daily-pass-root');
       void stockWidget?.refresh();stopHomeDaily();
-      const animation=host&&window.DCGXPRewards?.start(host,{scope:'daily',anchor:host.querySelector('[aria-current="step"]'),resolveTargets:(receipt,kind)=>stockWidget?.targets(receipt,kind)||[],valid:()=>accountUser?.id===id&&currentPage==='accueil'&&host.isConnected});
+      const anchor=event.detail?.visit?.id?host?.querySelector('[data-pass-visit="'+event.detail.visit.id+'"]'):host?.querySelector('[aria-current="step"]');
+      const animation=host&&window.DCGXPRewards?.start(host,{scope:'daily',anchor,resolveTargets:(receipt,kind)=>stockWidget?.targets(receipt,kind)||[],valid:()=>accountUser?.id===id&&currentPage==='accueil'&&host.isConnected});
       if(animation){stopHomeDaily=()=>animation.cancel();void animation.complete({gains:event.detail.gains}).catch(()=>{}).finally(()=>animation.cancel());}
       return;
     }
     const request=passGainRequest;passGainRequest=null;
-    if(!request||request.generation!==generation||request.user!==accountUser?.id||Date.now()-request.at>15000||currentPage!=='mon-compte'||accountSection!=='accueil')return;
-    const host=root.querySelector('#daily-pass-root'),anchor=host?.querySelector('[data-day="'+request.day+'"]');
+    if(!request||request.generation!==generation||request.user!==accountUser?.id||!request.bulk&&Date.now()-request.at>15000||currentPage!=='mon-compte'||accountSection!=='accueil')return;
+    if(Boolean(request.bulk)!==Boolean(event.detail?.bulk))return;
+    const host=root.querySelector('#daily-pass-root'),anchor=host?.querySelector(request.bulk?'[data-daily-pass-claim-all]':request.visit?'[data-pass-visit="'+request.visit+'"]':'[data-day="'+request.day+'"]');
     if(!anchor||!window.DCGProfileRewards)return;
     stopPassGain();
     const popup=window.DCGProfileRewards.show(host,window.DCGProfileRewards.dailyItems(event.detail?.gains),{anchor,valid:()=>request.generation===generation&&request.user===accountUser?.id});

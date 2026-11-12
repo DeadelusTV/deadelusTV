@@ -419,3 +419,16 @@
 .daily-pass--visual .daily-pass-reward-claim:not(:disabled) {cursor:pointer;}
 .daily-pass--visual .day.is-ready .claim-hit:focus-visible,
 .daily-pass--visual .daily-pass-reward-claim:focus-visible {outline:2px solid #f4d396;outline-offset:4px;}
+/* Récompenses conservées après un changement de cycle. */
+.daily-pass .daily-pass-pending{margin-top:1.5rem;border-top:1px solid #8d713b;padding-top:1rem}
+.daily-pass .daily-pass-pending h3{color:#e9c975;font-size:1.1rem}
+.daily-pass .daily-pass-pending ul{list-style:none;margin:0;padding:0;display:grid;gap:.65rem}
+.daily-pass .daily-pass-pending li{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.75rem;border:1px solid #65502d;border-radius:.4rem}
+.daily-pass .daily-pass-pending strong{display:block;color:#ead49d}
+.daily-pass .daily-pass-pending button{color:#f7e3a8;background:#211b10;border:1px solid #b38a3f;border-radius:.35rem;padding:.5rem .8rem;cursor:pointer}
+.daily-pass .daily-pass-pending button:disabled{opacity:.6;cursor:wait}
+.daily-pass .daily-pass-pending button:focus-visible{outline:2px solid #f7e3a8;outline-offset:3px}
+.daily-pass .daily-pass-actions{display:flex;justify-content:flex-end;margin:1rem 0}
+.daily-pass .daily-pass-claim-all{color:#1b150b;background:#e4c36e;border:1px solid #f5df9d;border-radius:.4rem;padding:.65rem 1rem;font-weight:700;cursor:pointer}
+.daily-pass .daily-pass-claim-all:disabled{opacity:.5;cursor:default}
+.daily-pass .daily-pass-claim-all:focus-visible{outline:2px solid #f7e3a8;outline-offset:4px}

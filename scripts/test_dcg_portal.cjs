@@ -208,6 +208,22 @@ test('only a profile Pass click followed by confirmed gains displays a popup, cl
  s.root.emit('click',claim);s.emitWindow('tcg:daily-pass-change',{gains:[{kind:'dust',amount:35}]});assert.equal(shown.length,1);assert.equal(shown[0].options.anchor,anchor);assert.equal(shown[0].options.valid(),true);
  await s.go('#tcg/mon-compte/cartes');assert.equal(cancelled,1);assert.equal(shown[0].options.valid(),false);s.emitWindow('tcg:daily-pass-change',{gains:[{kind:'dust',amount:35}]});assert.equal(shown.length,1);
 });
+test('a reward from another cycle anchors its confirmation to its unique visit rather than todays same day number',async()=>{
+ const s=setup({hash:'#tcg/mon-compte',user:{id:'alice'}});await tick();const shown=[];
+ s.context.DCGProfileRewards={dailyItems:gains=>gains,show:(host,gains,options)=>{shown.push(options);return{cancel(){}};}};
+ const today=new Node(),old=new Node(),id='00000000-0000-4000-8000-000000000001';
+ s.passRoot.nodes={'[data-day="1"]':today,['[data-pass-visit="'+id+'"]']:old};
+ const claim=new Node();claim.selector='[data-daily-pass-claim]';claim.dataset={rewardDay:'1',visitId:id};
+ s.root.emit('click',claim);s.emitWindow('tcg:daily-pass-change',{gains:[{kind:'dust',amount:5}],visit:{id,cycle:1,step:1}});
+ assert.equal(shown.length,1);assert.equal(shown[0].anchor,old);
+});
+test('an explicit Tout récupérer profile click displays one summary at its button',async()=>{
+ const s=setup({hash:'#tcg/mon-compte',user:{id:'alice'}});await tick();const shown=[];
+ s.context.DCGProfileRewards={dailyItems:gains=>gains,show:(host,gains,options)=>{shown.push({gains,options});return{cancel(){}};}};
+ const all=new Node();all.selector='[data-daily-pass-claim-all]';s.passRoot.nodes={'[data-daily-pass-claim-all]':all};
+ s.root.emit('click',all);s.emitWindow('tcg:daily-pass-change',{bulk:true,gains:[{kind:'dust',amount:5},{kind:'dust',amount:10}]});
+ assert.equal(shown.length,1);assert.equal(shown[0].options.anchor,all);assert.equal(shown[0].gains.length,2);
+});
 
 
 test('joined DCG tiles show the local level in a passive medal instead of the arrow',async()=>{
