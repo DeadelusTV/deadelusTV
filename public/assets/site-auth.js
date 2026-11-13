@@ -67,7 +67,41 @@
     menu.hidden = !open;
     toggle.setAttribute('aria-expanded', String(open));
   }
+
+  function paintAccountAvatar(button, profile, name, className) {
+    const fallback = document.createElement('span');
+    fallback.className = className + '-fallback';
+    fallback.textContent = Array.from(name)[0]?.toLocaleUpperCase('fr-FR') || '?';
+    fallback.setAttribute('aria-hidden', 'true');
+    button.replaceChildren(fallback);
+    const meta = profile?.user_metadata || {};
+    const source = [meta.avatar_url, meta.picture, meta.profile_image_url].find(value => {
+      try { return typeof value === 'string' && new URL(value).protocol === 'https:'; } catch { return false; }
+    });
+    if (source) {
+      const image = document.createElement('img');
+      image.className = className;
+      image.alt = '';
+      image.width = 38; image.height = 38;
+      image.referrerPolicy = 'no-referrer';
+      image.hidden = true;
+      image.addEventListener('load', () => { image.hidden = false; fallback.hidden = true; });
+      image.addEventListener('error', () => { image.hidden = true; fallback.hidden = false; });
+      image.src = source;
+      button.append(image);
+    }
+    button.title = 'Mon compte · ' + name;
+    button.setAttribute('aria-label', 'Ouvrir le menu de mon compte · ' + name);
+  }
+
+  const anonymousToggle = Array.from(toggle.childNodes).map(node => node.cloneNode(true));
+  function resetAccountAvatar() {
+    toggle.replaceChildren(...anonymousToggle.map(node => node.cloneNode(true)));
+    toggle.classList.remove('has-account-avatar');
+    toggle.setAttribute('aria-label', 'Mon compte');
+  }
   function setAnonymous() {
+    resetAccountAvatar();
     status.textContent = 'Non connecté';
     signin.hidden = false;
     signout.hidden = true;
@@ -168,7 +202,8 @@
       status.textContent = username ? 'Connecté · ' + username : 'Compte Twitch connecté';
       signin.hidden = true;
       signout.hidden = false;
-      toggle.title = 'Compte · connecté';
+      paintAccountAvatar(toggle, user, username || 'Mon compte', 'site-account-avatar');
+      toggle.classList.add('has-account-avatar');
       newsLink.hidden = true;
       journalLink.hidden = true;
       crewLink.hidden = true;
