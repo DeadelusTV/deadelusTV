@@ -90,6 +90,7 @@
       image.src = source;
       button.append(image);
     }
+    window.TCGSupport?.watchAvatar(button);
     button.title = 'Mon compte · ' + name;
     button.setAttribute('aria-label', 'Ouvrir le menu de mon compte · ' + name);
   }
@@ -333,5 +334,6 @@
   if (authQuery.get('crew_auth') !== '1' && (returning || authQuery.has('code') || savedSession)) refresh();
   window.DEADELUSTV_AUTH = Object.freeze({ get userId() { return lastIdentity; }, getClient, refresh, signIn, signOut, getCrewAccess, canManageNews, canManageJournal });
 })();
+
 
 
