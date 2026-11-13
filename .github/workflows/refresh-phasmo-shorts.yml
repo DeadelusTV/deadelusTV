@@ -10,7 +10,8 @@ on:
       - scripts/update-phasmo-shorts.py
       - scripts/test_phasmo_shorts.py
   schedule:
-    - cron: '13 1,7,13,19 * * *'
+    - cron: '10 0 * * *'
+      timezone: 'Europe/Paris'
   workflow_dispatch:
 
 permissions:
