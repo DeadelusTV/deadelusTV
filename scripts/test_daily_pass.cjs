@@ -3,18 +3,19 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const read=p=>fs.readFileSync(path.join(__dirname,'..',p),'utf8');
 const authSource=read('public/assets/site-auth.js'),passSource=read('public/assets/daily-pass.js');
+const {accountElement}=require('./helpers/account-dom.cjs');
 const tick=async()=>{for(let i=0;i<8;i++)await new Promise(r=>setImmediate(r));};
 function page({stored=false,search='',blocked=false,uid='alice',handler,getUser,serviceReady=true}={}){
  const nodes=new Map(),events=[],listeners={},timers=[],calls=[];let created=0,owner=uid,authCallback,now=Date.now(),fail=false;
- const element=id=>{if(!nodes.has(id))nodes.set(id,{hidden:false,innerHTML:'',textContent:'',setAttribute(){},addEventListener(){},removeEventListener(){},contains(){return false;},querySelector(){return null;},replaceChildren(){this.innerHTML='';}});return nodes.get(id);};
+ const element=id=>{if(!nodes.has(id))nodes.set(id,accountElement());return nodes.get(id);};
  const user=()=>owner?{id:owner,user_metadata:{preferred_username:owner}}:null;
  const client={auth:{onAuthStateChange(fn){authCallback=fn;},getUser:async()=>{if(fail)throw Error('private diagnostic');return getUser?getUser():{data:{user:user()}};},getSession:async()=>({data:{session:owner?{user:user(),access_token:'scoped-session'}:null}}),signOut:async()=>{owner=null;authCallback?.('SIGNED_OUT',null);return{};}},
   from:()=>({select(){return this;},eq(){return this;},maybeSingle:async()=>({data:{enabled:false}})}),
   rpc:async()=>({data:{status:'disabled'}}),functions:{invoke:async(...args)=>{calls.push(args);return handler?handler(...args):{data:{status:'recorded',step:1,gains:[]}};}}};
  const context={location:{search,hash:'#accueil'},DEADELUSTV_DCG_CONFIG:{dailyPassServiceReady:serviceReady},supabase:{createClient(){created++;return client;}},
-  document:{visibilityState:'visible',getElementById:id=>id==='daily-pass-root'?null:element(id),querySelector(){return null;},addEventListener(){}},
+  document:{createElement:()=>accountElement(),visibilityState:'visible',getElementById:id=>id==='daily-pass-root'?null:element(id),querySelector(){return null;},addEventListener(){}},
   localStorage:{getItem(){if(blocked)throw Error('blocked');return stored?'stored-session':null;}},sessionStorage:{getItem(){return null;}},
-  URLSearchParams,Date:class extends Date{static now(){return now;}},Event:class{constructor(type){this.type=type;}},CustomEvent:class{constructor(type,options){this.type=type;this.detail=options?.detail;}},
+  URL,URLSearchParams,Date:class extends Date{static now(){return now;}},Event:class{constructor(type){this.type=type;}},CustomEvent:class{constructor(type,options){this.type=type;this.detail=options?.detail;}},
   addEventListener(type,fn){(listeners[type]??=[]).push(fn);},dispatchEvent(event){events.push(event);for(const fn of listeners[event.type]||[])fn(event);},
   setTimeout,clearTimeout,setInterval(fn){timers.push(fn);return timers.length;},AbortSignal,
   fetch:async()=>({ok:true,json:async()=>({role:null})})};

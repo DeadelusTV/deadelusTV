@@ -1,10 +1,11 @@
 'use strict';
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const {accountElement}=require('./helpers/account-dom.cjs');
 const source=fs.readFileSync('public/assets/site-auth.js','utf8');
 async function scenario(options){
  const nodes=new Map(),seen=[];
  const node=id=>{
-  if(!nodes.has(id))nodes.set(id,{hidden:true,textContent:'',setAttribute(){},addEventListener(){},contains(){return false;}});
+  if(!nodes.has(id))nodes.set(id,accountElement({hidden:true}));
   return nodes.get(id);
  };
  const user={id:'test-user',user_metadata:options.metadata||{}};
@@ -18,7 +19,7 @@ async function scenario(options){
   }
  };
  const window={location:{search:'',hash:'#accueil',origin:'https://www.deadelustv.com',pathname:'/'},supabase:{createClient:()=>client},dispatchEvent(){}};
- vm.runInNewContext(source,{window,document:{getElementById:node,querySelector:()=>null,addEventListener(){}},URLSearchParams,AbortSignal,Date,fetch:async()=>new Response(JSON.stringify({role:options.crew||null})),sessionStorage:{getItem:()=>null,setItem(){},removeItem(){}},setTimeout,CustomEvent:class{}});
+ vm.runInNewContext(source,{window,document:{createElement:()=>accountElement(),getElementById:node,querySelector:()=>null,addEventListener(){}},URL,URLSearchParams,AbortSignal,Date,fetch:async()=>new Response(JSON.stringify({role:options.crew||null})),sessionStorage:{getItem:()=>null,setItem(){},removeItem(){}},setTimeout,CustomEvent:class{}});
  await window.DEADELUSTV_AUTH.refresh();
  assert.equal(node('site-account-journal-link').hidden,!options.allowed);
  if(!options.anonymous){assert.ok(seen.includes('phasmo_journal_admins'));assert.ok(seen.includes('phasmo_journal_editors'));}
