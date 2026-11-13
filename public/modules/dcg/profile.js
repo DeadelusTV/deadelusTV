@@ -16,7 +16,7 @@
   const gameUrl=path=>new URL('#/'+path,source().gameBase).href;
   const valid=(run,owner)=>host?.isConnected&&generation===run&&state?.owner===owner;
   const blank=copy=>'<p class="portal-empty" role="status">'+copy+'</p>';
-  const cardView=(card,large=false)=>'<tcg-card '+(large?'aura ':'hover="external" ')+'family="'+esc(card.family||'classic')+'" name="'+esc(card.name)+'" collection="'+esc(card.collection)+'" rarity="'+esc(ranks[card.rarity_level]||'Commun')+'" finish="'+esc(card.finish||'normal')+'" subtitle="'+esc(card.subtitle||'')+'" stars="'+Math.max(0,Math.min(6,Number(card.star_count)||0))+'" first="'+(card.is_first===true)+'" stats="false" image-framing="'+esc(JSON.stringify(card.image_framing||{}))+'" '+(safeUrl(card.image_url)?'image="'+esc(safeUrl(card.image_url))+'"':'placeholder="viewer"')+'></tcg-card>';
+  const cardView=(card,large=false)=>'<tcg-card '+(large?'aura ':'hover="external" ')+'model-id="'+esc(card.model_id||'')+'" '+'family="'+esc(card.family||'classic')+'" name="'+esc(card.name)+'" collection="'+esc(card.collection)+'" rarity="'+esc(ranks[card.rarity_level]||'Commun')+'" finish="'+esc(card.finish||'normal')+'" subtitle="'+esc(card.subtitle||'')+'" stars="'+Math.max(0,Math.min(6,Number(card.star_count)||0))+'" first="'+(card.is_first===true)+'" stats="false" image-framing="'+esc(JSON.stringify(card.image_framing||{}))+'" '+(safeUrl(card.image_url)?'image="'+esc(safeUrl(card.image_url))+'"':'placeholder="viewer"')+'></tcg-card>';
   function dialog(){return '<dialog class="portal-card-dialog" data-profile-dialog aria-labelledby="profile-card-title"><button type="button" class="portal-dialog-close" data-profile-close aria-label="Fermer l’aperçu">×</button><div data-profile-card-body></div></dialog>';}
   function close(restore=true){const saved=trigger;trigger=null;const modal=host?.querySelector('[data-profile-dialog]');if(modal?.open)modal.close();if(restore&&saved?.isConnected)saved.focus();}
   function open(index,button){
@@ -120,3 +120,4 @@
   function mount(element,{user,view='constellations'}={}){unmount();host=element;if(!host||!user?.id)return;state={owner:user.id,view,registered:false,loading:false,error:false,search:'',sort:'name',direction:'asc',offset:0,next:null,allItems:[],items:[],total:0,totalCopies:0};host.addEventListener('click',onClick);host.addEventListener('submit',onSubmit);host.addEventListener('change',onChange);host.addEventListener('close',onClose,true);void load();}
   window.DCGProfile=Object.freeze({mount,unmount});
 })();
+

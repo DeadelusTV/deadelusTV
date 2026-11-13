@@ -20,15 +20,17 @@
   const sheetUrl = new URL('card-live.css?rev=crew-design-1', assetBase).href;
   const galacticSheetUrl = new URL('card-galactic.css?rev=galactique-spirale-1', assetBase).href;
   const auraSheetUrl = new URL('card-aura.css?rev=crew-design-1', assetBase).href;
+  const supporterSheetUrl = new URL('../../../assets/supporter.css?rev=supporter-1', sheetUrl).href;
   const auraCards=new Set();
   const auraObserver=typeof IntersectionObserver==='undefined'?null:new IntersectionObserver(entries=>{
     for(const entry of entries){entry.target.auraInView=entry.isIntersecting;entry.target.updateAura();}
   });
   document.addEventListener('visibilitychange',()=>{for(const card of auraCards)card.updateAura();});
   class TCGCard extends HTMLElement {
-    static get observedAttributes(){return ['image-framing','aura'];}
-    attributeChangedCallback(name){if(name==='aura')this.syncAura();else window.TCGCardFraming?.apply(this);}
+    static get observedAttributes(){return ['image-framing','aura','model-id'];}
+    attributeChangedCallback(name){if(name==='model-id'){if(this.isConnected)window.TCGSupport?.registerCard(this);return;}if(name==='aura')this.syncAura();else window.TCGCardFraming?.apply(this);}
     connectedCallback() {
+      window.TCGSupport?.registerCard(this);
       if(this.shadowRoot){
         this.observer?.observe(this);
         const artwork=this.shadowRoot.querySelector('.art-box');
@@ -73,7 +75,9 @@
       const shadow=this.attachShadow({mode:'open'});
       // Réserver le format et cacher le contenu brut avant le chargement du CSS.
       // Sans ce socle, l'image apparaît seule puis saute dans le cadre final.
-      shadow.innerHTML=`<style>:host{display:block;position:relative;width:100%;aspect-ratio:591/1004;contain:layout}.live-fit{position:absolute;left:0;top:0;visibility:hidden}</style><link rel="stylesheet" href="${sheetUrl}">${frame}`;
+      shadow.innerHTML=`<style>:host{display:block;position:relative;width:100%;aspect-ratio:591/1004;contain:layout}.live-fit{position:absolute;left:0;top:0;visibility:hidden}</style><link rel="stylesheet" href="${sheetUrl}"><link rel="stylesheet" href="${supporterSheetUrl}">${frame}`;
+      const titleFrame=shadow.querySelector('.card-head');
+      if(titleFrame&&window.TCGSupport)titleFrame.append(window.TCGSupport.sparks());
       const artwork=shadow.querySelector('.art-box'),illustration=artwork.querySelector('img');
       illustration?.addEventListener('load',()=>window.TCGCardFraming?.apply(this));
       const card=shadow.querySelector('.trading-card');
@@ -201,6 +205,7 @@
       this.galacticRenderer?.refresh();
     }
     disconnectedCallback(){
+      window.TCGSupport?.unregisterCard(this);
       this.stopAura();
       this.observer?.disconnect();
       this.galacticRenderer?.destroy();
@@ -209,3 +214,4 @@
   }
   customElements.define('tcg-card',TCGCard);
 })();
+

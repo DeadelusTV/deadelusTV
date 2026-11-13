@@ -1,0 +1,15 @@
+/* Support visual: one gold contour for Subs and verified donors, no moving reflection. */
+.supporter-avatar{position:relative;isolation:isolate}
+.supporter-avatar[data-supporter-active="true"]{border-color:#f1d28c!important;box-shadow:0 0 0 1px #e7c276,0 0 13px #d6a95666,inset 0 0 7px #f5d38a44}
+.supporter-sparks{position:absolute;inset:-2px;pointer-events:none;border-radius:inherit;z-index:5}
+.supporter-avatar:not([data-supporter-active="true"])>.supporter-sparks{display:none}
+.supporter-spark{position:absolute;left:var(--support-x);top:var(--support-y);width:var(--support-size,7px);height:var(--support-size,7px);opacity:0;transform:translate(-50%,-50%);animation:supporter-glitter var(--support-period,4.7s) ease-in-out var(--support-delay,0s) infinite;filter:drop-shadow(0 0 3px #efc776)}
+.supporter-spark::before{content:'';position:absolute;inset:-120%;border-radius:50%;background:radial-gradient(circle,#ffe9ae88,transparent 65%);filter:blur(1.8px)}
+.supporter-spark::after{content:'';position:absolute;inset:0;clip-path:polygon(50% 0,59% 43%,100% 50%,59% 57%,50% 100%,41% 57%,0 50%,41% 43%);background:#fff5d9}
+@keyframes supporter-glitter{0%,8%,86%,100%{opacity:0;scale:.64}25%{opacity:.95;scale:1.07}41%{opacity:.65;scale:.94}55%{opacity:0;scale:.8}}
+/* Card title frame, not the letters; this stylesheet also loads inside the card shadow root. */
+:host([supporter-active="true"]) .trading-card .card-head{position:relative;overflow:visible;border-color:#f1d28c!important;box-shadow:0 0 0 1px #edcc84,inset 0 0 9px #e6b85b33,0 0 15px #d6a95688}
+:host(:not([supporter-active="true"])) .card-head>.supporter-sparks{display:none}
+.card-head .supporter-spark{--support-size:10px}
+@media(prefers-reduced-motion:reduce){.supporter-spark{animation:none;opacity:0}}
+@media print{.supporter-spark{display:none}}
