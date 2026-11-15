@@ -789,7 +789,7 @@ function makeLayer(e){
  else if(e.kind==='hotspot'){
     const caption=document.createElement('span');caption.className='hit-caption';caption.textContent=e.name;el.append(caption);
  }else if(e.kind==='image'){
-    if(e.image){const pic=document.createElement('img');pic.src=e.image;pic.alt=e.name;pic.style.objectFit=e.imageFit||'contain';el.append(pic);}else if(mode==='edit')el.textContent='[ Importer une image ]';
+    if(e.image){const pic=document.createElement('img');pic.src=e.image;pic.alt=e.name;pic.style.objectFit=e.imageFit||'contain';if(PUBLICATION_PUBLIC_VIEW)pic.decoding='async';el.append(pic);}else if(mode==='edit')el.textContent='[ Importer une image ]';
  }else if(['text','heading'].includes(e.kind)){
     el.classList.add('rich-block');
     const value=view.folderId&&view.page.startsWith('category:')&&e.name==='Titre de la catégorie'?
@@ -1340,10 +1340,16 @@ async function attachFont(file){
  save();note('Police importée : '+file.name+'.');
 }
 async function registerFont(spec){
- if(!spec||typeof spec.family!=='string'||!/^Atelier(?:Font)?_[\w-]{1,90}$/.test(spec.family)||typeof spec.data!=='string'||!/^data:[^,]*;base64,[A-Za-z0-9+/=]+$/.test(spec.data)||spec.data.length>2_200_000)throw Error('Police non valide.');
+ const inline=typeof spec?.data==='string'&&/^data:[^,]*;base64,[A-Za-z0-9+/=]+$/.test(spec.data)&&spec.data.length<=2_200_000;
+ const publicFont=PUBLICATION_PUBLIC_VIEW&&window.PHASMO_JOURNAL_PUBLIC_MEDIA?.isTrustedFontUrl(spec?.data);
+ if(!spec||typeof spec.family!=='string'||!/^Atelier(?:Font)?_[\w-]{1,90}$/.test(spec.family)||(!inline&&!publicFont))throw Error('Police non valide.');
  if(state.fonts.some(f=>f.family===spec.family))return;
  if(state.fonts.length>=8)throw Error('Maximum huit polices importées.');
- const face=new FontFace(spec.family,`url("${spec.data}")`);await face.load();document.fonts.add(face);
+ const face=new FontFace(spec.family,`url("${spec.data}")`);
+ // En lecture publique, le navigateur ne récupère cette police que lorsqu'un
+ // calque visible l'utilise. Dans l'éditeur, le chargement reste immédiat.
+ if(!publicFont)await face.load();
+ document.fonts.add(face);
  state.fonts.push({family:spec.family,label:String(spec.label||'Police').slice(0,100),data:spec.data});refreshFontSelects();
 }
 async function attachImage(file){
@@ -1438,7 +1444,10 @@ async function loadSettings(file,fromRemote=false){
    imageFit:['contain','cover','fill'].includes(e.imageFit)?e.imageFit:'contain',blend:['normal','multiply','screen','darken'].includes(e.blend)?e.blend:'normal',
    zoomable:typeof e.zoomable==='boolean'?e.zoomable:undefined,
    size:safeNum(e.size,24,8,120),columns:safeNum(e.columns,3,1,6),line:safeNum(e.line,1.16,.75,2.6),columnGap:safeNum(e.columnGap,12,0,80),rowGap:safeNum(e.rowGap,0,0,80),rotate:safeNum(e.rotate,0,-40,40),opacity:safeNum(e.opacity,100,0,100),
-   image:typeof e.image==='string'&&e.image.length<5_000_000&&/^data:image\/(?:png|jpeg|webp|gif);base64,/.test(e.image)?e.image:'',
+   image:typeof e.image==='string'&&(
+    (e.image.length<5_000_000&&/^data:image\/(?:png|jpeg|webp|gif);base64,/.test(e.image))||
+    (PUBLICATION_PUBLIC_VIEW&&window.PHASMO_JOURNAL_PUBLIC_MEDIA?.isTrustedImageUrl(e.image))
+   )?e.image:'',
    source:GROUP_ORDER.includes(e.source)?e.source:null,
    listMode:['records','folders','manual','custom'].includes(e.listMode)?e.listMode:(e.source?'records':'manual'),
    ...(Array.isArray(e.listItems)?{listItems:CUSTOM_LISTS.normalize(e.listItems)}:{})
@@ -1720,14 +1729,14 @@ init();
 </script>
 <script src="journal-storage-media.js" defer></script>
 <script src="journal-asset-library.js" defer></script>
-<script src="journal-public-media.js" defer></script>
+<script src="journal-public-media.js?v=20261115.lazy1" defer></script>
 <script src="journal-preview-sync.js?v=20261102.1" defer></script>
 <script src="journal-preview-publish.js" defer></script>
 <script src="journal-official-prepare.js" defer></script>
 <script src="journal-official-commands.js" defer></script>
 <script src="journal-storage-dryrun-ui.js" defer></script>
 <script src="journal-preview-publication-viewer.js" defer></script>
-<script src="journal-publication-viewer.js" defer></script>
+<script src="journal-publication-viewer.js?v=20261115.lazy1" defer></script>
 <script src="journal-editor-simplified.js?v=20261115.1" defer></script>
 </body></html>
 
