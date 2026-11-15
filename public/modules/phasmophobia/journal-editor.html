@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Éditeur du carnet Phasmophobia · DeadelusTV</title>
-<link rel="stylesheet" href="journal-image-zoom.css">
+<link rel="stylesheet" href="journal-image-zoom.css?v=20261115.1">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Caveat:wght@400;600;700&family=Gloria+Hallelujah&family=Indie+Flower&family=Kalam:wght@400;700&family=Patrick+Hand&display=swap');
 :root{font-family:Arial,Helvetica,sans-serif;--bg:#0e0f10;--surface:#19191a;--surface2:#242322;--line:#3c372f;--gold:#dec089;--muted:#b9ae9c;--text:#f3e7d7;color-scheme:dark}
@@ -177,6 +177,10 @@ html.journal-viewer #stage-viewport{height:100%;min-height:0;padding:0;overflow:
 html.journal-viewer #stage-wrap{position:absolute;left:50%;top:50%;margin:0;will-change:transform}
 html.journal-viewer #book{box-shadow:none}
 html.journal-viewer #book .layer{cursor:default}
+html.journal-viewer #stage-viewport.can-pan{cursor:grab}
+html.journal-viewer #stage-viewport.can-pan #book .layer:not(.interactive){cursor:grab}
+html.journal-viewer #stage-viewport.is-dragging,
+html.journal-viewer #stage-viewport.is-dragging #book .layer{cursor:grabbing!important}
 @media(max-width:700px){html.journal-viewer #stage-viewport{padding:0}}
 </style>
 </head>
@@ -460,9 +464,9 @@ html.journal-viewer #book .layer{cursor:default}
 <script src="journal-record-duplicate.js?v=20261103.2"></script>
 <script src="journal-pagination.js"></script>
 <script src="journal-custom-lists.js"></script>
-<script src="journal-image-zoom.js"></script>
+<script src="journal-image-zoom.js?v=20261115.1"></script>
 
-<script src="journal-viewer-zoom.js"></script>
+<script src="journal-viewer-zoom.js?v=20261115.1"></script>
 <script>
 'use strict';
 (() => {
