@@ -822,7 +822,7 @@ function makeLayer(e){
  return el;
 }
 function renderLayers(){
- surface.replaceChildren();book.classList.toggle('edit-mode',mode==='edit');book.classList.toggle('test-mode',mode==='test');book.classList.toggle('show-grid',state.grid);
+ surface.replaceChildren();book.classList.toggle('edit-mode',mode==='edit');book.classList.toggle('test-mode',mode==='test');book.classList.toggle('show-grid', !PUBLICATION_REMOTE_VIEW && state.grid);
  for(const e of visibleLayers()) surface.append(makeLayer(e));
 }
 function renderLayerList(){
