@@ -2,7 +2,7 @@
 /* Agrandissement de lecture uniquement : aucune modification du carnet. */
 (() => {
  let dialog=null,image=null,canvas=null,viewport=null,label=null,minus=null,plus=null;
- let zoom=1,opener=null;
+ let zoom=1,opener=null,drag=null,suppressClick=false,suppressTimer=null;
  function enabled(layer){
   if(layer?.kind!=='image')return false;
   if(typeof layer.zoomable==='boolean')return layer.zoomable;
@@ -13,7 +13,9 @@
   const base=Math.min(1,Math.max(1,viewport.clientWidth-24)/image.naturalWidth,Math.max(1,viewport.clientHeight-24)/image.naturalHeight);
   canvas.style.width=Math.max(1,image.naturalWidth*base*zoom)+'px';
   canvas.style.height=Math.max(1,image.naturalHeight*base*zoom)+'px';
-  image.style.cursor=zoom===1?'zoom-in':'zoom-out';
+  const canPan=zoom>1&&(canvas.offsetWidth+24>viewport.clientWidth+1||canvas.offsetHeight+24>viewport.clientHeight+1);
+  viewport.classList.toggle('can-pan',canPan);
+  image.style.cursor=zoom===1?'zoom-in':canPan?'grab':'zoom-out';
   label.textContent=Math.round(zoom*100)+' %';minus.disabled=zoom<=1;plus.disabled=zoom>=4;
  }
  function setZoom(value){
@@ -22,6 +24,36 @@
   const x=(viewport.scrollLeft+viewport.clientWidth/2)*zoom/old-viewport.clientWidth/2;
   const y=(viewport.scrollTop+viewport.clientHeight/2)*zoom/old-viewport.clientHeight/2;
   render();viewport.scrollLeft=Math.max(0,x);viewport.scrollTop=Math.max(0,y);
+ }
+ // Défilement par clic-glissé, en conservant le clic simple pour zoomer/dézoomer.
+ function onDragDown(event){
+  if(zoom<=1||event.pointerType==='touch'||event.button!==0)return;
+  if(!viewport.classList.contains('can-pan'))return;
+  drag={id:event.pointerId,x:event.clientX,y:event.clientY,
+   left:viewport.scrollLeft,top:viewport.scrollTop,moved:false};
+ }
+ function onDragMove(event){
+  if(!drag||event.pointerId!==drag.id)return;
+  const dx=event.clientX-drag.x,dy=event.clientY-drag.y;
+  if(!drag.moved&&Math.hypot(dx,dy)>6){
+   drag.moved=true;
+   viewport.classList.add('is-dragging');
+   try{viewport.setPointerCapture(event.pointerId);}catch{}
+  }
+  if(drag.moved){
+   viewport.scrollLeft=drag.left-dx;
+   viewport.scrollTop=drag.top-dy;
+   event.preventDefault();
+  }
+ }
+ function onDragEnd(event){
+  if(!drag||event.pointerId!==drag.id)return;
+  if(drag.moved){
+   suppressClick=true;
+   clearTimeout(suppressTimer);
+   suppressTimer=setTimeout(()=>{suppressClick=false;},250);
+  }
+  drag=null;viewport.classList.remove('is-dragging');
  }
  function create(){
   if(dialog)return;
@@ -46,10 +78,10 @@
   image.addEventListener('error',()=>{title.textContent='Image indisponible';});
   canvas.append(image);viewport.append(canvas);
   const help=document.createElement('p');help.className='journal-image-help';help.id='journal-image-help';
-  help.textContent='Clique sur l’image pour zoomer ou dézoomer. Utilise + / − pour ajuster, puis fais défiler pour explorer. Échap pour fermer.';
+  help.textContent='Clique pour zoomer ou dézoomer. Une fois agrandie, fais glisser l’image pour explorer, ou utilise la molette. Échap pour fermer.';
   dialog.setAttribute('aria-describedby',help.id);
   frame.append(toolbar,viewport,help);dialog.append(frame);document.body.append(dialog);
-  dialog.addEventListener('close',()=>{image.removeAttribute('src');opener?.focus({preventScroll:true});opener=null;});
+  dialog.addEventListener('close',()=>{drag=null;viewport.classList.remove('is-dragging','can-pan');clearTimeout(suppressTimer);suppressClick=false;image.removeAttribute('src');opener?.focus({preventScroll:true});opener=null;});
   dialog.addEventListener('cancel',event=>event.stopPropagation());
   dialog.addEventListener('click',event=>{
    if(event.target!==dialog)return;
@@ -61,6 +93,15 @@
     event.preventDefault();event.stopPropagation();setZoom(event.key==='0'?1:zoom+(event.key==='-'?-.5:.5));
    }
   });
+  viewport.addEventListener('pointerdown',onDragDown,true);
+  viewport.addEventListener('pointermove',onDragMove,true);
+  viewport.addEventListener('pointerup',onDragEnd,true);
+  viewport.addEventListener('pointercancel',onDragEnd,true);
+  viewport.addEventListener('lostpointercapture',onDragEnd);
+  viewport.addEventListener('click',event=>{
+   if(!suppressClick)return;
+   suppressClick=false;event.preventDefault();event.stopImmediatePropagation();
+  },true);
   viewport.addEventListener('wheel',event=>{
    if(!event.ctrlKey&&!event.metaKey)return;
    event.preventDefault();setZoom(zoom+(event.deltaY<0?.5:-.5));
