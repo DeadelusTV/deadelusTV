@@ -174,9 +174,14 @@
     viewport.addEventListener('pointermove',onMove,true);
     viewport.addEventListener('pointerup',onEnd,true);
     viewport.addEventListener('pointercancel',onEnd,true);
-    viewport.addEventListener('lostpointercapture',onEnd);
+    // Ne jamais traiter lostpointercapture comme un relâchement : quand la
+    // capture passe du calque touché au viewport, le doigt est encore posé.
+    // Le pointerup / pointercancel est la vraie fin du geste.
     viewport.addEventListener('pointerleave',stopEdge);
-    window.addEventListener('blur',stopEdge);
+    window.addEventListener('blur',()=>{
+      stopEdge();pointers.clear();gesture=null;
+      viewport.classList.remove('is-dragging');
+    });
     viewport.addEventListener('click',e=>{
       if(!suppressClick)return;
       suppressClick=false;e.preventDefault();e.stopImmediatePropagation();
