@@ -20,16 +20,19 @@
   let pendingPage = 'sommaire';
   let frameReady = false;
   let zoomPercent = 100;
+  const mobile=window.matchMedia('(pointer: coarse)').matches||window.matchMedia('(max-width: 700px)').matches;
+  const maxZoom=mobile?600:300;
+  const zoomStep=mobile?50:25;
   function sendZoom() {
     if(!frameReady || !frame.contentWindow)return;
     frame.contentWindow.postMessage({type:'deadelustv:journal-zoom',scale:zoomPercent/100},location.origin);
   }
   function setZoom(value,send=true){
     if(!Number.isFinite(value))return;
-    zoomPercent=Math.round(Math.min(300,Math.max(100,value)));
+    zoomPercent=Math.round(Math.min(maxZoom,Math.max(100,value)));
     zoomLabel.textContent=zoomPercent+' %';
     zoomOut.disabled=zoomPercent<=100;
-    zoomIn.disabled=zoomPercent>=300;
+    zoomIn.disabled=zoomPercent>=maxZoom;
     zoomReset.disabled=zoomPercent<=100;
     if(send)sendZoom();
   }
@@ -72,8 +75,8 @@
   });
   frame.addEventListener('load', () => { /* 'ready' is emitted after the editor initializes. */ });
   home.addEventListener('click', () => navigate('sommaire'));
-  zoomOut.addEventListener('click',()=>setZoom(zoomPercent-25));
-  zoomIn.addEventListener('click',()=>setZoom(zoomPercent+25));
+  zoomOut.addEventListener('click',()=>setZoom(zoomPercent-zoomStep));
+  zoomIn.addEventListener('click',()=>setZoom(zoomPercent+zoomStep));
   zoomReset.addEventListener('click',()=>setZoom(100));
   close.addEventListener('click', () => dialog.close());
   dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
