@@ -178,13 +178,22 @@
   const {data:draft,error:draftError}=await client.from('phasmo_journal_preview_drafts')
     .select('revision').eq('stage','preview').single();
   if(draftError||!draft)throw Error('Enregistre d’abord le brouillon partagé.');
-  show('Préparation de la publication enregistrée…');
-  const {error:snapError}=await client.from('phasmo_journal_preview_publications')
-    .upsert({stage:'preview',source_revision:draft.revision},{onConflict:'stage'})
-    .select('source_revision').single();
-  if(snapError)throw Error('Création de l’aperçu privé refusée : '+snapError.message);
+  show('Vérification de la version privée du brouillon enregistré…');
+  const {data:existingPreview,error:previewError}=await client.from('phasmo_journal_preview_publications')
+    .select('source_revision,release_number').eq('stage','preview').maybeSingle();
+  if(previewError)throw Error('Lecture de la publication privée refusée : '+previewError.message);
+  // Une tentative précédente peut avoir préparé ce brouillon sans activer la version publique.
+  // Ne pas réécrire la même révision : le trigger SQL refuse volontairement cette opération.
+  if(existingPreview?.source_revision!==draft.revision){
+   const {error:snapError}=await client.from('phasmo_journal_preview_publications')
+     .upsert({stage:'preview',source_revision:draft.revision},{onConflict:'stage'})
+     .select('source_revision').single();
+   if(snapError)throw Error('Création de l’aperçu privé refusée : '+snapError.message);
+  }else{
+   show('Version privée n°'+existingPreview.release_number+' retrouvée. Reprise de la publication officielle…');
+  }
   const prepared=await request('prepare');
-  show('Vérification des images et polices avant publication…');
+  show('Transfert des images et activation publique en cours… Ne ferme pas cet onglet.');
   const result=await request('activate',{
    confirmation:'PUBLIER-OFFICIELLEMENT',rightsApproved:true,
    expected_revision:prepared.prepared.source_preview_revision,
