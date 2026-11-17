@@ -444,3 +444,12 @@
 .daily-pass-auto-dialog button{display:block;margin-left:auto;padding:.65rem 1.4rem;border:1px solid #f4d992;border-radius:6px;background:#dfc17a;color:#1a1409;font-weight:700;cursor:pointer}
 .daily-pass-auto-dialog button:disabled{opacity:.6;cursor:wait}
 .daily-pass-auto-dialog button:focus-visible{outline:2px solid #fff2ae;outline-offset:3px}
+
+/* Détails durables réservés à Mon compte, sans encombrer l'accueil. */
+.daily-pass .daily-pass-credit-history{margin-top:1.5rem;border-top:1px solid #77613d;padding-top:1.25rem}
+.daily-pass .daily-pass-credit-history h3{font-size:1.05rem;color:#efcf84;margin:0 0 .5rem}
+.daily-pass .daily-pass-credit-history p{opacity:.8;font-size:.85rem}
+.daily-pass .daily-pass-credit-history ul{list-style:none;margin:0;padding:0;display:grid;gap:.65rem}
+.daily-pass .daily-pass-credit-history li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:.5rem 1rem;padding:.75rem;border:1px solid #51462f;border-radius:6px}
+.daily-pass .daily-pass-credit-history .daily-pass-credit-meta{font-size:.85rem;opacity:.8}
+.daily-pass .daily-pass-credit-history strong{color:#f2d88d}
