@@ -271,6 +271,13 @@
     const backlog = older.length ? '<section class="daily-pass-pending" aria-label="Récompenses des cycles précédents"><h3>Récompenses à récupérer</h3><p>Les jours validés des cycles précédents restent disponibles. Chaque clic récupère une seule récompense.</p><ul>'+older.map(item=>
       '<li data-pass-visit="'+escape(item.id)+'"><span>Cycle '+escape(item.cycle)+' · J'+escape(item.step)+' · '+escape(item.date)+'<strong>'+escape(rewardText(item.reward))+'</strong></span>'+
       (item.claimable ? '<button type="button" data-daily-pass-claim data-visit-id="'+escape(item.id)+'" data-reward-day="'+escape(item.step)+'" aria-label="Récupérer la récompense J'+escape(item.step)+' du '+escape(item.date)+'"'+(pending || bulk ? ' disabled aria-busy="true"' : '')+'>Récupérer</button>' : '<span>Conditions d’accès à vérifier</span>')+'</li>').join('')+'</ul></section>' : '';
+    const received = owner && Array.isArray(data?.recent_credits) ? data.recent_credits : [];
+    const creditsHistory = received.length ? '<section class="daily-pass-credit-history" aria-label="Historique des récompenses reçues">'+
+      '<h3>Historique des gains</h3><p>Les 100 dernières récompenses créditées, par jour et par DCG.</p><ul>'+
+      received.map(item => '<li><span class="daily-pass-credit-meta">'+escape(item.date)+' · Cycle '+escape(item.cycle)+' · J'+escape(item.step)+
+        ' · '+escape(item.login)+' · '+(item.automatic ? 'Crédit automatique' : 'Récupération manuelle')+'</span><strong>'+
+        escape(item.kind === 'dust' ? '+'+item.amount+' Alkahests' : item.booster_count+' booster'+(item.booster_count===1?'':'s')+' de '+(item.card_count||3)+' cartes')+
+        '</strong></li>').join('')+'</ul></section>' : '';
     const allButton = owner && individual ? '<div class="daily-pass-actions"><button type="button" class="daily-pass-claim-all" data-daily-pass-claim-all'+(pending || bulk || !claimableVisits(data).length ? ' disabled' : '')+(bulk ? ' aria-busy="true"' : '')+'>'+(bulk ? 'Récupération en cours…' : 'Tout récupérer')+'</button></div>' : '';
     root.hidden = false;
     if (view === 'progress') {
@@ -289,6 +296,7 @@
       (data?.supporter_bonus?.subscriber_enabled && !data.supporter_bonus.active && owner && !preparation ? '<p class="daily-pass-supporter">Sub DeadelusTV : boosters J9 et J10 doublés après vérification à la récupération.</p>' : '')+
       (channels ? '<ul class="daily-pass-channels" aria-label="Récompenses par DCG">'+channels+'</ul>' : '')+
       backlog+
+      creditsHistory+
       '<a class="daily-pass-help" href="#tcg/regles">FAQ du Pass →</a>'+
       '<p class="daily-pass-feedback" role="status" aria-live="polite">'+escape(message)+'</p></div></section>';
     restoreFocus();
