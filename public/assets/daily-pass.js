@@ -8,6 +8,73 @@
   let root = null, view = 'details', feedback = '', owner = null, generation = 0;
   let pending = null, snapshot = null, retryAt = 0, verifyAt = 0;
   let bulk = null;
+
+  // Les crédits automatiques sont déjà effectués côté serveur : cette fenêtre ne fait que les annoncer.
+  let autoDialog = null, autoDialogOwner = null, autoNoticeSignature = '';
+  function closeAutoDialog() {
+    if (autoDialog) {
+      if (typeof autoDialog.close === 'function' && autoDialog.open) autoDialog.close();
+      autoDialog.remove();
+    }
+    autoDialog = null;autoDialogOwner = null;autoNoticeSignature = '';
+  }
+  function showAutoNotices(data) {
+    if (!isSite() || !owner || identity().id !== owner) {closeAutoDialog();return;}
+    const notices = Array.isArray(data?.auto_notices) ? data.auto_notices.filter(n =>
+      Number.isSafeInteger(n.id) && n.id > 0 && (n.kind === 'dust' || n.kind === 'booster')) : [];
+    if (!notices.length) {if (!autoDialog?.open) closeAutoDialog();return;}
+    const ids = [...new Set(notices.map(n=>n.id))].sort((a,b)=>a-b);
+    const signature = owner+':'+ids.join(',');
+    if (autoDialog && autoNoticeSignature === signature) return;
+    closeAutoDialog();
+    const originalOwner=owner;
+    const dialog=document.createElement('dialog');
+    dialog.className='daily-pass-auto-dialog';
+    dialog.setAttribute('aria-labelledby','daily-pass-auto-title');
+    const heading=document.createElement('h2');heading.id='daily-pass-auto-title';
+    heading.textContent='Récompenses du Pass créditées';
+    const intro=document.createElement('p');
+    intro.textContent='Ton ancien cycle est terminé. Les récompenses que tu avais gagnées et pas encore récupérées ont été ajoutées automatiquement à ton compte.';
+    const list=document.createElement('ul');
+    const grouped=new Map();
+    for (const item of notices) {
+      const key=JSON.stringify([item.login,item.kind,item.card_count]);
+      const n=grouped.get(key)||{login:String(item.login||'DCG'),kind:item.kind,cardCount:item.card_count||3,total:0};
+      n.total += item.kind==='dust' ? Number(item.amount||0) : Number(item.booster_count||0);
+      grouped.set(key,n);
+    }
+    for (const n of grouped.values()) {
+      const li=document.createElement('li');
+      li.textContent=n.kind==='dust' ? n.login+' : +'+n.total+' Alkahests' :
+        n.login+' : '+n.total+' booster'+(n.total===1?'':'s')+' de '+n.cardCount+' cartes';
+      list.append(li);
+    }
+    const note=document.createElement('p');note.className='daily-pass-auto-note';
+    note.textContent='Tu peux retrouver le détail de tes gains dans Mon compte.';
+    const feedback=document.createElement('p');feedback.setAttribute('role','status');
+    const button=document.createElement('button');button.type='button';button.textContent='Compris';
+    async function acknowledge() {
+      if (originalOwner!==owner || identity().id!==originalOwner || button.disabled) return;
+      button.disabled=true;feedback.textContent='';
+      try {
+        const client=await window.DEADELUSTV_AUTH.getClient();
+        if (originalOwner!==owner || identity().id!==originalOwner) return;
+        const result=await client.functions.invoke('tcg-daily-pass',{body:{action:'ack_auto',notice_ids:ids}});
+        if (result.error || result.data?.status!=='acknowledged') throw Error('ack_failed');
+        if (autoDialog===dialog) closeAutoDialog();
+        notifyOtherTabs();
+      } catch {
+        if (autoDialog===dialog) {button.disabled=false;feedback.textContent='Impossible de confirmer la lecture. Réessaie pour fermer cette notification.';}
+      }
+    }
+    dialog.addEventListener('cancel',event=>{event.preventDefault();void acknowledge();});
+    button.addEventListener('click',()=>{void acknowledge();});
+    dialog.append(heading,intro,list,note,feedback,button);
+    document.body.append(dialog);
+    autoDialog=dialog;autoDialogOwner=originalOwner;autoNoticeSignature=signature;
+    if (typeof dialog.showModal==='function') dialog.showModal();
+    else dialog.setAttribute('open','');
+  }
   const claimableVisits = data => [...new Map([...(data?.history || []),...(data?.pending_rewards || [])]
     .filter(item => item.id && item.claimable).map(item => [item.id,item])).values()];
   const tabSyncKey = 'dcg:daily-pass-updated';
@@ -231,7 +298,7 @@
   async function refresh(force = false, claim = false, visitId = null, batchToken = null) {
     const session = identity();
     if (session.id !== owner) {
-      stopMotion(); playedAnimations.clear(); owner = session.id; ++generation; snapshot = null; pending = null; bulk = null; retryAt = 0; verifyAt = 0; tabSyncPending = false;
+      stopMotion(); playedAnimations.clear(); closeAutoDialog(); owner = session.id; ++generation; snapshot = null; pending = null; bulk = null; retryAt = 0; verifyAt = 0; tabSyncPending = false;
       render(null, '');
     }
     if (!owner || document.visibilityState === 'hidden' || pending || bulk && batchToken !== bulk || !force && Date.now() < retryAt) return;
@@ -285,6 +352,7 @@
         g.quantity+' booster'+(g.quantity > 1 ? 's' : '')+' de '+g.card_count+' cartes chez '+g.login).join(' · ');
       const alreadyClaimed = claim && !gains.length && (snapshot.claimed_visit ? snapshot.claimed_visit.claimed : snapshot.channels?.some(c => c.status === 'claimed'));
       render(snapshot, message || (snapshot.status === 'supporter_verification_required' ? 'Impossible de vérifier ton sub DeadelusTV pour le moment. Ta récompense reste à récupérer ; réessaie dans quelques instants.' : '') || (alreadyClaimed ? 'Récompense déjà récupérée.' : ''));
+      if (!batchToken && !claim) showAutoNotices(snapshot);
       if (!batchToken) confirmedAnimation(snapshot);
       if (gains.length && !batchToken) {
         window.dispatchEvent(new CustomEvent('tcg:daily-pass-change', {detail:{gains,visit:snapshot.claimed_visit}}));
