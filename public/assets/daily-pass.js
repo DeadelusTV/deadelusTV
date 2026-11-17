@@ -22,7 +22,7 @@
     if (!isSite() || !owner || identity().id !== owner) {closeAutoDialog();return;}
     const notices = Array.isArray(data?.auto_notices) ? data.auto_notices.filter(n =>
       Number.isSafeInteger(n.id) && n.id > 0 && (n.kind === 'dust' || n.kind === 'booster')) : [];
-    if (!notices.length) {if (!autoDialog?.open) closeAutoDialog();return;}
+    if (!notices.length) {closeAutoDialog();return;}
     const ids = [...new Set(notices.map(n=>n.id))].sort((a,b)=>a-b);
     const signature = owner+':'+ids.join(',');
     if (autoDialog && autoNoticeSignature === signature) return;
