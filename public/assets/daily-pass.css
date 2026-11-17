@@ -432,3 +432,15 @@
 .daily-pass .daily-pass-claim-all{color:#1b150b;background:#e4c36e;border:1px solid #f5df9d;border-radius:.4rem;padding:.65rem 1rem;font-weight:700;cursor:pointer}
 .daily-pass .daily-pass-claim-all:disabled{opacity:.5;cursor:default}
 .daily-pass .daily-pass-claim-all:focus-visible{outline:2px solid #f7e3a8;outline-offset:4px}
+
+/* Récapitulatif des gains réellement crédités à la clôture du cycle. */
+.daily-pass-auto-dialog{max-width:min(520px,calc(100vw - 32px));max-height:min(80vh,720px);overflow-y:auto;padding:24px;border:1px solid #c9a45d;border-radius:12px;background:#151723;color:#f3e5c2;box-shadow:0 20px 70px #0009}
+.daily-pass-auto-dialog::backdrop{background:rgba(0,0,0,.78)}
+.daily-pass-auto-dialog h2{margin:0 0 .85rem;color:#f8d484;font-size:1.35rem}
+.daily-pass-auto-dialog p{line-height:1.55}
+.daily-pass-auto-dialog ul{margin:1rem 0;padding-left:1.35rem;display:grid;gap:.55rem}
+.daily-pass-auto-dialog li{line-height:1.5}
+.daily-pass-auto-dialog .daily-pass-auto-note{font-size:.9rem;opacity:.85}
+.daily-pass-auto-dialog button{display:block;margin-left:auto;padding:.65rem 1.4rem;border:1px solid #f4d992;border-radius:6px;background:#dfc17a;color:#1a1409;font-weight:700;cursor:pointer}
+.daily-pass-auto-dialog button:disabled{opacity:.6;cursor:wait}
+.daily-pass-auto-dialog button:focus-visible{outline:2px solid #fff2ae;outline-offset:3px}
