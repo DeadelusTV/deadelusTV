@@ -78,8 +78,11 @@ aside p.lead{font-size:12px;color:#afa69b;line-height:1.6;margin:0 0 16px}
 #book.edit-mode .layer[data-kind="hotspot"].selected{background:#4fbad074;border-color:#064e5b}
 #book.edit-mode .layer .word{pointer-events:none}
 #book.edit-mode .layer:active{cursor:grabbing}
-#book.test-mode .layer.interactive{cursor:pointer}
-#book.test-mode .layer.interactive:hover{outline:2px solid #7a4c23aa;border-radius:2px}
+#book.test-mode .layer.interactive:not([data-kind="list"]) {cursor:pointer}
+#book.test-mode .layer.interactive:not([data-kind="list"]):hover {
+  outline: 2px solid #7a4c23aa;
+  border-radius: 2px;
+}
 #book.test-mode .layer[data-kind="hotspot"]{background:transparent!important;border-color:transparent!important}
 #book.test-mode .layer[data-kind="hotspot"]:hover{outline:2px solid #bb8d51a8}
 #book.test-mode .layer[data-kind="hotspot"] .hit-caption{display:none}
