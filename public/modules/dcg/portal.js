@@ -28,7 +28,7 @@
   const showDiscovery=spaces.length>1||(spaces.length===1&&config.showDiscoveryWithSingleStreamer===true);
   const pages = ['accueil', 'regles', 'mon-compte', 'collections-communes'];
   const titles = {accueil:'Accueil', regles:'Règles du jeu', 'mon-compte':'Mon compte', 'collections-communes':'Collections communes'};
-  const heading = (tag, title, copy) => `<header class="portal-heading"><div class="bread">${tag}</div><h1>${title}</h1><p>${copy}</p></header>`;
+  const heading = (tag, title, copy) => `<header class="portal-heading"><div class="bread">${tag}</div><h1>${title}</h1>${copy ? `<p>${copy}</p>` : ''}</header>`;
   const badge = '<span class="portal-status">À venir</span>';
   const pass = () => '<section id="daily-pass-root" aria-label="État du Connexion Pass"></section>';
   const ordered = () => [...mySpaces].sort((a,b) => a.name.localeCompare(b.name, 'fr', {sensitivity:'base'}));
@@ -62,7 +62,35 @@
     ['Quel est le bonus Sub ?', 'Un abonnement Twitch actif à DeadelusTV double uniquement les boosters : J9 donne 2 boosters de 3 cartes et J10 en donne 4, dans tous tes DCG éligibles. Les subs aux autres chaînes ne comptent pas. Le sub est vérifié lors de la récupération, puis le montant est figé pour cette récompense. Si Twitch est indisponible, elle reste à récupérer. Le futur bonus donateur suivra la même règle, avec un plafond à ×2 sans cumul.'],
     ['Dans quels DCG puis-je recevoir les récompenses ?', 'Le Pass suit ton compte commun. Chaque DCG auquel tu participes reçoit sa propre récompense, selon ses conditions d’accès ; les cartes et les soldes d’Alkahests restent séparés.']
   ].map(([question,answer])=>'<details><summary>'+question+'</summary><p>'+answer+'</p></details>').join('')+'</section>';
-  const rules = () => `${heading('BIEN DÉMARRER', 'Les règles du jeu.', 'Un compte Twitch, plusieurs univers à collectionner. Chaque DCG garde sa propre progression et son solde d’Alkahests.')}${passFAQ()}<div class="portal-rules">
+  const rules = () => `${heading('BIEN DÉMARRER', 'Les règles du jeu.')}
+    <div class="portal-rules-grid">
+      <button type="button" class="portal-common portal-rules-card" data-portal-login>
+        <span class="portal-common-art" aria-hidden="true">◌</span>
+        <span class="portal-eyebrow">Connection</span>
+        <span class="portal-rules-title">connecte toi avec ton compte Twitch</span>
+      </button>
+      <a href="#tcg" class="portal-common portal-rules-card" data-portal-search-link>
+        <span class="portal-common-art" aria-hidden="true">◎</span>
+        <span class="portal-eyebrow">Ton Streameur</span>
+        <span class="portal-rules-title">Recherche ton Streameur préféré</span>
+      </a>
+      <article class="portal-common portal-rules-card">
+        <span class="portal-common-art" aria-hidden="true">◇</span>
+        <span class="portal-eyebrow">Ta propre carte</span>
+        <span class="portal-rules-title">Pour qu'elle apparaisse dans la collection de ton streameur</span>
+      </article>
+      <article class="portal-common portal-rules-card">
+        <span class="portal-common-art" aria-hidden="true">✧</span>
+        <span class="portal-eyebrow">Commence à jouer</span>
+        <span class="portal-rules-title">Ouvre tes premiers Booster et collectionne les cartes de la communauté</span>
+      </article>
+      <article class="portal-common portal-rules-card">
+        <span class="portal-common-art" aria-hidden="true">∞</span>
+        <span class="portal-eyebrow">Rejoins d'autres communautés</span>
+        <span class="portal-rules-title">Recommence avec tous les Streameurs que tu suis</span>
+      </article>
+    </div>
+    ${passFAQ()}<div class="portal-rules">
     <section><span class="portal-rule-number">01</span><div><h2>Rejoins ta communauté</h2><p>Choisis un DCG et connecte-toi avec Twitch. Le follow de la chaîne est vérifié automatiquement. Les inscriptions et le lancement sont ouverts par le streamer ; les boosters restent fermés jusqu’au lancement de son DCG.</p><a href="#tcg" class="text-link">Choisir un DCG →</a></div></section>
     <section><span class="portal-rule-number">02</span><div><h2>Ouvre tes boosters</h2><p>Retrouve tes boosters de départ, ta réserve automatique et les récompenses de présence ou les drops du live dans l’onglet Boosters. La réserve automatique pleine met son compteur en pause. Les délais et les disponibilités sont affichés dans ton DCG.</p><a href="${gameLink('boosters')}" class="text-link">Les boosters DeadelusTV →</a></div></section>
     <section><span class="portal-rule-number">03</span><div><h2>Complète ta Constellation</h2><p>Les versions découvertes restent dans ta Constellation, même lorsque tu ne possèdes plus la carte. L’onglet Cartes possédées regroupe tes exemplaires identiques et affiche leur nombre ; les First restent séparées des versions ordinaires.</p></div></section>
@@ -190,6 +218,16 @@
       if(Number.isInteger(day)&&day>=1&&day<=10)passGainRequest={user:accountUser.id,day,visit:passClaim.dataset.visitId,generation,at:Date.now()};
     }
     const searchTrigger=event.target.closest('[data-portal-search-open]');if(searchTrigger)openSearch(searchTrigger);
+    if(event.target.closest('[data-portal-search-link]') && !event.defaultPrevented &&
+       event.button === 0 && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey){
+      // Le routeur affiche d’abord l’accueil et remonte en haut de la page.
+      window.addEventListener('hashchange', () => {
+        if(location.hash !== '#tcg') return;
+        const button = root.querySelector('[data-portal-search-open]');
+        button?.focus({preventScroll:true});
+        button?.scrollIntoView({block:'center', behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'});
+      }, {once:true});
+    }
     if(event.target.closest('[data-portal-search-close]'))closeSearch();
     if(event.target.closest('[data-portal-search-result]'))closeSearch(false);
     if(event.target.matches('[data-portal-search-dialog]')){const rect=event.target.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)closeSearch();}

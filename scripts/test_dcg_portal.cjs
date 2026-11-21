@@ -71,6 +71,45 @@ test('each common subpage is a real DCG route; unknown DCG subpages safely retur
  }
  await s.go('#tcg/inconnu');assert.match(s.root.innerHTML,/data-portal-search/);
 });
+test('rules present five ordered cards with the daily Pass FAQ below them',()=>{
+ const s=setup({hash:'#tcg/regles'});
+ const markup=s.root.innerHTML;
+ const cards=[...markup.matchAll(/<(button|a|article)\b([^>]*\bportal-rules-card\b[^>]*)>([\s\S]*?)<\/\1>/g)];
+ const expected=[
+  ['button','Connection','connecte toi avec ton compte Twitch'],
+  ['a','Ton Streameur','Recherche ton Streameur préféré'],
+  ['article','Ta propre carte',"Pour qu'elle apparaisse dans la collection de ton streameur"],
+  ['article','Commence à jouer','Ouvre tes premiers Booster et collectionne les cartes de la communauté'],
+  ['article',"Rejoins d'autres communautés",'Recommence avec tous les Streameurs que tu suis']
+ ];
+ assert.equal(cards.length,expected.length);
+ for(const [index,[tag,label,description]] of expected.entries()){
+  const [,actualTag,,body]=cards[index];
+  const text=body.replace(/<[^>]+>/g,' ').replace(/&#39;|&apos;/g,"'").replace(/\s+/g,' ').trim();
+  assert.equal(actualTag,tag);
+  assert.ok(text.includes(label+' '+description),text);
+ }
+ assert.match(cards[0][2],/\bdata-portal-login\b/);
+ assert.match(cards[1][2],/href="#tcg"/);
+ assert.match(cards[1][2],/\bdata-portal-search-link\b/);
+ assert.ok(markup.indexOf('FAQ du Pass quotidien')>cards.at(-1).index);
+ assert.doesNotMatch(markup,/Un compte Twitch, plusieurs univers à collectionner/);
+ s.click('[data-portal-login]');
+ assert.equal(s.signins,1);
+});
+test('the streamer card lands on the home search button after route scrolling',async()=>{
+ const s=setup({hash:'#tcg/regles'});
+ const link=new Node(),searchButton=new Node(),scrolls=[];
+ link.selector='[data-portal-search-link]';
+ s.root.nodes['[data-portal-search-open]']=searchButton;
+ s.context.scrollTo=()=>scrolls.push('page');
+ searchButton.scrollIntoView=()=>scrolls.push('search');
+ s.root.emit('click',link,{button:0});
+ await s.go('#tcg');
+ assert.equal(scrolls.at(-1),'search');
+ assert.equal(searchButton.focused,true);
+ assert.equal(s.searchDialog.open,false);
+});
 test('the logo and directory lead to the existing Workers boosters, with no embedded game or copied auth client',()=>{
  const s=setup();assert.equal((s.root.innerHTML.match(/href="https:\/\/tcg\.yekelle-boulet\.workers\.dev\/#\/boosters"/g)||[]).length,3);
  assert.doesNotMatch(s.root.innerHTML,/<iframe|<script/);assert.doesNotMatch(source,/createClient|service_role|fetch\(/);
