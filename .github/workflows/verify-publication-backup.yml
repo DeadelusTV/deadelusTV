@@ -1,0 +1,77 @@
+name: Verifier sauvegarde OVH sans publier
+
+on:
+  push:
+    branches: [securite/pre-tcg-20261107]
+    paths: ['.github/workflows/verify-publication-backup.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verification-sauvegarde-ovh
+  cancel-in-progress: false
+
+jobs:
+  verification:
+    if: github.repository == 'DeadelusTV/deadelusTV' && (github.ref == 'refs/heads/securite/pre-tcg-20261107' || github.ref == 'refs/heads/main')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Charger le code de sauvegarde
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Tester les refus et la restauration sur donnees fictives
+        run: python3 -m unittest discover -s tests -p 'test_backup_publication.py' -v
+
+      - name: Preparer la connexion SSH epinglee sans modifier le serveur
+        env:
+          VPS_HOST: ${{ vars.VPS_HOST }}
+          VPS_USER: ${{ vars.VPS_USER }}
+          VPS_KNOWN_HOSTS: ${{ vars.VPS_KNOWN_HOSTS }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$VPS_HOST" == '57.129.185.182' && "$VPS_USER" == 'deploy-web' ]]
+          [[ -n "$VPS_KNOWN_HOSTS" && -n "$VPS_SSH_KEY" ]]
+          ssh_dir="$RUNNER_TEMP/deadelustv-ssh"
+          install -d -m 700 "$ssh_dir"
+          umask 077
+          printf '%s\n' "$VPS_SSH_KEY" | tr -d '\r' > "$ssh_dir/key"
+          printf '%s\n' "$VPS_KNOWN_HOSTS" | tr -d '\r' > "$ssh_dir/known_hosts"
+          ssh-keygen -y -P '' -f "$ssh_dir/key" > /dev/null
+          ssh-keygen -F "$VPS_HOST" -f "$ssh_dir/known_hosts" > /dev/null
+          cat > "$ssh_dir/config" <<EOF
+          Host ovh-deadelustv
+              HostName $VPS_HOST
+              User $VPS_USER
+              Port 22
+              IdentityFile "$ssh_dir/key"
+              IdentitiesOnly yes
+              BatchMode yes
+              StrictHostKeyChecking yes
+              UserKnownHostsFile "$ssh_dir/known_hosts"
+              ConnectTimeout 15
+              ServerAliveInterval 15
+              ServerAliveCountMax 3
+          EOF
+
+      - name: Archiver la version active et verifier la copie distante sans publier
+        env:
+          GH_TOKEN: ${{ secrets.BACKUPS_REPOSITORY_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/backup_publication.py --phase controle \
+            --operation "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" --commit "$GITHUB_SHA" \
+            --ssh-config "$RUNNER_TEMP/deadelustv-ssh/config" --receipt "$RUNNER_TEMP/backup-controle.json"
+          echo 'Controle termine : aucune nouvelle version transferee ou activee sur OVH.' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Effacer la cle temporaire du runner
+        if: always()
+        shell: bash
+        run: rm -f "$RUNNER_TEMP/deadelustv-ssh/key"

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Éditeur du carnet Phasmophobia · DeadelusTV</title>
-<link rel="stylesheet" href="journal-image-zoom.css">
+<link rel="stylesheet" href="journal-image-zoom.css?v=20261115.1">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Caveat:wght@400;600;700&family=Gloria+Hallelujah&family=Indie+Flower&family=Kalam:wght@400;700&family=Patrick+Hand&display=swap');
 :root{font-family:Arial,Helvetica,sans-serif;--bg:#0e0f10;--surface:#19191a;--surface2:#242322;--line:#3c372f;--gold:#dec089;--muted:#b9ae9c;--text:#f3e7d7;color-scheme:dark}
@@ -78,8 +78,11 @@ aside p.lead{font-size:12px;color:#afa69b;line-height:1.6;margin:0 0 16px}
 #book.edit-mode .layer[data-kind="hotspot"].selected{background:#4fbad074;border-color:#064e5b}
 #book.edit-mode .layer .word{pointer-events:none}
 #book.edit-mode .layer:active{cursor:grabbing}
-#book.test-mode .layer.interactive{cursor:pointer}
-#book.test-mode .layer.interactive:hover{outline:2px solid #7a4c23aa;border-radius:2px}
+#book.test-mode .layer.interactive:not([data-kind="list"]) {cursor:pointer}
+#book.test-mode .layer.interactive:not([data-kind="list"]):hover {
+  outline: 2px solid #7a4c23aa;
+  border-radius: 2px;
+}
 #book.test-mode .layer[data-kind="hotspot"]{background:transparent!important;border-color:transparent!important}
 #book.test-mode .layer[data-kind="hotspot"]:hover{outline:2px solid #bb8d51a8}
 #book.test-mode .layer[data-kind="hotspot"] .hit-caption{display:none}
@@ -177,6 +180,10 @@ html.journal-viewer #stage-viewport{height:100%;min-height:0;padding:0;overflow:
 html.journal-viewer #stage-wrap{position:absolute;left:50%;top:50%;margin:0;will-change:transform}
 html.journal-viewer #book{box-shadow:none}
 html.journal-viewer #book .layer{cursor:default}
+html.journal-viewer #stage-viewport.can-pan{cursor:grab}
+html.journal-viewer #stage-viewport.can-pan #book .layer:not(.interactive){cursor:grab}
+html.journal-viewer #stage-viewport.is-dragging,
+html.journal-viewer #stage-viewport.is-dragging #book .layer{cursor:grabbing!important}
 @media(max-width:700px){html.journal-viewer #stage-viewport{padding:0}}
 </style>
 </head>
@@ -460,9 +467,9 @@ html.journal-viewer #book .layer{cursor:default}
 <script src="journal-record-duplicate.js?v=20261103.2"></script>
 <script src="journal-pagination.js"></script>
 <script src="journal-custom-lists.js"></script>
-<script src="journal-image-zoom.js"></script>
+<script src="journal-image-zoom.js?v=20261115.1"></script>
 
-<script src="journal-viewer-zoom.js"></script>
+<script src="journal-viewer-zoom.js?v=20261115.2"></script>
 <script>
 'use strict';
 (() => {
@@ -785,7 +792,7 @@ function makeLayer(e){
  else if(e.kind==='hotspot'){
     const caption=document.createElement('span');caption.className='hit-caption';caption.textContent=e.name;el.append(caption);
  }else if(e.kind==='image'){
-    if(e.image){const pic=document.createElement('img');pic.src=e.image;pic.alt=e.name;pic.style.objectFit=e.imageFit||'contain';el.append(pic);}else if(mode==='edit')el.textContent='[ Importer une image ]';
+    if(e.image){const pic=document.createElement('img');pic.src=e.image;pic.alt=e.name;pic.style.objectFit=e.imageFit||'contain';if(PUBLICATION_PUBLIC_VIEW)pic.decoding='async';el.append(pic);}else if(mode==='edit')el.textContent='[ Importer une image ]';
  }else if(['text','heading'].includes(e.kind)){
     el.classList.add('rich-block');
     const value=view.folderId&&view.page.startsWith('category:')&&e.name==='Titre de la catégorie'?
@@ -818,7 +825,7 @@ function makeLayer(e){
  return el;
 }
 function renderLayers(){
- surface.replaceChildren();book.classList.toggle('edit-mode',mode==='edit');book.classList.toggle('test-mode',mode==='test');book.classList.toggle('show-grid',state.grid);
+ surface.replaceChildren();book.classList.toggle('edit-mode',mode==='edit');book.classList.toggle('test-mode',mode==='test');book.classList.toggle('show-grid', !PUBLICATION_REMOTE_VIEW && state.grid);
  for(const e of visibleLayers()) surface.append(makeLayer(e));
 }
 function renderLayerList(){
@@ -1336,10 +1343,16 @@ async function attachFont(file){
  save();note('Police importée : '+file.name+'.');
 }
 async function registerFont(spec){
- if(!spec||typeof spec.family!=='string'||!/^Atelier(?:Font)?_[\w-]{1,90}$/.test(spec.family)||typeof spec.data!=='string'||!/^data:[^,]*;base64,[A-Za-z0-9+/=]+$/.test(spec.data)||spec.data.length>2_200_000)throw Error('Police non valide.');
+ const inline=typeof spec?.data==='string'&&/^data:[^,]*;base64,[A-Za-z0-9+/=]+$/.test(spec.data)&&spec.data.length<=2_200_000;
+ const publicFont=PUBLICATION_PUBLIC_VIEW&&window.PHASMO_JOURNAL_PUBLIC_MEDIA?.isTrustedFontUrl(spec?.data);
+ if(!spec||typeof spec.family!=='string'||!/^Atelier(?:Font)?_[\w-]{1,90}$/.test(spec.family)||(!inline&&!publicFont))throw Error('Police non valide.');
  if(state.fonts.some(f=>f.family===spec.family))return;
  if(state.fonts.length>=8)throw Error('Maximum huit polices importées.');
- const face=new FontFace(spec.family,`url("${spec.data}")`);await face.load();document.fonts.add(face);
+ const face=new FontFace(spec.family,`url("${spec.data}")`);
+ // En lecture publique, le navigateur ne récupère cette police que lorsqu'un
+ // calque visible l'utilise. Dans l'éditeur, le chargement reste immédiat.
+ if(!publicFont)await face.load();
+ document.fonts.add(face);
  state.fonts.push({family:spec.family,label:String(spec.label||'Police').slice(0,100),data:spec.data});refreshFontSelects();
 }
 async function attachImage(file){
@@ -1434,7 +1447,10 @@ async function loadSettings(file,fromRemote=false){
    imageFit:['contain','cover','fill'].includes(e.imageFit)?e.imageFit:'contain',blend:['normal','multiply','screen','darken'].includes(e.blend)?e.blend:'normal',
    zoomable:typeof e.zoomable==='boolean'?e.zoomable:undefined,
    size:safeNum(e.size,24,8,120),columns:safeNum(e.columns,3,1,6),line:safeNum(e.line,1.16,.75,2.6),columnGap:safeNum(e.columnGap,12,0,80),rowGap:safeNum(e.rowGap,0,0,80),rotate:safeNum(e.rotate,0,-40,40),opacity:safeNum(e.opacity,100,0,100),
-   image:typeof e.image==='string'&&e.image.length<5_000_000&&/^data:image\/(?:png|jpeg|webp|gif);base64,/.test(e.image)?e.image:'',
+   image:typeof e.image==='string'&&(
+    (e.image.length<5_000_000&&/^data:image\/(?:png|jpeg|webp|gif);base64,/.test(e.image))||
+    (PUBLICATION_PUBLIC_VIEW&&window.PHASMO_JOURNAL_PUBLIC_MEDIA?.isTrustedImageUrl(e.image))
+   )?e.image:'',
    source:GROUP_ORDER.includes(e.source)?e.source:null,
    listMode:['records','folders','manual','custom'].includes(e.listMode)?e.listMode:(e.source?'records':'manual'),
    ...(Array.isArray(e.listItems)?{listItems:CUSTOM_LISTS.normalize(e.listItems)}:{})
@@ -1716,15 +1732,15 @@ init();
 </script>
 <script src="journal-storage-media.js" defer></script>
 <script src="journal-asset-library.js" defer></script>
-<script src="journal-public-media.js" defer></script>
+<script src="journal-public-media.js?v=20261115.lazy1" defer></script>
 <script src="journal-preview-sync.js?v=20261102.1" defer></script>
 <script src="journal-preview-publish.js" defer></script>
 <script src="journal-official-prepare.js" defer></script>
 <script src="journal-official-commands.js" defer></script>
 <script src="journal-storage-dryrun-ui.js" defer></script>
 <script src="journal-preview-publication-viewer.js" defer></script>
-<script src="journal-publication-viewer.js" defer></script>
-<script src="journal-editor-simplified.js?v=20261102.1" defer></script>
+<script src="journal-publication-viewer.js?v=20261115.lazy1" defer></script>
+<script src="journal-editor-simplified.js?v=20261115.1" defer></script>
 </body></html>
 
 

@@ -71,6 +71,73 @@ test('each common subpage is a real DCG route; unknown DCG subpages safely retur
  }
  await s.go('#tcg/inconnu');assert.match(s.root.innerHTML,/data-portal-search/);
 });
+test('rules present five ordered cards with the FAQ below them',()=>{
+ const s=setup({hash:'#tcg/regles'});
+ const markup=s.root.innerHTML;
+ const cards=[...markup.matchAll(/<(button|a|article)\b([^>]*\bportal-rules-card\b[^>]*)>([\s\S]*?)<\/\1>/g)];
+ const expected=[
+  ['button','Connection','Connecte toi avec ton compte Twitch'],
+  ['a','Ton Streameur','Recherche ton Streameur préféré'],
+  ['article','Ta propre carte',"Pour qu'elle apparaisse dans la collection de ton streameur"],
+  ['article','Commence à jouer','Ouvre tes premiers Booster et collectionne les cartes de la communauté'],
+  ['article',"Rejoins d'autres communautés",'Recommence avec tous les Streameurs que tu suis']
+ ];
+ assert.equal(cards.length,expected.length);
+ for(const [index,[tag,label,description]] of expected.entries()){
+  const [,actualTag,,body]=cards[index];
+  assert.equal(actualTag,tag);
+  const lines=[...body.matchAll(/<[^>]*class="[^"]*\bportal-rules-(title|description)\b[^"]*"[^>]*>([^<]*)</g)];
+  assert.deepEqual(lines.map(([,role,text])=>[role,text.trim().replace(/&#39;|&apos;/g,"'")]),[
+   ['title',label],['description',description]
+  ]);
+  if(index<4){
+   const art=body.match(/<[^>]*class="[^"]*\bportal-rule-art\b[^"]*"[^>]*>/)?.[0];
+   assert.ok(art,label);
+   assert.match(art,/aria-hidden="true"|^<img\b[^>]*\balt=""/,label);
+  } else {
+   assert.match(body,/<[^>]*class="[^"]*\bportal-common-art\b[^"]*"[^>]*>\s*∞\s*</);
+  }
+ }
+ assert.match(cards[0][2],/\bdata-portal-login\b/);
+ assert.match(cards[1][2],/href="#tcg"/);
+ assert.match(cards[1][2],/\bdata-portal-search-link\b/);
+ const faqHeading=markup.match(/<h2\b[^>]*>FAQ<\/h2>/);
+ assert.ok(faqHeading && faqHeading.index>cards.at(-1).index);
+ assert.doesNotMatch(markup,/Un compte Twitch, plusieurs univers à collectionner/);
+ s.click('[data-portal-login]');
+ assert.equal(s.signins,1);
+});
+test('the rules FAQ covers the game, subscriber drops and ways to support the game',()=>{
+ const markup=setup({hash:'#tcg/regles'}).root.innerHTML;
+ const topics=[...markup.matchAll(/<details\b[^>]*>\s*<summary\b[^>]*>([^<]+)<\/summary>([\s\S]*?)<\/details>/g)];
+ assert.deepEqual(topics.map(topic=>topic[1]),['Le pass quotidien','Comment récupérer des boosters ?','Les drops','Principe du jeu','Bonus et soutien']);
+ assert.match(topics[1][2],/\b(?:5|cinq)\b/i);
+ assert.match(topics[1][2],/par jour/i);
+ assert.match(topics[2][2],/\b(?:3|trois)\b/i);
+ assert.match(topics[2][2],/par live/i);
+ assert.match(topics[2][2],/abonn/i);
+ assert.match(topics[2][2],/doubl|deux fois|\b(?:6|six)\b/i);
+ const support=topics[4][2];
+ assert.match(support,/\b1\s*€\s+via PayPal\b/);
+ const supportLinks=[...support.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)];
+ assert.equal(supportLinks.length,1);
+ assert.match(supportLinks[0][1],/\bhref="https:\/\/www\.twitch\.tv\/deadelustv"/);
+ assert.equal(supportLinks[0][2],'MA chaîne Twitch');
+ assert.doesNotMatch(markup,/portal-rule-number|Rejoins ta communauté|Gère tes Alkahests/);
+});
+test('the streamer card lands on the home search button after route scrolling',async()=>{
+ const s=setup({hash:'#tcg/regles'});
+ const link=new Node(),searchButton=new Node(),scrolls=[];
+ link.selector='[data-portal-search-link]';
+ s.root.nodes['[data-portal-search-open]']=searchButton;
+ s.context.scrollTo=()=>scrolls.push('page');
+ searchButton.scrollIntoView=()=>scrolls.push('search');
+ s.root.emit('click',link,{button:0});
+ await s.go('#tcg');
+ assert.equal(scrolls.at(-1),'search');
+ assert.equal(searchButton.focused,true);
+ assert.equal(s.searchDialog.open,false);
+});
 test('the logo and directory lead to the existing Workers boosters, with no embedded game or copied auth client',()=>{
  const s=setup();assert.equal((s.root.innerHTML.match(/href="https:\/\/tcg\.yekelle-boulet\.workers\.dev\/#\/boosters"/g)||[]).length,3);
  assert.doesNotMatch(s.root.innerHTML,/<iframe|<script/);assert.doesNotMatch(source,/createClient|service_role|fetch\(/);

@@ -28,7 +28,7 @@
   const showDiscovery=spaces.length>1||(spaces.length===1&&config.showDiscoveryWithSingleStreamer===true);
   const pages = ['accueil', 'regles', 'mon-compte', 'collections-communes'];
   const titles = {accueil:'Accueil', regles:'Règles du jeu', 'mon-compte':'Mon compte', 'collections-communes':'Collections communes'};
-  const heading = (tag, title, copy) => `<header class="portal-heading"><div class="bread">${tag}</div><h1>${title}</h1><p>${copy}</p></header>`;
+  const heading = (tag, title, copy) => `<header class="portal-heading"><div class="bread">${tag}</div><h1>${title}</h1>${copy ? `<p>${copy}</p>` : ''}</header>`;
   const badge = '<span class="portal-status">À venir</span>';
   const pass = () => '<section id="daily-pass-root" aria-label="État du Connexion Pass"></section>';
   const ordered = () => [...mySpaces].sort((a,b) => a.name.localeCompare(b.name, 'fr', {sensitivity:'base'}));
@@ -53,22 +53,71 @@
   const directoryActions=()=>'<div class="portal-directory-actions"><div class="portal-general-xp-bubble" data-general-xp hidden aria-label="Niveau général DCG"></div><button class="button-outline" type="button" data-portal-search-open aria-haspopup="dialog">Rechercher un streamer</button></div>';
   const home = () => `<section class="portal-hero"><div><span class="overline">DEADELUS CARD GAME</span><h1><em>Collectionne les Communautés Twitch</em></h1><p>Rejoins les collections de tes streamers préférés et collectionne leurs cartes, celles de leurs viewers et leurs meilleurs clips.<br>Découvre des cartes exclusives au fil des événements et des nouvelles collections !</p><div class="portal-hero-links"><a class="button-primary" href="#dcg-annuaire" data-portal-directory>Explorer les DCG ↓</a><a class="text-link" href="#tcg/regles">Comment jouer ? →</a></div></div><a class="portal-featured" href="${gameLink('boosters')}" aria-label="Entrer dans le DCG DeadelusTV"><span class="portal-featured-orbit" aria-hidden="true"></span><img src="${logo}" alt="Logo DeadelusTV" width="210" height="210"><span class="portal-eyebrow">ENTRÉE DIRECTE</span><strong>DeadelusTV</strong><span>Ouvrir mon espace boosters →</span></a></section>
     ${pass()}<section class="portal-directory" id="dcg-annuaire" aria-labelledby="dcg-directory-title"><div class="portal-section-top"><div><span class="overline">MES COMMUNAUTÉS</span><h2 id="dcg-directory-title">Mes DCG</h2><p>Retrouve les communautés où tu joues.</p></div>${directoryActions()}</div><div class="portal-spaces" data-portal-spaces>${directory()}</div></section>${discoverySection()}${searchDialog()}`;
-  const passFAQ = () => '<section class="portal-pass-faq" aria-labelledby="dcg-pass-faq-title"><h2 id="dcg-pass-faq-title">FAQ du Pass quotidien</h2>'+[
-    ['Quand commence mon cycle ?', 'J1 commence à ta première connexion sur DeadelusTV, quel que soit le jour de la semaine. Ouvrir uniquement un DCG ne compte pas comme une visite du site.'],
-    ['Que se passe-t-il après les dix jours ?', 'Après J10, un nouveau cycle commence à J1.'],
-    ['Dois-je récupérer ma récompense le jour même ?', 'Non. Tu peux cliquer sur les jours lumineux durant ton cycle. Lors du retour à J1, les gains déjà gagnés et encore non récupérés sont crédités automatiquement, même sans nouvelle connexion. Une fenêtre résume ces crédits à ta prochaine visite. Mon compte conserve le détail des gains.'],
-    ['Et si je manque un jour ?', 'Un jour manqué fait reprendre la progression à J1. Les récompenses déjà gagnées et non récupérées sont alors créditées automatiquement ; les jours sans connexion ne créent aucune récompense.'],
-    ['À quelle heure change la journée ?', 'Le changement de journée a lieu à minuit, heure de Paris, avec les passages à l’heure d’été et à l’heure d’hiver.'],
-    ['Quel est le bonus Sub ?', 'Un abonnement Twitch actif à DeadelusTV double uniquement les boosters : J9 donne 2 boosters de 3 cartes et J10 en donne 4, dans tous tes DCG éligibles. Les subs aux autres chaînes ne comptent pas. Le sub est vérifié lors de la récupération, puis le montant est figé pour cette récompense. Si Twitch est indisponible, elle reste à récupérer. Le futur bonus donateur suivra la même règle, avec un plafond à ×2 sans cumul.'],
-    ['Dans quels DCG puis-je recevoir les récompenses ?', 'Le Pass suit ton compte commun. Chaque DCG auquel tu participes reçoit sa propre récompense, selon ses conditions d’accès ; les cartes et les soldes d’Alkahests restent séparés.']
-  ].map(([question,answer])=>'<details><summary>'+question+'</summary><p>'+answer+'</p></details>').join('')+'</section>';
-  const rules = () => `${heading('BIEN DÉMARRER', 'Les règles du jeu.', 'Un compte Twitch, plusieurs univers à collectionner. Chaque DCG garde sa propre progression et son solde d’Alkahests.')}${passFAQ()}<div class="portal-rules">
-    <section><span class="portal-rule-number">01</span><div><h2>Rejoins ta communauté</h2><p>Choisis un DCG et connecte-toi avec Twitch. Le follow de la chaîne est vérifié automatiquement. Les inscriptions et le lancement sont ouverts par le streamer ; les boosters restent fermés jusqu’au lancement de son DCG.</p><a href="#tcg" class="text-link">Choisir un DCG →</a></div></section>
-    <section><span class="portal-rule-number">02</span><div><h2>Ouvre tes boosters</h2><p>Retrouve tes boosters de départ, ta réserve automatique et les récompenses de présence ou les drops du live dans l’onglet Boosters. La réserve automatique pleine met son compteur en pause. Les délais et les disponibilités sont affichés dans ton DCG.</p><a href="${gameLink('boosters')}" class="text-link">Les boosters DeadelusTV →</a></div></section>
-    <section><span class="portal-rule-number">03</span><div><h2>Complète ta Constellation</h2><p>Les versions découvertes restent dans ta Constellation, même lorsque tu ne possèdes plus la carte. L’onglet Cartes possédées regroupe tes exemplaires identiques et affiche leur nombre ; les First restent séparées des versions ordinaires.</p></div></section>
-    <section><span class="portal-rule-number">04</span><div><h2>Fais évoluer tes cartes</h2><p>Le Laboratoire permet de fusionner, de tenter Stellar ou Lunar et d’obtenir une Holographique-Ultimate avec les deux finitions du même modèle. Les deux cartes sont conservées lors de l’obtention de la Holo. Les Exclusives ont leur propre finition Diamant noir. Les coûts, conditions et chances sont présentés avant confirmation.</p></div></section>
-    <section><span class="portal-rule-number">05</span><div><h2>Gère tes Alkahests</h2><p>La Dissolution transforme tes exemplaires non protégés en Alkahests. Ton solde appartient à un seul DCG : les montants de plusieurs streamers ne s’additionnent pas. La future boutique commune permettra de choisir un seul de ces soldes pour acheter un booster.</p></div></section>
-    <section><span class="portal-rule-number">06</span><div><h2>Échange et participe aux enchères</h2><p>Les échanges permettent de proposer plusieurs cartes et de répondre par une contre-offre. Une carte engagée est réservée. Sur le marché, une mise dépassée est remboursée et une enchère de dernière seconde prolonge le délai. Les collections communes auront des échanges à rareté égale et ne seront pas revendues aux enchères.</p></div></section></div>`;
+  const rules = () => `${heading('BIEN DÉMARRER', 'Les règles du jeu.')}
+    <div class="portal-rules-grid">
+      <button type="button" class="portal-common portal-rules-card" data-portal-login>
+        <svg class="portal-rule-art" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-twitch"/></svg>
+        <span class="portal-rules-title">Connection</span>
+        <span class="portal-rules-description">Connecte toi avec ton compte Twitch</span>
+      </button>
+      <a href="#tcg" class="portal-common portal-rules-card" data-portal-search-link>
+        <img class="portal-rule-art" src="modules/dcg/assets/rules-avatar.svg" alt="">
+        <span class="portal-rules-title">Ton Streameur</span>
+        <span class="portal-rules-description">Recherche ton Streameur préféré</span>
+      </a>
+      <article class="portal-common portal-rules-card">
+        <img class="portal-rule-art portal-rule-art-print" src="modules/dcg/assets/rules-card.svg" alt="">
+        <span class="portal-rules-title">Ta propre carte</span>
+        <span class="portal-rules-description">Pour qu'elle apparaisse dans la collection de ton streameur</span>
+      </article>
+      <article class="portal-common portal-rules-card">
+        <img class="portal-rule-art portal-rule-art-print" src="modules/dcg/assets/rules-booster.svg" alt="">
+        <span class="portal-rules-title">Commence à jouer</span>
+        <span class="portal-rules-description">Ouvre tes premiers Booster et collectionne les cartes de la communauté</span>
+      </article>
+      <article class="portal-common portal-rules-card">
+        <span class="portal-common-art" aria-hidden="true">∞</span>
+        <span class="portal-rules-title">Rejoins d'autres communautés</span>
+        <span class="portal-rules-description">Recommence avec tous les Streameurs que tu suis</span>
+      </article>
+    </div>
+    <section class="portal-faq" aria-labelledby="dcg-faq-title">
+      <h2 id="dcg-faq-title">FAQ</h2>
+      <details>
+        <summary>Le pass quotidien</summary>
+        <p>Connecte-toi chaque jour sur le site pour valider ta récompense. Clique dessus dans le pass pour la récupérer. Si tu oublies de cliquer, ta connexion du jour suffit à te la réserver.</p>
+      </details>
+      <details>
+        <summary>Comment récupérer des boosters ?</summary>
+        <p>Regarde les streamers que tu suis en live. Selon la durée du live, tu peux gagner jusqu’à 5 boosters par jour. Par ta simple présence, tu soutiens ton streamer et tu récupères plus de boosters. C’est gagnant-gagnant !</p>
+      </details>
+      <details>
+        <summary>Les drops</summary>
+        <p>Le streamer déclenche les drops. Tu peux ainsi récupérer jusqu’à 3 boosters par live. Si tu es abonné à sa chaîne, chaque drop te rapporte le double, soit jusqu’à 6 boosters par live.</p>
+      </details>
+      <details>
+        <summary>Principe du jeu</summary>
+        <p>Ouvre des boosters, puis fusionne tes cartes pour en obtenir de plus rares. Collectionne aussi les versions shiny et collector, ainsi que les cartes exclusives de ton streamer.</p>
+        <small>Des événements et des collections communes se préparent…</small>
+      </details>
+      <details>
+        <summary>Bonus et soutien</summary>
+        <p>J’ai pris la décision de faire ce TCG lié aux communautés Twitch après qu’un de leurs représentants est devenu full payant.</p>
+        <p>Cependant, prendre un serveur, une base de données, etc., ça me coûte aussi beaucoup d’argent. Il existe donc deux moyens de me soutenir afin d’être sûre que le DCG puisse durer (car nous avons plein d’idées pour le rendre encore plus attrayant).</p>
+        <ul>
+          <li>Un abonnement de 1 € via PayPal : Contre cet euro, vous obtenez :
+            <ul>
+              <li>Mes remerciements pour m’aider à financer cette aventure</li>
+              <li>Des bonus de Connexion Pass doublés</li>
+              <li>Un contour de PP doré sur le site</li>
+              <li>Un design particulier sur le pseudo de votre carte (visible par tous)</li>
+              <li>Votre nom sur la page des Remerciements du site (visible par tous)</li>
+            </ul>
+          </li>
+          <li>L’abonnement à ma chaîne : Le fait d’être abonné à la chaîne d’un streameur vous octroie un double drop pendant les lives. Être abonné à <a class="text-link" href="https://www.twitch.tv/deadelustv">MA chaîne Twitch</a> vous donne bien sûr ce même bonus sur les drops de ma chaîne, ainsi que toutes les contreparties de l’abonnement PayPal (le but n’étant pas que ceux qui me soutiennent déjà sur Twitch aient à payer 2 fois. En revanche, si vous le voulez et que vous pouvez me le permettre, le double soutien est possible et sera toujours le bienvenu, mais il n’accordera aucun bonus supplémentaire).</li>
+        </ul>
+      </details>
+    </section>`;
   const profileNav = () => '<nav class="portal-profile-tabs" aria-label="Rubriques du profil"><a href="#tcg/mon-compte"'+(accountSection==='accueil'?' aria-current="page"':'')+'>Accueil</a><a href="#tcg/mon-compte/constellations"'+(accountSection!=='accueil'?' aria-current="page"':'')+'>Mes constellations</a></nav>'+(accountSection==='accueil'?'':'<nav class="portal-profile-views" aria-label="Affichage des constellations"><a href="#tcg/mon-compte/constellations"'+(accountSection==='constellations'?' aria-current="page"':'')+'>Par constellation</a><a href="#tcg/mon-compte/cartes"'+(accountSection==='cartes'?' aria-current="page"':'')+'>Toutes mes cartes</a></nav>');
   function account() {
     const meta=accountUser?.user_metadata||{},name=meta.preferred_username||meta.user_name||meta.display_name||'Collectionneur';
@@ -190,6 +239,16 @@
       if(Number.isInteger(day)&&day>=1&&day<=10)passGainRequest={user:accountUser.id,day,visit:passClaim.dataset.visitId,generation,at:Date.now()};
     }
     const searchTrigger=event.target.closest('[data-portal-search-open]');if(searchTrigger)openSearch(searchTrigger);
+    if(event.target.closest('[data-portal-search-link]') && !event.defaultPrevented &&
+       event.button === 0 && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey){
+      // Le routeur affiche d’abord l’accueil et remonte en haut de la page.
+      window.addEventListener('hashchange', () => {
+        if(location.hash !== '#tcg') return;
+        const button = root.querySelector('[data-portal-search-open]');
+        button?.focus({preventScroll:true});
+        button?.scrollIntoView({block:'center', behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'});
+      }, {once:true});
+    }
     if(event.target.closest('[data-portal-search-close]'))closeSearch();
     if(event.target.closest('[data-portal-search-result]'))closeSearch(false);
     if(event.target.matches('[data-portal-search-dialog]')){const rect=event.target.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)closeSearch();}
