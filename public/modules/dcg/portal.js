@@ -65,29 +65,29 @@
   const rules = () => `${heading('BIEN DÉMARRER', 'Les règles du jeu.')}
     <div class="portal-rules-grid">
       <button type="button" class="portal-common portal-rules-card" data-portal-login>
-        <span class="portal-common-art" aria-hidden="true">◌</span>
-        <span class="portal-eyebrow">Connection</span>
-        <span class="portal-rules-title">connecte toi avec ton compte Twitch</span>
+        <svg class="portal-rule-art" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-twitch"/></svg>
+        <span class="portal-rules-title">Connection</span>
+        <span class="portal-rules-description">Connecte toi avec ton compte Twitch</span>
       </button>
       <a href="#tcg" class="portal-common portal-rules-card" data-portal-search-link>
-        <span class="portal-common-art" aria-hidden="true">◎</span>
-        <span class="portal-eyebrow">Ton Streameur</span>
-        <span class="portal-rules-title">Recherche ton Streameur préféré</span>
+        <img class="portal-rule-art" src="modules/dcg/assets/rules-avatar.svg" alt="">
+        <span class="portal-rules-title">Ton Streameur</span>
+        <span class="portal-rules-description">Recherche ton Streameur préféré</span>
       </a>
       <article class="portal-common portal-rules-card">
-        <span class="portal-common-art" aria-hidden="true">◇</span>
-        <span class="portal-eyebrow">Ta propre carte</span>
-        <span class="portal-rules-title">Pour qu'elle apparaisse dans la collection de ton streameur</span>
+        <img class="portal-rule-art portal-rule-art-print" src="modules/dcg/assets/rules-card.svg" alt="">
+        <span class="portal-rules-title">Ta propre carte</span>
+        <span class="portal-rules-description">Pour qu'elle apparaisse dans la collection de ton streameur</span>
       </article>
       <article class="portal-common portal-rules-card">
-        <span class="portal-common-art" aria-hidden="true">✧</span>
-        <span class="portal-eyebrow">Commence à jouer</span>
-        <span class="portal-rules-title">Ouvre tes premiers Booster et collectionne les cartes de la communauté</span>
+        <img class="portal-rule-art portal-rule-art-print" src="modules/dcg/assets/rules-booster.svg" alt="">
+        <span class="portal-rules-title">Commence à jouer</span>
+        <span class="portal-rules-description">Ouvre tes premiers Booster et collectionne les cartes de la communauté</span>
       </article>
       <article class="portal-common portal-rules-card">
         <span class="portal-common-art" aria-hidden="true">∞</span>
-        <span class="portal-eyebrow">Rejoins d'autres communautés</span>
-        <span class="portal-rules-title">Recommence avec tous les Streameurs que tu suis</span>
+        <span class="portal-rules-title">Rejoins d'autres communautés</span>
+        <span class="portal-rules-description">Recommence avec tous les Streameurs que tu suis</span>
       </article>
     </div>
     ${passFAQ()}<div class="portal-rules">

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 104" fill="none">
+  <g stroke="#fff" stroke-linejoin="round">
+    <rect x="1.5" y="1.5" width="61" height="101" rx="6" fill="#fff" fill-opacity=".10" stroke-width="2.4"/>
+    <rect x="4.5" y="4.5" width="55" height="95" rx="4" stroke-opacity=".68"/>
+    <path d="M6 12a7 7 0 0 0 7-7m38 0a7 7 0 0 0 7 7M6 92a7 7 0 0 1 7 7m38 0a7 7 0 0 1 7-7" stroke-opacity=".7"/>
+    <circle cx="32" cy="51" r="20" stroke-width="1.7"/>
+    <circle cx="32" cy="51" r="16.5" stroke-width=".8" stroke-opacity=".75"/>
+    <path d="m32 34 2.2 11.8 7.5-4.5-4.4 7.5L49 51l-11.7 2.1 4.4 7.6-7.5-4.5L32 68l-2.2-11.8-7.5 4.5 4.4-7.6L15 51l11.7-2.2-4.4-7.5 7.5 4.5Z" fill="#fff" stroke="none"/>
+    <path d="M12 77c6 5 21 7 31 1 7-4 11-11 13-19M18 93h9m10 0h9" stroke-opacity=".65"/>
+  </g>
+  <g fill="#fff">
+    <text x="32" y="23" font-family="Georgia,serif" font-size="10" font-weight="bold" text-anchor="middle">DCG</text>
+    <path d="m32 6 .8 2.3L35 9l-2.2.8L32 12l-.8-2.2L29 9l2.2-.7ZM32 90l.8 2.2 2.2.8-2.2.8L32 96l-.8-2.2L29 93l2.2-.8Z"/>
+  </g>
+</svg>

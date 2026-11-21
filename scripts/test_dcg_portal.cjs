@@ -76,7 +76,7 @@ test('rules present five ordered cards with the daily Pass FAQ below them',()=>{
  const markup=s.root.innerHTML;
  const cards=[...markup.matchAll(/<(button|a|article)\b([^>]*\bportal-rules-card\b[^>]*)>([\s\S]*?)<\/\1>/g)];
  const expected=[
-  ['button','Connection','connecte toi avec ton compte Twitch'],
+  ['button','Connection','Connecte toi avec ton compte Twitch'],
   ['a','Ton Streameur','Recherche ton Streameur préféré'],
   ['article','Ta propre carte',"Pour qu'elle apparaisse dans la collection de ton streameur"],
   ['article','Commence à jouer','Ouvre tes premiers Booster et collectionne les cartes de la communauté'],
@@ -85,9 +85,18 @@ test('rules present five ordered cards with the daily Pass FAQ below them',()=>{
  assert.equal(cards.length,expected.length);
  for(const [index,[tag,label,description]] of expected.entries()){
   const [,actualTag,,body]=cards[index];
-  const text=body.replace(/<[^>]+>/g,' ').replace(/&#39;|&apos;/g,"'").replace(/\s+/g,' ').trim();
   assert.equal(actualTag,tag);
-  assert.ok(text.includes(label+' '+description),text);
+  const lines=[...body.matchAll(/<[^>]*class="[^"]*\bportal-rules-(title|description)\b[^"]*"[^>]*>([^<]*)</g)];
+  assert.deepEqual(lines.map(([,role,text])=>[role,text.trim().replace(/&#39;|&apos;/g,"'")]),[
+   ['title',label],['description',description]
+  ]);
+  if(index<4){
+   const art=body.match(/<[^>]*class="[^"]*\bportal-rule-art\b[^"]*"[^>]*>/)?.[0];
+   assert.ok(art,label);
+   assert.match(art,/aria-hidden="true"|^<img\b[^>]*\balt=""/,label);
+  } else {
+   assert.match(body,/<[^>]*class="[^"]*\bportal-common-art\b[^"]*"[^>]*>\s*∞\s*</);
+  }
  }
  assert.match(cards[0][2],/\bdata-portal-login\b/);
  assert.match(cards[1][2],/href="#tcg"/);

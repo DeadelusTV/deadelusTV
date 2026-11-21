@@ -86,12 +86,13 @@
   --card-glow: #83649a55;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
   align-items: flex-start;
   grid-column: span 2;
-  gap: 24px;
+  gap: 8px;
   min-height: 170px;
   padding: clamp(20px,2.6vw,30px);
+  padding-right: clamp(82px,8vw,112px);
   border-color: var(--card-glow);
   background: radial-gradient(ellipse at 90% 20%,var(--card-glow),transparent 80%),#101319;
   font: inherit;
@@ -104,9 +105,21 @@
 #page-tcg .portal-rules-card:nth-child(4){--card-glow: #99704155;}
 #page-tcg .portal-rules-card:nth-child(5){--card-glow: #54816e55;}
 #page-tcg .portal-rules-card .portal-common-art{right: 5%; top: 4%; color: #fff1; font-size: 100px; pointer-events: none;}
-#page-tcg .portal-rules-card .portal-eyebrow,#page-tcg .portal-rules-title{position: relative;}
-#page-tcg .portal-rules-card .portal-eyebrow{color: var(--gold-light); font-size: 11px;}
+#page-tcg .portal-rule-art{
+  position: absolute;
+  top: 20px;
+  right: clamp(15px,2vw,26px);
+  width: clamp(46px,5vw,64px);
+  height: clamp(46px,5vw,64px);
+  object-fit: contain;
+  fill: #fff;
+  opacity: .17;
+  pointer-events: none;
+}
+#page-tcg .portal-rule-art-print{height: 84px; transform: rotate(8deg); opacity: .27;}
+#page-tcg .portal-rules-title,#page-tcg .portal-rules-description{position: relative;}
 #page-tcg .portal-rules-title{color: #fff; font: 600 clamp(21px,2.2vw,29px)/1.2 Georgia,serif; overflow-wrap: anywhere;}
+#page-tcg .portal-rules-description{color: var(--gold-light); font-size: 13px; font-weight: 500; line-height: 1.55;}
 #page-tcg a.portal-rules-card,#page-tcg button.portal-rules-card{cursor: pointer;}
 #page-tcg a.portal-rules-card:hover,#page-tcg button.portal-rules-card:hover,
 #page-tcg a.portal-rules-card:focus-visible,#page-tcg button.portal-rules-card:focus-visible{border-color: var(--gold-light);}
@@ -167,7 +180,7 @@
 #page-tcg .portal-common-grid{grid-template-columns: 1fr;}
 #page-tcg .portal-common{min-height: 230px;}
 #page-tcg .portal-rules-grid{grid-template-columns: minmax(0,1fr); gap: 12px;}
-#page-tcg .portal-rules-card{min-height: 132px; gap: 18px;}
+#page-tcg .portal-rules-card{min-height: 132px;}
 #page-tcg .portal-message{padding: 24px 20px;}
 #page-tcg .portal-message h2{font-size: 25px;}
 #page-tcg .portal-message p{font-size: 13px;}
