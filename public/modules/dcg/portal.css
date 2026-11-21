@@ -53,12 +53,6 @@
 #page-tcg .portal-pass-symbol{color: var(--gold-light); font: 52px Georgia,serif;}
 #page-tcg .portal-status{display: inline-flex; align-items: center; gap: 5px; padding: 5px 8px; border: 1px solid #94815a6b; border-radius: 7px; color: #d6bd85; font: 600 10px system-ui,sans-serif; letter-spacing: .025em; vertical-align: middle; white-space: nowrap;}
 #page-tcg .portal-heading{max-width: 850px;}
-#page-tcg .portal-rules{margin-bottom: 60px; max-width: 920px;}
-#page-tcg .portal-rules>section{display: grid; grid-template-columns: 50px minmax(0,1fr); gap: 24px; padding: 30px 0; border-top: 1px solid var(--border);}
-#page-tcg .portal-rule-number{font: 30px Georgia,serif; color: #c4a46a;}
-#page-tcg .portal-rules h2{font: 600 27px Georgia,serif; margin: 0 0 12px;}
-#page-tcg .portal-rules p{line-height: 1.9; color: #bab2a4; font-size: 14px;}
-#page-tcg .portal-rules .text-link{font-size: 12px;}
 #page-tcg .portal-message{margin: 28px 0; padding: 30px; max-width: 930px;}
 #page-tcg .portal-message h2{font: 600 29px Georgia,serif; margin: 15px 0;}
 #page-tcg .portal-message p{font-size: 14px; line-height: 1.9; color: #c0b7a7; max-width: 760px;}
@@ -173,10 +167,6 @@
 #page-tcg .portal-pass-symbol{font-size: 35px;}
 #page-tcg .portal-pass h2{font-size: 23px;}
 #page-tcg .portal-pass>a{justify-self: start;}
-#page-tcg .portal-rules>section{grid-template-columns: 30px minmax(0,1fr); gap: 16px; padding: 24px 0;}
-#page-tcg .portal-rule-number{font-size: 24px;}
-#page-tcg .portal-rules h2{font-size: 23px;}
-#page-tcg .portal-rules p{font-size: 13px;}
 #page-tcg .portal-common-grid{grid-template-columns: 1fr;}
 #page-tcg .portal-common{min-height: 230px;}
 #page-tcg .portal-rules-grid{grid-template-columns: minmax(0,1fr); gap: 12px;}
@@ -240,12 +230,13 @@
 #page-tcg .portal-pass-login{display:flex;align-items:center;flex-wrap:wrap;gap:14px 24px;margin:12px 0 28px;color:var(--muted);font-size:13px;}
 #page-tcg .portal-pass-login p{margin:0;}
 
-#page-tcg .portal-pass-faq{margin:12px 0 36px;padding:24px;border:1px solid var(--border);border-radius:16px;background:#111315}
-#page-tcg .portal-pass-faq h2{margin:0 0 18px;font:500 27px Georgia,serif;color:var(--gold-light)}
-#page-tcg .portal-pass-faq details{padding:14px 0;border-top:1px solid var(--border)}
-#page-tcg .portal-pass-faq summary{cursor:pointer;font-size:14px;color:var(--ink)}
-#page-tcg .portal-pass-faq p{margin:12px 0 0;font-size:13px;line-height:1.8;color:var(--muted)}
-#page-tcg .portal-pass-faq summary:focus-visible{outline:2px solid var(--gold-light);outline-offset:5px}
+#page-tcg .portal-faq{margin:12px 0 36px;padding:24px;border:1px solid var(--border);border-radius:16px;background:#111315}
+#page-tcg .portal-faq h2{margin:0 0 18px;font:500 27px Georgia,serif;color:var(--gold-light)}
+#page-tcg .portal-faq details{border-top:1px solid var(--border)}
+#page-tcg .portal-faq summary{padding:14px 0;cursor:pointer;font-size:14px;color:var(--ink)}
+#page-tcg .portal-faq p{margin:0 0 14px;font-size:13px;line-height:1.8;color:var(--muted)}
+#page-tcg .portal-faq small{display:block;margin-bottom:14px;font-size:12px;font-style:italic;color:var(--muted)}
+#page-tcg .portal-faq summary:focus-visible{outline:2px solid var(--gold-light);outline-offset:2px}
 
 #page-tcg .daily-pass--visual{--portal-pass-scale:.68}
 #page-tcg .daily-pass--progress .pass-surface{padding:8px 6px 16px}

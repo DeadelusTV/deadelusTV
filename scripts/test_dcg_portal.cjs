@@ -71,7 +71,7 @@ test('each common subpage is a real DCG route; unknown DCG subpages safely retur
  }
  await s.go('#tcg/inconnu');assert.match(s.root.innerHTML,/data-portal-search/);
 });
-test('rules present five ordered cards with the daily Pass FAQ below them',()=>{
+test('rules present five ordered cards with the FAQ below them',()=>{
  const s=setup({hash:'#tcg/regles'});
  const markup=s.root.innerHTML;
  const cards=[...markup.matchAll(/<(button|a|article)\b([^>]*\bportal-rules-card\b[^>]*)>([\s\S]*?)<\/\1>/g)];
@@ -101,10 +101,21 @@ test('rules present five ordered cards with the daily Pass FAQ below them',()=>{
  assert.match(cards[0][2],/\bdata-portal-login\b/);
  assert.match(cards[1][2],/href="#tcg"/);
  assert.match(cards[1][2],/\bdata-portal-search-link\b/);
- assert.ok(markup.indexOf('FAQ du Pass quotidien')>cards.at(-1).index);
+ const faqHeading=markup.match(/<h2\b[^>]*>FAQ<\/h2>/);
+ assert.ok(faqHeading && faqHeading.index>cards.at(-1).index);
  assert.doesNotMatch(markup,/Un compte Twitch, plusieurs univers à collectionner/);
  s.click('[data-portal-login]');
  assert.equal(s.signins,1);
+});
+test('the rules FAQ explains the game in four expandable topics',()=>{
+ const markup=setup({hash:'#tcg/regles'}).root.innerHTML;
+ const topics=[...markup.matchAll(/<details\b[^>]*>\s*<summary\b[^>]*>([^<]+)<\/summary>([\s\S]*?)<\/details>/g)];
+ assert.deepEqual(topics.map(topic=>topic[1]),['Le pass quotidien','Comment récupérer des boosters ?','Les drops','Principe du jeu']);
+ assert.match(topics[1][2],/\b(?:5|cinq)\b/i);
+ assert.match(topics[1][2],/par jour/i);
+ assert.match(topics[2][2],/\b(?:3|trois)\b/i);
+ assert.match(topics[2][2],/par live/i);
+ assert.doesNotMatch(markup,/portal-rule-number|Rejoins ta communauté|Gère tes Alkahests/);
 });
 test('the streamer card lands on the home search button after route scrolling',async()=>{
  const s=setup({hash:'#tcg/regles'});
