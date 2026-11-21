@@ -85,20 +85,27 @@
       <h2 id="dcg-faq-title">FAQ</h2>
       <details>
         <summary>Le pass quotidien</summary>
-        <p>Connecte-toi chaque jour sur le site pour valider ta récompense. Clique dessus dans le pass pour la récupérer.</p>
+        <p>Connecte-toi chaque jour sur le site pour valider ta récompense. Clique dessus dans le pass pour la récupérer. Si tu oublies de cliquer, ta connexion du jour suffit à te la réserver.</p>
       </details>
       <details>
         <summary>Comment récupérer des boosters ?</summary>
-        <p>Regarde les streamers que tu suis en live. Selon la durée du live, tu peux gagner jusqu’à 5 boosters par jour.</p>
+        <p>Regarde les streamers que tu suis en live. Selon la durée du live, tu peux gagner jusqu’à 5 boosters par jour. Par ta simple présence, tu soutiens ton streamer et tu récupères plus de boosters. C’est gagnant-gagnant !</p>
       </details>
       <details>
         <summary>Les drops</summary>
-        <p>Le streamer déclenche les drops. Tu peux ainsi récupérer jusqu’à 3 boosters par live.</p>
+        <p>Le streamer déclenche les drops. Tu peux ainsi récupérer jusqu’à 3 boosters par live. Si tu es abonné à sa chaîne, chaque drop te rapporte le double, soit jusqu’à 6 boosters par live.</p>
       </details>
       <details>
         <summary>Principe du jeu</summary>
         <p>Ouvre des boosters, puis fusionne tes cartes pour en obtenir de plus rares. Collectionne aussi les versions shiny et collector, ainsi que les cartes exclusives de ton streamer.</p>
         <small>Des événements et des collections communes se préparent…</small>
+      </details>
+      <details>
+        <summary>Bonus et soutien</summary>
+        <p>Quand un autre jeu de cartes sur Twitch est devenu entièrement payant, j’ai décidé de créer mon propre TCG pour les communautés Twitch.</p>
+        <p>Tu peux t’abonner à <a class="text-link" href="https://www.twitch.tv/deadelustv">ma chaîne Twitch</a> pour lui donner de la visibilité, ou me soutenir via un abonnement PayPal à 1 € par mois. Ton soutien m’aide à payer le serveur et la base de données, et à prendre un serveur plus puissant si le jeu grandit.</p>
+        <p>Avec l’abonnement Twitch, tu reçois deux fois plus de boosters aux jours 9 et 10 du pass quotidien. Un halo doré entoure ta photo de profil sur le site. Sur ta carte, un cadre doré autour de ton pseudo montre à tous les joueurs que tu soutiens la chaîne et le TCG.</p>
+        <p>Ces bonus sont aussi prévus pour les abonnés PayPal. Merci de m’aider à faire vivre le jeu !</p>
       </details>
     </section>`;
   const profileNav = () => '<nav class="portal-profile-tabs" aria-label="Rubriques du profil"><a href="#tcg/mon-compte"'+(accountSection==='accueil'?' aria-current="page"':'')+'>Accueil</a><a href="#tcg/mon-compte/constellations"'+(accountSection!=='accueil'?' aria-current="page"':'')+'>Mes constellations</a></nav>'+(accountSection==='accueil'?'':'<nav class="portal-profile-views" aria-label="Affichage des constellations"><a href="#tcg/mon-compte/constellations"'+(accountSection==='constellations'?' aria-current="page"':'')+'>Par constellation</a><a href="#tcg/mon-compte/cartes"'+(accountSection==='cartes'?' aria-current="page"':'')+'>Toutes mes cartes</a></nav>');

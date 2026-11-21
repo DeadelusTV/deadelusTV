@@ -107,14 +107,20 @@ test('rules present five ordered cards with the FAQ below them',()=>{
  s.click('[data-portal-login]');
  assert.equal(s.signins,1);
 });
-test('the rules FAQ explains the game in four expandable topics',()=>{
+test('the rules FAQ covers the game, subscriber drops and monthly support',()=>{
  const markup=setup({hash:'#tcg/regles'}).root.innerHTML;
  const topics=[...markup.matchAll(/<details\b[^>]*>\s*<summary\b[^>]*>([^<]+)<\/summary>([\s\S]*?)<\/details>/g)];
- assert.deepEqual(topics.map(topic=>topic[1]),['Le pass quotidien','Comment récupérer des boosters ?','Les drops','Principe du jeu']);
+ assert.deepEqual(topics.map(topic=>topic[1]),['Le pass quotidien','Comment récupérer des boosters ?','Les drops','Principe du jeu','Bonus et soutien']);
  assert.match(topics[1][2],/\b(?:5|cinq)\b/i);
  assert.match(topics[1][2],/par jour/i);
  assert.match(topics[2][2],/\b(?:3|trois)\b/i);
  assert.match(topics[2][2],/par live/i);
+ assert.match(topics[2][2],/abonn/i);
+ assert.match(topics[2][2],/doubl|deux fois|\b(?:6|six)\b/i);
+ const support=topics[4][2];
+ assert.match(support,/Twitch/i);
+ assert.match(support,/PayPal/i);
+ assert.match(support,/\b(?:1|un)\s*(?:€|euro)\s*(?:par\s+|\/\s*)mois/i);
  assert.doesNotMatch(markup,/portal-rule-number|Rejoins ta communauté|Gère tes Alkahests/);
 });
 test('the streamer card lands on the home search button after route scrolling',async()=>{
