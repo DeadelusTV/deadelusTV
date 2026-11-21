@@ -234,7 +234,8 @@
 #page-tcg .portal-faq h2{margin:0 0 18px;font:500 27px Georgia,serif;color:var(--gold-light)}
 #page-tcg .portal-faq details{border-top:1px solid var(--border)}
 #page-tcg .portal-faq summary{padding:14px 0;cursor:pointer;font-size:14px;color:var(--ink)}
-#page-tcg .portal-faq p{margin:0 0 14px;font-size:13px;line-height:1.8;color:var(--muted)}
+#page-tcg .portal-faq p,#page-tcg .portal-faq ul{margin:0 0 14px;font-size:13px;line-height:1.8;color:var(--muted)}
+#page-tcg .portal-faq ul{padding-inline-start:1.5em}
 #page-tcg .portal-faq small{display:block;margin-bottom:14px;font-size:12px;font-style:italic;color:var(--muted)}
 #page-tcg .portal-faq summary:focus-visible{outline:2px solid var(--gold-light);outline-offset:2px}
 

@@ -107,7 +107,7 @@ test('rules present five ordered cards with the FAQ below them',()=>{
  s.click('[data-portal-login]');
  assert.equal(s.signins,1);
 });
-test('the rules FAQ covers the game, subscriber drops and monthly support',()=>{
+test('the rules FAQ covers the game, subscriber drops and ways to support the game',()=>{
  const markup=setup({hash:'#tcg/regles'}).root.innerHTML;
  const topics=[...markup.matchAll(/<details\b[^>]*>\s*<summary\b[^>]*>([^<]+)<\/summary>([\s\S]*?)<\/details>/g)];
  assert.deepEqual(topics.map(topic=>topic[1]),['Le pass quotidien','Comment récupérer des boosters ?','Les drops','Principe du jeu','Bonus et soutien']);
@@ -118,9 +118,11 @@ test('the rules FAQ covers the game, subscriber drops and monthly support',()=>{
  assert.match(topics[2][2],/abonn/i);
  assert.match(topics[2][2],/doubl|deux fois|\b(?:6|six)\b/i);
  const support=topics[4][2];
- assert.match(support,/Twitch/i);
- assert.match(support,/PayPal/i);
- assert.match(support,/\b(?:1|un)\s*(?:€|euro)\s*(?:par\s+|\/\s*)mois/i);
+ assert.match(support,/\b1\s*€\s+via PayPal\b/);
+ const supportLinks=[...support.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)];
+ assert.equal(supportLinks.length,1);
+ assert.match(supportLinks[0][1],/\bhref="https:\/\/www\.twitch\.tv\/deadelustv"/);
+ assert.equal(supportLinks[0][2],'MA chaîne Twitch');
  assert.doesNotMatch(markup,/portal-rule-number|Rejoins ta communauté|Gère tes Alkahests/);
 });
 test('the streamer card lands on the home search button after route scrolling',async()=>{

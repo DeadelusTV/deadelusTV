@@ -102,10 +102,20 @@
       </details>
       <details>
         <summary>Bonus et soutien</summary>
-        <p>Quand un autre jeu de cartes sur Twitch est devenu entièrement payant, j’ai décidé de créer mon propre TCG pour les communautés Twitch.</p>
-        <p>Tu peux t’abonner à <a class="text-link" href="https://www.twitch.tv/deadelustv">ma chaîne Twitch</a> pour lui donner de la visibilité, ou me soutenir via un abonnement PayPal à 1 € par mois. Ton soutien m’aide à payer le serveur et la base de données, et à prendre un serveur plus puissant si le jeu grandit.</p>
-        <p>Avec l’abonnement Twitch, tu reçois deux fois plus de boosters aux jours 9 et 10 du pass quotidien. Un halo doré entoure ta photo de profil sur le site. Sur ta carte, un cadre doré autour de ton pseudo montre à tous les joueurs que tu soutiens la chaîne et le TCG.</p>
-        <p>Ces bonus sont aussi prévus pour les abonnés PayPal. Merci de m’aider à faire vivre le jeu !</p>
+        <p>J’ai pris la décision de faire ce TCG lié aux communautés Twitch après qu’un de leurs représentants est devenu full payant.</p>
+        <p>Cependant, prendre un serveur, une base de données, etc., ça me coûte aussi beaucoup d’argent. Il existe donc deux moyens de me soutenir afin d’être sûre que le DCG puisse durer (car nous avons plein d’idées pour le rendre encore plus attrayant).</p>
+        <ul>
+          <li>Un abonnement de 1 € via PayPal : Contre cet euro, vous obtenez :
+            <ul>
+              <li>Mes remerciements pour m’aider à financer cette aventure</li>
+              <li>Des bonus de Connexion Pass doublés</li>
+              <li>Un contour de PP doré sur le site</li>
+              <li>Un design particulier sur le pseudo de votre carte (visible par tous)</li>
+              <li>Votre nom sur la page des Remerciements du site (visible par tous)</li>
+            </ul>
+          </li>
+          <li>L’abonnement à ma chaîne : Le fait d’être abonné à la chaîne d’un streameur vous octroie un double drop pendant les lives. Être abonné à <a class="text-link" href="https://www.twitch.tv/deadelustv">MA chaîne Twitch</a> vous donne bien sûr ce même bonus sur les drops de ma chaîne, ainsi que toutes les contreparties de l’abonnement PayPal (le but n’étant pas que ceux qui me soutiennent déjà sur Twitch aient à payer 2 fois. En revanche, si vous le voulez et que vous pouvez me le permettre, le double soutien est possible et sera toujours le bienvenu, mais il n’accordera aucun bonus supplémentaire).</li>
+        </ul>
       </details>
     </section>`;
   const profileNav = () => '<nav class="portal-profile-tabs" aria-label="Rubriques du profil"><a href="#tcg/mon-compte"'+(accountSection==='accueil'?' aria-current="page"':'')+'>Accueil</a><a href="#tcg/mon-compte/constellations"'+(accountSection!=='accueil'?' aria-current="page"':'')+'>Mes constellations</a></nav>'+(accountSection==='accueil'?'':'<nav class="portal-profile-views" aria-label="Affichage des constellations"><a href="#tcg/mon-compte/constellations"'+(accountSection==='constellations'?' aria-current="page"':'')+'>Par constellation</a><a href="#tcg/mon-compte/cartes"'+(accountSection==='cartes'?' aria-current="page"':'')+'>Toutes mes cartes</a></nav>');
