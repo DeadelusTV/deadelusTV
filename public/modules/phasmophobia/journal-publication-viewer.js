@@ -37,7 +37,7 @@
    const media=window.PHASMO_JOURNAL_PUBLIC_MEDIA;
    const bridge=window.PHASMO_JOURNAL_REMOTE_BRIDGE;
    if(!media?.restore||!bridge?.importPayload)throw Error('La visionneuse du carnet est indisponible.');
-   show('Chargement de la version publique et de ses illustrations…');
+   show('Chargement du sommaire et préparation des liens vers les illustrations…');
    const payload=await media.restore(data.payload,client,show);
    await bridge.importPayload(payload);
    document.documentElement.classList.add('journal-publication-ready');
