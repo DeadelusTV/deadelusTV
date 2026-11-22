@@ -10,8 +10,9 @@ window.DEADELUSTV_DCG_CONFIG=Object.freeze({
   dailyPassServiceReady:true,
   // Aperçu de test : mettre false pour masquer la découverte avec un seul DCG.
   showDiscoveryWithSingleStreamer:true,
+  // Le bandeau « Les DCG » tire au sort uniquement les espaces ayant déjà un deck.
   spaces:[{
-    id:'deadelustv',name:'DeadelusTV',
+    id:'deadelustv',name:'DeadelusTV',hasDeck:true,
     avatar:'https://static-cdn.jtvnw.net/jtv_user_pictures/e65e9352-416f-49d1-b958-9b8218fc4b65-profile_image-300x300.png',
     gameBase:'https://tcg.yekelle-boulet.workers.dev/',status:'Version de test'
   }]

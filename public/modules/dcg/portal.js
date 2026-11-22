@@ -3,8 +3,6 @@
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const root=document.getElementById('dcg-portal-root');if(!root)return;
   const config=window.DEADELUSTV_DCG_CONFIG;
-  const gameLink=route=>new URL('#/'+route,config.gameBase).href;
-  const logo = 'assets/logo-chaine.png';
   let accountSection='accueil';
   let currentPage=null,generation=0,accountUser=null,accountLoading=false,accountError=false;
   let xpWidget=null,xpHost=null,xpUser=null;
@@ -23,9 +21,10 @@
     seen.add(space.id);return [{...space,avatar,href:new URL('#/boosters',base).href}];
   });
   // Fisher–Yates : un tirage par chargement, stable lors des recherches ou connexions.
-  const shuffled=[...spaces];for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];}
+  const shuffled=spaces.filter(space=>space.hasDeck===true);
+  for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];}
   const discovery=shuffled.slice(0,Math.max(1,Math.min(20,Number(config.discoveryLimit)||20)));
-  const showDiscovery=spaces.length>1||(spaces.length===1&&config.showDiscoveryWithSingleStreamer===true);
+  const showDiscovery=shuffled.length>1||(shuffled.length===1&&config.showDiscoveryWithSingleStreamer===true);
   const pages = ['accueil', 'regles', 'mon-compte', 'collections-communes'];
   const titles = {accueil:'Accueil', regles:'Règles du jeu', 'mon-compte':'Mon compte', 'collections-communes':'Collections communes'};
   const heading = (tag, title, copy) => `<header class="portal-heading"><div class="bread">${tag}</div><h1>${title}</h1>${copy ? `<p>${copy}</p>` : ''}</header>`;
@@ -49,9 +48,41 @@
     if(!mySpaces.length)return '<p class="portal-empty">Tu n’as pas encore rejoint de DCG. Découvre une communauté ci-dessous ou entre dans le DCG DeadelusTV.</p>';
     return ordered().map(space => `<a class="portal-space" href="${esc(space.href)}" data-dcg="${esc(space.id)}"><img src="${esc(space.avatar)}" alt="" referrerpolicy="no-referrer" width="96" height="96"><div class="portal-space-copy"><span class="portal-space-status">${esc(space.status||'')}</span><h3>${esc(space.name)}</h3><p>Ses cartes, ses moments, sa communauté.</p></div><div class="portal-space-level"${space.xpMarkup?'':' role="status" aria-label="'+esc(space.xpUnavailable?'Niveau momentanément indisponible':'Lecture de ton niveau')+'" aria-busy="'+!space.xpUnavailable+'"'}>${space.xpMarkup||'<span class="portal-space-level-placeholder" aria-hidden="true">'+(space.xpUnavailable?'—':'…')+'</span>'}</div>${stockMarkup()}</a>`).join('');
   }
-  const discoverySection=()=>!showDiscovery?'':`<section class="portal-discovery" id="dcg-decouverte" aria-labelledby="dcg-discovery-title"><div class="portal-section-top"><div><span class="overline">LES COMMUNAUTÉS</span><h2 id="dcg-discovery-title">Les DCG</h2></div><div class="portal-carousel-controls" ${discovery.length<2?'hidden':''}><button type="button" data-portal-carousel-direction="previous" aria-label="DCG précédents" aria-controls="dcg-discovery-rail">←</button><button type="button" data-portal-carousel-direction="next" aria-label="DCG suivants" aria-controls="dcg-discovery-rail">→</button></div></div><ul class="portal-carousel" id="dcg-discovery-rail" data-portal-carousel tabindex="0" aria-label="Découvrir des DCG">${discovery.map(space=>`<li><a class="portal-streamer-pill" href="${esc(space.href)}" data-discovery-dcg="${esc(space.id)}" aria-label="Entrer dans le DCG ${esc(space.name)}"><img src="${esc(space.avatar)}" alt="" width="42" height="42" loading="lazy" referrerpolicy="no-referrer"><span>${esc(space.name)}</span></a></li>`).join('')}</ul></section>`;
+  function discoverySection() {
+    if (!showDiscovery) return '';
+    const duration = Math.max(40, discovery.length * 7);
+    const group = (copy = false) => `<ul class="portal-ticker-group"${copy ? ' aria-hidden="true"' : ' aria-label="Découvrir des DCG"'}>
+      ${discovery.map(space => `<li><a class="portal-streamer-pill" href="${esc(space.href)}" ${copy ? 'tabindex="-1"' : `data-discovery-dcg="${esc(space.id)}"`} aria-label="Entrer dans le DCG ${esc(space.name)}"><img src="${esc(space.avatar)}" alt="" width="42" height="42" loading="lazy" referrerpolicy="no-referrer"><span>${esc(space.name)}</span></a></li>`).join('')}
+    </ul>`;
+    return `<section class="portal-discovery" id="dcg-decouverte" aria-labelledby="dcg-discovery-title">
+      <div class="portal-section-top"><div><span class="overline">LES COMMUNAUTÉS</span><h2 id="dcg-discovery-title">Les DCG</h2></div></div>
+      <div class="portal-ticker" style="--ticker-duration:${duration}s">${group()}${group(true)}</div>
+    </section>`;
+  }
   const directoryActions=()=>'<div class="portal-directory-actions"><div class="portal-general-xp-bubble" data-general-xp hidden aria-label="Niveau général DCG"></div><button class="button-outline" type="button" data-portal-search-open aria-haspopup="dialog">Rechercher un streamer</button></div>';
-  const home = () => `<section class="portal-hero"><div><span class="overline">DEADELUS CARD GAME</span><h1><em>Collectionne les Communautés Twitch</em></h1><p>Rejoins les collections de tes streamers préférés et collectionne leurs cartes, celles de leurs viewers et leurs meilleurs clips.<br>Découvre des cartes exclusives au fil des événements et des nouvelles collections !</p><div class="portal-hero-links"><a class="button-primary" href="#dcg-annuaire" data-portal-directory>Explorer les DCG ↓</a><a class="text-link" href="#tcg/regles">Comment jouer ? →</a></div></div><a class="portal-featured" href="${gameLink('boosters')}" aria-label="Entrer dans le DCG DeadelusTV"><span class="portal-featured-orbit" aria-hidden="true"></span><img src="${logo}" alt="Logo DeadelusTV" width="210" height="210"><span class="portal-eyebrow">ENTRÉE DIRECTE</span><strong>DeadelusTV</strong><span>Ouvrir mon espace boosters →</span></a></section>
+  const home = () => `<section class="portal-hero">
+    <div>
+      <span class="overline">DEADELUS CARD GAME</span>
+      <h1><em>Collectionne les Communautés Twitch</em></h1>
+      <p>Rejoins les constellations de tes streamers préférés, et collectionne leurs cartes. Découvre des cartes exclusives au fil des événements et des nouvelles collections !</p>
+    </div>
+    <div class="portal-roles">
+      <a class="portal-role-card" href="#tcg/regles">
+        <svg class="portal-role-art" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+          <path d="M5 32s10-16 27-16 27 16 27 16-10 16-27 16S5 32 5 32Z"/>
+          <circle cx="32" cy="32" r="10"/><circle cx="32" cy="32" r="4" fill="currentColor" stroke="none"/>
+        </svg>
+        <span>Je suis Viewers</span>
+      </a>
+      <article class="portal-role-card">
+        <svg class="portal-role-art" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+          <rect x="24" y="7" width="16" height="32" rx="8"/>
+          <path d="M17 30a15 15 0 0 0 30 0M32 45v10m-9 0h18M14 15a13 13 0 0 0 0 12m36-12a13 13 0 0 1 0 12"/>
+        </svg>
+        <span>Je suis Streamer</span>
+      </article>
+    </div>
+  </section>
     ${pass()}<section class="portal-directory" id="dcg-annuaire" aria-labelledby="dcg-directory-title"><div class="portal-section-top"><div><span class="overline">MES COMMUNAUTÉS</span><h2 id="dcg-directory-title">Mes DCG</h2><p>Retrouve les communautés où tu joues.</p></div>${directoryActions()}</div><div class="portal-spaces" data-portal-spaces>${directory()}</div></section>${discoverySection()}${searchDialog()}`;
   const rules = () => `${heading('BIEN DÉMARRER', 'Les règles du jeu.')}
     <div class="portal-rules-grid">
@@ -255,12 +286,6 @@
     if(event.target.closest('[data-portal-login]'))void window.DEADELUSTV_AUTH?.signIn();
     if(event.target.closest('[data-portal-account-retry]'))render(accountSection==='accueil'?'mon-compte':'mon-compte/'+accountSection);
     if(event.target.closest('[data-portal-my-retry]')){myLoading=true;myError=false;paintMySpaces();void readMySpaces(++generation);}
-    const direction=event.target.closest('[data-portal-carousel-direction]');
-    if(direction){const rail=root.querySelector('[data-portal-carousel]');rail?.scrollBy({left:(direction.dataset.portalCarouselDirection==='next'?1:-1)*Math.max(180,(rail.clientWidth||0)*.8),behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}
-    if(event.target.closest('[data-portal-directory]')){
-      event.preventDefault();const target=root.querySelector('#dcg-decouverte')||root.querySelector('#dcg-annuaire');target?.scrollIntoView?.({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
-      if(showDiscovery)root.querySelector('[data-portal-carousel]')?.focus({preventScroll:true});
-    }
   });
   window.addEventListener('deadelustv:auth-change',event=>{signedInHint=event.detail?.authenticated===true;accountUser=null;mySpaces=[];myError=false;if(currentPage==='mon-compte')render(accountSection==='accueil'?'mon-compte':'mon-compte/'+accountSection);else if(currentPage==='accueil'){const run=++generation;myLoading=signedInHint;paintMySpaces();if(myLoading)void readMySpaces(run);}});
   window.addEventListener('tcg:daily-pass-change',event=>{
