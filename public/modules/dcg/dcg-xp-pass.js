@@ -13,8 +13,10 @@
       const p=window.DCGXP.progress(state.total,state.level),opened=Math.min(p.opened,p.required),remaining=Math.max(0,p.required-p.opened);
       const packs=Math.ceil(p.next/2),reward=scope==='general'?10*p.next+' Alkahests par DCG':packs+' booster'+(packs>1?'s':'');
       const percent=(p.fraction*100).toLocaleString('fr-FR',{maximumFractionDigits:1}),count=n=>n.toLocaleString('fr-FR');
-      return '<div class="dcg-xp-details__heading"><div><span class="overline">'+(scope==='general'?'TOUS MES DCG':'Level UP - <span data-streamer-name>Streamer</span>')+'</span><h2>'+(scope==='general'?'Ma progression générale':'Ma progression XP')+'</h2></div><strong class="dcg-xp-details__level">Niveau '+p.level+'</strong></div>'+
-        '<dl class="dcg-xp-details__stats"><div><dt>Boosters ouverts au total</dt><dd>'+count(p.total)+'</dd></div><div><dt>Boosters avant prochain niveau</dt><dd>'+count(remaining)+'</dd></div><div><dt>Récompenses du prochain niveau</dt><dd>'+reward+'</dd></div></dl>'+
+      const heading=scope==='general'?'<h2>Ma progression générale</h2>':'<span class="overline">Level UP - <span data-streamer-name>Streamer</span></span><h2>Ma progression XP</h2>';
+      const total=scope==='general'?'':'<div><dt>Boosters ouverts au total</dt><dd>'+count(p.total)+'</dd></div>';
+      return '<div class="dcg-xp-details__heading"><div>'+heading+'</div><strong class="dcg-xp-details__level">Niveau '+p.level+'</strong></div>'+
+        '<dl class="dcg-xp-details__stats">'+total+'<div><dt>Boosters avant prochain niveau</dt><dd>'+count(remaining)+'</dd></div><div><dt>Récompenses du prochain niveau</dt><dd>'+reward+'</dd></div></dl>'+
         '<div class="dcg-xp-details__measure"><span>Vers le niveau '+p.next+'</span><strong>'+count(opened)+' / '+count(p.required)+' boosters · '+percent+' %</strong></div>'+
         '<progress class="dcg-xp-details__bar" max="'+p.required+'" value="'+opened+'" aria-label="Progression vers le niveau '+p.next+'">'+percent+' %</progress>'+
         (p.pending?'<p class="dcg-xp-details__available">'+p.pending+' niveau'+(p.pending>1?'x':'')+' à récupérer.</p><button type="button" class="button-primary" data-xp-claim="'+scope+'"'+(busy?' disabled':'')+'>'+(busy?'Récupération…':'Récupérer le niveau '+p.next+' · '+reward)+'</button>':'');

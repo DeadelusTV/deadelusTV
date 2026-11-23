@@ -262,6 +262,39 @@
 #page-tcg .portal-pass-login{display:flex;align-items:center;flex-wrap:wrap;gap:14px 24px;margin:12px 0 28px;color:var(--muted);font-size:13px;}
 #page-tcg .portal-pass-login p{margin:0;}
 
+#page-tcg .portal-account-heading{margin:26px 0 6px;font-family:inherit;line-height:1.5;}
+#page-tcg [data-portal-stats]{margin:24px 0;color:var(--muted);}
+#page-tcg .portal-stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}
+#page-tcg .portal-stat-card{
+  --stat-tint:#75618c55;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:flex-start;
+  gap:8px;
+  padding:clamp(20px,3vw,30px);
+  padding-right:clamp(90px,9vw,125px);
+  overflow:hidden;
+  border:1px solid var(--stat-tint);
+  border-radius:18px;
+  background:radial-gradient(ellipse at 88% 14%,var(--stat-tint),transparent 78%),#101319;
+}
+#page-tcg .portal-stat-card:nth-child(2){--stat-tint:#487f8c55;}
+#page-tcg .portal-stat-card:nth-child(3){--stat-tint:#986d4855;}
+#page-tcg .portal-stat-card:nth-child(4){--stat-tint:#9a7c3e55;}
+#page-tcg .portal-stat-card h2{margin:0;color:white;font:600 clamp(20px,2.1vw,27px)/1.2 Georgia,serif;overflow-wrap:anywhere;}
+#page-tcg .portal-stat-value{color:var(--gold-light);font:600 clamp(26px,2.8vw,38px)/1.1 Georgia,serif;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;max-width:100%;}
+#page-tcg .portal-stat-card p{margin:0;font-size:13px;line-height:1.5;color:var(--gold-light);}
+#page-tcg .portal-stat-art{position:absolute;top:20px;right:clamp(16px,2.5vw,35px);width:clamp(43px,6vw,64px);height:80px;transform:rotate(8deg);opacity:.3;pointer-events:none;}
+#page-tcg .portal-stat-art img{width:100%;height:100%;object-fit:contain;filter:grayscale(1) brightness(1.6);}
+#page-tcg .portal-stat-art-shine{opacity:.48;}
+#page-tcg .portal-stat-art-shine img{filter:sepia(.9) drop-shadow(0 0 3px #e1b96d60);}
+#page-tcg .portal-stat-art-shine::after{content:"✦";position:absolute;right:-6px;top:-6px;color:var(--gold-light);font:24px/1 Georgia,serif;text-shadow:0 0 6px #f7c770;}
+@media(max-width:680px){
+  #page-tcg .portal-stat-grid{grid-template-columns:minmax(0,1fr);gap:12px;}
+}
+
 #page-tcg .portal-faq{margin:12px 0 36px;padding:24px;border:1px solid var(--border);border-radius:16px;background:#111315}
 #page-tcg .portal-faq h2{margin:0 0 18px;font:500 27px Georgia,serif;color:var(--gold-light)}
 #page-tcg .portal-faq details{border-top:1px solid var(--border)}
@@ -275,7 +308,6 @@
 #page-tcg .daily-pass--progress .pass-surface{padding:8px 6px 16px}
 #page-tcg .daily-pass--visual .day-track{height:clamp(44px,7cqi,88px);margin:12px 0}
 #page-tcg .daily-pass--visual .day{transform:scale(var(--portal-pass-scale))}
-#page-tcg .daily-pass--visual .claim-hit{min-width:calc(44px / var(--portal-pass-scale));min-height:calc(44px / var(--portal-pass-scale))}
 @media(max-width:600px){
 #page-tcg .daily-pass--visual{--portal-pass-scale:.85}
 }

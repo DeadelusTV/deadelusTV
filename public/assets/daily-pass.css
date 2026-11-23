@@ -1,9 +1,9 @@
 .daily-pass-shell{max-width:1440px;margin:18px auto;padding:0 24px;color:#eee6d7;font:14px/1.6 system-ui,sans-serif}.daily-pass-shell[hidden]{display:none}
 .daily-pass{--pass-gold:#e2c080;--pass-ink:#f5eedf;box-sizing:border-box;color:var(--pass-ink);padding:clamp(22px,3vw,40px);border:1px solid #b99a582e;border-radius:20px;background:radial-gradient(ellipse at 70% 0,#c69d3d0c,transparent 65%),#111316;font:14px/1.7 system-ui,sans-serif;overflow:hidden}
-.daily-pass-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}.daily-pass-eyebrow{font-size:9px;letter-spacing:.17em;font-weight:700;color:#b7a27c}.daily-pass h2{font:500 clamp(27px,3vw,36px)/1.2 Georgia,serif;margin:10px 0;color:var(--pass-ink)}.daily-pass-state{border:1px solid #b99a5845;border-radius:999px;padding:7px 13px;font-size:11px;color:var(--pass-gold);background:#c7a85b08}.daily-pass-intro{color:#bfb7aa;margin:12px 0 2px;max-width:650px}
+.daily-pass-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}.daily-pass-eyebrow{font-size:9px;letter-spacing:.17em;font-weight:700;color:#b7a27c}.daily-pass h2{font:500 clamp(27px,3vw,36px)/1.2 Georgia,serif;margin:10px 0;color:var(--pass-ink)}.daily-pass-state{border:1px solid #b99a5845;border-radius:999px;padding:7px 13px;font-size:11px;color:var(--pass-gold);background:#c7a85b08}
 .daily-pass-scroll{overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#8c7445 #16181c;padding:18px 0 8px}.daily-pass-days{list-style:none;display:grid;grid-template-columns:repeat(10,minmax(80px,1fr));min-width:880px;padding:0 0 12px;margin:0}.daily-pass-day{position:relative;min-width:0;text-align:center;display:flex;align-items:center;flex-direction:column;gap:5px;padding:8px 4px;color:#92918c}.daily-pass-day::before{content:"";position:absolute;left:-50%;top:65px;width:100%;height:1px;background:#82724f45}.daily-pass-day:first-child::before{display:none}.daily-pass-day-label{font-size:10px;letter-spacing:.08em;color:#aaa496;margin-bottom:11px}.daily-pass-node{position:relative;z-index:1;display:grid;place-items:center;box-sizing:border-box;width:46px;height:46px;border:1px solid #81704a;background:#191b1e;border-radius:50%;font:500 17px Georgia,serif;color:#c1ae89;margin-bottom:14px}.daily-pass-day strong{font:500 25px/1.2 Georgia,serif;color:#c8b58e}.daily-pass-unit{font-size:10px;line-height:1.6;max-width:82px;min-height:32px;color:#aaa498}.daily-pass-day--complete::before,.daily-pass-day--current::before{background:linear-gradient(90deg,#aa813e,#ebd298);box-shadow:0 0 7px #d4ab4550}.daily-pass-day--complete .daily-pass-node{border-color:#b99149;background:#2a241b;color:#e6c988}.daily-pass-day--current .daily-pass-node{border-color:#f1d699;background:radial-gradient(circle,#4d3b20,#211e18);color:#ffe5ac;box-shadow:0 0 0 5px #d8ba6a0d,0 0 28px #dfb96732}.daily-pass-day--current strong,.daily-pass-day--current .daily-pass-day-label{color:#ffe3a8}.daily-pass-day:nth-child(n+9) strong{color:#e5c78c}
-.daily-pass-status{font-size:12px;color:#cfc1a7;margin:16px 0}.daily-pass-channels{display:flex;flex-wrap:wrap;gap:12px;list-style:none;margin:22px 0;padding:0}.daily-pass-channels li{flex:1 1 210px;min-width:0;overflow-wrap:anywhere;border-left:2px solid #b79c6350;padding:3px 13px}.daily-pass-channels strong,.daily-pass-channels span{display:block}.daily-pass-channels strong{font-size:13px;color:#e2c080}.daily-pass-channels span{font-size:11px;color:#bfb8aa}.daily-pass-footer{display:flex;align-items:center;gap:22px;justify-content:space-between;border-top:1px solid #c3a56a20;padding-top:18px;margin-top:22px}.daily-pass-footer p{font-size:11px;line-height:1.9;color:#aaa497;max-width:740px;margin:0}.daily-pass button{flex-shrink:0;padding:9px 14px;border:1px solid #c6a56655;border-radius:9px;background:#1b1b1b;color:#e4ca93;font:inherit;font-size:12px;cursor:pointer}.daily-pass-site-link{color:#e4ca93;text-decoration:underline;text-underline-offset:4px;font-size:12px}.daily-pass-supporter{font-size:12px;color:#e5c78c}.daily-pass-feedback{font-size:12px;color:#e4ca93;overflow-wrap:anywhere;margin:16px 0 0}.daily-pass-feedback:empty{display:none}.daily-pass-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}.daily-pass :focus-visible{outline:2px solid #efcf8a;outline-offset:4px}.daily-pass-scroll:focus-visible{outline-offset:-2px}
-@media(max-width:600px){.daily-pass-shell{padding:0 12px}.daily-pass{padding:22px 16px;border-radius:15px}.daily-pass-heading{gap:9px}.daily-pass-eyebrow{font-size:8px}.daily-pass-intro{font-size:12px}.daily-pass-footer{align-items:flex-start;flex-direction:column;gap:14px}.daily-pass-days{min-width:850px}.daily-pass-state{font-size:10px}.daily-pass-scroll{margin-right:-8px;padding-right:8px}}
+.daily-pass-status{font-size:12px;color:#cfc1a7;margin:16px 0}.daily-pass-footer{display:flex;align-items:center;gap:22px;justify-content:space-between;border-top:1px solid #c3a56a20;padding-top:18px;margin-top:22px}.daily-pass-footer p{font-size:11px;line-height:1.9;color:#aaa497;max-width:740px;margin:0}.daily-pass button{flex-shrink:0;padding:9px 14px;border:1px solid #c6a56655;border-radius:9px;background:#1b1b1b;color:#e4ca93;font:inherit;font-size:12px;cursor:pointer}.daily-pass-site-link{color:#e4ca93;text-decoration:underline;text-underline-offset:4px;font-size:12px}.daily-pass-supporter{font-size:12px;color:#e5c78c}.daily-pass-feedback{font-size:12px;color:#e4ca93;overflow-wrap:anywhere;margin:16px 0 0}.daily-pass-feedback:empty{display:none}.daily-pass-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}.daily-pass :focus-visible{outline:2px solid #efcf8a;outline-offset:4px}.daily-pass-scroll:focus-visible{outline-offset:-2px}
+@media(max-width:600px){.daily-pass-shell{padding:0 12px}.daily-pass{padding:22px 16px;border-radius:15px}.daily-pass-heading{gap:9px}.daily-pass-eyebrow{font-size:8px}.daily-pass-footer{align-items:flex-start;flex-direction:column;gap:14px}.daily-pass-days{min-width:850px}.daily-pass-state{font-size:10px}.daily-pass-scroll{margin-right:-8px;padding-right:8px}}
 .daily-pass--compact{display:flex;align-items:center;flex-wrap:wrap;gap:14px 24px;padding:15px 22px}.daily-pass--compact>div{flex:1 1 260px}.daily-pass--compact h2{font-size:21px;margin:0 0 5px}.daily-pass--compact p{font-size:12px;color:#bfb7aa;margin:0}
 @media(prefers-reduced-motion:reduce){.daily-pass *{scroll-behavior:auto}}
 
@@ -184,17 +184,6 @@
       transform: rotate(45deg);
       filter: drop-shadow(0 0 2px #e9aa34aa);
     }
-    .daily-pass--visual .pass-caption {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 8px 14px;
-      margin-top: 14px;
-      color: #c3b9a4;
-      font: 400 12px/1.4 system-ui, sans-serif;
-    }
-    .daily-pass--visual .pass-caption output { color: var(--dcg-gold-light); }
     .daily-pass--visual .sr-day { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
     /* Palette, formes et rythmes repris de public/dcg-xp.css (08c5426b). */
     .daily-pass--visual .day.is-ready {
@@ -319,11 +308,14 @@
       appearance: none;
       position: absolute;
       z-index: 7;
+      display: grid;
+      place-items: center;
       left: 50%;
       top: 50%;
       transform: translate(-50%, -50%);
-      width: max(100%, 44px);
-      height: max(100%, 44px);
+      width: 100%;
+      aspect-ratio: 1;
+      min-height: calc(44px / var(--portal-pass-scale, 1));
       border: 0;
       border-radius: 4px;
       padding: 0;
@@ -379,20 +371,18 @@
       .daily-pass--visual .pass-surface { padding: 20px 10px 16px; }
       .daily-pass--visual .day.is-on .day-number { transform: translateY(-2px); }
       .daily-pass--visual .day.is-on .day-number::after { top: calc(100% + 2px); }
-      .daily-pass--visual .pass-caption { margin-top: 8px; font-size: 11px; }
     }
 
 /* Intégration au portail : aucun sélecteur global ni commande de démonstration. */
 .daily-pass--visual.daily-pass{padding:1px;border:0;border-radius:0;overflow:visible;font:14px/1.7 system-ui,sans-serif;background:linear-gradient(125deg,#eec979,#876326 37%,#b58a3e 73%,#ebc877)}
 .daily-pass--visual .pass-surface{padding:clamp(22px,3vw,34px) clamp(10px,2vw,26px) 22px}
 .daily-pass--visual .daily-pass-heading{gap:16px}.daily-pass--visual h2.pass-heading{font:400 clamp(17px,3.6cqi,28px)/1.25 Georgia,serif;letter-spacing:.065em;color:var(--dcg-gold);margin:0}
-.daily-pass--visual .daily-pass-intro{font-size:12px;margin-top:16px;max-width:none}.daily-pass--visual .daily-pass-scroll{overflow:visible;padding:0;margin:0;scrollbar-width:none}
+.daily-pass--visual .daily-pass-scroll{overflow:visible;padding:0;margin:0;scrollbar-width:none}
 .daily-pass--visual .daily-pass-days{min-width:0;gap:0}.daily-pass--visual .daily-pass-day{padding:0;display:grid;gap:0;flex-direction:initial}
 .daily-pass--visual .day::before{left:auto;top:auto;height:auto;margin:0;border:0;box-shadow:none;display:block}
 .daily-pass--visual .day:first-child::before{display:block}.daily-pass--visual .day-number{margin:0}
 .daily-pass--visual .claim-hit{cursor:pointer;box-shadow:none;font:inherit;flex-shrink:initial}
 .daily-pass--visual .claim-hit:focus-visible{outline:2px solid #fff0b7;outline-offset:3px}
-.daily-pass--visual .daily-pass-legend{display:flex;gap:16px;font-size:11px;color:#b3ac9e}
 .daily-pass--visual .daily-pass-status{font-size:12px;margin:20px 0;color:#cfc1a7}
 .daily-pass--visual summary{color:#cdb783;cursor:pointer;font-size:12px;width:fit-content}
 .daily-pass--visual .daily-pass-rewards{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:0;list-style:none;margin:8px 0 20px;padding:0}
@@ -402,12 +392,10 @@
 .daily-pass--visual .daily-pass-reward-claim{display:flex;flex-direction:column;align-items:center;gap:3px;padding:0;border:0;border-radius:6px;background:none;color:inherit;cursor:pointer}
 .daily-pass--visual .daily-pass-reward-claim:focus-visible{outline:2px solid #e6c988;outline-offset:4px}
 .daily-pass--visual .daily-pass-reward-claim:disabled{cursor:wait}
-.daily-pass--visual .pass-caption{justify-content:flex-end}
-.daily-pass--visual .daily-pass-help{display:inline-block;margin-top:14px;font-size:12px;color:#cdb783;text-decoration:underline;text-underline-offset:4px}
 .daily-pass--visual .daily-pass-footer{gap:18px}.daily-pass--visual .daily-pass-feedback{margin-bottom:0}
 [data-pass-paused="true"] .daily-pass--visual .day *,[data-pass-paused="true"] .daily-pass--visual .day *::before,[data-pass-paused="true"] .daily-pass--visual .day *::after{animation-play-state:paused!important}
 @media(max-width:736px){.daily-pass--visual .daily-pass-heading{align-items:flex-start}.daily-pass--visual .daily-pass-state{padding:5px 8px}}
-@media(max-width:420px){.daily-pass--visual .daily-pass-heading{display:block}.daily-pass--visual .daily-pass-state{display:inline-block;margin-top:12px}.daily-pass--visual .daily-pass-intro{line-height:1.7}.daily-pass--visual .pass-caption{gap:10px}.daily-pass--visual .daily-pass-legend{gap:10px}}
+@media(max-width:420px){.daily-pass--visual .daily-pass-heading{display:block}.daily-pass--visual .daily-pass-state{display:inline-block;margin-top:12px}}
 
 /* L'accueil et la page du Pass ne montrent que les dix losanges. */
 .daily-pass--visual.daily-pass--progress{padding:0;border:0;background:none;border-radius:0;clip-path:none}
@@ -440,16 +428,6 @@
 .daily-pass-auto-dialog p{line-height:1.55}
 .daily-pass-auto-dialog ul{margin:1rem 0;padding-left:1.35rem;display:grid;gap:.55rem}
 .daily-pass-auto-dialog li{line-height:1.5}
-.daily-pass-auto-dialog .daily-pass-auto-note{font-size:.9rem;opacity:.85}
 .daily-pass-auto-dialog button{display:block;margin-left:auto;padding:.65rem 1.4rem;border:1px solid #f4d992;border-radius:6px;background:#dfc17a;color:#1a1409;font-weight:700;cursor:pointer}
 .daily-pass-auto-dialog button:disabled{opacity:.6;cursor:wait}
 .daily-pass-auto-dialog button:focus-visible{outline:2px solid #fff2ae;outline-offset:3px}
-
-/* Détails durables réservés à Mon compte, sans encombrer l'accueil. */
-.daily-pass .daily-pass-credit-history{margin-top:1.5rem;border-top:1px solid #77613d;padding-top:1.25rem}
-.daily-pass .daily-pass-credit-history h3{font-size:1.05rem;color:#efcf84;margin:0 0 .5rem}
-.daily-pass .daily-pass-credit-history p{opacity:.8;font-size:.85rem}
-.daily-pass .daily-pass-credit-history ul{list-style:none;margin:0;padding:0;display:grid;gap:.65rem}
-.daily-pass .daily-pass-credit-history li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:.5rem 1rem;padding:.75rem;border:1px solid #51462f;border-radius:6px}
-.daily-pass .daily-pass-credit-history .daily-pass-credit-meta{font-size:.85rem;opacity:.8}
-.daily-pass .daily-pass-credit-history strong{color:#f2d88d}

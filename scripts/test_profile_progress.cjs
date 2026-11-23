@@ -20,7 +20,7 @@ function boot({state={scope:'general',total:45,level:2},claim,error,reduced=fals
  return {context,body,host,details,timers,calls,flights,confirmed,widget,leave(){current=false;widget.destroy();},expire(){for(const [key,timer]of [...timers])if(timer.ms===1500){timers.delete(key);timer.fn();}}};
 }
 test('profile uses the existing general XP counter and the same progress arithmetic',async()=>{
- const b=boot();await tick();assert.deepEqual(b.calls,[['dcg_my_xp',undefined]]);assert.match(b.details.innerHTML,/Ma progression générale/);assert.match(b.details.innerHTML,/Niveau 2/);assert.match(b.details.innerHTML,/15 \/ 30 boosters · 50 %/);assert.match(b.details.innerHTML,/<progress[^>]+max="30" value="15"/);assert.match(b.details.innerHTML,/30 Alkahests par DCG/);assert.doesNotMatch(b.details.innerHTML,/data-streamer-name|Streamer/);b.leave();assert.equal(b.details.innerHTML,'');
+ const b=boot();await tick();assert.deepEqual(b.calls,[['dcg_my_xp',undefined]]);assert.match(b.details.innerHTML,/Ma progression générale/);assert.match(b.details.innerHTML,/Niveau 2/);assert.match(b.details.innerHTML,/15 \/ 30 boosters · 50 %/);assert.match(b.details.innerHTML,/<progress[^>]+max="30" value="15"/);assert.match(b.details.innerHTML,/30 Alkahests par DCG/);assert.doesNotMatch(b.details.innerHTML,/data-streamer-name|Streamer|TOUS MES DCG|Boosters ouverts au total/);b.leave();assert.equal(b.details.innerHTML,'');
 });
 test('confirmed profile claim shows one stationary icon with the per-DCG quantity for 1.5 seconds',async()=>{
  const b=boot({state:{scope:'general',level:0,total:10},claim:{xp:{scope:'general',level:1,total:10},reward:{level:1,amount_per_dcg:10,credits:[{broadcaster_id:'one'},{broadcaster_id:'two'}]}}});

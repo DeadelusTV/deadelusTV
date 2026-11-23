@@ -22,11 +22,14 @@ class Node{
  closest(selector){return this.selector===selector?this:null;}
  querySelector(selector){return this.nodes?.[selector]||null;}
 }
-function setup({hash='#tcg',user=null,getSession,withAuth=true,registered=true,getUser,getMembership,spaces,discoveryRead,xpMount,xpRead,stockMount}={}){
+const sampleStats={boosters_opened:15,alkahests_earned:100,activity_days:2,boosters_purchased:7,booster_hits:4,legendary_cards:3};
+function setup({hash='#tcg',user=null,getSession,withAuth=true,registered=true,getUser,getMembership,spaces,discoveryRead,statsRead,xpMount,xpRead,stockMount}={}){
  const root=new Node(),heading=new Node(),list=new Node(),search=new Node(),searchForm=new Node(),searchDialog=new Node(),searchResults=new Node(),nav=new Node(),menu=new Node(),back=new Node(),main=new Node(),brand=new Node(),passRoot=new Node();
  search.selector='[data-portal-search]';searchDialog.selector='[data-portal-search-dialog]';searchDialog.onClose=()=>root.emit('close',searchDialog);searchForm.nodes={input:search};root.nodes={'[data-general-xp]':new Node(),'h1':heading,'[data-portal-spaces]':list,'[data-portal-search]':search,'[data-portal-search-form]':searchForm,'[data-portal-search-dialog]':searchDialog,'[data-portal-search-results]':searchResults};
  root.nodes['#daily-pass-root']=passRoot;root.nodes['[data-general-xp-details]']=new Node();
  const discoveryHost=new Node(),discoveryReads=[];
+ const statsHost=new Node();
+ Object.defineProperty(root.nodes,'[data-portal-stats]',{get:()=>root.innerHTML.includes('data-portal-stats')?statsHost:null});
  Object.defineProperty(root.nodes,'#dcg-decouverte',{get:()=>root.innerHTML.includes('id="dcg-decouverte"')?discoveryHost:null});
  const pageNames=['accueil','tcg','phasmophobia','crewmongus','pavillon-noir','mentions-legales','confidentialite','conditions-utilisation','conditions-vente'];
  const sections=pageNames.map(name=>{const n=new Node();n.dataset.page=name;n.nodes={h1:heading};return n;});
@@ -42,6 +45,7 @@ function setup({hash='#tcg',user=null,getSession,withAuth=true,registered=true,g
    discoveryReads.push({args});
    return discoveryRead?discoveryRead():{data:[]};
   }
+  if(name==='tcg_my_portal_stats')return statsRead?statsRead():{data:sampleStats};
   xpReads.push({name,args});return xpRead?xpRead(name,args):{data:{scope:'streamer',broadcaster_id:'99977368',total:30,level:2}};},from(table){reads.push({table});return {select(columns){reads.at(-1).columns=columns;return this;},eq(column,value){reads.at(-1).filter={column,value};return this;},async maybeSingle(){return getMembership?getMembership():{data:registered&&currentUser?{user_id:currentUser.id}:null};}};}}),signIn:()=>{signins++;}};
  if(withAuth)Object.defineProperty(context.DEADELUSTV_AUTH,'userId',{get:()=>currentUser?.id||null});
  if(stockMount)context.DCGPortalStock={mount:stockMount};if(xpMount)context.DCGXPPass={mount:xpMount};context.window=context;vm.createContext(context);vm.runInContext(read('public/modules/dcg/dcg-xp.js'),context);vm.runInContext(config,context);context.DEADELUSTV_DCG_CONFIG={...context.DEADELUSTV_DCG_CONFIG,...(spaces?{spaces}:{})};vm.runInContext(source,context);vm.runInContext(router,context);
@@ -170,10 +174,43 @@ test('global streamer search handles accents without filtering personal DCG or r
 test('anonymous account access reuses the common Twitch login',async()=>{
  const s=setup({hash:'#tcg/mon-compte'});await tick();assert.match(s.root.innerHTML,/data-portal-login/);s.click('[data-portal-login]');assert.equal(s.signins,1);
 });
-test('personal display escapes Twitch metadata and logout clears all previous account content',async()=>{
+test('the profile home opens directly on its tabs and omits the personal greeting',async()=>{
  const s=setup({hash:'#tcg/mon-compte',user:{id:'one',user_metadata:{preferred_username:'<img src=x> & Yekelle'}}});await tick();
- assert.match(s.root.innerHTML,/&lt;img src=x&gt; &amp; Yekelle/);assert.doesNotMatch(s.root.innerHTML,/<img src=x>/);assert.match(s.root.innerHTML,/#tcg\/mon-compte\/constellations/);
+ assert.match(s.root.innerHTML,/ESPACE PERSONNEL/);assert.doesNotMatch(s.root.innerHTML,/Bienvenue|Yekelle|Mon compte\.<\/h1>/);
+ assert.match(s.root.innerHTML,/#tcg\/mon-compte\/constellations/);
+ await s.go('#tcg/mon-compte/constellations');assert.match(s.root.innerHTML,/&lt;img src=x&gt; &amp; Yekelle/);assert.doesNotMatch(s.root.innerHTML,/<img src=x>/);
  await s.auth(null);assert.doesNotMatch(s.root.innerHTML,/Yekelle/);assert.match(s.root.innerHTML,/data-portal-login/);
+});
+
+test('the account displays four private totals after the Pass, with averages and hits',async()=>{
+ let calls=0;
+ const s=setup({hash:'#tcg/mon-compte',statsRead:async()=>{calls++;return {data:sampleStats};}});
+ await tick();assert.equal(calls,0);assert.equal(s.root.querySelector('[data-portal-stats]'),null);
+ await s.auth({id:'alice'});assert.equal(calls,1);
+ const host=s.root.querySelector('[data-portal-stats]');
+ assert.ok(s.root.innerHTML.indexOf('id="daily-pass-root"')<s.root.innerHTML.indexOf('data-portal-stats'));
+ const text=host.innerHTML.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ');
+ assert.match(text,/Nombre de boosters ouverts 15 Moyenne par jour · 7,5/);
+ assert.match(text,/Nombre d’Alkahests récoltés 100 Moyenne par jour · 50/);
+ assert.match(text,/Nombre de boosters achetés 7 Nombre de hits · 4/);
+ assert.match(text,/Nombre de cartes légendaires 3/);
+ s.emitWindow('tcg:daily-pass-change',{gains:[{kind:'dust',amount:5}]});await tick();assert.equal(calls,2);
+ await s.auth(null);assert.equal(s.root.querySelector('[data-portal-stats]'),null);
+});
+test('private stats can retry and a stale account reply cannot overwrite the current totals',async()=>{
+ let attempts=0,release;
+ const s=setup({hash:'#tcg/mon-compte',user:{id:'alice'},statsRead:async()=>{
+  attempts++;
+  if(attempts===1)return {error:{message:'private error'}};
+  if(attempts===2)return new Promise(resolve=>{release=resolve;});
+  return {data:{...sampleStats,activity_days:1}};
+ }});
+ await tick();
+ const host=s.root.querySelector('[data-portal-stats]');
+ assert.match(host.innerHTML,/data-portal-stats-retry/);assert.doesNotMatch(host.innerHTML,/private error/);
+ s.click('[data-portal-stats-retry]');await tick();await s.auth({id:'bob'});
+ const bob=host.innerHTML;assert.match(bob,/Moyenne par jour · 15/);
+ release({data:{...sampleStats,boosters_opened:999}});await tick();assert.equal(host.innerHTML,bob);
 });
 
 test('profile subpages preserve navigation and keep the daily Pass only on the profile home',async()=>{
