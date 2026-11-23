@@ -20,11 +20,9 @@
     if(!space.id||!space.name||!base||!avatar||seen.has(space.id))return [];
     seen.add(space.id);return [{...space,avatar,href:new URL('#/boosters',base).href}];
   });
-  // Fisher–Yates : un tirage par chargement, stable lors des recherches ou connexions.
-  const shuffled=spaces.filter(space=>space.hasDeck===true);
-  for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];}
-  const discovery=shuffled.slice(0,Math.max(1,Math.min(20,Number(config.discoveryLimit)||20)));
-  const showDiscovery=shuffled.length>1||(shuffled.length===1&&config.showDiscoveryWithSingleStreamer===true);
+  const owner = config.discoveryOwner;
+  const featuredDeck = {id:owner.broadcasterId, name:owner.name, avatar:owner.avatar, href:new URL('#/boosters',owner.gameBase).href};
+  let discovery = null, discoveryLoading = false;
   const pages = ['accueil', 'regles', 'mon-compte', 'collections-communes'];
   const titles = {accueil:'Accueil', regles:'Règles du jeu', 'mon-compte':'Mon compte', 'collections-communes':'Collections communes'};
   const heading = (tag, title, copy) => `<header class="portal-heading"><div class="bread">${tag}</div><h1>${title}</h1>${copy ? `<p>${copy}</p>` : ''}</header>`;
@@ -48,16 +46,51 @@
     if(!mySpaces.length)return '<p class="portal-empty">Tu n’as pas encore rejoint de DCG. Découvre une communauté ci-dessous ou entre dans le DCG DeadelusTV.</p>';
     return ordered().map(space => `<a class="portal-space" href="${esc(space.href)}" data-dcg="${esc(space.id)}"><img src="${esc(space.avatar)}" alt="" referrerpolicy="no-referrer" width="96" height="96"><div class="portal-space-copy"><span class="portal-space-status">${esc(space.status||'')}</span><h3>${esc(space.name)}</h3><p>Ses cartes, ses moments, sa communauté.</p></div><div class="portal-space-level"${space.xpMarkup?'':' role="status" aria-label="'+esc(space.xpUnavailable?'Niveau momentanément indisponible':'Lecture de ton niveau')+'" aria-busy="'+!space.xpUnavailable+'"'}>${space.xpMarkup||'<span class="portal-space-level-placeholder" aria-hidden="true">'+(space.xpUnavailable?'—':'…')+'</span>'}</div>${stockMarkup()}</a>`).join('');
   }
-  function discoverySection() {
-    if (!showDiscovery) return '';
-    const duration = Math.max(40, discovery.length * 7);
+  function discoveryUrl(value) {
+    if (typeof value !== 'string' || !/^https:\/\//i.test(value)) return null;
+    try {
+      const url = new URL(value);
+      return url.hostname && !url.username && !url.password ? url.href : null;
+    } catch { return null; }
+  }
+  function discoveryDecks(rows) {
+    const others = [], ids = new Set();
+    let featured = featuredDeck;
+    for (const row of rows) {
+      const id = row?.broadcaster_id;
+      if (typeof id !== 'string' || !/^\d+$/.test(id) || ids.has(id)) continue;
+      const name = typeof row.display_name === 'string' ? row.display_name.trim() : '';
+      const avatar = discoveryUrl(row.avatar_url), href = discoveryUrl(row.deck_url);
+      if (!name || !avatar || !href) continue;
+      ids.add(id);
+      const deck = {id, name, avatar, href};
+      if (id === featuredDeck.id) featured = deck;
+      else if (others.length < 19) others.push(deck);
+    }
+    return [...others, featured];
+  }
+  async function loadDiscovery() {
+    if (discovery || discoveryLoading || !window.DEADELUSTV_AUTH) return;
+    discoveryLoading = true;
+    try {
+      const client = await window.DEADELUSTV_AUTH.getClient();
+      const {data, error} = await client.rpc('tcg_portal_discovery');
+      if (error || !Array.isArray(data)) return;
+      discovery = discoveryDecks(data);
+      const section = currentPage === 'accueil' && root.querySelector('#dcg-decouverte');
+      if (section) section.innerHTML = discoveryContents();
+    } catch {
+      // Le profil de secours reste affiché ; un prochain passage sur l’accueil réessaiera.
+    } finally { discoveryLoading = false; }
+  }
+  function discoveryContents() {
+    const decks = discovery || [featuredDeck];
+    const duration = Math.max(40, decks.length * 7);
     const group = (copy = false) => `<ul class="portal-ticker-group"${copy ? ' aria-hidden="true"' : ' aria-label="Découvrir des DCG"'}>
-      ${discovery.map(space => `<li><a class="portal-streamer-pill" href="${esc(space.href)}" ${copy ? 'tabindex="-1"' : `data-discovery-dcg="${esc(space.id)}"`} aria-label="Entrer dans le DCG ${esc(space.name)}"><img src="${esc(space.avatar)}" alt="" width="42" height="42" loading="lazy" referrerpolicy="no-referrer"><span>${esc(space.name)}</span></a></li>`).join('')}
+      ${decks.map(space => `<li><a class="portal-streamer-pill" href="${esc(space.href)}" ${copy ? 'tabindex="-1"' : `data-discovery-dcg="${esc(space.id)}"`} aria-label="Entrer dans le DCG ${esc(space.name)}"><img src="${esc(space.avatar)}" alt="" width="42" height="42" loading="lazy" referrerpolicy="no-referrer"><span>${esc(space.name)}</span></a></li>`).join('')}
     </ul>`;
-    return `<section class="portal-discovery" id="dcg-decouverte" aria-labelledby="dcg-discovery-title">
-      <div class="portal-section-top"><div><span class="overline">LES COMMUNAUTÉS</span><h2 id="dcg-discovery-title">Les DCG</h2></div></div>
-      <div class="portal-ticker" style="--ticker-duration:${duration}s">${group()}${group(true)}</div>
-    </section>`;
+    return `<div class="portal-section-top"><div><span class="overline">LES COMMUNAUTÉS</span><h2 id="dcg-discovery-title">Les DCG</h2></div></div>
+      <div class="portal-ticker" style="--ticker-duration:${duration}s">${group()}${group(true)}</div>`;
   }
   const directoryActions=()=>'<div class="portal-directory-actions"><div class="portal-general-xp-bubble" data-general-xp hidden aria-label="Niveau général DCG"></div><button class="button-outline" type="button" data-portal-search-open aria-haspopup="dialog">Rechercher un streamer</button></div>';
   const home = () => `<section class="portal-hero">
@@ -83,7 +116,8 @@
       </article>
     </div>
   </section>
-    ${pass()}<section class="portal-directory" id="dcg-annuaire" aria-labelledby="dcg-directory-title"><div class="portal-section-top"><div><span class="overline">MES COMMUNAUTÉS</span><h2 id="dcg-directory-title">Mes DCG</h2><p>Retrouve les communautés où tu joues.</p></div>${directoryActions()}</div><div class="portal-spaces" data-portal-spaces>${directory()}</div></section>${discoverySection()}${searchDialog()}`;
+    ${pass()}<section class="portal-directory" id="dcg-annuaire" aria-labelledby="dcg-directory-title"><div class="portal-section-top"><div><span class="overline">MES COMMUNAUTÉS</span><h2 id="dcg-directory-title">Mes DCG</h2><p>Retrouve les communautés où tu joues.</p></div>${directoryActions()}</div><div class="portal-spaces" data-portal-spaces>${directory()}</div></section>
+    <section class="portal-discovery" id="dcg-decouverte" aria-labelledby="dcg-discovery-title">${discoveryContents()}</section>${searchDialog()}`;
   const rules = () => `${heading('BIEN DÉMARRER', 'Les règles du jeu.')}
     <div class="portal-rules-grid">
       <button type="button" class="portal-common portal-rules-card" data-portal-login>
@@ -253,6 +287,7 @@
     const parts=page.split('/');accountSection=parts[0]==='mon-compte'&&['constellations','cartes'].includes(parts[1])?parts[1]:'accueil';
     const run=++generation;currentPage=parts[0]==='mon-compte'?'mon-compte':pages.includes(page)?page:'accueil';
     accountUser=null;accountError=false;accountLoading=currentPage==='mon-compte';mySpaces=[];myError=false;myLoading=currentPage==='accueil'&&hasSessionHint();paint();
+    if(currentPage==='accueil')void loadDiscovery();
     if(accountLoading)void readAccount(run);
     if(myLoading)void readMySpaces(run);
   }
