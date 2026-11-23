@@ -64,6 +64,43 @@ test('the common controller is loaded once before portal routes on every site pa
  assert.ok(html.indexOf('assets/daily-pass.js')<html.indexOf('modules/dcg/portal.js'));
  assert.match(html,/<script src="assets\/daily-pass.js[^>]* defer>/);assert.match(html,/href="assets\/daily-pass.css/);
 });
+test('claimable day labels belong to the claim buttons on both the portal and profile',async()=>{
+ const visit='00000000-0000-4000-8000-000000000003';
+ for(const view of ['progress','details']){
+  const state={status:'recorded',step:3,cycle:1,claim_mode:'per_visit',history:[{id:visit,step:3,claimable:true}]};
+  const p=page({stored:true,handler:async()=>({data:state})});
+  await tick();
+  const host=p.element('view');
+  p.context.DCGDailyPass.mount(host,{view});
+  const days=[...host.innerHTML.matchAll(/<li class="day daily-pass-day[^"]*" data-day="(\d+)"[^>]*>([\s\S]*?)<\/li>/g)];
+  assert.equal(days.length,10);
+  for(const [,day,body] of days){
+   if(day==='3'){
+    const hit=body.match(/<button class="claim-hit"([^>]*)>\s*<span class="day-number"[^>]*>J3<\/span>\s*<\/button>/);
+    assert.ok(hit);
+    assert.ok(hit[1].includes('data-visit-id="'+visit+'"'));
+   }else assert.doesNotMatch(body,/data-daily-pass-claim/);
+  }
+  const button={dataset:{visitId:visit}};
+  host.dispatchEvent({type:'click',target:{closest:selector=>selector==='[data-daily-pass-claim]'?button:null}});
+  await tick();
+  assert.ok(p.calls.some(([,args])=>args.body.action==='claim'&&args.body.visit_id===visit));
+ }
+});
+test('profile Pass keeps outstanding claims and the supporter bonus after the history is removed',async()=>{
+ const state={status:'recorded',cycle:2,step:1,claim_mode:'per_visit',
+  channels:[{login:'DeadelusTV',status:'claimed',balance_after:5152}],supporter_bonus:{enabled:true,active:true},
+  recent_credits:[{kind:'dust',amount:5,login:'DeadelusTV'}],
+  pending_rewards:[{id:'previous',cycle:1,step:2,claimable:true,reward:{kind:'dust',amount:10}}]};
+ const p=page({stored:true,handler:async()=>({data:state})});
+ await tick();
+ const host=p.element('view');
+ p.context.DCGDailyPass.mount(host,{view:'details'});
+ assert.match(host.innerHTML,/les récompenses sont doublées\./);
+ assert.match(host.innerHTML,/data-daily-pass-claim-all/);
+ assert.match(host.innerHTML,/data-visit-id="previous"/);
+ assert.doesNotMatch(host.innerHTML,/Une visite connectée valide ton jour|Cliquer pour récupérer|Historique des gains|Solde :|FAQ du Pass/);
+});
 test('site follow renewal stays on the dedicated Pass gateway and preserves confirmed gains',async()=>{
  let reads=0;const p=page({stored:true,handler:async(name,options)=>{
   assert.equal(name,'tcg-daily-pass');

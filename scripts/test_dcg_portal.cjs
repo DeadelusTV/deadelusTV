@@ -22,10 +22,15 @@ class Node{
  closest(selector){return this.selector===selector?this:null;}
  querySelector(selector){return this.nodes?.[selector]||null;}
 }
-function setup({hash='#tcg',user=null,getSession,withAuth=true,registered=true,getUser,getMembership,spaces,showSingle=true,random,xpMount,xpRead,stockMount}={}){
- const root=new Node(),heading=new Node(),list=new Node(),search=new Node(),searchForm=new Node(),searchDialog=new Node(),searchResults=new Node(),directory=new Node(),discoveryRoot=new Node(),rail=new Node(),nav=new Node(),menu=new Node(),back=new Node(),main=new Node(),brand=new Node(),passRoot=new Node();
- search.selector='[data-portal-search]';searchDialog.selector='[data-portal-search-dialog]';searchDialog.onClose=()=>root.emit('close',searchDialog);searchForm.nodes={input:search};root.nodes={'[data-general-xp]':new Node(),'h1':heading,'[data-portal-spaces]':list,'[data-portal-search]':search,'#dcg-annuaire':directory,'#dcg-decouverte':discoveryRoot,'[data-portal-carousel]':rail,'[data-portal-search-form]':searchForm,'[data-portal-search-dialog]':searchDialog,'[data-portal-search-results]':searchResults};rail.clientWidth=500;rail.scrollBy=options=>rail.scrolled=options;
+const sampleStats={boosters_opened:15,alkahests_earned:100,activity_days:2,boosters_purchased:7,booster_hits:4,legendary_cards:3};
+function setup({hash='#tcg',user=null,getSession,withAuth=true,registered=true,getUser,getMembership,spaces,discoveryRead,statsRead,xpMount,xpRead,stockMount}={}){
+ const root=new Node(),heading=new Node(),list=new Node(),search=new Node(),searchForm=new Node(),searchDialog=new Node(),searchResults=new Node(),nav=new Node(),menu=new Node(),back=new Node(),main=new Node(),brand=new Node(),passRoot=new Node();
+ search.selector='[data-portal-search]';searchDialog.selector='[data-portal-search-dialog]';searchDialog.onClose=()=>root.emit('close',searchDialog);searchForm.nodes={input:search};root.nodes={'[data-general-xp]':new Node(),'h1':heading,'[data-portal-spaces]':list,'[data-portal-search]':search,'[data-portal-search-form]':searchForm,'[data-portal-search-dialog]':searchDialog,'[data-portal-search-results]':searchResults};
  root.nodes['#daily-pass-root']=passRoot;root.nodes['[data-general-xp-details]']=new Node();
+ const discoveryHost=new Node(),discoveryReads=[];
+ const statsHost=new Node();
+ Object.defineProperty(root.nodes,'[data-portal-stats]',{get:()=>root.innerHTML.includes('data-portal-stats')?statsHost:null});
+ Object.defineProperty(root.nodes,'#dcg-decouverte',{get:()=>root.innerHTML.includes('id="dcg-decouverte"')?discoveryHost:null});
  const pageNames=['accueil','tcg','phasmophobia','crewmongus','pavillon-noir','mentions-legales','confidentialite','conditions-utilisation','conditions-vente'];
  const sections=pageNames.map(name=>{const n=new Node();n.dataset.page=name;n.nodes={h1:heading};return n;});
  const navNodes=['accueil','tcg','phasmophobia','crewmongus','jeux-de-role'].map(name=>{const n=new Node();n.dataset.nav=name;return n;});
@@ -34,11 +39,17 @@ function setup({hash='#tcg',user=null,getSession,withAuth=true,registered=true,g
  const known={'#main-nav':nav,'.menu-toggle':menu,'#back-top':back,'#main-content':main,'.brand':brand,'#dcg-portal-root':root};
  const document={hidden:false,body:{classList:{add(){},remove(){}}},getElementById:id=>known['#'+id]||null,querySelector(selector){if(known[selector])return known[selector];const match=selector.match(/^\[data-page="(.+)"\] h1$/);if(match)return heading;return null;},querySelectorAll(selector){if(selector==='[data-page]')return sections;if(selector==='[data-nav]')return navNodes;return [];},addEventListener(name,fn){(documentListeners[name]??=[]).push(fn);}};
  const context={document,location,history,console,URL,URLSearchParams,Object,setTimeout,clearTimeout,setInterval:()=>1,innerWidth:1200,scrollTo(){},matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(name,fn){(windowListeners[name]??=[]).push(fn);},DEADELUSTV_CONFIG:{},DEADELUSTV_CREW:{render:(...args)=>calls.push(['crew',...args]),cancel:()=>{}},DEADELUSTV_PAVILLON:{render:(...args)=>calls.push(['pavillon',...args]),cancel:()=>{}},DEADELUSTV_TWITCH:{sync(){}}};
- let currentUser=user,signins=0;const reads=[],passCalls=[],xpReads=[];context.DCGDailyPass={mount:(element,options)=>passCalls.push(['mount',element,options]),unmount:()=>passCalls.push(['unmount'])};const storage=new Map(user?[['sb-eodtxlhnfzyapkyvvxdi-auth-token','session-present']]:[]);context.localStorage={getItem:k=>storage.get(k)??null};if(random)context.Math=Object.assign(Object.create(Math),{random});
- if(withAuth)context.DEADELUSTV_AUTH={getClient:async()=>({auth:{getSession:getSession||(async()=>({data:{session:currentUser?{user:currentUser}:null}})),getUser:getUser||(async()=>({data:{user:currentUser}}))},rpc:async(name,args)=>{xpReads.push({name,args});return xpRead?xpRead(name,args):{data:{scope:'streamer',broadcaster_id:'99977368',total:30,level:2}};},from(table){reads.push({table});return {select(columns){reads.at(-1).columns=columns;return this;},eq(column,value){reads.at(-1).filter={column,value};return this;},async maybeSingle(){return getMembership?getMembership():{data:registered&&currentUser?{user_id:currentUser.id}:null};}};}}),signIn:()=>{signins++;}};
+ let currentUser=user,signins=0;const reads=[],passCalls=[],xpReads=[];context.DCGDailyPass={mount:(element,options)=>passCalls.push(['mount',element,options]),unmount:()=>passCalls.push(['unmount'])};const storage=new Map(user?[['sb-eodtxlhnfzyapkyvvxdi-auth-token','session-present']]:[]);context.localStorage={getItem:k=>storage.get(k)??null};
+ if(withAuth)context.DEADELUSTV_AUTH={getClient:async()=>({auth:{getSession:getSession||(async()=>({data:{session:currentUser?{user:currentUser}:null}})),getUser:getUser||(async()=>({data:{user:currentUser}}))},rpc:async(name,args)=>{
+  if(name==='tcg_portal_discovery'){
+   discoveryReads.push({args});
+   return discoveryRead?discoveryRead():{data:[]};
+  }
+  if(name==='tcg_my_portal_stats')return statsRead?statsRead():{data:sampleStats};
+  xpReads.push({name,args});return xpRead?xpRead(name,args):{data:{scope:'streamer',broadcaster_id:'99977368',total:30,level:2}};},from(table){reads.push({table});return {select(columns){reads.at(-1).columns=columns;return this;},eq(column,value){reads.at(-1).filter={column,value};return this;},async maybeSingle(){return getMembership?getMembership():{data:registered&&currentUser?{user_id:currentUser.id}:null};}};}}),signIn:()=>{signins++;}};
  if(withAuth)Object.defineProperty(context.DEADELUSTV_AUTH,'userId',{get:()=>currentUser?.id||null});
- if(stockMount)context.DCGPortalStock={mount:stockMount};if(xpMount)context.DCGXPPass={mount:xpMount};context.window=context;vm.createContext(context);vm.runInContext(read('public/modules/dcg/dcg-xp.js'),context);vm.runInContext(config,context);context.DEADELUSTV_DCG_CONFIG={...context.DEADELUSTV_DCG_CONFIG,...(spaces?{spaces}:{}),showDiscoveryWithSingleStreamer:showSingle};vm.runInContext(source,context);vm.runInContext(router,context);
- return {emitWindow(type,detail){for(const fn of windowListeners[type]||[])fn({detail});},root,heading,list,search,searchForm,searchDialog,searchResults,directory,rail,reads,xpReads,discoveryRoot,menu,nav,sections,calls,context,navNodes,passCalls,passRoot,get signins(){return signins;},async go(value){location.hash=value;for(const fn of windowListeners.hashchange||[])fn();await tick();},async auth(user){currentUser=user;if(user)storage.set('sb-eodtxlhnfzyapkyvvxdi-auth-token','session-present');else storage.clear();for(const fn of windowListeners['deadelustv:auth-change']||[])fn({detail:{authenticated:!!user}});await tick();},click(selector){const n=new Node();n.selector=selector;return root.emit('click',n);}};
+ if(stockMount)context.DCGPortalStock={mount:stockMount};if(xpMount)context.DCGXPPass={mount:xpMount};context.window=context;vm.createContext(context);vm.runInContext(read('public/modules/dcg/dcg-xp.js'),context);vm.runInContext(config,context);context.DEADELUSTV_DCG_CONFIG={...context.DEADELUSTV_DCG_CONFIG,...(spaces?{spaces}:{})};vm.runInContext(source,context);vm.runInContext(router,context);
+ return {emitWindow(type,detail){for(const fn of windowListeners[type]||[])fn({detail});},root,heading,list,search,searchForm,searchDialog,searchResults,reads,xpReads,discoveryReads,discoveryHost,menu,nav,sections,calls,context,navNodes,passCalls,passRoot,get signins(){return signins;},async go(value){discoveryHost.innerHTML='';location.hash=value;for(const fn of windowListeners.hashchange||[])fn();await tick();},async auth(user){currentUser=user;if(user)storage.set('sb-eodtxlhnfzyapkyvvxdi-auth-token','session-present');else storage.clear();for(const fn of windowListeners['deadelustv:auth-change']||[])fn({detail:{authenticated:!!user}});await tick();},click(selector){const n=new Node();n.selector=selector;return root.emit('click',n);}};
 }
 
 test('the removed Pass tab redirects old links to home and keeps the progress view',async()=>{
@@ -61,7 +72,7 @@ test('Mon compte owns detailed Pass information and keeps the shared Twitch logi
 
 test('DCG replaces only its own waiting page and is mounted by the real site router',()=>{
  const s=setup();assert.equal(s.sections.find(n=>n.dataset.page==='tcg').hidden,false);assert.equal(s.sections.find(n=>n.dataset.page==='accueil').hidden,true);
- assert.match(s.root.innerHTML,/Collectionne les/);assert.match(s.root.innerHTML,/Connexion Pass/);assert.match(s.root.innerHTML,/data-discovery-dcg="deadelustv"/);assert.match(s.root.innerHTML,/Mes DCG/);
+ assert.match(s.root.innerHTML,/Collectionne les/);assert.match(s.root.innerHTML,/Connexion Pass/);assert.match(s.root.innerHTML,/data-discovery-dcg="99977368"/);assert.match(s.root.innerHTML,/Mes DCG/);
  assert.equal(s.navNodes.find(n=>n.dataset.nav==='tcg').getAttribute('aria-current'),'page');assert.equal(s.heading.id,'tcg-title');
  assert.match(s.context.document.title,/DCG/);assert.equal(s.signins,0);
 });
@@ -138,25 +149,68 @@ test('the streamer card lands on the home search button after route scrolling',a
  assert.equal(searchButton.focused,true);
  assert.equal(s.searchDialog.open,false);
 });
-test('the logo and directory lead to the existing Workers boosters, with no embedded game or copied auth client',()=>{
- const s=setup();assert.equal((s.root.innerHTML.match(/href="https:\/\/tcg\.yekelle-boulet\.workers\.dev\/#\/boosters"/g)||[]).length,3);
- assert.doesNotMatch(s.root.innerHTML,/<iframe|<script/);assert.doesNotMatch(source,/createClient|service_role|fetch\(/);
+test('the home hero links viewers to the rules and presents the streamer role without an action',()=>{
+ const markup=setup().root.innerHTML;
+ const hero=markup.match(/<section class="portal-hero"[^>]*>([\s\S]*?)<\/section>/)[1];
+ assert.match(hero,/DEADELUS CARD GAME/);
+ assert.match(hero,/<h1>.*Collectionne les Communautés Twitch.*<\/h1>/);
+ assert.ok(hero.includes('Rejoins les constellations de tes streamers préférés, et collectionne leurs cartes. Découvre des cartes exclusives au fil des événements et des nouvelles collections !'));
+ const links=[...hero.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)];
+ assert.equal(links.length,1);
+ assert.match(links[0][1],/href="#tcg\/regles"/);
+ assert.match(links[0][2],/Je suis Viewers/);
+ assert.doesNotMatch(links[0][2],/Je suis Streamer/);
+ assert.match(hero,/Je suis Streamer/);
+ assert.doesNotMatch(hero,/<button\b|role="button"|Explorer les DCG|Comment jouer|ENTRÉE DIRECTE|portal-featured/);
+ assert.doesNotMatch(markup,/<iframe|<script/);assert.doesNotMatch(source,/createClient|service_role|fetch\(/);
 });
 test('global streamer search handles accents without filtering personal DCG or replacing the input',async()=>{
  const s=setup({user:{id:'player'}});await tick();s.click('[data-portal-search-open]');assert.equal(s.searchDialog.open,true);assert.equal(s.search.focused,true);
  s.search.value='DÉADELUS';s.root.emit('input',s.search);assert.match(s.searchResults.innerHTML,/data-portal-search-result="deadelustv"/);
  s.search.value='<img src=x>';s.root.emit('input',s.search);assert.match(s.searchResults.innerHTML,/Aucun streamer/);assert.doesNotMatch(s.searchResults.innerHTML,/<img/);assert.match(s.list.innerHTML,/data-dcg="deadelustv"/);
  s.search.value='';s.root.emit('input',s.search);assert.match(s.searchResults.innerHTML,/DeadelusTV/);assert.equal(s.root.nodes['[data-portal-search]'],s.search);
- assert.equal(s.click('[data-portal-directory]'),true);assert.equal(s.rail.focused,true);
 });
 
 test('anonymous account access reuses the common Twitch login',async()=>{
  const s=setup({hash:'#tcg/mon-compte'});await tick();assert.match(s.root.innerHTML,/data-portal-login/);s.click('[data-portal-login]');assert.equal(s.signins,1);
 });
-test('personal display escapes Twitch metadata and logout clears all previous account content',async()=>{
+test('the profile home opens directly on its tabs and omits the personal greeting',async()=>{
  const s=setup({hash:'#tcg/mon-compte',user:{id:'one',user_metadata:{preferred_username:'<img src=x> & Yekelle'}}});await tick();
- assert.match(s.root.innerHTML,/&lt;img src=x&gt; &amp; Yekelle/);assert.doesNotMatch(s.root.innerHTML,/<img src=x>/);assert.match(s.root.innerHTML,/#tcg\/mon-compte\/constellations/);
+ assert.match(s.root.innerHTML,/ESPACE PERSONNEL/);assert.doesNotMatch(s.root.innerHTML,/Bienvenue|Yekelle|Mon compte\.<\/h1>/);
+ assert.match(s.root.innerHTML,/#tcg\/mon-compte\/constellations/);
+ await s.go('#tcg/mon-compte/constellations');assert.match(s.root.innerHTML,/&lt;img src=x&gt; &amp; Yekelle/);assert.doesNotMatch(s.root.innerHTML,/<img src=x>/);
  await s.auth(null);assert.doesNotMatch(s.root.innerHTML,/Yekelle/);assert.match(s.root.innerHTML,/data-portal-login/);
+});
+
+test('the account displays four private totals after the Pass, with averages and hits',async()=>{
+ let calls=0;
+ const s=setup({hash:'#tcg/mon-compte',statsRead:async()=>{calls++;return {data:sampleStats};}});
+ await tick();assert.equal(calls,0);assert.equal(s.root.querySelector('[data-portal-stats]'),null);
+ await s.auth({id:'alice'});assert.equal(calls,1);
+ const host=s.root.querySelector('[data-portal-stats]');
+ assert.ok(s.root.innerHTML.indexOf('id="daily-pass-root"')<s.root.innerHTML.indexOf('data-portal-stats'));
+ const text=host.innerHTML.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ');
+ assert.match(text,/Nombre de boosters ouverts 15 Moyenne par jour · 7,5/);
+ assert.match(text,/Nombre d’Alkahests récoltés 100 Moyenne par jour · 50/);
+ assert.match(text,/Nombre de boosters achetés 7 Nombre de hits · 4/);
+ assert.match(text,/Nombre de cartes légendaires 3/);
+ s.emitWindow('tcg:daily-pass-change',{gains:[{kind:'dust',amount:5}]});await tick();assert.equal(calls,2);
+ await s.auth(null);assert.equal(s.root.querySelector('[data-portal-stats]'),null);
+});
+test('private stats can retry and a stale account reply cannot overwrite the current totals',async()=>{
+ let attempts=0,release;
+ const s=setup({hash:'#tcg/mon-compte',user:{id:'alice'},statsRead:async()=>{
+  attempts++;
+  if(attempts===1)return {error:{message:'private error'}};
+  if(attempts===2)return new Promise(resolve=>{release=resolve;});
+  return {data:{...sampleStats,activity_days:1}};
+ }});
+ await tick();
+ const host=s.root.querySelector('[data-portal-stats]');
+ assert.match(host.innerHTML,/data-portal-stats-retry/);assert.doesNotMatch(host.innerHTML,/private error/);
+ s.click('[data-portal-stats-retry]');await tick();await s.auth({id:'bob'});
+ const bob=host.innerHTML;assert.match(bob,/Moyenne par jour · 15/);
+ release({data:{...sampleStats,boosters_opened:999}});await tick();assert.equal(host.innerHTML,bob);
 });
 
 test('profile subpages preserve navigation and keep the daily Pass only on the profile home',async()=>{
@@ -186,7 +240,8 @@ test('markup and scripts are integrated once, and all portal CSS selectors are s
  assert.equal((html.match(/id="page-tcg"/g)||[]).length,1);assert.equal((html.match(/id="dcg-portal-root"/g)||[]).length,1);
  assert.ok(html.indexOf('modules/dcg/portal.js')<html.indexOf('assets/app.js'));assert.match(html,/<a href="#tcg" data-nav="tcg">DCG<\/a>/);
  assert.doesNotMatch(html,/assets\/tcg-attente\.css/);assert.match(html,/modules\/phasmophobia\/module.js/);assert.match(html,/assets\/consent.js/);
- const selectors=[...css.matchAll(/(?:^|[{}])\s*([^@{}]+)\{/g)].map(m=>m[1].trim()).filter(Boolean);
+ const styleRules=css.replace(/@keyframes\s+[\w-]+\s*\{(?:\s*[^{}]+\{[^{}]*\}\s*)*\}/g,'');
+ const selectors=[...styleRules.matchAll(/(?:^|[{}])\s*([^@{}]+)\{/g)].map(m=>m[1].trim()).filter(Boolean);
  assert.ok(selectors.length>40);for(const group of selectors)for(const selector of group.split(','))assert.ok(selector.trim().startsWith('#page-tcg ' )||selector.trim()==='#page-tcg',selector);
  assert.match(css,/@media.*max-width:\s*600px/);assert.match(css,/prefers-reduced-motion/);
 });
@@ -197,7 +252,7 @@ test('Mes DCG reads only the signed-in player account, without joining a game or
 });
 test('anonymous and unregistered visitors retain public discovery but have no personal DCG',async()=>{
  const anonymous=setup({withAuth:false});await tick();assert.match(anonymous.list.innerHTML||anonymous.root.innerHTML,/Connecte-toi avec Twitch/);assert.equal(anonymous.reads.length,0);
- const player=setup({user:{id:'new-player'},registered:false});await tick();assert.match(player.list.innerHTML,/pas encore rejoint/);assert.doesNotMatch(player.list.innerHTML,/data-dcg=/);assert.match(player.root.innerHTML,/data-portal-search-open/);assert.match(player.root.innerHTML,/data-discovery-dcg="deadelustv"/);
+ const player=setup({user:{id:'new-player'},registered:false});await tick();assert.match(player.list.innerHTML,/pas encore rejoint/);assert.doesNotMatch(player.list.innerHTML,/data-dcg=/);assert.match(player.root.innerHTML,/data-portal-search-open/);assert.match(player.root.innerHTML,/data-discovery-dcg="99977368"/);
  const mismatched=setup({user:{id:'player'},getMembership:async()=>({data:{user_id:'someone-else'}})});await tick();assert.doesNotMatch(mismatched.list.innerHTML,/data-dcg=/);
 });
 test('late membership responses cannot restore Mes DCG after sign-out or leaving the portal',async()=>{
@@ -208,26 +263,132 @@ test('membership failures show a retry and never promote a public DCG to Mes DCG
  let fail=true;const s=setup({user:{id:'player'},getMembership:async()=>fail?{error:{message:'PRIVATE DATABASE DIAGNOSTIC'}}:{data:{user_id:'player'}}});await tick();assert.match(s.list.innerHTML,/data-portal-my-retry/);assert.doesNotMatch(s.list.innerHTML,/PRIVATE|data-dcg=/);fail=false;s.click('[data-portal-my-retry]');await tick();assert.match(s.list.innerHTML,/data-dcg="deadelustv"/);
 });
 const manySpaces=()=>Array.from({length:35},(_,i)=>({id:'streamer-'+i,name:'Streamer '+i,avatar:'https://images.example/'+i+'.png',gameBase:'https://game.example/'+i+'/'}));
-const discoveryIds=s=>[...s.root.innerHTML.matchAll(/data-discovery-dcg="([^"]+)"/g)].map(m=>m[1]);
-test('public discovery is capped at twenty unique streamers, with only avatar and name inside each pill',()=>{
- const s=setup({spaces:manySpaces(),random:()=>.25});const ids=discoveryIds(s);assert.equal(ids.length,20);assert.equal(new Set(ids).size,20);
- const pills=[...s.root.innerHTML.matchAll(/<a class="portal-streamer-pill"[^>]*>(.*?)<\/a>/g)].map(m=>m[1]);assert.equal(pills.length,20);for(const pill of pills){assert.match(pill,/<img[^>]*><span>Streamer \d+<\/span>$/);assert.doesNotMatch(pill,/carte|exemplaire|Version de test/);}
+const sampledDeck=(id,name='Streamer '+id)=>({
+ broadcaster_id:String(id),display_name:name,avatar_url:'https://images.example/'+id+'.png',deck_url:'https://decks.example/collections/'+id+'/#/cartes'
 });
-test('discovery reshuffles on a new page load and stays stable on navigation, search and auth changes',async()=>{
- const s=setup({spaces:manySpaces(),random:()=>0});const before=discoveryIds(s);const other=setup({spaces:manySpaces(),random:()=>.99});assert.notDeepEqual(before,discoveryIds(other));
- await s.go('#tcg/regles');await s.go('#tcg');assert.deepEqual(discoveryIds(s),before);await s.auth({id:'player'});assert.deepEqual(discoveryIds(s),before);s.search.value='absent';s.root.emit('input',s.search);assert.deepEqual(discoveryIds(s),before);
+const sampledOwner=sampledDeck(99977368,'DeadelusTV');
+const tickerMarkup=s=>s.discoveryHost.innerHTML||s.root.innerHTML;
+const discoveryIds=s=>[...tickerMarkup(s).matchAll(/data-discovery-dcg="([^"]+)"/g)].map(m=>m[1]);
+
+test('anonymous discovery uses the public database photos, names and full deck links, with DeadelusTV last',async()=>{
+ const others=Array.from({length:24},(_,i)=>sampledDeck(123+i));
+ const s=setup({discoveryRead:async()=>({data:[sampledOwner,others[0],...others,sampledOwner]})});
+ await tick();
+ assert.deepEqual(s.discoveryReads,[{args:undefined}]);
+ assert.equal(s.reads.length,0);
+ assert.equal(s.xpReads.length,0);
+ assert.equal(s.signins,0);
+ const expected=[...others.slice(0,19),sampledOwner];
+ assert.deepEqual(discoveryIds(s),expected.map(row=>row.broadcaster_id));
+ const pills=[...tickerMarkup(s).matchAll(/<a\b([^>]*data-discovery-dcg="[^"]+"[^>]*)>([\s\S]*?)<\/a>/g)];
+ for(const [index,[,attributes,content]] of pills.entries()){
+  const row=expected[index];
+  assert.ok(attributes.includes('href="'+row.deck_url+'"'));
+  assert.ok(content.includes('src="'+row.avatar_url+'"'));
+  assert.ok(content.includes('<span>'+row.display_name+'</span>'));
+ }
 });
-test('single-streamer discovery is visible in the test config and can be hidden independently of Mes DCG',async()=>{
- const preview=setup();assert.match(preview.root.innerHTML,/id="dcg-discovery-title">Les DCG/);
- const hidden=setup({user:{id:'player'},showSingle:false});await tick();assert.doesNotMatch(hidden.root.innerHTML,/id="dcg-discovery-title"/);assert.match(hidden.list.innerHTML,/data-dcg="deadelustv"/);
+
+test('fewer than nineteen public decks are followed by the owner, even when the database omits the owner',async()=>{
+ for(const count of [0,1,3]){
+  const rows=Array.from({length:count},(_,i)=>sampledDeck(70+i));
+  const s=setup({discoveryRead:async()=>({data:rows})});
+  await tick();
+  assert.deepEqual(discoveryIds(s),[...rows.map(row=>row.broadcaster_id),sampledOwner.broadcaster_id]);
+  assert.ok(tickerMarkup(s).includes('href="https://tcg.yekelle-boulet.workers.dev/#/boosters"'));
+ }
 });
-test('carousel controls scroll horizontally and honor reduced-motion preferences',()=>{
- const s=setup({spaces:manySpaces()});const button=new Node();button.selector='[data-portal-carousel-direction]';button.dataset.portalCarouselDirection='next';s.root.emit('click',button);assert.equal(s.rail.scrolled.left,400);assert.equal(s.rail.scrolled.behavior,'smooth');
- s.context.matchMedia=()=>({matches:true});button.dataset.portalCarouselDirection='previous';s.root.emit('click',button);assert.equal(s.rail.scrolled.left,-400);assert.equal(s.rail.scrolled.behavior,'instant');
+
+test('the ticker ignores incomplete or unsafe public profiles and escapes streamer names',async()=>{
+ const valid=sampledDeck(12,'A & B');
+ const s=setup({discoveryRead:async()=>({data:[null,
+  {...sampledDeck(9),avatar_url:'javascript:alert(0)'},
+  {...sampledDeck(10),deck_url:'/relative'},
+  {...sampledDeck(11),deck_url:'http://insecure.example/deck'},
+  valid,sampledOwner
+ ]})});
+ await tick();
+ assert.deepEqual(discoveryIds(s),[valid.broadcaster_id,sampledOwner.broadcaster_id]);
+ assert.match(tickerMarkup(s),/<span>A &amp; B<\/span>/);
 });
-test('the floating search includes unjoined DCG outside the random carousel and works anonymously',()=>{
- const s=setup({spaces:manySpaces(),withAuth:false,random:()=>0});s.click('[data-portal-search-open]');assert.equal(s.searchDialog.open,true);assert.equal((s.searchResults.innerHTML.match(/data-portal-search-result=/g)||[]).length,35);assert.equal(discoveryIds(s).length,20);
- const outside=manySpaces().find(space=>!discoveryIds(s).includes(space.id));s.search.value=outside.name;s.root.emit('input',s.search);assert.match(s.searchResults.innerHTML,new RegExp('data-portal-search-result="'+outside.id+'"'));assert.equal(s.reads.length,0);assert.equal(s.signins,0);
+
+test('a discovery draw is shared while loading, survives navigation, and never repaints the wrong page',async()=>{
+ let release;
+ const rows=[sampledDeck(879),sampledOwner];
+ const s=setup({discoveryRead:()=>new Promise(resolve=>{release=resolve;})});
+ await tick();
+ await s.go('#tcg/regles');
+ await s.go('#tcg');
+ assert.equal(s.discoveryReads.length,1);
+ await s.go('#tcg/regles');
+ const rules=s.root.innerHTML;
+ release({data:rows});
+ await tick();
+ assert.equal(s.root.innerHTML,rules);
+ assert.equal(s.discoveryHost.innerHTML,'');
+ await s.go('#tcg');
+ assert.deepEqual(discoveryIds(s),rows.map(row=>row.broadcaster_id));
+ await s.auth({id:'player'});
+ assert.equal(s.discoveryReads.length,1);
+});
+
+test('a failed discovery read retains DeadelusTV, then retries on the next home visit without rebuilding the Pass or search',async()=>{
+ let release;
+ const s=setup({discoveryRead:()=>s.discoveryReads.length===1
+  ? {error:{message:'PRIVATE DATABASE DIAGNOSTIC'}}
+  : new Promise(resolve=>{release=resolve;})});
+ await tick();
+ assert.deepEqual(discoveryIds(s),[sampledOwner.broadcaster_id]);
+ assert.doesNotMatch(tickerMarkup(s),/PRIVATE DATABASE DIAGNOSTIC/);
+ await s.go('#tcg/regles');
+ await s.go('#tcg');
+ assert.equal(s.discoveryReads.length,2);
+ s.click('[data-portal-search-open]');
+ const passCalls=s.passCalls.length;
+ release({data:[sampledDeck(17),sampledOwner]});
+ await tick();
+ assert.deepEqual(discoveryIds(s),['17',sampledOwner.broadcaster_id]);
+ assert.equal(s.passCalls.length,passCalls);
+ assert.equal(s.searchDialog.open,true);
+});
+
+test('the ticker loops the same deck links without doubling screen reader or keyboard links',async()=>{
+ for(const rows of [[sampledOwner],[sampledDeck(173),sampledOwner]]){
+  const s=setup({discoveryRead:async()=>({data:rows})});
+  await tick();
+  const groups=[...tickerMarkup(s).matchAll(/<ul\b([^>]*\bportal-ticker-group\b[^>]*)>([\s\S]*?)<\/ul>/g)];
+  assert.equal(groups.length,2);
+  const [,primary,primaryItems]=groups[0],[,copy,copyItems]=groups[1];
+  assert.doesNotMatch(primary,/aria-hidden="true"/);
+  assert.match(copy,/aria-hidden="true"/);
+  const links=markup=>[...markup.matchAll(/<a\b([^>]*\bhref="([^"]+)"[^>]*)>/g)];
+  const originals=links(primaryItems),copies=links(copyItems);
+  assert.deepEqual(originals.map(link=>link[2]),rows.map(row=>row.deck_url));
+  assert.deepEqual(copies.map(link=>link[2]),originals.map(link=>link[2]));
+  for(const [,attrs] of originals)assert.doesNotMatch(attrs,/tabindex="-1"/);
+  for(const [,attrs] of copies)assert.match(attrs,/tabindex="-1"/);
+ }
+});
+test('ticker motion goes left, pauses on hover, and is opt-in for normal motion and pointer navigation',()=>{
+ const motionRules=css.match(/@media\s*\(prefers-reduced-motion:\s*no-preference\)\s*\{((?:\s*[^{}]+\{[^{}]*\}\s*)*)\}/)[1];
+ const animation=motionRules.match(/\.portal-ticker:not\(:has\(:focus-visible\)\)\s+\.portal-ticker-group\s*\{[^}]*animation:\s*([\w-]+)[^;]*\blinear\s+infinite/);
+ assert.ok(animation);
+ assert.match(motionRules,/\.portal-ticker:hover\s+\.portal-ticker-group\s*\{[^}]*animation-play-state:\s*paused/);
+ assert.match(css,new RegExp('@keyframes\\s+'+animation[1]+'\\s*\\{\\s*from\\s*\\{[^}]*translateX\\(0\\)[^}]*\\}\\s*to\\s*\\{[^}]*translateX\\(-100%\\)'));
+});
+test('the floating search remains independent of sampled public decks and works anonymously',async()=>{
+ const spaces=manySpaces();
+ const s=setup({spaces,discoveryRead:async()=>({data:[sampledDeck(21),sampledOwner]})});
+ await tick();
+ s.click('[data-portal-search-open]');
+ assert.equal(s.searchDialog.open,true);
+ assert.equal((s.searchResults.innerHTML.match(/data-portal-search-result=/g)||[]).length,spaces.length);
+ assert.deepEqual(discoveryIds(s),['21',sampledOwner.broadcaster_id]);
+ s.search.value=spaces[3].name;
+ s.root.emit('input',s.search);
+ assert.match(s.searchResults.innerHTML,/data-portal-search-result="streamer-3"/);
+ assert.equal(s.reads.length,0);
+ assert.equal(s.signins,0);
 });
 test('closing the floating search returns focus to its trigger and opening it twice is harmless',()=>{
  const s=setup(),trigger=new Node();trigger.selector='[data-portal-search-open]';s.root.emit('click',trigger);s.root.emit('click',trigger);assert.equal(s.searchDialog.open,true);assert.equal(s.search.focused,true);

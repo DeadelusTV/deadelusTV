@@ -3,10 +3,9 @@
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const root=document.getElementById('dcg-portal-root');if(!root)return;
   const config=window.DEADELUSTV_DCG_CONFIG;
-  const gameLink=route=>new URL('#/'+route,config.gameBase).href;
-  const logo = 'assets/logo-chaine.png';
   let accountSection='accueil';
   let currentPage=null,generation=0,accountUser=null,accountLoading=false,accountError=false;
+  let latestStatsRequest=0;
   let xpWidget=null,xpHost=null,xpUser=null;
   let stockWidget=null,stockHost=null,stockUser=null,stopHomeDaily=()=>{};
   function clearStocks(){stopHomeDaily();stopHomeDaily=()=>{};stockWidget?.destroy();stockWidget=null;stockHost=null;stockUser=null;}
@@ -22,10 +21,9 @@
     if(!space.id||!space.name||!base||!avatar||seen.has(space.id))return [];
     seen.add(space.id);return [{...space,avatar,href:new URL('#/boosters',base).href}];
   });
-  // Fisher–Yates : un tirage par chargement, stable lors des recherches ou connexions.
-  const shuffled=[...spaces];for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];}
-  const discovery=shuffled.slice(0,Math.max(1,Math.min(20,Number(config.discoveryLimit)||20)));
-  const showDiscovery=spaces.length>1||(spaces.length===1&&config.showDiscoveryWithSingleStreamer===true);
+  const owner = config.discoveryOwner;
+  const featuredDeck = {id:owner.broadcasterId, name:owner.name, avatar:owner.avatar, href:new URL('#/boosters',owner.gameBase).href};
+  let discovery = null, discoveryLoading = false;
   const pages = ['accueil', 'regles', 'mon-compte', 'collections-communes'];
   const titles = {accueil:'Accueil', regles:'Règles du jeu', 'mon-compte':'Mon compte', 'collections-communes':'Collections communes'};
   const heading = (tag, title, copy) => `<header class="portal-heading"><div class="bread">${tag}</div><h1>${title}</h1>${copy ? `<p>${copy}</p>` : ''}</header>`;
@@ -49,10 +47,78 @@
     if(!mySpaces.length)return '<p class="portal-empty">Tu n’as pas encore rejoint de DCG. Découvre une communauté ci-dessous ou entre dans le DCG DeadelusTV.</p>';
     return ordered().map(space => `<a class="portal-space" href="${esc(space.href)}" data-dcg="${esc(space.id)}"><img src="${esc(space.avatar)}" alt="" referrerpolicy="no-referrer" width="96" height="96"><div class="portal-space-copy"><span class="portal-space-status">${esc(space.status||'')}</span><h3>${esc(space.name)}</h3><p>Ses cartes, ses moments, sa communauté.</p></div><div class="portal-space-level"${space.xpMarkup?'':' role="status" aria-label="'+esc(space.xpUnavailable?'Niveau momentanément indisponible':'Lecture de ton niveau')+'" aria-busy="'+!space.xpUnavailable+'"'}>${space.xpMarkup||'<span class="portal-space-level-placeholder" aria-hidden="true">'+(space.xpUnavailable?'—':'…')+'</span>'}</div>${stockMarkup()}</a>`).join('');
   }
-  const discoverySection=()=>!showDiscovery?'':`<section class="portal-discovery" id="dcg-decouverte" aria-labelledby="dcg-discovery-title"><div class="portal-section-top"><div><span class="overline">LES COMMUNAUTÉS</span><h2 id="dcg-discovery-title">Les DCG</h2></div><div class="portal-carousel-controls" ${discovery.length<2?'hidden':''}><button type="button" data-portal-carousel-direction="previous" aria-label="DCG précédents" aria-controls="dcg-discovery-rail">←</button><button type="button" data-portal-carousel-direction="next" aria-label="DCG suivants" aria-controls="dcg-discovery-rail">→</button></div></div><ul class="portal-carousel" id="dcg-discovery-rail" data-portal-carousel tabindex="0" aria-label="Découvrir des DCG">${discovery.map(space=>`<li><a class="portal-streamer-pill" href="${esc(space.href)}" data-discovery-dcg="${esc(space.id)}" aria-label="Entrer dans le DCG ${esc(space.name)}"><img src="${esc(space.avatar)}" alt="" width="42" height="42" loading="lazy" referrerpolicy="no-referrer"><span>${esc(space.name)}</span></a></li>`).join('')}</ul></section>`;
+  function discoveryUrl(value) {
+    if (typeof value !== 'string' || !/^https:\/\//i.test(value)) return null;
+    try {
+      const url = new URL(value);
+      return url.hostname && !url.username && !url.password ? url.href : null;
+    } catch { return null; }
+  }
+  function discoveryDecks(rows) {
+    const others = [], ids = new Set();
+    let featured = featuredDeck;
+    for (const row of rows) {
+      const id = row?.broadcaster_id;
+      if (typeof id !== 'string' || !/^\d+$/.test(id) || ids.has(id)) continue;
+      const name = typeof row.display_name === 'string' ? row.display_name.trim() : '';
+      const avatar = discoveryUrl(row.avatar_url), href = discoveryUrl(row.deck_url);
+      if (!name || !avatar || !href) continue;
+      ids.add(id);
+      const deck = {id, name, avatar, href};
+      if (id === featuredDeck.id) featured = deck;
+      else if (others.length < 19) others.push(deck);
+    }
+    return [...others, featured];
+  }
+  async function loadDiscovery() {
+    if (discovery || discoveryLoading || !window.DEADELUSTV_AUTH) return;
+    discoveryLoading = true;
+    try {
+      const client = await window.DEADELUSTV_AUTH.getClient();
+      const {data, error} = await client.rpc('tcg_portal_discovery');
+      if (error || !Array.isArray(data)) return;
+      discovery = discoveryDecks(data);
+      const section = currentPage === 'accueil' && root.querySelector('#dcg-decouverte');
+      if (section) section.innerHTML = discoveryContents();
+    } catch {
+      // Le profil de secours reste affiché ; un prochain passage sur l’accueil réessaiera.
+    } finally { discoveryLoading = false; }
+  }
+  function discoveryContents() {
+    const decks = discovery || [featuredDeck];
+    const duration = Math.max(40, decks.length * 7);
+    const group = (copy = false) => `<ul class="portal-ticker-group"${copy ? ' aria-hidden="true"' : ' aria-label="Découvrir des DCG"'}>
+      ${decks.map(space => `<li><a class="portal-streamer-pill" href="${esc(space.href)}" ${copy ? 'tabindex="-1"' : `data-discovery-dcg="${esc(space.id)}"`} aria-label="Entrer dans le DCG ${esc(space.name)}"><img src="${esc(space.avatar)}" alt="" width="42" height="42" loading="lazy" referrerpolicy="no-referrer"><span>${esc(space.name)}</span></a></li>`).join('')}
+    </ul>`;
+    return `<div class="portal-section-top"><div><span class="overline">LES COMMUNAUTÉS</span><h2 id="dcg-discovery-title">Les DCG</h2></div></div>
+      <div class="portal-ticker" style="--ticker-duration:${duration}s">${group()}${group(true)}</div>`;
+  }
   const directoryActions=()=>'<div class="portal-directory-actions"><div class="portal-general-xp-bubble" data-general-xp hidden aria-label="Niveau général DCG"></div><button class="button-outline" type="button" data-portal-search-open aria-haspopup="dialog">Rechercher un streamer</button></div>';
-  const home = () => `<section class="portal-hero"><div><span class="overline">DEADELUS CARD GAME</span><h1><em>Collectionne les Communautés Twitch</em></h1><p>Rejoins les collections de tes streamers préférés et collectionne leurs cartes, celles de leurs viewers et leurs meilleurs clips.<br>Découvre des cartes exclusives au fil des événements et des nouvelles collections !</p><div class="portal-hero-links"><a class="button-primary" href="#dcg-annuaire" data-portal-directory>Explorer les DCG ↓</a><a class="text-link" href="#tcg/regles">Comment jouer ? →</a></div></div><a class="portal-featured" href="${gameLink('boosters')}" aria-label="Entrer dans le DCG DeadelusTV"><span class="portal-featured-orbit" aria-hidden="true"></span><img src="${logo}" alt="Logo DeadelusTV" width="210" height="210"><span class="portal-eyebrow">ENTRÉE DIRECTE</span><strong>DeadelusTV</strong><span>Ouvrir mon espace boosters →</span></a></section>
-    ${pass()}<section class="portal-directory" id="dcg-annuaire" aria-labelledby="dcg-directory-title"><div class="portal-section-top"><div><span class="overline">MES COMMUNAUTÉS</span><h2 id="dcg-directory-title">Mes DCG</h2><p>Retrouve les communautés où tu joues.</p></div>${directoryActions()}</div><div class="portal-spaces" data-portal-spaces>${directory()}</div></section>${discoverySection()}${searchDialog()}`;
+  const home = () => `<section class="portal-hero">
+    <div>
+      <span class="overline">DEADELUS CARD GAME</span>
+      <h1><em>Collectionne les Communautés Twitch</em></h1>
+      <p>Rejoins les constellations de tes streamers préférés, et collectionne leurs cartes. Découvre des cartes exclusives au fil des événements et des nouvelles collections !</p>
+    </div>
+    <div class="portal-roles">
+      <a class="portal-role-card" href="#tcg/regles">
+        <svg class="portal-role-art" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+          <path d="M5 32s10-16 27-16 27 16 27 16-10 16-27 16S5 32 5 32Z"/>
+          <circle cx="32" cy="32" r="10"/><circle cx="32" cy="32" r="4" fill="currentColor" stroke="none"/>
+        </svg>
+        <span>Je suis Viewers</span>
+      </a>
+      <article class="portal-role-card">
+        <svg class="portal-role-art" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+          <rect x="24" y="7" width="16" height="32" rx="8"/>
+          <path d="M17 30a15 15 0 0 0 30 0M32 45v10m-9 0h18M14 15a13 13 0 0 0 0 12m36-12a13 13 0 0 1 0 12"/>
+        </svg>
+        <span>Je suis Streamer</span>
+      </article>
+    </div>
+  </section>
+    ${pass()}<section class="portal-directory" id="dcg-annuaire" aria-labelledby="dcg-directory-title"><div class="portal-section-top"><div><span class="overline">MES COMMUNAUTÉS</span><h2 id="dcg-directory-title">Mes DCG</h2><p>Retrouve les communautés où tu joues.</p></div>${directoryActions()}</div><div class="portal-spaces" data-portal-spaces>${directory()}</div></section>
+    <section class="portal-discovery" id="dcg-decouverte" aria-labelledby="dcg-discovery-title">${discoveryContents()}</section>${searchDialog()}`;
   const rules = () => `${heading('BIEN DÉMARRER', 'Les règles du jeu.')}
     <div class="portal-rules-grid">
       <button type="button" class="portal-common portal-rules-card" data-portal-login>
@@ -121,12 +187,48 @@
   const profileNav = () => '<nav class="portal-profile-tabs" aria-label="Rubriques du profil"><a href="#tcg/mon-compte"'+(accountSection==='accueil'?' aria-current="page"':'')+'>Accueil</a><a href="#tcg/mon-compte/constellations"'+(accountSection!=='accueil'?' aria-current="page"':'')+'>Mes constellations</a></nav>'+(accountSection==='accueil'?'':'<nav class="portal-profile-views" aria-label="Affichage des constellations"><a href="#tcg/mon-compte/constellations"'+(accountSection==='constellations'?' aria-current="page"':'')+'>Par constellation</a><a href="#tcg/mon-compte/cartes"'+(accountSection==='cartes'?' aria-current="page"':'')+'>Toutes mes cartes</a></nav>');
   function account() {
     const meta=accountUser?.user_metadata||{},name=meta.preferred_username||meta.user_name||meta.display_name||'Collectionneur';
-    const intro=heading('ESPACE PERSONNEL','Mon compte.',accountUser?'Bienvenue '+esc(String(name).slice(0,60))+'.':'Ton profil et tes constellations.');
+    const intro=accountSection==='accueil'?'<h1 class="bread portal-account-heading">ESPACE PERSONNEL</h1>':heading('ESPACE PERSONNEL','Mon compte.',accountUser?'Bienvenue '+esc(String(name).slice(0,60))+'.':'Ton profil et tes constellations.');
     const navigation=profileNav();
     if(accountLoading)return intro+navigation+'<p class="portal-availability" role="status">Recherche de ta connexion Twitch…</p>';
     if(accountError)return intro+navigation+'<section class="panel portal-message"><h2>Connexion momentanément indisponible</h2><p>Réessaie pour retrouver ton compte Twitch.</p><button class="button-primary" data-portal-account-retry>Réessayer</button></section>';
     if(!accountUser)return intro+navigation+'<section class="panel portal-message"><span class="overline">TON COMPTE TWITCH</span><h2>Retrouve tes collections</h2><p>Connecte-toi pour accéder à tes cartes et à ton profil dans les DCG.</p><button class="button-primary" type="button" data-portal-login>Connexion Twitch ↗</button></section>';
     return intro+navigation+(accountSection==='accueil'?'<section class="portal-profile-xp" aria-label="Niveau général et progression"><div class="portal-profile-xp-medal" data-general-xp hidden></div><div class="portal-profile-xp-details" data-general-xp-details></div></section>':'<section id="dcg-profile-root" aria-label="Mes constellations"></section>');
+  }
+  const statNumber = new Intl.NumberFormat('fr-FR', {maximumFractionDigits:2});
+  function profileStatCards(stats) {
+    const fields = ['boosters_opened','alkahests_earned','activity_days','boosters_purchased','booster_hits','legendary_cards'];
+    if (!fields.every(key => Number.isSafeInteger(stats?.[key]) && stats[key] >= 0)) throw new Error('Invalid profile statistics');
+    const days = Math.max(1,stats.activity_days);
+    const dailyAverage = total => 'Moyenne par jour · '+statNumber.format(total/days);
+    const card = (title,value,icon,comment='',shines=false) => `<article class="portal-stat-card">
+      <span class="portal-stat-art${shines?' portal-stat-art-shine':''}" aria-hidden="true"><img src="modules/dcg/assets/${icon}" alt=""></span>
+      <h2>${title}</h2><strong class="portal-stat-value">${statNumber.format(value)}</strong>${comment?`<p>${comment}</p>`:''}
+    </article>`;
+    return '<div class="portal-stat-grid">'+
+      card('Nombre de boosters ouverts',stats.boosters_opened,'rules-booster.svg',dailyAverage(stats.boosters_opened))+
+      card('Nombre d’Alkahests récoltés',stats.alkahests_earned,'xp/dcg-alkahest-256.webp',dailyAverage(stats.alkahests_earned))+
+      card('Nombre de boosters achetés',stats.boosters_purchased,'rules-booster.svg','Nombre de hits · '+statNumber.format(stats.booster_hits),true)+
+      card('Nombre de cartes légendaires',stats.legendary_cards,'rules-card.svg','',true)+'</div>';
+  }
+  async function loadProfileStats() {
+    if (currentPage !== 'mon-compte' || accountSection !== 'accueil' || !accountUser) return;
+    const host = root.querySelector('[data-portal-stats]');
+    if (!host) return;
+    const run = generation, request = ++latestStatsRequest, userId = accountUser.id;
+    const current = () => run === generation && request === latestStatsRequest && accountUser?.id === userId && host.isConnected;
+    host.setAttribute('aria-busy','true');
+    try {
+      const client = await window.DEADELUSTV_AUTH.getClient();
+      if (!current()) return;
+      const {data,error} = await client.rpc('tcg_my_portal_stats');
+      if (!current()) return;
+      if (error) throw error;
+      host.innerHTML = profileStatCards(data);
+    } catch {
+      if (current()) host.innerHTML = '<p role="status">Tes statistiques sont momentanément indisponibles.</p><button class="button-outline" type="button" data-portal-stats-retry>Réessayer</button>';
+    } finally {
+      if (current()) host.setAttribute('aria-busy','false');
+    }
   }
   const common = () => `${heading('DES UNIVERS À PARTAGER', 'Collections communes.', 'Des collections à découvrir entre communautés, avec un dos propre à chaque collection.')}<p class="portal-availability" role="status">La boutique est en préparation. Les collections ci-dessous illustrent les univers envisagés ; aucun booster commun n’est en vente pour le moment.</p><div class="portal-common-grid"><article class="portal-common portal-common-ghost"><span class="portal-common-art" aria-hidden="true">◌</span><span class="portal-eyebrow">COLLECTION ENVISAGÉE</span><h2>Phasmophobia</h2>${badge}</article><article class="portal-common portal-common-valor"><span class="portal-common-art" aria-hidden="true">◇</span><span class="portal-eyebrow">COLLECTION ENVISAGÉE</span><h2>Valorant</h2>${badge}</article></div><section class="panel portal-message"><span class="overline">LE CHOIX DU SOLDE</span><h2>Un achat, un DCG choisi</h2><p>Quand la boutique sera ouverte, tu pourras sélectionner le solde d’Alkahests d’un streamer suivi pour acheter ton booster commun. Le montant disponible et le coût seront affichés avant confirmation.</p><p>Les soldes resteront séparés : 200 Alkahests chez un streamer et 300 chez un autre ne forment pas un solde commun de 500.</p></section>`;
   const renderers = {accueil:home, regles:rules, 'mon-compte':account, 'collections-communes':common};
@@ -143,7 +245,7 @@
     const id=accountUser.id;
     void window.DEADELUSTV_AUTH.getClient().then(client=>{
       if(!host.isConnected||accountUser?.id!==id||xpHost!==host||!window.DCGXPPass)return;
-      xpWidget=window.DCGXPPass.mount(host,{client,userId:id,scope:'general',compact:true,detailsHost,rewardPresentation:profile?'popup':'flight',rewardTargets:(receipt,kind)=>profile?[]:stockWidget?.targets(receipt,kind)||[],onConfirmed:()=>{if(!profile)void stockWidget?.refresh();},isCurrent:()=>accountUser?.id===id&&xpHost===host&&(profile?currentPage==='mon-compte'&&accountSection==='accueil':currentPage==='accueil')});
+      xpWidget=window.DCGXPPass.mount(host,{client,userId:id,scope:'general',compact:true,detailsHost,rewardPresentation:profile?'popup':'flight',rewardTargets:(receipt,kind)=>profile?[]:stockWidget?.targets(receipt,kind)||[],onConfirmed:()=>{if(profile)void loadProfileStats();else void stockWidget?.refresh();},isCurrent:()=>accountUser?.id===id&&xpHost===host&&(profile?currentPage==='mon-compte'&&accountSection==='accueil':currentPage==='accueil')});
     }).catch(()=>{if(host.isConnected&&xpHost===host)host.textContent='Ta progression est momentanément indisponible.';});
   }
   function syncStocks(client){
@@ -158,11 +260,15 @@
     clearStocks();
     clearPassGain();
     window.DCGDailyPass?.unmount();
-    root.innerHTML=nav()+'<div class="dcg-portal-view">'+(renderers[currentPage]||home)()+(currentPage==='mon-compte'&&accountSection==='accueil'?pass():'')+'</div>';
+    const profileHome=currentPage==='mon-compte'&&accountSection==='accueil';
+    const stats=profileHome&&accountUser?'<section data-portal-stats aria-label="Statistiques du compte" aria-live="polite" aria-busy="true"><p>Chargement de tes statistiques…</p></section>':'';
+    const restoreHeadingFocus=profileHome&&document.activeElement===root.querySelector('h1');
+    root.innerHTML=nav()+'<div class="dcg-portal-view">'+(renderers[currentPage]||home)()+(profileHome?pass()+stats:'')+'</div>';
     mountGeneralXP();
-    const title=root.querySelector('h1');if(title){title.id='tcg-title';title.tabIndex=-1;}
+    const title=root.querySelector('h1');if(title){title.id='tcg-title';title.tabIndex=-1;if(restoreHeadingFocus)title.focus({preventScroll:true});}
     if(currentPage==='mon-compte'&&accountSection!=='accueil'&&accountUser)window.DCGProfile?.mount(root.querySelector('#dcg-profile-root'),{user:accountUser,view:accountSection});
     if(currentPage==='accueil'||currentPage==='mon-compte'&&accountSection==='accueil')window.DCGDailyPass?.mount(root.querySelector('#daily-pass-root'),{view:currentPage==='mon-compte'?'details':'progress'});
+    if(stats)void loadProfileStats();
   }
   async function readAccount(run){
     try{
@@ -222,6 +328,7 @@
     const parts=page.split('/');accountSection=parts[0]==='mon-compte'&&['constellations','cartes'].includes(parts[1])?parts[1]:'accueil';
     const run=++generation;currentPage=parts[0]==='mon-compte'?'mon-compte':pages.includes(page)?page:'accueil';
     accountUser=null;accountError=false;accountLoading=currentPage==='mon-compte';mySpaces=[];myError=false;myLoading=currentPage==='accueil'&&hasSessionHint();paint();
+    if(currentPage==='accueil')void loadDiscovery();
     if(accountLoading)void readAccount(run);
     if(myLoading)void readMySpaces(run);
   }
@@ -254,16 +361,12 @@
     if(event.target.matches('[data-portal-search-dialog]')){const rect=event.target.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)closeSearch();}
     if(event.target.closest('[data-portal-login]'))void window.DEADELUSTV_AUTH?.signIn();
     if(event.target.closest('[data-portal-account-retry]'))render(accountSection==='accueil'?'mon-compte':'mon-compte/'+accountSection);
+    if(event.target.closest('[data-portal-stats-retry]'))void loadProfileStats();
     if(event.target.closest('[data-portal-my-retry]')){myLoading=true;myError=false;paintMySpaces();void readMySpaces(++generation);}
-    const direction=event.target.closest('[data-portal-carousel-direction]');
-    if(direction){const rail=root.querySelector('[data-portal-carousel]');rail?.scrollBy({left:(direction.dataset.portalCarouselDirection==='next'?1:-1)*Math.max(180,(rail.clientWidth||0)*.8),behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}
-    if(event.target.closest('[data-portal-directory]')){
-      event.preventDefault();const target=root.querySelector('#dcg-decouverte')||root.querySelector('#dcg-annuaire');target?.scrollIntoView?.({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
-      if(showDiscovery)root.querySelector('[data-portal-carousel]')?.focus({preventScroll:true});
-    }
   });
   window.addEventListener('deadelustv:auth-change',event=>{signedInHint=event.detail?.authenticated===true;accountUser=null;mySpaces=[];myError=false;if(currentPage==='mon-compte')render(accountSection==='accueil'?'mon-compte':'mon-compte/'+accountSection);else if(currentPage==='accueil'){const run=++generation;myLoading=signedInHint;paintMySpaces();if(myLoading)void readMySpaces(run);}});
   window.addEventListener('tcg:daily-pass-change',event=>{
+    if(event.detail?.gains?.length)void loadProfileStats();
     if(currentPage==='accueil'&&accountUser&&event.detail?.gains?.length){
       const id=accountUser.id,host=root.querySelector('#daily-pass-root');
       void stockWidget?.refresh();stopHomeDaily();
@@ -281,7 +384,7 @@
     const popup=window.DCGProfileRewards.show(host,window.DCGProfileRewards.dailyItems(event.detail?.gains),{anchor,valid:()=>request.generation===generation&&request.user===accountUser?.id});
     stopPassGain=()=>popup.cancel();
   });
-  window.addEventListener('focus',()=>{if(currentPage==='accueil'&&hasSessionHint())void readMySpaces(++generation);});
+  window.addEventListener('focus',()=>{if(currentPage==='accueil'&&hasSessionHint())void readMySpaces(++generation);else void loadProfileStats();});
   window.DEADELUSTV_DCG=Object.freeze({render,cancel});
 })();
 
