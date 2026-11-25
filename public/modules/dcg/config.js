@@ -9,6 +9,8 @@
     gameBase:deadelus.gameBase,
     accountSpaceId:deadelus.id,
     accountBroadcasterId:deadelus.broadcasterId,
+    // Le statut historique OVH ne décrit que cette chaîne Twitch.
+    legacyLiveBroadcasterId:deadelus.broadcasterId,
     authStorageKey:'sb-eodtxlhnfzyapkyvvxdi-auth-token',
     // Service installé sur le projet de recette ; origine autorisée : https://deadelustv.pages.dev.
     dailyPassServiceReady:true,

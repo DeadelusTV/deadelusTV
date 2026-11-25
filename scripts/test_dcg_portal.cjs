@@ -23,7 +23,7 @@ class Node{
  querySelector(selector){return this.nodes?.[selector]||null;}
 }
 const sampleStats={boosters_opened:15,alkahests_earned:100,activity_days:2,boosters_purchased:7,booster_hits:4,legendary_cards:3};
-function setup({hash='#tcg',user=null,getSession,withAuth=true,registered=true,getUser,getMembership,spaces,discoveryRead,statsRead,xpMount,xpRead,stockMount}={}){
+function setup({hash='#tcg',user=null,getSession,withAuth=true,registered=true,getUser,getMembership,spaces,discoveryRead,statsRead,xpMount,xpRead,stockMount,liveMount}={}){
  const root=new Node(),heading=new Node(),list=new Node(),search=new Node(),searchForm=new Node(),searchDialog=new Node(),searchResults=new Node(),nav=new Node(),menu=new Node(),back=new Node(),main=new Node(),brand=new Node(),passRoot=new Node();
  search.selector='[data-portal-search]';searchDialog.selector='[data-portal-search-dialog]';searchDialog.onClose=()=>root.emit('close',searchDialog);searchForm.nodes={input:search};root.nodes={'[data-general-xp]':new Node(),'h1':heading,'[data-portal-spaces]':list,'[data-portal-search]':search,'[data-portal-search-form]':searchForm,'[data-portal-search-dialog]':searchDialog,'[data-portal-search-results]':searchResults};
  root.nodes['#daily-pass-root']=passRoot;root.nodes['[data-general-xp-details]']=new Node();
@@ -48,7 +48,7 @@ function setup({hash='#tcg',user=null,getSession,withAuth=true,registered=true,g
   if(name==='tcg_my_portal_stats')return statsRead?statsRead():{data:sampleStats};
   xpReads.push({name,args});return xpRead?xpRead(name,args):{data:{scope:'streamer',broadcaster_id:'99977368',total:30,level:2}};},from(table){reads.push({table});return {select(columns){reads.at(-1).columns=columns;return this;},eq(column,value){reads.at(-1).filter={column,value};return this;},async maybeSingle(){return getMembership?getMembership():{data:registered&&currentUser?{user_id:currentUser.id}:null};}};}}),signIn:()=>{signins++;}};
  if(withAuth)Object.defineProperty(context.DEADELUSTV_AUTH,'userId',{get:()=>currentUser?.id||null});
- if(stockMount)context.DCGPortalStock={mount:stockMount};if(xpMount)context.DCGXPPass={mount:xpMount};context.window=context;vm.createContext(context);vm.runInContext(read('public/modules/dcg/dcg-xp.js'),context);vm.runInContext(config,context);context.DEADELUSTV_DCG_CONFIG={...context.DEADELUSTV_DCG_CONFIG,...(spaces?{spaces}:{})};vm.runInContext(source,context);vm.runInContext(router,context);
+ if(liveMount)context.DCGPortalLive={mount:liveMount};if(stockMount)context.DCGPortalStock={mount:stockMount};if(xpMount)context.DCGXPPass={mount:xpMount};context.window=context;vm.createContext(context);vm.runInContext(read('public/modules/dcg/dcg-xp.js'),context);vm.runInContext(config,context);context.DEADELUSTV_DCG_CONFIG={...context.DEADELUSTV_DCG_CONFIG,...(spaces?{spaces}:{})};vm.runInContext(source,context);vm.runInContext(router,context);
  return {emitWindow(type,detail){for(const fn of windowListeners[type]||[])fn({detail});},root,heading,list,search,searchForm,searchDialog,searchResults,reads,xpReads,discoveryReads,discoveryHost,menu,nav,sections,calls,context,navNodes,passCalls,passRoot,get signins(){return signins;},async go(value){discoveryHost.innerHTML='';location.hash=value;for(const fn of windowListeners.hashchange||[])fn();await tick();},async auth(user){currentUser=user;if(user)storage.set('sb-eodtxlhnfzyapkyvvxdi-auth-token','session-present');else storage.clear();for(const fn of windowListeners['deadelustv:auth-change']||[])fn({detail:{authenticated:!!user}});await tick();},click(selector){const n=new Node();n.selector=selector;return root.emit('click',n);}};
 }
 
@@ -478,3 +478,15 @@ test('home stocks reuse the authenticated DCG reader and refresh only after conf
  assert.match(s.list.innerHTML,/Boosters :/);assert.match(s.list.innerHTML,/Alkahests :/);assert.doesNotMatch(s.list.innerHTML,/Entrer dans le DCG/);assert.equal(stock.host,s.list);assert.equal(stock.userId,'alice');assert.equal(stock.readers.length,1);assert.equal(stock.readers[0].broadcasterId,'99977368');await stock.readers[0].read();assert.equal(s.xpReads.at(-1).name,'tcg_my_boosters');assert.equal(s.xpReads.at(-1).args.p_offset,0);
  assert.equal(refreshes,0);xp.onConfirmed({reward:{credits:[]}});assert.equal(refreshes,1);assert.equal(xp.rewardTargets({},'alkahest')[0],target);s.emitWindow('tcg:daily-pass-change',{gains:[{broadcaster_id:'99977368',kind:'dust',amount:35}]});assert.equal(refreshes,2);await s.auth(null);assert.equal(destroyed,1);assert.equal(stock.isCurrent(),false);
 });
+
+test('live badge is hidden by default, scoped to Mes DCG and destroyed on account or route exit',async()=>{
+ const mounts=[],destroyed=[];let syncs=0;
+ const s=setup({user:{id:'alice'},liveMount:(host,options)=>{mounts.push({host,options});return {sync(){syncs++;},destroy(){destroyed.push(options.userId);}};}});
+ await tick();
+ assert.match(s.list.innerHTML,/<div class="portal-space-avatar"><img[^>]+><span class="portal-space-live" data-portal-live="99977368" hidden>En live<\/span><\/div>/);
+ assert.doesNotMatch(s.discoveryHost.innerHTML,/data-portal-live/);
+ assert.equal(mounts.length,1);assert.equal(mounts[0].host,s.list);assert.equal(mounts[0].options.userId,'alice');assert.equal(mounts[0].options.spaces[0].broadcasterId,'99977368');assert.equal(mounts[0].options.legacyBroadcasterId,'99977368');assert.ok(syncs>=1);
+ await s.auth(null);assert.deepEqual(destroyed,['alice']);assert.doesNotMatch(s.list.innerHTML,/data-portal-live/);
+ await s.auth({id:'bob'});assert.equal(mounts.length,2);assert.equal(mounts[1].options.userId,'bob');await s.go('#tcg/regles');assert.deepEqual(destroyed,['alice','bob']);
+});
+
