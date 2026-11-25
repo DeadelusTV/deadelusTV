@@ -9,6 +9,8 @@
   let xpWidget=null,xpHost=null,xpUser=null;
   let stockWidget=null,stockHost=null,stockUser=null,stopHomeDaily=()=>{};
   function clearStocks(){stopHomeDaily();stopHomeDaily=()=>{};stockWidget?.destroy();stockWidget=null;stockHost=null;stockUser=null;}
+  let liveWidget=null,liveHost=null,liveUser=null,liveKey=null;
+  function clearLive(){liveWidget?.destroy();liveWidget=null;liveHost=null;liveUser=null;liveKey=null;}
   let passGainRequest=null,stopPassGain=()=>{};
   function clearPassGain(){passGainRequest=null;stopPassGain();stopPassGain=()=>{};}
   let mySpaces=[],myLoading=false,myError=false,signedInHint=false;
@@ -45,7 +47,7 @@
     if(myError)return '<div class="portal-empty" role="status"><p>Impossible de retrouver tes DCG pour le moment.</p><button class="button-outline" type="button" data-portal-my-retry>Réessayer</button></div>';
     if(!accountUser)return '<div class="portal-empty"><p>Connecte-toi avec Twitch pour retrouver les DCG où tu joues.</p><button class="button-outline" type="button" data-portal-login>Connexion Twitch ↗</button></div>';
     if(!mySpaces.length)return '<p class="portal-empty">Tu n’as pas encore rejoint de DCG. Découvre une communauté ci-dessous ou entre dans le DCG DeadelusTV.</p>';
-    return ordered().map(space => `<a class="portal-space" href="${esc(space.href)}" data-dcg="${esc(space.id)}"><img src="${esc(space.avatar)}" alt="" referrerpolicy="no-referrer" width="96" height="96"><div class="portal-space-copy"><span class="portal-space-status">${esc(space.status||'')}</span><h3>${esc(space.name)}</h3><p>Ses cartes, ses moments, sa communauté.</p></div><div class="portal-space-level"${space.xpMarkup?'':' role="status" aria-label="'+esc(space.xpUnavailable?'Niveau momentanément indisponible':'Lecture de ton niveau')+'" aria-busy="'+!space.xpUnavailable+'"'}>${space.xpMarkup||'<span class="portal-space-level-placeholder" aria-hidden="true">'+(space.xpUnavailable?'—':'…')+'</span>'}</div>${stockMarkup()}</a>`).join('');
+    return ordered().map(space => `<a class="portal-space" href="${esc(space.href)}" data-dcg="${esc(space.id)}"><div class="portal-space-avatar"><img src="${esc(space.avatar)}" alt="" referrerpolicy="no-referrer" width="96" height="96"><span class="portal-space-live" data-portal-live="${esc(space.broadcasterId)}" hidden>En live</span></div><div class="portal-space-copy"><span class="portal-space-status">${esc(space.status||'')}</span><h3>${esc(space.name)}</h3><p>Ses cartes, ses moments, sa communauté.</p></div><div class="portal-space-level"${space.xpMarkup?'':' role="status" aria-label="'+esc(space.xpUnavailable?'Niveau momentanément indisponible':'Lecture de ton niveau')+'" aria-busy="'+!space.xpUnavailable+'"'}>${space.xpMarkup||'<span class="portal-space-level-placeholder" aria-hidden="true">'+(space.xpUnavailable?'—':'…')+'</span>'}</div>${stockMarkup()}</a>`).join('');
   }
   function discoveryUrl(value) {
     if (typeof value !== 'string' || !/^https:\/\//i.test(value)) return null;
@@ -256,7 +258,16 @@
     const id=accountUser.id;stockHost=host;stockUser=id;
     stockWidget=window.DCGPortalStock.mount(host,{userId:id,isCurrent:()=>accountUser?.id===id&&currentPage==='accueil'&&stockHost===host,readers:mySpaces.filter(space=>space.id===config.accountSpaceId).map(space=>({spaceId:space.id,broadcasterId:config.accountBroadcasterId,read:()=>client.rpc('tcg_my_boosters',{p_offset:0})}))});
   }
+  function syncLive(){
+    const host=currentPage==='accueil'&&accountUser&&!myLoading&&!myError&&mySpaces.length?root.querySelector('[data-portal-spaces]'):null;
+    if(!host||!window.DCGPortalLive){clearLive();return;}
+    const id=accountUser.id,key=JSON.stringify(mySpaces.map(space=>space.broadcasterId).sort());
+    if(liveHost===host&&liveUser===id&&liveKey===key){liveWidget?.sync();return;}
+    clearLive();liveHost=host;liveUser=id;liveKey=key;
+    liveWidget=window.DCGPortalLive.mount(host,{userId:id,spaces:mySpaces,legacyBroadcasterId:config.legacyLiveBroadcasterId,isCurrent:()=>currentPage==='accueil'&&accountUser?.id===id&&liveHost===host&&!myLoading&&!myError});
+  }
   function paint(){
+    clearLive();
     clearStocks();
     clearPassGain();
     window.DCGDailyPass?.unmount();
@@ -284,7 +295,7 @@
     }
   }
   function hasSessionHint(){try{return signedInHint||localStorage.getItem(config.authStorageKey)!==null||new URLSearchParams(location.search).has('code');}catch{return signedInHint;}}
-  function paintMySpaces(){if(currentPage!=='accueil')return;if(!accountUser||!mySpaces.length)clearStocks();mountGeneralXP();const list=root.querySelector('[data-portal-spaces]');const html=directory();if(list&&directoryStates.get(list)!==html){list.innerHTML=html;directoryStates.set(list,html);}stockWidget?.sync();}
+  function paintMySpaces(){if(currentPage!=='accueil')return;if(!accountUser||!mySpaces.length)clearStocks();mountGeneralXP();const list=root.querySelector('[data-portal-spaces]');const html=directory();if(list&&directoryStates.get(list)!==html){list.innerHTML=html;directoryStates.set(list,html);}stockWidget?.sync();syncLive();}
   async function readSpaceXP(client,run,userId){
     if(!mySpaces.length)return;
     const current=()=>run===generation&&currentPage==='accueil'&&accountUser?.id===userId;
@@ -332,7 +343,7 @@
     if(accountLoading)void readAccount(run);
     if(myLoading)void readMySpaces(run);
   }
-  function cancel(){clearStocks();clearPassGain();window.DCGProfile?.unmount();window.DCGDailyPass?.unmount();xpWidget?.destroy();xpWidget=null;xpHost=null;xpUser=null;closeSearch(false);generation++;currentPage=null;accountUser=null;mySpaces=[];myLoading=false;myError=false;accountLoading=false;accountError=false;root.replaceChildren();}
+  function cancel(){clearLive();clearStocks();clearPassGain();window.DCGProfile?.unmount();window.DCGDailyPass?.unmount();xpWidget?.destroy();xpWidget=null;xpHost=null;xpUser=null;closeSearch(false);generation++;currentPage=null;accountUser=null;mySpaces=[];myLoading=false;myError=false;accountLoading=false;accountError=false;root.replaceChildren();}
   function updateSearch(field){const results=root.querySelector('[data-portal-search-results]');if(results)results.innerHTML=searchResults(field.value);}
   root.addEventListener('input',event=>{if(event.target.matches('[data-portal-search]'))updateSearch(event.target);});
   root.addEventListener('submit',event=>{if(event.target.matches('[data-portal-search-form]')){event.preventDefault();updateSearch(event.target.querySelector('input'));}});
