@@ -91,6 +91,7 @@
       content: '';
       position: absolute;
       z-index: -2;
+      pointer-events: none;
       width: 148%;
       aspect-ratio: 1;
       opacity: 0;
@@ -205,6 +206,9 @@
     .daily-pass--visual .day.is-ready .diamond::before { inset: 2.2px; filter: sepia(1) saturate(2.35) brightness(1.28); }
     .daily-pass--visual .day.is-ready .diamond::after { animation: pass-xp-arc-breathe 3.5s ease-in-out infinite; }
     .daily-pass--visual .day.is-ready .day-number {
+      pointer-events: none;
+      -webkit-user-select: none;
+      user-select: none;
       color: #fff5d9;
       transform: translateY(-1px);
       text-shadow: 0 1px 0 #714620, 0 4px 12px #000d, 0 0 12px #ffeca899, 0 0 24px #d8a14d77;
@@ -403,7 +407,7 @@
 .daily-pass--progress .day-track{margin:16px 0}
 
 /* Récompenses du Connexion Pass : action volontaire, jamais un contrôle automatique. */
-.daily-pass--visual .day.is-ready .claim-hit,
+.daily-pass--visual .day.is-ready .claim-hit:not(:disabled),
 .daily-pass--visual .daily-pass-reward-claim:not(:disabled) {cursor:pointer;}
 .daily-pass--visual .day.is-ready .claim-hit:focus-visible,
 .daily-pass--visual .daily-pass-reward-claim:focus-visible {outline:2px solid #f4d396;outline-offset:4px;}

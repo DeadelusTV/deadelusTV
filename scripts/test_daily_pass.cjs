@@ -64,6 +64,13 @@ test('the common controller is loaded once before portal routes on every site pa
  assert.ok(html.indexOf('assets/daily-pass.js')<html.indexOf('modules/dcg/portal.js'));
  assert.match(html,/<script src="assets\/daily-pass.js[^>]* defer>/);assert.match(html,/href="assets\/daily-pass.css/);
 });
+test('day labels and decorative halos let the claim button receive pointer input',()=>{
+ const css=read('public/assets/daily-pass.css');
+ const label=css.match(/\.daily-pass--visual \.day\.is-ready \.day-number\s*\{([^}]+)\}/)[1];
+ assert.match(label,/pointer-events:\s*none\b/);
+ assert.match(label,/\buser-select:\s*none\b/);
+ assert.match(css,/\.daily-pass--visual \.day::before\s*\{[^}]*pointer-events:\s*none\b/);
+});
 test('claimable day labels belong to the claim buttons on both the portal and profile',async()=>{
  const visit='00000000-0000-4000-8000-000000000003';
  for(const view of ['progress','details']){
