@@ -103,7 +103,7 @@
       <p>Rejoins les constellations de tes streamers préférés, et collectionne leurs cartes. Découvre des cartes exclusives au fil des événements et des nouvelles collections !</p>
     </div>
     <div class="portal-roles">
-      <a class="portal-role-card" href="#tcg/regles">
+      <a class="portal-role-card" data-viewer-role href="#tcg/regles"${myLoading?' hidden':''}>
         <svg class="portal-role-art" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
           <path d="M5 32s10-16 27-16 27 16 27 16-10 16-27 16S5 32 5 32Z"/>
           <circle cx="32" cy="32" r="10"/><circle cx="32" cy="32" r="4" fill="currentColor" stroke="none"/>
@@ -317,13 +317,24 @@
     }
     if(current())paintMySpaces();
   }
+  function showViewerRole(visible){
+    const link=root.querySelector('[data-viewer-role]');
+    if(link)link.hidden=!visible;
+  }
+  async function readViewerRole(client,run){
+    try{
+      const {data,error}=await client.rpc('tcg_my_approved_viewer_card');
+      if(run===generation&&!error&&typeof data==='boolean')showViewerRole(!data);
+    }catch{/* Keep the current visibility until the next refresh. */}
+  }
   async function readMySpaces(run){
     try{
       const client=await window.DEADELUSTV_AUTH.getClient();
       const result=await client.auth.getUser();if(run!==generation||currentPage!=='accueil')return;
       if(result.error)throw result.error;const user=result.data?.user||null;
       if(accountUser?.id!==user?.id){mySpaces=[];accountUser=user;paintMySpaces();}
-      if(!user){myLoading=false;myError=false;paintMySpaces();return;}
+      if(!user){showViewerRole(true);myLoading=false;myError=false;paintMySpaces();return;}
+      void readViewerRole(client,run);
       // Lecture de son propre compte uniquement, y compris pour un administrateur.
       // Ne pas appeler ensure_my_viewer : ouvrir le portail ne rejoint aucun DCG.
       const membership=await client.from('tcg_accounts').select('user_id').eq('user_id',user.id).maybeSingle();
@@ -375,7 +386,7 @@
     if(event.target.closest('[data-portal-stats-retry]'))void loadProfileStats();
     if(event.target.closest('[data-portal-my-retry]')){myLoading=true;myError=false;paintMySpaces();void readMySpaces(++generation);}
   });
-  window.addEventListener('deadelustv:auth-change',event=>{signedInHint=event.detail?.authenticated===true;accountUser=null;mySpaces=[];myError=false;if(currentPage==='mon-compte')render(accountSection==='accueil'?'mon-compte':'mon-compte/'+accountSection);else if(currentPage==='accueil'){const run=++generation;myLoading=signedInHint;paintMySpaces();if(myLoading)void readMySpaces(run);}});
+  window.addEventListener('deadelustv:auth-change',event=>{signedInHint=event.detail?.authenticated===true;accountUser=null;mySpaces=[];myError=false;if(currentPage==='mon-compte')render(accountSection==='accueil'?'mon-compte':'mon-compte/'+accountSection);else if(currentPage==='accueil'){const run=++generation;myLoading=signedInHint;showViewerRole(!signedInHint);paintMySpaces();if(myLoading)void readMySpaces(run);}});
   window.addEventListener('tcg:daily-pass-change',event=>{
     if(event.detail?.gains?.length)void loadProfileStats();
     if(currentPage==='accueil'&&accountUser&&event.detail?.gains?.length){
