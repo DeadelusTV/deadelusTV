@@ -22,7 +22,6 @@
   font:600 clamp(17px,1.7vw,25px)/1.15 Georgia,serif;
 }
 #page-tcg .portal-role-card::before{content:"";position:absolute;inset:6px;border:1px solid currentColor;border-radius:11px;color:var(--role-tint);opacity:.13;pointer-events:none;}
-#page-tcg [data-viewer-role][hidden]{display:none;}
 #page-tcg article.portal-role-card{--role-tint:#b8dddb;border-color:#4e6669;background:radial-gradient(ellipse at 75% 15%,#578d8b38,transparent 80%),#11191d;}
 #page-tcg .portal-role-art{width:42%;max-width:76px;height:auto;color:var(--role-tint);opacity:.52;fill:none;stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round;}
 #page-tcg a.portal-role-card:hover,#page-tcg a.portal-role-card:focus-visible{border-color:var(--gold-light);color:var(--gold-light);}
