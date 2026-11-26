@@ -23,11 +23,12 @@ class Node{
  querySelector(selector){return this.nodes?.[selector]||null;}
 }
 const sampleStats={boosters_opened:15,alkahests_earned:100,activity_days:2,boosters_purchased:7,booster_hits:4,legendary_cards:3};
-function setup({hash='#tcg',user=null,getSession,withAuth=true,registered=true,getUser,getMembership,spaces,discoveryRead,statsRead,xpMount,xpRead,stockMount,liveMount}={}){
+function setup({hash='#tcg',user=null,getSession,withAuth=true,registered=true,getUser,getMembership,spaces,discoveryRead,approvedRead,statsRead,xpMount,xpRead,stockMount,liveMount}={}){
  const root=new Node(),heading=new Node(),list=new Node(),search=new Node(),searchForm=new Node(),searchDialog=new Node(),searchResults=new Node(),nav=new Node(),menu=new Node(),back=new Node(),main=new Node(),brand=new Node(),passRoot=new Node();
  search.selector='[data-portal-search]';searchDialog.selector='[data-portal-search-dialog]';searchDialog.onClose=()=>root.emit('close',searchDialog);searchForm.nodes={input:search};root.nodes={'[data-general-xp]':new Node(),'h1':heading,'[data-portal-spaces]':list,'[data-portal-search]':search,'[data-portal-search-form]':searchForm,'[data-portal-search-dialog]':searchDialog,'[data-portal-search-results]':searchResults};
  root.nodes['#daily-pass-root']=passRoot;root.nodes['[data-general-xp-details]']=new Node();
  const discoveryHost=new Node(),discoveryReads=[];
+ root.nodes['[data-viewer-role]']=new Node();
  const statsHost=new Node();
  Object.defineProperty(root.nodes,'[data-portal-stats]',{get:()=>root.innerHTML.includes('data-portal-stats')?statsHost:null});
  Object.defineProperty(root.nodes,'#dcg-decouverte',{get:()=>root.innerHTML.includes('id="dcg-decouverte"')?discoveryHost:null});
@@ -45,6 +46,7 @@ function setup({hash='#tcg',user=null,getSession,withAuth=true,registered=true,g
    discoveryReads.push({args});
    return discoveryRead?discoveryRead():{data:[]};
   }
+  if(name==='tcg_my_approved_viewer_card')return {data:approvedRead?await approvedRead():false};
   if(name==='tcg_my_portal_stats')return statsRead?statsRead():{data:sampleStats};
   xpReads.push({name,args});return xpRead?xpRead(name,args):{data:{scope:'streamer',broadcaster_id:'99977368',total:30,level:2}};},from(table){reads.push({table});return {select(columns){reads.at(-1).columns=columns;return this;},eq(column,value){reads.at(-1).filter={column,value};return this;},async maybeSingle(){return getMembership?getMembership():{data:registered&&currentUser?{user_id:currentUser.id}:null};}};}}),signIn:()=>{signins++;}};
  if(withAuth)Object.defineProperty(context.DEADELUSTV_AUTH,'userId',{get:()=>currentUser?.id||null});
@@ -163,6 +165,14 @@ test('the home hero links viewers to the rules and presents the streamer role wi
  assert.match(hero,/Je suis Streamer/);
  assert.doesNotMatch(hero,/<button\b|role="button"|Explorer les DCG|Comment jouer|ENTRÉE DIRECTE|portal-featured/);
  assert.doesNotMatch(markup,/<iframe|<script/);assert.doesNotMatch(source,/createClient|service_role|fetch\(/);
+});
+test('the viewer guide follows approval across login, account switches and logout',async()=>{
+ let approved=false;
+ const s=setup({approvedRead:()=>approved});
+ const role=s.root.querySelector('[data-viewer-role]');
+ await s.auth({id:'new'});assert.equal(role.hidden,false);
+ approved=true;await s.auth({id:'returning'});assert.equal(role.hidden,true);
+ await s.auth(null);assert.equal(role.hidden,false);
 });
 test('global streamer search handles accents without filtering personal DCG or replacing the input',async()=>{
  const s=setup({user:{id:'player'}});await tick();s.click('[data-portal-search-open]');assert.equal(s.searchDialog.open,true);assert.equal(s.search.focused,true);
