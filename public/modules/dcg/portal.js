@@ -17,14 +17,7 @@
   // Annuaire des espaces réellement raccordés. Ajouter un streamer demandera
   // aussi son routage et son isolation serveur ; cette liste ne crée aucun DCG.
   const safeUrl=value=>{try{const url=new URL(value,location.href||'https://deadelustv.pages.dev/');return ['https:','http:'].includes(url.protocol)?url.href:'';}catch{return '';}};
-  const seen=new Set();
-  const spaces=(config.spaces||[]).flatMap(space=>{
-    const base=safeUrl(space.gameBase),avatar=safeUrl(space.avatar);
-    if(!space.id||!space.name||!base||!avatar||seen.has(space.id))return [];
-    seen.add(space.id);return [{...space,avatar,href:new URL('#/boosters',base).href}];
-  });
-  const owner = config.discoveryOwner;
-  const featuredDeck = {id:owner.broadcasterId, name:owner.name, avatar:owner.avatar, href:new URL('#/boosters',owner.gameBase).href};
+  let spaces=[];
   let discovery = null, discoveryLoading = false;
   const pages = ['accueil', 'regles', 'mon-compte', 'collections-communes'];
   const titles = {accueil:'Accueil', regles:'Règles du jeu', 'mon-compte':'Mon compte', 'collections-communes':'Collections communes'};
@@ -41,13 +34,13 @@
   const searchDialog=()=>`<dialog class="portal-streamer-search" data-portal-search-dialog aria-labelledby="dcg-search-title" aria-describedby="dcg-search-description"><div class="portal-streamer-search-heading"><h2 id="dcg-search-title">Rechercher un streamer</h2><button class="portal-streamer-search-close" type="button" data-portal-search-close aria-label="Fermer la recherche">×</button></div><p id="dcg-search-description">Retrouve tous les DCG, y compris ceux que tu n’as pas encore rejoints.</p><form class="portal-search" role="search" data-portal-search-form><label for="dcg-search">Nom du streamer</label><input id="dcg-search" type="search" maxlength="80" autocomplete="off" placeholder="Rechercher un streamer…" data-portal-search autofocus></form><div class="portal-streamer-search-results" data-portal-search-results aria-live="polite" aria-relevant="additions text">${searchResults()}</div></dialog>`;
   function openSearch(trigger){const dialog=root.querySelector('[data-portal-search-dialog]');if(!dialog||dialog.open)return;searchStates.set(dialog,{trigger,restore:true});dialog.showModal();const field=root.querySelector('[data-portal-search]');if(field){updateSearch(field);field.focus();}}
   function closeSearch(restore=true){const dialog=root.querySelector('[data-portal-search-dialog]');if(!dialog?.open)return;const saved=searchStates.get(dialog);if(saved)saved.restore=restore;dialog.close();}
-  const stockMarkup=()=>'<div class="portal-space-stock" aria-live="polite"><span data-portal-stock-target="booster">Boosters : <strong data-portal-stock="booster">…</strong></span><span data-portal-stock-target="alkahest">Alkahests : <strong data-portal-stock="alkahest">…</strong></span></div>';
+  const stockMarkup=space=>'<div class="portal-space-stock" aria-live="polite"><span data-portal-stock-target="booster">Boosters : <strong data-portal-stock="booster">'+(space.launched?'…':'—')+'</strong></span><span data-portal-stock-target="alkahest">Alkahests : <strong data-portal-stock="alkahest">'+(space.launched?'…':'—')+'</strong></span></div>';
   function directory() {
     if(myLoading)return '<p class="portal-empty" role="status">Recherche de tes DCG…</p>';
     if(myError)return '<div class="portal-empty" role="status"><p>Impossible de retrouver tes DCG pour le moment.</p><button class="button-outline" type="button" data-portal-my-retry>Réessayer</button></div>';
     if(!accountUser)return '<div class="portal-empty"><p>Connecte-toi avec Twitch pour retrouver les DCG où tu joues.</p><button class="button-outline" type="button" data-portal-login>Connexion Twitch ↗</button></div>';
-    if(!mySpaces.length)return '<p class="portal-empty">Tu n’as pas encore rejoint de DCG. Découvre une communauté ci-dessous ou entre dans le DCG DeadelusTV.</p>';
-    return ordered().map(space => `<a class="portal-space" href="${esc(space.href)}" data-dcg="${esc(space.id)}"><div class="portal-space-avatar"><img src="${esc(space.avatar)}" alt="" referrerpolicy="no-referrer" width="96" height="96"><span class="portal-space-live" data-portal-live="${esc(space.broadcasterId)}" hidden>En live</span></div><div class="portal-space-copy"><span class="portal-space-status">${esc(space.status||'')}</span><h3>${esc(space.name)}</h3><p>Ses cartes, ses moments, sa communauté.</p></div><div class="portal-space-level"${space.xpMarkup?'':' role="status" aria-label="'+esc(space.xpUnavailable?'Niveau momentanément indisponible':'Lecture de ton niveau')+'" aria-busy="'+!space.xpUnavailable+'"'}>${space.xpMarkup||'<span class="portal-space-level-placeholder" aria-hidden="true">'+(space.xpUnavailable?'—':'…')+'</span>'}</div>${stockMarkup()}</a>`).join('');
+    if(!mySpaces.length)return '<p class="portal-empty">Tu n’as pas encore rejoint de DCG. Découvre une communauté ci-dessous et rejoins celle qui te plaît.</p>';
+    return ordered().map(space => `<a class="portal-space" href="${esc(space.href)}" data-dcg="${esc(space.id)}"><div class="portal-space-avatar"><img src="${esc(space.avatar)}" alt="" referrerpolicy="no-referrer" width="96" height="96"><span class="portal-space-live" data-portal-live="${esc(space.broadcasterId)}" hidden>En live</span></div><div class="portal-space-copy"><span class="portal-space-status">${esc(space.status||'')}</span><h3>${esc(space.name)}</h3><p>Ses cartes, ses moments, sa communauté.</p></div><div class="portal-space-level"${space.xpMarkup?'':' role="status" aria-label="'+esc(space.xpUnavailable?'Niveau momentanément indisponible':'Lecture de ton niveau')+'" aria-busy="'+!space.xpUnavailable+'"'}>${space.xpMarkup||'<span class="portal-space-level-placeholder" aria-hidden="true">'+(space.xpUnavailable?'—':'…')+'</span>'}</div>${stockMarkup(space)}</a>`).join('');
   }
   function discoveryUrl(value) {
     if (typeof value !== 'string' || !/^https:\/\//i.test(value)) return null;
@@ -56,30 +49,15 @@
       return url.hostname && !url.username && !url.password ? url.href : null;
     } catch { return null; }
   }
-  function discoveryDecks(rows) {
-    const others = [], ids = new Set();
-    let featured = featuredDeck;
-    for (const row of rows) {
-      const id = row?.broadcaster_id;
-      if (typeof id !== 'string' || !/^\d+$/.test(id) || ids.has(id)) continue;
-      const name = typeof row.display_name === 'string' ? row.display_name.trim() : '';
-      const avatar = discoveryUrl(row.avatar_url), href = discoveryUrl(row.deck_url);
-      if (!name || !avatar || !href) continue;
-      ids.add(id);
-      const deck = {id, name, avatar, href};
-      if (id === featuredDeck.id) featured = deck;
-      else if (others.length < 19) others.push(deck);
-    }
-    return [...others, featured];
-  }
+  const discoveryDecks=rows=>rows;
   async function loadDiscovery() {
     if (discovery || discoveryLoading || !window.DEADELUSTV_AUTH) return;
     discoveryLoading = true;
     try {
-      const client = await window.DEADELUSTV_AUTH.getClient();
+      const client = await window.DCGPortal.client();
       const {data, error} = await client.rpc('tcg_portal_discovery');
       if (error || !Array.isArray(data)) return;
-      discovery = discoveryDecks(data);
+      discovery = discoveryDecks(data);spaces=discovery;
       const section = currentPage === 'accueil' && root.querySelector('#dcg-decouverte');
       if (section) section.innerHTML = discoveryContents();
     } catch {
@@ -87,7 +65,8 @@
     } finally { discoveryLoading = false; }
   }
   function discoveryContents() {
-    const decks = discovery || [featuredDeck];
+    const decks = discovery || [];
+    if(!decks.length)return '<h2>Les DCG</h2><p role="status">'+(discovery===null?'Annuaire momentanément indisponible.':'Aucune communauté disponible pour le moment.')+'</p>';
     const duration = Math.max(40, decks.length * 7);
     const group = (copy = false) => `<ul class="portal-ticker-group"${copy ? ' aria-hidden="true"' : ' aria-label="Découvrir des DCG"'}>
       ${decks.map(space => `<li><a class="portal-streamer-pill" href="${esc(space.href)}" ${copy ? 'tabindex="-1"' : `data-discovery-dcg="${esc(space.id)}"`} aria-label="Entrer dans le DCG ${esc(space.name)}"><img src="${esc(space.avatar)}" alt="" width="42" height="42" loading="lazy" referrerpolicy="no-referrer"><span>${esc(space.name)}</span></a></li>`).join('')}
@@ -96,7 +75,8 @@
       <div class="portal-ticker" style="--ticker-duration:${duration}s">${group()}${group(true)}</div>`;
   }
   const directoryActions=()=>'<div class="portal-directory-actions"><div class="portal-general-xp-bubble" data-general-xp hidden aria-label="Niveau général DCG"></div><button class="button-outline" type="button" data-portal-search-open aria-haspopup="dialog">Rechercher un streamer</button></div>';
-  const home = () => `<section class="portal-hero">
+  const returnId=new URLSearchParams(location.search).get('dcg_return');
+  const home = () => `${/^[0-9a-f-]{36}$/i.test(returnId||'')?'<a class="button-primary" href="'+esc(window.DCGSession.href(returnId))+'">Revenir au DCG →</a>':''}<section class="portal-hero">
     <div>
       <span class="overline">DEADELUS CARD GAME</span>
       <h1><em>Collectionne les Communautés Twitch</em></h1>
@@ -110,13 +90,13 @@
         </svg>
         <span>Je suis Viewers</span>
       </a>
-      <article class="portal-role-card">
+      <a class="portal-role-card" href="${esc(window.DCGSession.href(null,'streamer'))}">
         <svg class="portal-role-art" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
           <rect x="24" y="7" width="16" height="32" rx="8"/>
           <path d="M17 30a15 15 0 0 0 30 0M32 45v10m-9 0h18M14 15a13 13 0 0 0 0 12m36-12a13 13 0 0 1 0 12"/>
         </svg>
         <span>Je suis Streamer</span>
-      </article>
+      </a>
     </div>
   </section>
     ${pass()}<section class="portal-directory" id="dcg-annuaire" aria-labelledby="dcg-directory-title"><div class="portal-section-top"><div><span class="overline">MES COMMUNAUTÉS</span><h2 id="dcg-directory-title">Mes DCG</h2><p>Retrouve les communautés où tu joues.</p></div>${directoryActions()}</div><div class="portal-spaces" data-portal-spaces>${directory()}</div></section>
@@ -170,6 +150,7 @@
       </details>
       <details>
         <summary>Bonus et soutien</summary>
+        <p>Le soutien payant et ses contreparties ne sont pas encore disponibles. Aucun paiement n’est proposé dans ce parcours.</p>
         <p>J’ai pris la décision de faire ce TCG lié aux communautés Twitch après qu’un de leurs représentants est devenu full payant.</p>
         <p>Cependant, prendre un serveur, une base de données, etc., ça me coûte aussi beaucoup d’argent. Il existe donc deux moyens de me soutenir afin d’être sûre que le DCG puisse durer (car nous avons plein d’idées pour le rendre encore plus attrayant).</p>
         <ul>
@@ -220,19 +201,19 @@
     const current = () => run === generation && request === latestStatsRequest && accountUser?.id === userId && host.isConnected;
     host.setAttribute('aria-busy','true');
     try {
-      const client = await window.DEADELUSTV_AUTH.getClient();
+      const client = await window.DCGPortal.client();
       if (!current()) return;
       const {data,error} = await client.rpc('tcg_my_portal_stats');
       if (!current()) return;
       if (error) throw error;
-      host.innerHTML = profileStatCards(data);
+      host.innerHTML = profileStatCards(data)+'<p class="portal-empty">Suivi des crédits et ouvertures depuis le '+esc(new Date(data.stats_since).toLocaleDateString('fr-FR'))+'.</p>';
     } catch {
       if (current()) host.innerHTML = '<p role="status">Tes statistiques sont momentanément indisponibles.</p><button class="button-outline" type="button" data-portal-stats-retry>Réessayer</button>';
     } finally {
       if (current()) host.setAttribute('aria-busy','false');
     }
   }
-  const common = () => `${heading('DES UNIVERS À PARTAGER', 'Collections communes.', 'Des collections à découvrir entre communautés, avec un dos propre à chaque collection.')}<p class="portal-availability" role="status">La boutique est en préparation. Les collections ci-dessous illustrent les univers envisagés ; aucun booster commun n’est en vente pour le moment.</p><div class="portal-common-grid"><article class="portal-common portal-common-ghost"><span class="portal-common-art" aria-hidden="true">◌</span><span class="portal-eyebrow">COLLECTION ENVISAGÉE</span><h2>Phasmophobia</h2>${badge}</article><article class="portal-common portal-common-valor"><span class="portal-common-art" aria-hidden="true">◇</span><span class="portal-eyebrow">COLLECTION ENVISAGÉE</span><h2>Valorant</h2>${badge}</article></div><section class="panel portal-message"><span class="overline">LE CHOIX DU SOLDE</span><h2>Un achat, un DCG choisi</h2><p>Quand la boutique sera ouverte, tu pourras sélectionner le solde d’Alkahests d’un streamer suivi pour acheter ton booster commun. Le montant disponible et le coût seront affichés avant confirmation.</p><p>Les soldes resteront séparés : 200 Alkahests chez un streamer et 300 chez un autre ne forment pas un solde commun de 500.</p></section>`;
+  const common=()=>'<section data-common-root></section>';
   const renderers = {accueil:home, regles:rules, 'mon-compte':account, 'collections-communes':common};
   const nav = () => '<nav class="dcg-portal-nav" aria-label="Navigation du portail DCG">'+pages.map(page=>'<a href="'+(page==='accueil'?'#tcg':'#tcg/'+page)+'"'+(page===currentPage?' aria-current="page"':'')+'>'+titles[page]+'</a>').join('')+'</nav>';
   function mountGeneralXP(){
@@ -245,7 +226,7 @@
     host.hidden=!accountUser;
     if(!accountUser){host.replaceChildren();return;}
     const id=accountUser.id;
-    void window.DEADELUSTV_AUTH.getClient().then(client=>{
+    void window.DCGPortal.client().then(client=>{
       if(!host.isConnected||accountUser?.id!==id||xpHost!==host||!window.DCGXPPass)return;
       xpWidget=window.DCGXPPass.mount(host,{client,userId:id,scope:'general',compact:true,detailsHost,rewardPresentation:profile?'popup':'flight',rewardTargets:(receipt,kind)=>profile?[]:stockWidget?.targets(receipt,kind)||[],onConfirmed:()=>{if(profile)void loadProfileStats();else void stockWidget?.refresh();},isCurrent:()=>accountUser?.id===id&&xpHost===host&&(profile?currentPage==='mon-compte'&&accountSection==='accueil':currentPage==='accueil')});
     }).catch(()=>{if(host.isConnected&&xpHost===host)host.textContent='Ta progression est momentanément indisponible.';});
@@ -256,7 +237,7 @@
     if(stockHost===host&&stockUser===accountUser.id){stockWidget?.sync();return;}
     clearStocks();if(!window.DCGPortalStock)return;
     const id=accountUser.id;stockHost=host;stockUser=id;
-    stockWidget=window.DCGPortalStock.mount(host,{userId:id,isCurrent:()=>accountUser?.id===id&&currentPage==='accueil'&&stockHost===host,readers:mySpaces.filter(space=>space.id===config.accountSpaceId).map(space=>({spaceId:space.id,broadcasterId:config.accountBroadcasterId,read:()=>client.rpc('tcg_my_boosters',{p_offset:0})}))});
+    stockWidget=window.DCGPortalStock.mount(host,{userId:id,isCurrent:()=>accountUser?.id===id&&currentPage==='accueil'&&stockHost===host,readers:mySpaces.filter(space=>space.launched).map(space=>({spaceId:space.id,broadcasterId:space.broadcasterId,read:()=>client.scoped(space.id,'tcg_my_boosters',{p_offset:0})}))});
   }
   function syncLive(){
     const host=currentPage==='accueil'&&accountUser&&!myLoading&&!myError&&mySpaces.length?root.querySelector('[data-portal-spaces]'):null;
@@ -264,9 +245,10 @@
     const id=accountUser.id,key=JSON.stringify(mySpaces.map(space=>space.broadcasterId).sort());
     if(liveHost===host&&liveUser===id&&liveKey===key){liveWidget?.sync();return;}
     clearLive();liveHost=host;liveUser=id;liveKey=key;
-    liveWidget=window.DCGPortalLive.mount(host,{userId:id,spaces:mySpaces,legacyBroadcasterId:config.legacyLiveBroadcasterId,isCurrent:()=>currentPage==='accueil'&&accountUser?.id===id&&liveHost===host&&!myLoading&&!myError});
+    liveWidget=window.DCGPortalLive.mount(host,{userId:id,spaces:mySpaces,read:async space=>(await window.DCGPortal.client()).portal('live',{dcg_id:space.id}),isCurrent:()=>currentPage==='accueil'&&accountUser?.id===id&&liveHost===host&&!myLoading&&!myError});
   }
   function paint(){
+    window.DCGCommon?.unmount();
     clearLive();
     clearStocks();
     clearPassGain();
@@ -275,6 +257,7 @@
     const stats=profileHome&&accountUser?'<section data-portal-stats aria-label="Statistiques du compte" aria-live="polite" aria-busy="true"><p>Chargement de tes statistiques…</p></section>':'';
     const restoreHeadingFocus=profileHome&&document.activeElement===root.querySelector('h1');
     root.innerHTML=nav()+'<div class="dcg-portal-view">'+(renderers[currentPage]||home)()+(profileHome?pass()+stats:'')+'</div>';
+    if(currentPage==='collections-communes')window.DCGCommon?.mount(root.querySelector('[data-common-root]'));
     mountGeneralXP();
     const title=root.querySelector('h1');if(title){title.id='tcg-title';title.tabIndex=-1;if(restoreHeadingFocus)title.focus({preventScroll:true});}
     if(currentPage==='mon-compte'&&accountSection!=='accueil'&&accountUser)window.DCGProfile?.mount(root.querySelector('#dcg-profile-root'),{user:accountUser,view:accountSection});
@@ -284,11 +267,11 @@
   async function readAccount(run){
     try{
       if(!window.DEADELUSTV_AUTH)throw new Error('Auth unavailable');
-      const client=await window.DEADELUSTV_AUTH.getClient();
-      const result=await client.auth.getSession();
+      const client=await window.DCGPortal.client();
+      const result=await client.auth.getUser();
       if(run!==generation||currentPage!=='mon-compte')return;
       if(result.error)throw result.error;
-      accountUser=result.data?.session?.user||null;accountLoading=false;accountError=false;paint();
+      accountUser=result.data?.user||null;accountLoading=false;accountError=false;paint();
     }catch{
       if(run!==generation||currentPage!=='mon-compte')return;
       accountUser=null;accountLoading=false;accountError=true;paint();
@@ -297,38 +280,26 @@
   function hasSessionHint(){try{return signedInHint||localStorage.getItem(config.authStorageKey)!==null||new URLSearchParams(location.search).has('code');}catch{return signedInHint;}}
   function paintMySpaces(){if(currentPage!=='accueil')return;if(!accountUser||!mySpaces.length)clearStocks();mountGeneralXP();const list=root.querySelector('[data-portal-spaces]');const html=directory();if(list&&directoryStates.get(list)!==html){list.innerHTML=html;directoryStates.set(list,html);}stockWidget?.sync();syncLive();}
   async function readSpaceXP(client,run,userId){
-    if(!mySpaces.length)return;
-    const current=()=>run===generation&&currentPage==='accueil'&&accountUser?.id===userId;
-    try{
-      // This RPC reads only the signed-in player's level in the connected DCG.
-      // The general XP counter is deliberately not used for individual cards.
-      const result=await client.rpc('tcg_my_xp');if(!current())return;
-      const xp=result.data;
-      if(result.error||xp?.scope!=='streamer'||xp.broadcaster_id!==config.accountBroadcasterId||!window.DCGXP)throw Error('Invalid DCG XP');
-      window.DCGXP.progress(xp.total,xp.level);
-      mySpaces=mySpaces.map(space=>{
-        if(space.id!==config.accountSpaceId)return space;
-        if(space.xpTotal===xp.total&&space.xpLevel===xp.level&&space.xpMarkup)return space;
-        return {...space,xpTotal:xp.total,xpLevel:xp.level,xpUnavailable:false,xpMarkup:window.DCGXP.markup(xp,{scope:'streamer',compact:true,interactive:false,label:'Ton niveau chez '+space.name})};
-      });
-    }catch{
-      if(!current())return;
-      mySpaces=mySpaces.map(space=>({...space,xpMarkup:null,xpUnavailable:true}));
-    }
-    if(current())paintMySpaces();
+    await Promise.allSettled(mySpaces.map(async space=>{try{
+      const r=await client.scoped(space.id,'tcg_my_xp');
+      if(run!==generation||accountUser?.id!==userId)return;
+      if(r.error||r.data?.broadcaster_id!==space.broadcasterId)throw Error('XP indisponible');
+      space.xpMarkup=window.DCGXP.markup(r.data,{scope:'streamer',compact:true,interactive:false,label:'Ton niveau chez '+space.name});
+    }catch{space.xpUnavailable=true;}}));
+    if(run===generation&&accountUser?.id===userId)paintMySpaces();
   }
   async function readMySpaces(run){
     try{
-      const client=await window.DEADELUSTV_AUTH.getClient();
+      const client=await window.DCGPortal.client();
       const result=await client.auth.getUser();if(run!==generation||currentPage!=='accueil')return;
       if(result.error)throw result.error;const user=result.data?.user||null;
       if(accountUser?.id!==user?.id){mySpaces=[];accountUser=user;paintMySpaces();}
       if(!user){myLoading=false;myError=false;paintMySpaces();return;}
       // Lecture de son propre compte uniquement, y compris pour un administrateur.
       // Ne pas appeler ensure_my_viewer : ouvrir le portail ne rejoint aucun DCG.
-      const membership=await client.from('tcg_accounts').select('user_id').eq('user_id',user.id).maybeSingle();
-      if(run!==generation||currentPage!=='accueil')return;if(membership.error)throw membership.error;
-      accountUser=user;mySpaces=membership.data?.user_id===user.id?spaces.filter(space=>space.id===config.accountSpaceId).map(space=>({...space,...mySpaces.find(previous=>previous.id===space.id)})):[];
+      const memberships=await client.memberships();
+      if(run!==generation||currentPage!=='accueil')return;
+      accountUser=user;mySpaces=memberships;
       myLoading=false;myError=false;paintMySpaces();syncStocks(client);
       await readSpaceXP(client,run,user.id);
     }catch{if(run!==generation||currentPage!=='accueil')return;mySpaces=[];myLoading=false;myError=true;paintMySpaces();}
@@ -343,7 +314,7 @@
     if(accountLoading)void readAccount(run);
     if(myLoading)void readMySpaces(run);
   }
-  function cancel(){clearLive();clearStocks();clearPassGain();window.DCGProfile?.unmount();window.DCGDailyPass?.unmount();xpWidget?.destroy();xpWidget=null;xpHost=null;xpUser=null;closeSearch(false);generation++;currentPage=null;accountUser=null;mySpaces=[];myLoading=false;myError=false;accountLoading=false;accountError=false;root.replaceChildren();}
+  function cancel(){window.DCGCommon?.unmount();clearLive();clearStocks();clearPassGain();window.DCGProfile?.unmount();window.DCGDailyPass?.unmount();xpWidget?.destroy();xpWidget=null;xpHost=null;xpUser=null;closeSearch(false);generation++;currentPage=null;accountUser=null;mySpaces=[];myLoading=false;myError=false;accountLoading=false;accountError=false;root.replaceChildren();}
   function updateSearch(field){const results=root.querySelector('[data-portal-search-results]');if(results)results.innerHTML=searchResults(field.value);}
   root.addEventListener('input',event=>{if(event.target.matches('[data-portal-search]'))updateSearch(event.target);});
   root.addEventListener('submit',event=>{if(event.target.matches('[data-portal-search-form]')){event.preventDefault();updateSearch(event.target.querySelector('input'));}});

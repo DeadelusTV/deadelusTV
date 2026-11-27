@@ -115,7 +115,7 @@
     if (lastIdentity === userId) return;
     lastIdentity = userId;
     window.dispatchEvent(new CustomEvent('deadelustv:auth-change', {
-      detail: { authenticated: Boolean(userId) }
+      detail: { authenticated: Boolean(userId), userId }
     }));
   }
   function loadSdk() {

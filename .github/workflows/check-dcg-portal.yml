@@ -12,9 +12,16 @@ on:
       - public/assets/daily-pass.*
       - public/modules/dcg/**
       - scripts/test_dcg_portal.cjs
+      - package.json
+      - package-lock.json
+      - public/package*.json
+      - scripts/hold-dcg-portal-publication.cjs
+      - scripts/test_portal*.cjs
+      - scripts/helpers/**
       - scripts/test_portal_stock.cjs
       - scripts/test_portal_live.cjs
       - functions/api/dcg-live-status.js
+      - functions/api/dcg-publication-hold.js
       - scripts/test_profile_progress.cjs
       - scripts/test_dcg_profile.cjs
       - scripts/test_daily_pass.cjs
@@ -33,6 +40,8 @@ jobs:
         with:
           persist-credentials: false
           lfs: true
+      - name: Installer uniquement les dépendances de test
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Verifier les fichiers statiques
         run: python3 scripts/verify-static.py
       - name: Verifier la syntaxe
@@ -50,4 +59,4 @@ jobs:
           node --check public/assets/site-auth.js
           node --check public/assets/daily-pass.js
       - name: Tester portail, routage et consentements existants
-        run: node --test scripts/test_dcg_portal.cjs scripts/test_dcg_profile.cjs scripts/test_profile_progress.cjs scripts/test_portal_stock.cjs scripts/test_portal_live.cjs scripts/test_daily_pass.cjs scripts/test_frontend_consent.cjs scripts/test_twitch_floating.cjs scripts/test_journal_account_access.cjs
+        run: node --test scripts/test_portal_multi_dcg.cjs scripts/test_portal_session_resume.cjs scripts/test_portal_common.cjs scripts/test_dcg_portal.cjs scripts/test_dcg_profile.cjs scripts/test_profile_progress.cjs scripts/test_portal_stock.cjs scripts/test_portal_live.cjs scripts/test_daily_pass.cjs scripts/test_frontend_consent.cjs scripts/test_twitch_floating.cjs scripts/test_journal_account_access.cjs

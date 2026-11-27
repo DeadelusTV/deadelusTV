@@ -1,3 +1,13 @@
+**27 novembre 2026 — correctifs CI des PR #56 et #291 préparés localement.** Sources B3 initiales publiées, PR non fusionnées. Workflow Contact : dépendances verrouillées avant tests, 33+9 tests réussis dans une copie vierge. Assertion TCG du lecteur dcg-block3-1 corrigée, 101 tests ciblés réussis. Pages avait sauté npm et publié l'aperçu 963b0fb ; nouvelle retenue de compilation qualifiée avec Wrangler 3.114.17, sans configuration distante. Workers TCG refusé sur son marqueur attendu. Versions habituelles inchangées (10 ressources HTTP). Corrections non committées/poussées ; nouveau build Pages à vérifier après publication autorisée, aucune fusion ou installation serveur. Les relevés suivants sont historiques.
+
+## Bloc 3 DCG — développement local du 27 novembre 2026
+
+Le portail est raccordé au registre et aux appartenances multi-DCG : accueil, annuaire/recherche, stocks/live/XP par DCG, profil, inventaire transversal paginé, Pass et navigation authentifiée vers le jeu. Collections communes, boutique avec un portefeuille choisi, échanges à rareté égale et votes sont inclus. Décisions validées : une voix définitive par propriétaire Streamer ; aucune XP sur les boosters communs. Éditeurs centraux existants réutilisés, sans rôle Admin accordé au propriétaire.
+
+Branche codex/dcg-block3-portal, base distante developpement/tcg-attente 07f3b91 ; la branche locale divergente du même ancien nom est préservée. 87 tests portail/interface réussis, recette à deux DCG fictifs et galerie/boutique à 320 px. Développé/testé localement seulement : aucun commit, push ou déploiement. Retenues Cloudflare et OVH préparées pour préserver les versions actuellement servies ; verrou TCG post-PR #290 conservé. Serveur B2/B3 et bascule TEST restent à autoriser, admissions fermées et maintenance non modifiées. Soutien payant indisponible ; aucune publication automatique d'une collection par le vote. Détails : docs/dcg-portal-structure.md et bilan coordonné docs/DCG_BLOCK3_PORTAL.md dans TCG.
+
+Les états du site officiel ci-dessous restent des historiques datés.
+
 # DEADELUSTV — roadmap du site général
 
 Mise à jour : 31 octobre 2026. Les états ci-dessous sont ceux du site principal `DeadelusTV/deadelusTV`. Ils ne remplacent pas les suivis propres au TCG, à Crewmong Us, à Pavillon Noir ou à Bingophobia.

@@ -19,7 +19,7 @@ function page({stored=false,search='',blocked=false,uid='alice',handler,getUser,
   addEventListener(type,fn){(listeners[type]??=[]).push(fn);},dispatchEvent(event){events.push(event);for(const fn of listeners[event.type]||[])fn(event);},
   setTimeout,clearTimeout,setInterval(fn){timers.push(fn);return timers.length;},AbortSignal,
   fetch:async()=>({ok:true,json:async()=>({role:null})})};
- context.window=context;vm.createContext(context);vm.runInContext(authSource,context);vm.runInContext(passSource,context);
+ context.window=context;vm.createContext(context);vm.runInContext(authSource,context);context.DCGPortal={client:()=>context.DEADELUSTV_AUTH.getClient()};vm.runInContext(passSource,context);
  return{context,calls,events,timers,element,get created(){return created;},advance(ms){now+=ms;},failAuth(){fail=true;},
   async switchTo(id){owner=id;authCallback?.(id?'SIGNED_IN':'SIGNED_OUT',id?{user:user()}:null);await new Promise(r=>setTimeout(r,5));await tick();}};
 }

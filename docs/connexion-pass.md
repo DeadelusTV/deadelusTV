@@ -1,3 +1,11 @@
+## Bloc 3 — transport portail contextualisé, 27 novembre 2026
+
+Le Connexion Pass existant est conservé : interface, dix jours, gains et animations. Le client du portail utilise désormais tcg_portal puis le transport préparé tcg-dcg-portal, avec vérification Auth et session SQL avant le moteur B2. Les destinataires par DCG sont figés au reçu, chaque gain rejoué est reconnu sans crédit supplémentaire ; aucun portefeuille global fusionné et aucun fallback historique. Les anciennes opérations publiques du site ne servent pas de secours au portail neuf.
+
+Recette locale réelle de l'interface : Viewer partagé reçoit J1 +5 dans chacun de ses deux DCG ; F5 conserve les soldes sans second versement. Tests du transport et SQL natif avec safeupdate : acteur forgé, accès croisé, compte/session changés, relecture et destinataires contrôlés. Aucun paiement, bénéfice de soutien ou consentement réel ajouté. Le soutien payant reste indisponible. Les boosters de collections communes ne donnent aucune XP, décision explicite de l'utilisatrice ; XP locale et générale du jeu gardent leurs règles propres.
+
+Le transport reste fermé par défaut et non déployé. Publication frontend retenue dans les deux dépôts jusqu'à bascule approuvée ; maintenance Twitch et admissions TEST actuelles non modifiées. Les suivis antérieurs ci-dessous restent historiques.
+
 # Connexion Pass — structure du site au 10 novembre 2026
 
 Raccordement de recette du 10 novembre 2026 sur `developpement/tcg-attente`. Le service et la structure du Pass sont installés dans le projet TCG ; le calendrier standard et le canal DeadelusTV sont activés après accord explicite. Le bonus donateur reste désactivé. Seule l'adresse `https://deadelustv.pages.dev` est autorisée pour la présence ; les domaines de production ne sont pas activés.

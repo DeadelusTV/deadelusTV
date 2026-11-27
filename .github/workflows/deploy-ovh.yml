@@ -38,6 +38,9 @@ jobs:
           persist-credentials: false
           lfs: true
 
+      - name: Retenir le portail avant la bascule DCG coordonnée
+        run: node scripts/hold-dcg-portal-publication.cjs --publication
+
       - name: Tester les garde-fous des sauvegardes avant toute publication
         run: python3 -m unittest discover -s tests -p 'test_backup_publication.py' -v
 

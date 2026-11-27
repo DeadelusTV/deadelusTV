@@ -329,3 +329,6 @@
 #page-tcg .portal-space-level{width:52px;height:52px}
 #page-tcg .portal-space-level .dcg-xp{--xp-size:52px}
 }
+
+/* BLOC 3: reuse existing panels, buttons and owned-card components. */
+#page-tcg [data-common-root] form{display:grid;gap:12px;margin:20px 0;max-width:680px}#page-tcg [data-common-root] label{display:grid;gap:6px}#page-tcg [data-common-root] input,#page-tcg [data-common-root] select{min-height:44px;background:#141519;color:var(--ink);border:1px solid var(--border);border-radius:8px;padding:10px;max-width:100%;min-width:0}#page-tcg [data-common-root] fieldset{min-width:0;border:1px solid var(--border)}#page-tcg [data-common-root] .portal-owned-card{min-width:0;overflow-wrap:anywhere}#page-tcg [data-common-root] .portal-owned-card tcg-card{display:block;width:100%;aspect-ratio:962/1635}#page-tcg [data-common-root] [role=alert]{color:#ffb3ad}#page-tcg [data-common-root] .portal-common{min-width:0}#page-tcg [data-common-root] summary{cursor:pointer;padding:16px}
