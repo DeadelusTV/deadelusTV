@@ -1,25 +1,7 @@
 (() => {
   'use strict';
   const validId=id=>typeof id==='string'&&/^\d{1,40}$/.test(id);
-  async function json(url,signal){
-    const response=await fetch(url,{method:'GET',credentials:'omit',cache:'no-store',signal});
-    if(!response.ok)throw Error('Statut indisponible');
-    return response.json();
-  }
-  async function read(ids,legacyBroadcasterId,signal){
-    const statuses=new Map();
-    const query=new URLSearchParams();for(const id of ids)query.append('broadcaster_id',id);
-    try{
-      const data=await json('/api/dcg-live-status?'+query,signal);
-      for(const id of ids)if(typeof data?.statuses?.[id]==='boolean')statuses.set(id,data.statuses[id]);
-    }catch{/* Aucun statut non confirmé. */}
-    // L'API OVH historique est exclusivement celle de DeadelusTV.
-    if(!signal.aborted&&ids.includes(legacyBroadcasterId)&&!statuses.has(legacyBroadcasterId)){
-      try{const data=await json('/api/twitch-status',signal);if(typeof data?.live==='boolean')statuses.set(legacyBroadcasterId,data.live);}catch{/* Indisponible. */}
-    }
-    return statuses;
-  }
-  function mount(host,{userId,spaces,legacyBroadcasterId,isCurrent}){
+  function mount(host,{userId,spaces,read,isCurrent}){
     const ids=[...new Set(spaces.map(space=>space.broadcasterId).filter(validId))];
     let active=true,request=null,statuses=new Map();
     const valid=()=>active&&host.isConnected&&!!userId&&isCurrent();
@@ -33,8 +15,10 @@
       const current=new AbortController();request=current;
       const timer=window.setTimeout(()=>current.abort(),8000);
       try{
-        const batches=[];for(let i=0;i<ids.length;i+=100)batches.push(read(ids.slice(i,i+100),legacyBroadcasterId,current.signal));
-        const result=await Promise.all(batches);
+        const result=await Promise.all(spaces.map(async space=>{
+          try{const r=await read(space);if(r.dcg_id!==space.id||r.broadcaster_id!==space.broadcasterId)throw Error('Statut étranger');return new Map(typeof r.online==='boolean'?[[space.broadcasterId,r.online]]:[]);}
+          catch{return new Map();}
+        }));
         if(valid()&&request===current&&!current.signal.aborted)statuses=new Map(result.flatMap(map=>[...map]));
       }catch{if(request===current)statuses.clear();}
       finally{
