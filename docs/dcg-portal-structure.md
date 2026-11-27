@@ -1,3 +1,13 @@
+## Correction CI du bloc 3 — 27 novembre 2026
+
+Sources initiales publiées dans la PR #56 vers developpement/tcg-attente, commit 963b0fb ; correctifs actuels locaux seulement. Le workflow Contact installe désormais les dépendances du lockfile racine avant les tests ; 33 tests puis 9 tests du centre d'accès réussissent dans une copie vierge sans NODE_PATH. Version jsdom inchangée, aucune assertion affaiblie.
+
+Le déploiement Preview 78772861 a été publié malgré preinstall : build command None, root /, output /public, aucune installation npm ; compilation directe des Functions avec Wrangler 3.114.17. La retenue initiale du portail était donc insuffisante pour ce pipeline. functions/api/dcg-publication-hold.js ajoute un import volontairement non résolu DCG_PORTAL_PUBLICATION_HOLD : refus à la compilation, sans middleware actif ni remplacement de runtime. Ne pas créer son import, l'externaliser ou contourner le bundler ; supprimer la sentinelle entière seulement lors de la bascule explicitement approuvée, avec les autres gardes conservés.
+
+Qualification locale sur le même Wrangler : Functions sans sentinelle compilées ; avec sentinelle code 1, marqueur exact, aucun worker produit, sur les contextes de PR, developpement/tcg-attente et main. Huit tests transport/broker/retenues passent. Le refus hébergé doit encore être observé après publication autorisée du correctif ; aucune configuration ou suppression Cloudflare exécutée. L'aperçu 963b0fb déjà créé n'est pas retiré par ce correctif local.
+
+Le portail habituel reste 8127487b / 07f3b91 ; site principal et TCG restent inchangés selon les dix empreintes HTTP du 27 novembre 02:30:49 UTC. Autres modules et services non modifiés. Main/OVH du site conservé ; la PR ne vise pas main. Référence coordonnée : TCG/docs/DCG_BLOCK3_PORTAL.md et docs/manifests/DCG_BLOCK3_PORTAL.json, qui recense maintenant le périmètre depuis les bases Git même après publication des premiers commits. Les sections antérieures ci-dessous sont des historiques datés.
+
 ## Avenant bloc 3 — 27 novembre 2026
 
 État actuel : développé et testé localement sur codex/dcg-block3-portal, base 07f3b91 de origin/developpement/tcg-attente. Aucun déploiement, aucune modification de l'instance TEST. Les paragraphes anciens du portail mono-DCG sont conservés plus bas comme historique.

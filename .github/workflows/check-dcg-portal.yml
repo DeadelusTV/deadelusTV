@@ -21,6 +21,7 @@ on:
       - scripts/test_portal_stock.cjs
       - scripts/test_portal_live.cjs
       - functions/api/dcg-live-status.js
+      - functions/api/dcg-publication-hold.js
       - scripts/test_profile_progress.cjs
       - scripts/test_dcg_profile.cjs
       - scripts/test_daily_pass.cjs
