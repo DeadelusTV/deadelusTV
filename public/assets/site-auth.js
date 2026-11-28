@@ -14,6 +14,19 @@
   const newsLink = document.getElementById('site-account-news-link');
   const journalLink = document.getElementById('site-account-journal-link');
   const crewLink = document.getElementById('site-account-crew-link');
+  const dcgAdminLink = document.getElementById('site-account-dcg-admin-link');
+  const dcgTestSite = window.location.origin === 'https://deadelustv.pages.dev' ||
+    /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(window.location.origin);
+  const adminLogin = document.getElementById('site-account-admin-login');
+  if (adminLogin) adminLogin.hidden = !dcgTestSite;
+  function hideDcgAdmin() { if (dcgAdminLink) dcgAdminLink.hidden = true; }
+  async function refreshDcgAdmin(auth, request) {
+    if (!dcgAdminLink || !dcgTestSite) return;
+    try {
+      const result = await auth.rpc('tcg_is_admin');
+      if (request === requestNumber) dcgAdminLink.hidden = Boolean(result.error) || result.data !== true;
+    } catch { if (request === requestNumber) hideDcgAdmin(); }
+  }
   if (!root || !toggle || !menu || !signin || !signout || !status || !note || !newsLink || !journalLink || !crewLink) return;
 
   // Clé publiable uniquement. Le même projet Auth est déjà utilisé par les News.
@@ -27,6 +40,7 @@
   function captureSession(event, session) {
     if (event === 'SIGNED_OUT' || (providerUser || lastIdentity) && (providerUser || lastIdentity) !== session?.user?.id) {
       providerToken = null; crewCache = null; ++authGeneration; ++requestNumber;
+      hideDcgAdmin();
       notifyAuth(null);
     }
     providerUser = session?.user?.id || null;
@@ -102,6 +116,7 @@
     toggle.setAttribute('aria-label', 'Mon compte');
   }
   function setAnonymous() {
+    hideDcgAdmin();
     resetAccountAvatar();
     status.textContent = 'Non connecté';
     signin.hidden = false;
@@ -186,6 +201,7 @@
   }
   async function refresh() {
     const currentRequest = ++requestNumber;
+    hideDcgAdmin();
     status.textContent = 'Vérification de la connexion…';
     showNote('');
     try {
@@ -209,6 +225,7 @@
       journalLink.hidden = true;
       crewLink.hidden = true;
       notifyAuth(user.id);
+      void refreshDcgAdmin(auth, currentRequest);
       try {
         const allowed = await canManageNews(auth, user.id);
         if (currentRequest !== requestNumber) return;
@@ -313,6 +330,7 @@
     if (next) refresh();
   });
   crewLink.addEventListener('click', () => setOpen(false));
+  dcgAdminLink?.addEventListener('click', () => setOpen(false));
   signin.addEventListener('click', signIn);
   signout.addEventListener('click', signOut);
   document.addEventListener('click', event => {

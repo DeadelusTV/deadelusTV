@@ -1,0 +1,2 @@
+/* Compatibility entry only: never initialize Auth or transfer a token on the Viewer origin. */
+(()=>{'use strict';if(!document.querySelector('[data-admin-redirect]'))return;const key='dcg:dedicated-admin:eodtxlhnfzyapkyvvxdi';for(const name of [key,key+'-code-verifier',key+'-user'])localStorage.removeItem(name);for(const name of ['dcg:admin-window-binding','dcg:admin-approved-windows'])sessionStorage.removeItem(name);})();
