@@ -55,7 +55,7 @@
       if (originalOwner!==owner || identity().id!==originalOwner || button.disabled) return;
       button.disabled=true;feedback.textContent='';
       try {
-        const client=await window.DEADELUSTV_AUTH.getClient();
+        const client=await window.DCGPortal.client();
         if (originalOwner!==owner || identity().id!==originalOwner) return;
         const result=await client.functions.invoke('tcg-daily-pass',{body:{action:'ack_auto',notice_ids:ids}});
         if (result.error || result.data?.status!=='acknowledged') throw Error('ack_failed');
@@ -299,7 +299,7 @@
     for (const button of root?.querySelectorAll?.('[data-daily-pass-claim], [data-daily-pass-claim-all], [data-daily-pass-refresh]') || []) {button.disabled = true; button.setAttribute('aria-busy','true');}
     const current = () => request.generation === generation && identity().id === request.id;
     try {
-      const client = session.client || await window.DEADELUSTV_AUTH.getClient();
+      const client = session.client || await window.DCGPortal.client();
       if (!current()) return;
       // L'Edge Function du site vérifie origine et JWT. Le jeu n'appelle jamais une attribution.
       const read = () => isSite() ? client.functions.invoke('tcg-daily-pass', {body:claim ? {action:'claim',...(visitId ? {visit_id:visitId} : {})} : {}}) : client.rpc('tcg_daily_pass_status');

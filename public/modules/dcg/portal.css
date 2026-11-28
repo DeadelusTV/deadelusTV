@@ -25,7 +25,7 @@
 #page-tcg .portal-role-login{position:relative;font:500 11px/1.2 system-ui,sans-serif;color:var(--gold-light);}
 #page-tcg .portal-roles[data-show-login="false"] .portal-role-login{display:none;}
 #page-tcg .portal-role-card::before{content:"";position:absolute;inset:6px;border:1px solid currentColor;border-radius:11px;color:var(--role-tint);opacity:.13;pointer-events:none;}
-#page-tcg article.portal-role-card{--role-tint:#b8dddb;border-color:#4e6669;background:radial-gradient(ellipse at 75% 15%,#578d8b38,transparent 80%),#11191d;}
+#page-tcg .portal-role-streamer{--role-tint:#b8dddb;border-color:#4e6669;background:radial-gradient(ellipse at 75% 15%,#578d8b38,transparent 80%),#11191d;}
 #page-tcg .portal-role-art{position:absolute;left:10px;width:68px;height:auto;pointer-events:none;color:var(--role-tint);opacity:.32;fill:none;stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round;}
 #page-tcg a.portal-role-card:hover,#page-tcg a.portal-role-card:focus-visible{border-color:var(--gold-light);color:var(--gold-light);}
 #page-tcg a.portal-role-card:hover .portal-role-art,#page-tcg a.portal-role-card:focus-visible .portal-role-art{opacity:.46;}
@@ -332,3 +332,6 @@
 #page-tcg .portal-space-level{width:52px;height:52px}
 #page-tcg .portal-space-level .dcg-xp{--xp-size:52px}
 }
+
+/* BLOC 3: reuse existing panels, buttons and owned-card components. */
+#page-tcg [data-common-root] form{display:grid;gap:12px;margin:20px 0;max-width:680px}#page-tcg [data-common-root] label{display:grid;gap:6px}#page-tcg [data-common-root] input,#page-tcg [data-common-root] select{min-height:44px;background:#141519;color:var(--ink);border:1px solid var(--border);border-radius:8px;padding:10px;max-width:100%;min-width:0}#page-tcg [data-common-root] fieldset{min-width:0;border:1px solid var(--border)}#page-tcg [data-common-root] .portal-owned-card{min-width:0;overflow-wrap:anywhere}#page-tcg [data-common-root] .portal-owned-card tcg-card{display:block;width:100%;aspect-ratio:962/1635}#page-tcg [data-common-root] [role=alert]{color:#ffb3ad}#page-tcg [data-common-root] .portal-common{min-width:0}#page-tcg [data-common-root] summary{cursor:pointer;padding:16px}

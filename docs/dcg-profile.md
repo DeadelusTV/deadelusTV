@@ -1,3 +1,9 @@
+## Bloc 3 — profil global raccordé localement le 27 novembre 2026
+
+Appartenances et propriété lues côté serveur ; un propriétaire Streamer sans Admin dispose de Gérer mon DCG et de son choix de visibilité dans l'annuaire. Admin central reste une capacité indépendante. La galerie transversale utilise une pagination serveur de 24 versions, recherche, cinq tris/directions, provenance par DCG et numérotation propre à chaque collection ; détails des versions possédées vers le bon jeu/collection. Cartes communes incluses avec leur provenance centrale.
+
+Les statistiques du compte agrègent uniquement ses données autorisées. La date de démarrage du suivi est visible ; aucun historique d'ouverture ou de crédit n'est inventé. Les composants de cartes, effets, profils et animations existants sont conservés. Testé à deux DCG fictifs, Viewer partagé, comptes distincts et propriétaire sans Admin, ordinateur et galerie 320 px. Source locale uniquement, aucun profil distant modifié. Les anciens constats mono-DCG suivants restent datés et historiques.
+
 # Profil du portail DCG
 
 ## Navigation

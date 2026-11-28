@@ -9,6 +9,10 @@ on:
       - public/admin/access-center*
       - scripts/test_access_center.cjs
       - scripts/test_contact_centre.cjs
+      - package.json
+      - package-lock.json
+      - scripts/helpers/**
+      - scripts/test_dcg_portal.cjs
       - .github/workflows/check-contact-centre.yml
 permissions:
   contents: read
@@ -20,10 +24,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
+      - name: Installer les dépendances de test verrouillées
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - run: node --check public/assets/contact-centre.js
       - run: node --test scripts/test_contact_centre.cjs scripts/test_dcg_portal.cjs scripts/test_frontend_consent.cjs scripts/test_twitch_floating.cjs
       - run: node --check public/admin/access-center.js
-      - run: npm install --prefix "$RUNNER_TEMP/access-center-test" --no-audit --no-fund jsdom@27.0.1
       - run: node --test scripts/test_access_center.cjs
-        env:
-          NODE_PATH: ${{ runner.temp }}/access-center-test/node_modules

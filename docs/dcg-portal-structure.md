@@ -1,3 +1,29 @@
+## Correction CI du bloc 3 — 27 novembre 2026
+
+Sources initiales publiées dans la PR #56 vers developpement/tcg-attente, commit 963b0fb ; correctifs actuels locaux seulement. Le workflow Contact installe désormais les dépendances du lockfile racine avant les tests ; 33 tests puis 9 tests du centre d'accès réussissent dans une copie vierge sans NODE_PATH. Version jsdom inchangée, aucune assertion affaiblie.
+
+Le déploiement Preview 78772861 a été publié malgré preinstall : build command None, root /, output /public, aucune installation npm ; compilation directe des Functions avec Wrangler 3.114.17. La retenue initiale du portail était donc insuffisante pour ce pipeline. functions/api/dcg-publication-hold.js ajoute un import volontairement non résolu DCG_PORTAL_PUBLICATION_HOLD : refus à la compilation, sans middleware actif ni remplacement de runtime. Ne pas créer son import, l'externaliser ou contourner le bundler ; supprimer la sentinelle entière seulement lors de la bascule explicitement approuvée, avec les autres gardes conservés.
+
+Qualification locale sur le même Wrangler : Functions sans sentinelle compilées ; avec sentinelle code 1, marqueur exact, aucun worker produit, sur les contextes de PR, developpement/tcg-attente et main. Huit tests transport/broker/retenues passent. Le refus hébergé doit encore être observé après publication autorisée du correctif ; aucune configuration ou suppression Cloudflare exécutée. L'aperçu 963b0fb déjà créé n'est pas retiré par ce correctif local.
+
+Le portail habituel reste 8127487b / 07f3b91 ; site principal et TCG restent inchangés selon les dix empreintes HTTP du 27 novembre 02:30:49 UTC. Autres modules et services non modifiés. Main/OVH du site conservé ; la PR ne vise pas main. Référence coordonnée : TCG/docs/DCG_BLOCK3_PORTAL.md et docs/manifests/DCG_BLOCK3_PORTAL.json, qui recense maintenant le périmètre depuis les bases Git même après publication des premiers commits. Les sections antérieures ci-dessous sont des historiques datés.
+
+## Avenant bloc 3 — 27 novembre 2026
+
+État actuel : développé et testé localement sur codex/dcg-block3-portal, base 07f3b91 de origin/developpement/tcg-attente. Aucun déploiement, aucune modification de l'instance TEST. Les paragraphes anciens du portail mono-DCG sont conservés plus bas comme historique.
+
+La configuration ne contient plus d'entrée DeadelusTV comme DCG de secours. Mes DCG lit les appartenances du Viewer et les propriétés vérifiées ; l'annuaire lit un registre public activé volontairement par chaque propriétaire. Recherche, stocks, niveau et live sont liés au UUID du DCG et à sa propre connexion Twitch. Données indisponibles honnêtes, pas d'API centrale de repli. L'inscription publique à une communauté résout l'invitation côté serveur et conserve les contrôles d'acceptation/version du règlement ; aucune nouvelle admission Streamer publique.
+
+Le profil et le Pass gardent leurs composants et animations, avec les nouveaux contrats serveur. Le broker partagé avec TCG ouvre le jeu par DCG en conservant la session du portail : seul un access token en mémoire est transmis à une fenêtre et une origine exactes, avec vérification acteur/session/nonce/DCG. Aucun refresh token transféré ou stocké dans le jeu. F5, navigation, renouvellement et changement de compte qualifiés. Si le navigateur perd opener au retour Twitch, fermeture sûre et réouverture depuis le portail ; la recette OAuth hébergée n'est pas réalisée.
+
+Collections communes, boutique et votes sont développés dans cette intervention sur décision explicite. Offres centrales configurées par Admin, quantité et portefeuille DCG choisis sans cumul ; achat/ouverture avec reçus idempotents, lecteur TCG existant, finition normale sans FIRST et zéro XP. Exemplaires communs échangés à rareté égale, sans marché/enchère/évolution. Vote unique définitif par propriétaire Streamer vérifié ; résultats Admin et aucune publication automatique du gagnant. Prix, pools et scrutins des tests sont fictifs, aucun contenu réel configuré. Les éditeurs existants de collections/cartes sont accessibles en contexte central explicite, indépendamment de la sélection mémorisée d'un DCG.
+
+Qualification : 87 tests portail/UI, SQL jetable et vrais rôles PostgreSQL avec safeupdate côté TCG ; deux propriétaires sans Admin, Viewers partagé/distincts, Helper A, Admin indépendant. Recette ordinateur, Pass J1 dans A/B sans double crédit, achat dans B seulement, lecture commune, vote définitif et édition centrale, galerie/provenance ; boutique et galerie dans un cadre de viewport réel 320 px sans débordement horizontal. Les preuves détaillées et le manifeste coordonné sont dans TCG/docs/DCG_BLOCK3_PORTAL.md et TCG/docs/manifests/DCG_BLOCK3_PORTAL.json.
+
+Publication retenue : DCG_PORTAL_PUBLICATION_HOLD en preinstall racine/public pour Cloudflare et garde avant OVH. TCG conserve DCG_STREAMER_VIEWER_PUBLICATION_HOLD ; le refus post-fusion #290 a été observé, ancienne version TCG 8a8e2a5 conservée. Les deux retenues doivent être conservées jusqu'à installation B2/B3, qualification hébergée, reset ciblé approuvé puis bascule GitHub autorisée. Aucun mécanisme automatique d'installation SQL/Edge. Main/OVH du site général ne doit pas recevoir une fusion aveugle de toute la branche portail.
+
+Restent : contenus/tarifs/dates réels approuvés, installation serveur TEST et transports, contrôle retour OAuth réel lors d'une intervention autorisée, volumétrie publique, inventaire/reset précis et bascule coordonnée. Le soutien payant reste indisponible. Cette liste ne masque aucun écran boutique/vote derrière un simple raccordement.
+
 # Portail DCG — structure sur la branche de test, 5 novembre 2026
 
 Ajout préparé le 9 novembre : [niveau général du Pass XP](dcg-xp-pass.md), avec récompenses au clic dans chaque DCG rejoint. Le Pass de connexion reste distinct.

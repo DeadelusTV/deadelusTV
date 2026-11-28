@@ -6,3 +6,5 @@ __pycache__/
 !.env.example
 public/_mobile-check.html
 desktop.ini
+
+node_modules/

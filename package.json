@@ -1,0 +1,12 @@
+{
+  "name": "deadelustv-portal-publication-hold",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "preinstall": "node scripts/hold-dcg-portal-publication.cjs",
+    "test": "node --test scripts/test_dcg_portal.cjs scripts/test_dcg_profile.cjs scripts/test_portal_multi_dcg.cjs scripts/test_portal_session_resume.cjs scripts/test_portal_common.cjs scripts/test_portal_stock.cjs scripts/test_portal_live.cjs scripts/test_daily_pass.cjs scripts/test_profile_progress.cjs scripts/test_frontend_consent.cjs scripts/test_twitch_floating.cjs scripts/test_journal_account_access.cjs scripts/test_dcg_admin_auth.cjs scripts/test_dcg_admin_sessions.cjs scripts/test_dcg_admin_account_access.cjs"
+  },
+  "devDependencies": {
+    "jsdom": "27.0.1"
+  }
+}
