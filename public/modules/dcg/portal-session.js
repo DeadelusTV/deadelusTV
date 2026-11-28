@@ -1,6 +1,8 @@
 /* Shared, access-token-only window broker. The portal alone owns/renews its refresh token. */
 (() => {
  'use strict';
+ if(window.DCGAdminBoundary?.isAdminOrigin){const boundary=window.DCGAdminBoundary;window.DCGSession=Object.freeze({kind:'admin',href:(id,route)=>boundary.href(id,route),openGame:async(id,route)=>{location.assign(boundary.href(id,route));},connectGame:async()=>null,returnToPortal:()=>location.assign(boundary.login)});return;}
+ if(new URLSearchParams(location.search).get('admin_session')==='1'){window.DCGSession=Object.freeze({kind:'refused-admin',connectGame:async()=>{throw Error('Utilise l’origine Admin dédiée.');},returnToPortal:()=>location.assign('https://dcg-admin-test.yekelle-boulet.workers.dev/admin-auth.html')});return;}
  const test=location.hostname==='127.0.0.1'||location.hostname==='localhost';
  const site=test?new URL(window.DCG_LOCAL_ORIGINS?.site||location.origin).origin:'https://deadelustv.pages.dev';
  const game=test?new URL(window.DCG_LOCAL_ORIGINS?.game||location.origin).origin:'https://tcg.yekelle-boulet.workers.dev';
@@ -43,7 +45,7 @@
    epoch++;for(const [target,p]of peers)target.postMessage({kind:'dcg-session-ended',nonce:p.nonce},game);peers.clear();approvals=[];saveApprovals();
   });
   window.addEventListener('message',async e=>{
-   const m=e.data;if(e.origin!==game||!m||m.kind!=='dcg-session-request'||!uid(m.nonce)||!uid(m.request))return;
+   const m=e.data;if(m?.realm&&m.realm!=='viewer')return;if(e.origin!==game||!m||m.kind!=='dcg-session-request'||!uid(m.nonce)||!uid(m.request))return;
    let p=peers.get(e.source);
    if(!p){const saved=approvals.find(p=>p.nonce===m.nonce&&p.dcg===m.dcg);try{if(!saved||e.source.opener!==window)return;}catch{return;}p={...saved,epoch};peers.set(e.source,p);}
    if(m.nonce!==p.nonce||m.dcg!==p.dcg||p.epoch!==epoch)return;
