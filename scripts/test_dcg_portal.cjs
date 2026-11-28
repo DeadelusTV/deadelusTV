@@ -161,8 +161,17 @@ test('the home hero links viewers to the rules and presents the streamer role wi
  assert.match(links[0][2],/Je suis Viewers/);
  assert.doesNotMatch(links[0][2],/Je suis Streamer/);
  assert.match(hero,/Je suis Streamer/);
+ assert.ok(hero.indexOf('Je suis Streamer')<hero.indexOf('Je suis Viewers'));
+ assert.equal((hero.match(/<small class="portal-role-login">connecte toi à Twitch<\/small>/g)||[]).length,2);
  assert.doesNotMatch(hero,/<button\b|role="button"|Explorer les DCG|Comment jouer|ENTRÉE DIRECTE|portal-featured/);
  assert.doesNotMatch(markup,/<iframe|<script/);assert.doesNotMatch(source,/createClient|service_role|fetch\(/);
+});
+test('role login hints follow Twitch sign-in and sign-out',async()=>{
+ const s=setup();
+ assert.match(s.root.innerHTML,/class="portal-roles" data-show-login="true"/);
+ const roles=new Node();s.root.nodes['.portal-roles']=roles;
+ await s.auth({id:'viewer'});assert.equal(roles.dataset.showLogin,'false');
+ await s.auth(null);assert.equal(roles.dataset.showLogin,'true');
 });
 test('global streamer search handles accents without filtering personal DCG or replacing the input',async()=>{
  const s=setup({user:{id:'player'}});await tick();s.click('[data-portal-search-open]');assert.equal(s.searchDialog.open,true);assert.equal(s.search.focused,true);

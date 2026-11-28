@@ -96,27 +96,31 @@
       <div class="portal-ticker" style="--ticker-duration:${duration}s">${group()}${group(true)}</div>`;
   }
   const directoryActions=()=>'<div class="portal-directory-actions"><div class="portal-general-xp-bubble" data-general-xp hidden aria-label="Niveau général DCG"></div><button class="button-outline" type="button" data-portal-search-open aria-haspopup="dialog">Rechercher un streamer</button></div>';
+  const showRoleLogin = () => !accountUser && !myLoading && !window.DEADELUSTV_AUTH?.userId;
+  const roleLogin = '<small class="portal-role-login">connecte toi à Twitch</small>';
   const home = () => `<section class="portal-hero">
     <div>
       <span class="overline">DEADELUS CARD GAME</span>
       <h1><em>Collectionne les Communautés Twitch</em></h1>
       <p>Rejoins les constellations de tes streamers préférés, et collectionne leurs cartes. Découvre des cartes exclusives au fil des événements et des nouvelles collections !</p>
     </div>
-    <div class="portal-roles">
-      <a class="portal-role-card" href="#tcg/regles">
-        <svg class="portal-role-art" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-          <path d="M5 32s10-16 27-16 27 16 27 16-10 16-27 16S5 32 5 32Z"/>
-          <circle cx="32" cy="32" r="10"/><circle cx="32" cy="32" r="4" fill="currentColor" stroke="none"/>
-        </svg>
-        <span>Je suis Viewers</span>
-      </a>
+    <div class="portal-roles" data-show-login="${showRoleLogin()}">
       <article class="portal-role-card">
         <svg class="portal-role-art" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
           <rect x="24" y="7" width="16" height="32" rx="8"/>
           <path d="M17 30a15 15 0 0 0 30 0M32 45v10m-9 0h18M14 15a13 13 0 0 0 0 12m36-12a13 13 0 0 1 0 12"/>
         </svg>
         <span>Je suis Streamer</span>
+        ${roleLogin}
       </article>
+      <a class="portal-role-card" href="#tcg/regles">
+        <svg class="portal-role-art" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+          <path d="M5 32s10-16 27-16 27 16 27 16-10 16-27 16S5 32 5 32Z"/>
+          <circle cx="32" cy="32" r="10"/><circle cx="32" cy="32" r="4" fill="currentColor" stroke="none"/>
+        </svg>
+        <span>Je suis Viewers</span>
+        ${roleLogin}
+      </a>
     </div>
   </section>
     ${pass()}<section class="portal-directory" id="dcg-annuaire" aria-labelledby="dcg-directory-title"><div class="portal-section-top"><div><span class="overline">MES COMMUNAUTÉS</span><h2 id="dcg-directory-title">Mes DCG</h2><p>Retrouve les communautés où tu joues.</p></div>${directoryActions()}</div><div class="portal-spaces" data-portal-spaces>${directory()}</div></section>
@@ -295,7 +299,7 @@
     }
   }
   function hasSessionHint(){try{return signedInHint||localStorage.getItem(config.authStorageKey)!==null||new URLSearchParams(location.search).has('code');}catch{return signedInHint;}}
-  function paintMySpaces(){if(currentPage!=='accueil')return;if(!accountUser||!mySpaces.length)clearStocks();mountGeneralXP();const list=root.querySelector('[data-portal-spaces]');const html=directory();if(list&&directoryStates.get(list)!==html){list.innerHTML=html;directoryStates.set(list,html);}stockWidget?.sync();syncLive();}
+  function paintMySpaces(){if(currentPage!=='accueil')return;const roles=root.querySelector('.portal-roles');if(roles)roles.dataset.showLogin=String(showRoleLogin());if(!accountUser||!mySpaces.length)clearStocks();mountGeneralXP();const list=root.querySelector('[data-portal-spaces]');const html=directory();if(list&&directoryStates.get(list)!==html){list.innerHTML=html;directoryStates.set(list,html);}stockWidget?.sync();syncLive();}
   async function readSpaceXP(client,run,userId){
     if(!mySpaces.length)return;
     const current=()=>run===generation&&currentPage==='accueil'&&accountUser?.id===userId;
