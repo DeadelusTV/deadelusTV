@@ -158,10 +158,10 @@ test('the home hero links viewers to the rules and presents the streamer role wi
  const links=[...hero.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)];
  assert.equal(links.length,1);
  assert.match(links[0][1],/href="#tcg\/regles"/);
- assert.match(links[0][2],/Je suis Viewers/);
+ assert.match(links[0][2],/Je suis Viewer<\/span>/);
  assert.doesNotMatch(links[0][2],/Je suis Streamer/);
  assert.match(hero,/Je suis Streamer/);
- assert.ok(hero.indexOf('Je suis Streamer')<hero.indexOf('Je suis Viewers'));
+ assert.ok(hero.indexOf('Je suis Streamer')<hero.indexOf('Je suis Viewer'));
  assert.equal((hero.match(/<small class="portal-role-login">connecte toi à Twitch<\/small>/g)||[]).length,2);
  assert.doesNotMatch(hero,/<button\b|role="button"|Explorer les DCG|Comment jouer|ENTRÉE DIRECTE|portal-featured/);
  assert.doesNotMatch(markup,/<iframe|<script/);assert.doesNotMatch(source,/createClient|service_role|fetch\(/);

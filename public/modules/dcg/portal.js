@@ -118,7 +118,7 @@
           <path d="M5 32s10-16 27-16 27 16 27 16-10 16-27 16S5 32 5 32Z"/>
           <circle cx="32" cy="32" r="10"/><circle cx="32" cy="32" r="4" fill="currentColor" stroke="none"/>
         </svg>
-        <span>Je suis Viewers</span>
+        <span>Je suis Viewer</span>
         ${roleLogin}
       </a>
     </div>
